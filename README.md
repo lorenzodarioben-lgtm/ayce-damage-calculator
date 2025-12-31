@@ -2,148 +2,134 @@
 
 **Did you beat the buffet, or fund their next renovation?**
 
-AYCE Damage Calculator is an unnecessarily serious Korean BBQ meal tracker. It estimates the
-supermarket value, restaurant ingredient cost and nutrition of everything you ate at an
-all-you-can-eat restaurant, then decides whether you extracted enough value from your admission —
-or quietly sponsored the place.
+**Live demo → [ayce-damage-calculator.vercel.app](https://ayce-damage-calculator.vercel.app)**
 
-The premise is a joke. The calculation engine, the verdict thresholds and the test suite are not.
+AYCE Damage Calculator is an unnecessarily serious Korean BBQ meal tracker. You log every plate you
+put on the grill, and it estimates the supermarket retail value of what you ate, what the restaurant
+probably paid for the raw ingredients, the full nutrition breakdown, and how much food you actually
+got through. Then it delivers a verdict on whether you beat the buffet or quietly became one of its
+investors.
+
+The premise is a joke. The calculation engine, the verdict thresholds and the 107-test suite are
+not. Everything runs in the browser — no accounts, no backend, no API keys.
 
 ---
 
-## Demo
-
-There is no hosted deployment yet. Run it locally with the instructions below; the app is entirely
-client-side and needs no API keys, database or backend.
-
 ## Features
 
-- **Interactive meal builder** — pick a category, cut, quality tier, plate size and quantity, then
-  add it to your tab.
-- **18-item Korean BBQ dataset** across beef, pork, chicken and seafood, each with retail price,
-  bulk ingredient cost and full macros.
-- **Quality tiers** (House / Standard / Premium) that adjust estimated pricing without touching
-  nutrition.
-- **Portion sizing** at 100 g, 155 g and 220 g per plate.
-- **Live retail damage meter** showing recovered value against admission, with a running estimate
-  of how many more average plates it would take to break even.
-- **Nutrition calculation** for calories, protein, fat and carbohydrates.
-- **Restaurant ingredient-cost estimate**, carefully labelled as an ingredient margin rather than
-  profit.
-- **Deterministic verdict engine** — the same totals always produce the same verdict.
-- **Local persistence** so a refresh mid-meal does not lose your tab.
-- **Shareable Damage Report** with a clipboard summary, Web Share where supported, and a PNG
-  result card rendered directly to canvas.
-- **Responsive, accessible UI** — keyboard-operable tabs, labelled controls, live-region
-  confirmations and reduced-motion support.
-- **Automated tests** covering the calculation engine, verdict boundaries, formatting, storage
-  recovery and the main user flows.
+**Meal building**
+
+- Beef, pork, chicken and seafood categories over an 18-item typed food dataset
+- House / Standard / Premium quality tiers, which change estimated pricing but never nutrition
+- Small (100 g), Regular (155 g) and Large (220 g) serving sizes
+- Adjustable plate counts, with identical selections merged into a single tab line
+- Editable running tab — adjust quantities or remove a line at any point
+
+**Session setup**
+
+- Optional restaurant name, printed on the final report
+- Configurable AYCE price per diner and diner count, validated and clamped
+
+**The numbers**
+
+- Live retail damage meter tracking recovered value against total admission
+- Estimated supermarket retail value and estimated restaurant ingredient cost
+- Estimated ingredient margin and food-cost percentage
+- Calories, protein, fat and carbohydrates
+- Total food weight in grams, kilograms and pounds
+- Retail break-even estimate — how many more average plates it would take
+
+**The payoff**
+
+- A deterministic verdict system, from _Corporate Sponsor_ up to _Do Not Return_
+- A final AYCE Damage Report with the full breakdown
+- Copy Result to the clipboard, Web Share where the browser supports it, and a downloadable PNG
+  result card
+- Sessions persisted to `localStorage`, so a mid-meal refresh doesn't cost you your tab
+
+**Everything else**
+
+- Responsive from 320 px phones to desktop, with original SVG food illustrations
+- Keyboard-operable tabs, labelled controls, live-region confirmations, reduced-motion support
+- 107 automated tests
 
 ## Tech stack
 
 | Concern   | Choice                             |
 | --------- | ---------------------------------- |
 | Framework | Next.js 16 (App Router)            |
-| Language  | TypeScript, strict                 |
 | UI        | React 19                           |
+| Language  | TypeScript 5.9, strict             |
 | Styling   | Tailwind CSS 4 with a custom theme |
 | Icons     | lucide-react                       |
-| Testing   | Vitest + React Testing Library     |
-| Tooling   | ESLint, Prettier                   |
+| Testing   | Vitest 4 + React Testing Library   |
+| Tooling   | ESLint 9, Prettier 3               |
+| Hosting   | Vercel                             |
 
-No component library, no state-management library, no backend and no external data services. Food
-artwork is original SVG generated from a small shared illustration system.
+No component library, no state-management library, no backend, no external data services.
 
 ## Architecture
 
-The project keeps four concerns separate:
+The interesting part of this project isn't the joke — it's that the joke is backed by a real
+separation of concerns.
 
-- **Data** (`src/data/foods.ts`) — the food dataset, typed and readonly. Nothing else in the app
-  hardcodes a price or macro value.
-- **Domain logic** (`src/lib/`) — pure functions with no React dependency: the calculation engine,
-  the verdict thresholds, number formatting, storage parsing and the result-card model. Every
-  division is guarded so no code path can emit `NaN` or `Infinity`.
-- **State** (`src/hooks/useMealSession.ts`) — a single reducer covering session configuration and
-  meal actions, plus hydration from and persistence to `localStorage`.
-- **Presentation** (`src/components/`) — components render values produced by the domain layer.
-  They never perform financial arithmetic inline.
+**Typed domain data.** The food dataset lives in `src/data/foods.ts` as readonly, strongly typed
+records. No component anywhere hardcodes a price or a macro value.
 
-The shareable result card is defined once as a data model and rendered twice: as a DOM preview and
-as a canvas image for export, so the two can never drift apart.
+**Pure calculation engine.** Weights, retail value, ingredient cost, nutrition, aggregates and
+break-even estimates are all plain functions in `src/lib/` with no React dependency. They're
+trivially testable, and every division is guarded so no code path can produce `NaN` or `Infinity` —
+including the empty-meal case.
 
-## Calculation methodology
+**Deterministic verdict engine.** Verdicts come from explicit ratio thresholds in a single ordered
+table, not randomness. The same totals always produce the same verdict, and every boundary has a
+test on both sides of it.
 
-For each line item:
+**Central session state.** One reducer owns restaurant name, price, diner count and every meal
+action. Hydration from storage is tracked as committed state rather than a ref, which is what stops
+the persistence effect from overwriting a saved session on first mount.
 
-```
-totalWeightG    = plateSizeGrams × quantity
-weightKg        = totalWeightG / 1000
+**Versioned local persistence.** Stored sessions carry a schema version and are re-validated field
+by field on load. Corrupt JSON, an unknown version, an unavailable `localStorage` or individually
+invalid meal items all degrade to sensible defaults instead of crashing.
 
-retailPerKg     = food.retailPricePerKg     × quality.retailMultiplier
-ingredientPerKg = food.restaurantCostPerKg  × quality.restaurantMultiplier
+**Shared result-card model.** The on-screen result card and the exported PNG render from one shared
+model, so they can't drift apart. The image is drawn directly to canvas rather than rasterised from
+the DOM — no web-font fetching, no external requests, and a predictable output every time.
 
-retailValue     = weightKg × retailPerKg
-ingredientCost  = weightKg × ingredientPerKg
+## How the calculations work
 
-calories        = (totalWeightG / 100) × food.caloriesPer100g
-```
+**Retail value** is the estimated supermarket-equivalent cost of what you ate: food weight × the
+retail price per kilogram for that cut, adjusted by the selected quality tier.
 
-Protein, fat and carbohydrates use the same per-100 g scaling. Quality tiers do **not** change
-nutrition.
+**Estimated restaurant ingredient cost** applies the same idea to an illustrative bulk procurement
+price — roughly what a restaurant might pay for the same raw ingredient.
 
-Across the session:
+**Quality tier** scales both of those prices. House is cheaper, Premium is dearer. It does not
+change nutrition at all.
 
-```
-totalAdmission        = pricePerDiner × dinerCount
-retailValueDifference = totalRetailValue - totalAdmission
-retailRecoveryPercent = (totalRetailValue / totalAdmission) × 100
+**Nutrition** scales from each food's per-100 g values against the total weight you recorded.
 
-estimatedIngredientMargin = totalAdmission - totalIngredientCost
-estimatedFoodCostPercent  = (totalIngredientCost / totalAdmission) × 100
+**Retail recovery** is `estimated retail value ÷ total admission × 100`. Total admission is simply
+price per diner × number of diners.
 
-remainingRetailGap        = max(0, totalAdmission - totalRetailValue)
-averageRetailValuePerPlate = totalRetailValue / totalPlates
-platesToBreakEven          = ceil(remainingRetailGap / averageRetailValuePerPlate)
-```
+**Break-even** is the playful goal: the point where your estimated retail value reaches the total
+admission price. Below that, the app estimates how many more plates of your current average value
+it would take to get there.
 
-The verdict is chosen purely from `totalRetailValue / totalAdmission` against fixed thresholds at
-0.55, 0.85, 1.00, 1.25, 1.60 and 2.00. Every boundary is covered by tests.
+Values are held at full precision throughout and rounded only for display.
 
-Values are kept at full precision throughout and rounded only for display.
+## Retail value is not restaurant cost
 
-## Important disclaimer
+This distinction matters, so the app is careful about it.
 
-This app is for entertainment and estimation only. Actual meat prices, restaurant procurement
-costs, portion sizes and nutrition vary by supplier, restaurant, preparation, trimming, marinades
-and location. The dataset is illustrative rather than surveyed.
+Retail value is what _you_ would have paid at a supermarket. Restaurant ingredient cost is what the
+_restaurant_ may have paid a wholesaler. They are different numbers answering different questions,
+and beating one says nothing about the other.
 
-**Estimated ingredient margin is not restaurant profit.** It excludes wages, rent, utilities, tax,
-waste, side dishes and every other cost of running a restaurant. Beating the buffet on
-supermarket-retail value does not mean the restaurant lost money.
-
-## Getting started
-
-Requires Node.js 20.9 or newer.
-
-```bash
-npm install
-```
-
-```bash
-npm run dev
-```
-
-Then open <http://localhost:3000>.
-
-To run a production build locally:
-
-```bash
-npm run build
-```
-
-```bash
-npm run start
-```
+The estimated ingredient margin is **not** restaurant profit. It excludes labour, rent, utilities,
+tax, waste, sauces, side dishes, supplier variation and every other operating cost. A restaurant can
+comfortably lose the retail-value comparison and still have had a perfectly good night.
 
 ## Testing
 
@@ -151,62 +137,75 @@ npm run start
 npm run test:run
 ```
 
-`npm run test` starts Vitest in watch mode; `npm run test:run` executes once and exits, which is
-the form to use in CI.
+107 tests across seven files, covering:
 
-The full verification pipeline is:
+- the calculation engine — weights, pricing, quality multipliers, nutrition scaling, aggregation
+- verdict boundaries, tested just below and exactly at every threshold
+- number and currency formatting, including signed values and rounding
+- storage recovery from corrupt, stale or malformed persisted data
+- session reducer behaviour — merging, clamping, removal, reset
+- the main user flows, from empty state through report to reset
+
+`npm run test` runs Vitest in watch mode; `npm run test:run` runs once and exits.
+
+## Getting started
+
+Requires Node.js 20.9 or newer.
 
 ```bash
-npm run verify
+git clone https://github.com/lorenzodarioben-lgtm/ayce-damage-calculator.git
+cd ayce-damage-calculator
+npm install
+npm run dev
 ```
 
-which runs `format:check`, `lint`, `typecheck`, `test:run` and `build` in sequence.
+Then open the local URL that Next.js prints in the terminal.
 
-### Scripts
+Other useful commands:
 
-| Script                 | Purpose                    |
-| ---------------------- | -------------------------- |
-| `npm run dev`          | Development server         |
-| `npm run build`        | Production build           |
-| `npm run start`        | Serve the production build |
-| `npm run lint`         | ESLint                     |
-| `npm run lint:fix`     | ESLint with autofix        |
-| `npm run typecheck`    | TypeScript, no emit        |
-| `npm run test`         | Vitest in watch mode       |
-| `npm run test:run`     | Vitest once                |
-| `npm run format`       | Prettier write             |
-| `npm run format:check` | Prettier check             |
-| `npm run verify`       | All of the above, in order |
+```bash
+npm run build      # production build
+npm run start      # serve the production build
+npm run lint       # ESLint
+npm run typecheck  # TypeScript, no emit
+npm run test:run   # run the test suite once
+npm run verify     # format check, lint, typecheck, tests and build in sequence
+```
 
 ## Project structure
 
-```
+```text
 src/
-  app/               root layout, page, global theme, app icon
-  components/
-    meal/            category tabs, food grid and cards, illustrations, selectors
-    session/         restaurant, price and diner configuration
-    summary/         damage meter, running tab, sticky mobile bar
-    results/         damage report, result card, share actions
-    methodology/     "how we calculate it" dialog
-    ui/              button, dialog, confirmation dialog, status toast
-  data/foods.ts      the food dataset
-  hooks/             session reducer and status messaging
-  lib/               calculations, verdicts, formatting, storage, sharing, card rendering
-  types/             domain types
-tests/               calculation, verdict, formatting, storage, reducer and flow tests
+├── app/          Next.js entry, layout, global theme, app icon
+├── components/   meal builder, session setup, summary, results, methodology, UI primitives
+├── data/         the 18-item food dataset
+├── hooks/        session reducer and status messaging
+├── lib/          calculations, verdicts, formatting, storage, sharing, card rendering
+└── types/        domain types
+
+tests/            calculation, verdict, formatting, storage, reducer and user-flow tests
 ```
 
-## Future improvements
+## About the data
 
-Not implemented — ideas for later versions:
+The prices and nutrition figures are illustrative estimates, not a survey. Real numbers move around
+based on supplier, meat grade, location, the restaurant itself, serving size, trimming, marinade and
+preparation.
 
-- Restaurant-specific menus and price presets
-- User-created food entries
-- Session history across visits
-- Regional datasets and currencies beyond AUD
-- Support for other buffet formats such as hotpot or seafood buffets
+Treat the output as entertainment and rough estimation. It will not hold up in a dispute with a
+restaurant, and you should not try.
 
-## Licence
+## Future ideas
 
-MIT
+Not implemented — possible directions for later versions:
+
+- Restaurant-specific menus and pricing
+- Regional price datasets and currencies beyond AUD
+- User-defined food presets
+- Saved meal history across visits
+- Other buffet formats such as hotpot or sushi
+- Richer share cards
+
+## License
+
+[MIT](LICENSE)
