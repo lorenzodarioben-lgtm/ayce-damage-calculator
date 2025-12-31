@@ -1,0 +1,108 @@
+export type FoodCategory = 'beef' | 'pork' | 'chicken' | 'seafood';
+
+export type QualityTier = 'house' | 'standard' | 'premium';
+
+export type PlateSize = 'small' | 'regular' | 'large';
+
+/**
+ * Names the illustration arrangement a food uses. Several foods within a
+ * category share a variant; the illustration system re-tints and re-arranges it.
+ */
+export type VisualVariant =
+  | 'slices-fanned'
+  | 'ribs-stacked'
+  | 'steak-marbled'
+  | 'strips-marinated'
+  | 'belly-rolled'
+  | 'tongue-rounds'
+  | 'jowl-curled'
+  | 'cubes-scattered'
+  | 'fillets-layered'
+  | 'prawns-curled'
+  | 'squid-rings'
+  | 'salmon-fillet'
+  | 'scallops-round';
+
+export interface FoodItem {
+  readonly id: string;
+  readonly name: string;
+  readonly shortName: string;
+  readonly category: FoodCategory;
+  readonly description: string;
+
+  /** AUD per kilogram, supermarket-equivalent. */
+  readonly retailPricePerKg: number;
+  /** AUD per kilogram, illustrative bulk procurement estimate. */
+  readonly restaurantCostPerKg: number;
+
+  readonly caloriesPer100g: number;
+  readonly proteinPer100g: number;
+  readonly fatPer100g: number;
+  readonly carbsPer100g: number;
+
+  readonly visualVariant: VisualVariant;
+}
+
+export interface MealItem {
+  readonly id: string;
+  readonly foodId: string;
+  readonly quality: QualityTier;
+  readonly plateSize: PlateSize;
+  readonly quantity: number;
+}
+
+export interface SessionConfig {
+  readonly restaurantName: string;
+  readonly pricePerDiner: number;
+  readonly dinerCount: number;
+}
+
+export interface MealSession extends SessionConfig {
+  readonly items: readonly MealItem[];
+}
+
+export interface Nutrition {
+  readonly calories: number;
+  readonly protein: number;
+  readonly fat: number;
+  readonly carbs: number;
+}
+
+export interface LineItemTotals {
+  readonly item: MealItem;
+  readonly food: FoodItem;
+  readonly plates: number;
+  readonly weightG: number;
+  readonly weightKg: number;
+  readonly retailValue: number;
+  readonly restaurantCost: number;
+  readonly nutrition: Nutrition;
+}
+
+export interface SessionTotals {
+  readonly lines: readonly LineItemTotals[];
+  readonly totalPlates: number;
+  readonly totalWeightG: number;
+  readonly totalWeightKg: number;
+  readonly totalWeightLb: number;
+  readonly totalRetailValue: number;
+  readonly totalRestaurantCost: number;
+  readonly nutrition: Nutrition;
+}
+
+export interface DamageReport extends SessionTotals {
+  readonly totalAdmission: number;
+  /** Positive when retail value exceeds admission, negative otherwise. */
+  readonly retailValueDifference: number;
+  /** totalRetailValue / totalAdmission, expressed 0–n as a percentage. */
+  readonly retailRecoveryPercent: number;
+  readonly hasBeatenBuffet: boolean;
+  /** Admission minus estimated ingredient cost. Not restaurant profit. */
+  readonly estimatedIngredientMargin: number;
+  readonly estimatedFoodCostPercent: number;
+  /** Retail value still needed to reach admission. Zero once break-even is met. */
+  readonly remainingRetailGap: number;
+  readonly averageRetailValuePerPlate: number;
+  /** Estimated further plates of average value needed to break even. */
+  readonly platesToBreakEven: number;
+}
