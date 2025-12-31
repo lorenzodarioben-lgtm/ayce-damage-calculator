@@ -1,0 +1,201 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-ash-950: #0d0c0a;
+  --color-ash-900: #12100d;
+  --color-ash-850: #171411;
+  --color-ash-800: #201b16;
+  --color-ash-700: #2b241d;
+  --color-ash-600: #3a3128;
+
+  --color-cream-50: #f7f0e2;
+  --color-cream-100: #f3e8d0;
+  --color-cream-300: #cfc0a4;
+  --color-cream-500: #a99b84;
+  --color-cream-700: #8f8271;
+
+  --color-ember-300: #e0b47c;
+  --color-ember-400: #d3a469;
+  --color-ember-500: #c99557;
+  --color-ember-600: #a97a41;
+  --color-ember-700: #7d5930;
+
+  --color-char-500: #c4694e;
+  --color-char-600: #7a3324;
+  --color-char-700: #5a2419;
+
+  --color-sesame-400: #8fb37a;
+  --color-sesame-500: #74a05c;
+  --color-sesame-600: #55803f;
+
+  /* Hairlines derived from the palette, exposed as border/bg utilities. */
+  --color-line: #2a241d;
+  --color-line-soft: #221d17;
+  --color-line-ember: #5c452a;
+
+  /* The --font-* variables are supplied by next/font; the stacks after them
+     keep the layout intact if font loading fails. */
+  --font-display:
+    var(--font-anton), 'Haettenschweiler', 'Arial Narrow', ui-sans-serif, system-ui, sans-serif;
+  --font-sans:
+    var(--font-archivo), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Arial,
+    sans-serif;
+
+  --radius-card: 0.875rem;
+
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+:root {
+  color-scheme: dark;
+
+  /* Semantic surface tokens keep component code free of raw palette values. */
+  --surface-base: var(--color-ash-950);
+  --surface-raised: var(--color-ash-850);
+  --surface-raised-strong: var(--color-ash-800);
+  --surface-line: var(--color-line);
+
+  --text-primary: var(--color-cream-100);
+  --text-muted: var(--color-cream-300);
+  --text-faint: var(--color-cream-500);
+
+  --grill-line: color-mix(in oklab, var(--color-ember-500) 16%, transparent);
+}
+
+* {
+  min-width: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background-color: var(--surface-base);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-feature-settings: 'cv11', 'ss01';
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* Warm ambient light from above, as if from a restaurant pendant lamp. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(
+      120% 70% at 50% -10%,
+      color-mix(in oklab, var(--color-ember-600) 18%, transparent) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      80% 50% at 90% 100%,
+      color-mix(in oklab, var(--color-char-600) 14%, transparent) 0%,
+      transparent 70%
+    );
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-ember-400);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+::selection {
+  background: color-mix(in oklab, var(--color-ember-500) 40%, transparent);
+  color: var(--color-cream-50);
+}
+
+input[type='number'] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+@utility display-type {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: 0.012em;
+  line-height: 0.9;
+  text-transform: uppercase;
+}
+
+@utility micro-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+}
+
+@utility panel {
+  background-color: var(--surface-raised);
+  border: 1px solid var(--surface-line);
+  border-radius: var(--radius-card);
+}
+
+/* Faint grill bars used behind hero and report headers. */
+@utility grill-texture {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    var(--grill-line) 0px,
+    var(--grill-line) 1px,
+    transparent 1px,
+    transparent 9px
+  );
+}
+
+@keyframes ayce-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes ayce-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@utility animate-fade-up {
+  animation: ayce-fade-up 320ms var(--ease-out-soft) both;
+}
+
+@utility animate-toast-in {
+  animation: ayce-toast-in 200ms var(--ease-out-soft) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

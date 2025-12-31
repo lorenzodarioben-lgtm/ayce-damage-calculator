@@ -1,0 +1,169 @@
+import { describe, expect, it, beforeEach, vi } from 'vitest';
+import { render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { CalculatorApp } from '@/components/CalculatorApp';
+import { STORAGE_KEY } from '@/lib/storage';
+
+// jsdom implements neither of these, and both run on the results transition.
+beforeEach(() => {
+  window.HTMLElement.prototype.scrollIntoView = vi.fn();
+  window.HTMLDialogElement.prototype.showModal = vi.fn(function showModal(this: HTMLDialogElement) {
+    this.open = true;
+  });
+  window.HTMLDialogElement.prototype.close = vi.fn(function close(this: HTMLDialogElement) {
+    this.open = false;
+  });
+});
+
+async function addPlates(user: ReturnType<typeof userEvent.setup>, foodName: string) {
+  await user.click(screen.getByRole('button', { name: new RegExp(foodName, 'i') }));
+  await user.click(screen.getByRole('button', { name: /add to my damage/i }));
+}
+
+describe('CalculatorApp', () => {
+  it('disables Calculate until the meal has an item', async () => {
+    const user = userEvent.setup();
+    render(<CalculatorApp />);
+
+    const calculate = screen.getByRole('button', { name: /calculate the damage/i });
+    expect(calculate).toBeDisabled();
+
+    await addPlates(user, 'Ribeye');
+    expect(screen.getByRole('button', { name: /calculate the damage/i })).toBeEnabled();
+  });
+
+  it('adds a food to the tab, announces it, and updates totals', async () => {
+    const user = userEvent.setup();
+    render(<CalculatorApp />);
+
+    expect(screen.getByText(/no damage yet/i)).toBeInTheDocument();
+
+    await addPlates(user, 'Ribeye');
+
+    const tab = screen.getByRole('region', { name: /your tab/i });
+    const line = within(tab).getByRole('listitem');
+    expect(within(line).getByText('Ribeye')).toBeInTheDocument();
+    // 155 g x $52/kg = $8.06
+    expect(within(line).getByText('$8.06')).toBeInTheDocument();
+    // The meter reads the same running total.
+    expect(within(tab).getByRole('progressbar')).toHaveAttribute(
+      'aria-valuetext',
+      '13% of admission recovered',
+    );
+    expect(screen.getByRole('status', { name: /session updates/i })).toHaveTextContent(
+      /1 plate of Ribeye added/i,
+    );
+  });
+
+  it('increments and removes tab items', async () => {
+    const user = userEvent.setup();
+    render(<CalculatorApp />);
+    await addPlates(user, 'Ribeye');
+
+    const tab = screen.getByRole('region', { name: /your tab/i });
+    await user.click(within(tab).getByRole('button', { name: /add one plate of Ribeye/i }));
+    expect(within(tab).getByText('2 plates · 310 g')).toBeInTheDocument();
+
+    await user.click(within(tab).getByRole('button', { name: /remove ribeye.*from your tab/i }));
+    expect(screen.getByText(/no damage yet/i)).toBeInTheDocument();
+  });
+
+  it('reflects session configuration in total admission', async () => {
+    const user = userEvent.setup();
+    render(<CalculatorApp />);
+
+    await user.click(screen.getByRole('button', { name: /add a diner/i }));
+
+    const setup = screen.getByRole('region', { name: /session setup/i });
+    expect(within(setup).getByText('$119.80')).toBeInTheDocument();
+  });
+
+  it('clamps an absurd price rather than poisoning totals', async () => {
+    const user = userEvent.setup();
+    render(<CalculatorApp />);
+
+    const price = screen.getByLabelText(/price per diner/i);
+    await user.clear(price);
+    await user.type(price, '99999');
+
+    const setup = screen.getByRole('region', { name: /session setup/i });
+    expect(within(setup).getByText('$500.00')).toBeInTheDocument();
+    expect(screen.getByText(/use a price between/i)).toBeInTheDocument();
+  });
+
+  it('shows the damage report and can return to the builder with state intact', async () => {
+    const user = userEvent.setup();
+    render(<CalculatorApp />);
+
+    await addPlates(user, 'Ribeye');
+    await user.click(screen.getByRole('button', { name: /calculate the damage/i }));
+
+    expect(screen.getByRole('heading', { name: /ayce damage report/i })).toBeInTheDocument();
+    // Rendered once in the report and once on the shareable card.
+    expect(screen.getAllByText(/corporate sponsor/i)).toHaveLength(2);
+
+    await user.click(screen.getByRole('button', { name: /edit meal/i }));
+
+    const tab = screen.getByRole('region', { name: /your tab/i });
+    expect(within(tab).getByText('Ribeye')).toBeInTheDocument();
+  });
+
+  it('requires confirmation before resetting and then clears storage', async () => {
+    const user = userEvent.setup();
+    render(<CalculatorApp />);
+
+    await addPlates(user, 'Ribeye');
+    expect(window.localStorage.getItem(STORAGE_KEY)).toContain('beef-ribeye');
+
+    await user.click(screen.getByRole('button', { name: /reset session/i }));
+    await user.click(screen.getByRole('button', { name: /keep my tab/i }));
+    expect(screen.queryByText(/no damage yet/i)).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /reset session/i }));
+    await user.click(screen.getByRole('button', { name: /reset everything/i }));
+
+    expect(screen.getByText(/no damage yet/i)).toBeInTheDocument();
+    expect(window.localStorage.getItem(STORAGE_KEY)).toBeNull();
+  });
+
+  it('restores a persisted session on load without overwriting it', async () => {
+    window.localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        version: 1,
+        session: {
+          restaurantName: 'Seoul Garden',
+          pricePerDiner: 75,
+          dinerCount: 2,
+          items: [
+            { id: 'a', foodId: 'pork-belly', quality: 'house', plateSize: 'large', quantity: 4 },
+          ],
+        },
+      }),
+    );
+
+    render(<CalculatorApp />);
+
+    expect(await screen.findByDisplayValue('Seoul Garden')).toBeInTheDocument();
+    expect(screen.getByLabelText(/price per diner/i)).toHaveValue(75);
+
+    const tab = screen.getByRole('region', { name: /your tab/i });
+    expect(within(tab).getByText('Pork Belly')).toBeInTheDocument();
+    expect(within(tab).getByText('4 plates · 880 g')).toBeInTheDocument();
+
+    // The persist effect must not clobber the restored tab with initial state.
+    expect(window.localStorage.getItem(STORAGE_KEY)).toContain('pork-belly');
+  });
+
+  it('switches food categories with the keyboard', async () => {
+    const user = userEvent.setup();
+    render(<CalculatorApp />);
+
+    const beefTab = screen.getByRole('tab', { name: /beef/i });
+    await user.click(beefTab);
+    await user.keyboard('{ArrowRight}');
+
+    expect(screen.getByRole('tab', { name: /pork/i })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('button', { name: /pork belly/i })).toBeInTheDocument();
+  });
+});
