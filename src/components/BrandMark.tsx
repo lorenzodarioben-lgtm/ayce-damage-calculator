@@ -1,5 +1,11 @@
 import { cn } from '@/lib/cn';
 
+/**
+ * The wordmark as plain text. Callers that need it in an accessible name use
+ * this rather than restating the string, so the two can never disagree.
+ */
+export const BRAND_NAME = 'AYCE // Damage';
+
 interface BrandMarkProps {
   className?: string;
 }

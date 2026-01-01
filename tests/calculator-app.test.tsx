@@ -4,9 +4,10 @@ import userEvent from '@testing-library/user-event';
 import { CalculatorApp } from '@/components/CalculatorApp';
 import { STORAGE_KEY } from '@/lib/storage';
 
-// jsdom implements neither of these, and both run on the results transition.
+// jsdom implements none of these, and all run on the stage transitions.
 beforeEach(() => {
   window.HTMLElement.prototype.scrollIntoView = vi.fn();
+  window.scrollTo = vi.fn();
   window.HTMLDialogElement.prototype.showModal = vi.fn(function showModal(this: HTMLDialogElement) {
     this.open = true;
   });
@@ -104,6 +105,59 @@ describe('CalculatorApp', () => {
 
     await user.click(screen.getByRole('button', { name: /edit meal/i }));
 
+    const tab = screen.getByRole('region', { name: /your tab/i });
+    expect(within(tab).getByText('Ribeye')).toBeInTheDocument();
+  });
+
+  it('returns to the builder from the top Back control with the meal intact', async () => {
+    const user = userEvent.setup();
+    render(<CalculatorApp />);
+
+    await user.click(screen.getByLabelText(/restaurant/i));
+    await user.keyboard('Seoul Garden');
+    await addPlates(user, 'Ribeye');
+    await user.click(screen.getByRole('button', { name: /calculate the damage/i }));
+
+    expect(screen.getByRole('heading', { name: /ayce damage report/i })).toBeInTheDocument();
+
+    // The control sits above the verdict, so it is reachable without scrolling.
+    await user.click(screen.getByRole('button', { name: /back to meal/i }));
+
+    expect(screen.queryByRole('heading', { name: /ayce damage report/i })).not.toBeInTheDocument();
+    const tab = screen.getByRole('region', { name: /your tab/i });
+    expect(within(tab).getByText('Ribeye')).toBeInTheDocument();
+    expect(screen.getByLabelText(/restaurant/i)).toHaveValue('Seoul Garden');
+  });
+
+  it('returns to the builder when the brand is activated from the report', async () => {
+    const user = userEvent.setup();
+    render(<CalculatorApp />);
+
+    await user.click(screen.getByLabelText(/price per diner/i));
+    await user.keyboard('{Control>}a{/Control}75');
+    await addPlates(user, 'Ribeye');
+    await user.click(screen.getByRole('button', { name: /calculate the damage/i }));
+    expect(screen.getByRole('heading', { name: /ayce damage report/i })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /back to the meal builder/i }));
+
+    expect(screen.queryByRole('heading', { name: /ayce damage report/i })).not.toBeInTheDocument();
+    const tab = screen.getByRole('region', { name: /your tab/i });
+    expect(within(tab).getByText('Ribeye')).toBeInTheDocument();
+    expect(screen.getByLabelText(/price per diner/i)).toHaveValue(75);
+  });
+
+  it('keeps the brand keyboard operable and non-destructive in the builder', async () => {
+    const user = userEvent.setup();
+    render(<CalculatorApp />);
+    await addPlates(user, 'Ribeye');
+
+    const brand = screen.getByRole('button', { name: /back to the top of the page/i });
+    brand.focus();
+    expect(brand).toHaveFocus();
+    await user.keyboard('{Enter}');
+
+    expect(window.scrollTo).toHaveBeenCalled();
     const tab = screen.getByRole('region', { name: /your tab/i });
     expect(within(tab).getByText('Ribeye')).toBeInTheDocument();
   });

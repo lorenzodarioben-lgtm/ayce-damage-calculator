@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { PencilLine } from 'lucide-react';
+import { ArrowLeft, PencilLine } from 'lucide-react';
 import { ResultCard } from '@/components/results/ResultCard';
 import { ResultMetric } from '@/components/results/ResultMetric';
 import { ShareActions } from '@/components/results/ShareActions';
@@ -56,6 +56,17 @@ export function DamageReport({ report, restaurantName, onEditMeal, onStatus }: D
 
   return (
     <div className="animate-fade-up space-y-6">
+      {/* 0 — Escape hatch. The same action exists at the foot of the report, but
+          the report is long enough that a bottom-only control reads as a dead end. */}
+      <button
+        type="button"
+        onClick={onEditMeal}
+        className="-ml-2 inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-[10px] px-2 text-xs font-semibold uppercase tracking-[0.1em] text-cream-500 transition-colors duration-200 hover:bg-ash-850 hover:text-cream-100"
+      >
+        <ArrowLeft size={15} aria-hidden="true" />
+        Back to meal
+      </button>
+
       {/* 1 — Verdict */}
       <section aria-labelledby="report-heading" className="panel overflow-hidden">
         <div className="grill-texture border-b border-line px-5 py-4 text-center">
