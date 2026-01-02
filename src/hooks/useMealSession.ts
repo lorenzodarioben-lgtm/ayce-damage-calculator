@@ -112,6 +112,8 @@ export function sessionReducer(state: MealSession, action: SessionAction): MealS
 export interface UseMealSessionResult {
   session: MealSession;
   report: DamageReport;
+  /** False until the stored session has been read, so callers can wait for it. */
+  hydrated: boolean;
   setRestaurantName: (value: string) => void;
   setPricePerDiner: (value: number) => void;
   adjustDinerCount: (delta: number) => void;
@@ -201,6 +203,7 @@ export function useMealSession(): UseMealSessionResult {
   return {
     session,
     report,
+    hydrated,
     setRestaurantName,
     setPricePerDiner,
     adjustDinerCount,
