@@ -9,19 +9,24 @@ export type PlateSize = 'small' | 'regular' | 'large';
  * category share a variant; the illustration system re-tints and re-arranges it.
  */
 export type VisualVariant =
-  | 'slices-fanned'
-  | 'ribs-stacked'
-  | 'steak-marbled'
-  | 'strips-marinated'
-  | 'belly-rolled'
-  | 'tongue-rounds'
-  | 'jowl-curled'
-  | 'cubes-scattered'
-  | 'fillets-layered'
-  | 'prawns-curled'
+  | 'brisket-slices'
+  | 'short-rib-blocks'
+  | 'wagyu-blocks'
+  | 'ribeye-steak'
+  | 'bulgogi-tangle'
+  | 'beef-belly-strips'
+  | 'tongue-ovals'
+  | 'pork-belly-layers'
+  | 'spicy-pork'
+  | 'jowl-rounds'
+  | 'shoulder-cuts'
+  | 'chicken-thigh-pieces'
+  | 'spicy-chicken'
+  | 'chicken-fillets'
+  | 'prawns'
   | 'squid-rings'
   | 'salmon-fillet'
-  | 'scallops-round';
+  | 'scallops';
 
 export interface FoodItem {
   readonly id: string;
