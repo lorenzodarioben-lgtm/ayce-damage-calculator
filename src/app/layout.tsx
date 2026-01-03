@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Anton, Archivo } from 'next/font/google';
+import { ServiceWorkerManager } from '@/components/pwa/ServiceWorkerManager';
+import { THEME_COLOUR } from '@/lib/constants';
 import './globals.css';
 
 const archivo = Archivo({
@@ -22,10 +24,18 @@ export const metadata: Metadata = {
     'Did you beat the buffet, or fund their next renovation? Track your Korean BBQ meal and calculate the damage.',
   applicationName: 'AYCE Damage Calculator',
   keywords: ['korean bbq', 'all you can eat', 'buffet', 'calculator', 'value'],
+  // Installed on iOS the app runs without browser chrome, so it needs its own
+  // status-bar treatment and home-screen title.
+  appleWebApp: {
+    capable: true,
+    title: 'AYCE Damage',
+    statusBarStyle: 'black-translucent',
+  },
+  formatDetection: { telephone: false },
 };
 
 export const viewport: Viewport = {
-  themeColor: '#0d0c0a',
+  themeColor: THEME_COLOUR,
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
@@ -34,7 +44,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en-AU" className={`${archivo.variable} ${anton.variable}`}>
-      <body>{children}</body>
+      <body>
+        <ServiceWorkerManager />
+        {children}
+      </body>
     </html>
   );
 }
