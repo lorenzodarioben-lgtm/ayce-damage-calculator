@@ -12,14 +12,14 @@ import { StickySummaryBar } from '@/components/summary/StickySummaryBar';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { StatusToast } from '@/components/ui/StatusToast';
 import { useMealSession, type AddItemPayload } from '@/hooks/useMealSession';
+import { useStageHistory } from '@/hooks/useStageHistory';
 import { useStatusMessage } from '@/hooks/useStatusMessage';
-
-type Stage = 'builder' | 'report';
 
 export function CalculatorApp() {
   const {
     session,
     report,
+    hydrated,
     setRestaurantName,
     setPricePerDiner,
     adjustDinerCount,
@@ -30,7 +30,11 @@ export function CalculatorApp() {
     resetSession,
   } = useMealSession();
 
-  const [stage, setStage] = useState<Stage>('builder');
+  const { stage, showReport, showBuilder } = useStageHistory({
+    ready: hydrated,
+    canShowReport: report.lines.length > 0,
+  });
+
   const [methodologyOpen, setMethodologyOpen] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
   const [status, announce] = useStatusMessage();
@@ -67,29 +71,29 @@ export function CalculatorApp() {
     if (report.lines.length === 0) {
       return;
     }
-    setStage('report');
-  }, [report.lines.length]);
+    showReport();
+  }, [report.lines.length, showReport]);
 
   const handleEditMeal = useCallback(() => {
-    setStage('builder');
-  }, []);
+    showBuilder();
+  }, [showBuilder]);
 
   // From the report the brand acts as a way back; from the builder it behaves
   // like an ordinary home link and returns to the top. Neither touches session data.
   const handleBrandClick = useCallback(() => {
     if (stage === 'report') {
-      setStage('builder');
+      showBuilder();
       return;
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [stage]);
+  }, [stage, showBuilder]);
 
   const handleConfirmReset = useCallback(() => {
     resetSession();
     setResetOpen(false);
-    setStage('builder');
+    showBuilder();
     announce('Session reset. The buffet remembers nothing.');
-  }, [resetSession, announce]);
+  }, [resetSession, showBuilder, announce]);
 
   return (
     <>
