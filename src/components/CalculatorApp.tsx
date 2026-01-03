@@ -1,10 +1,10 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Header } from '@/components/Header';
 import { Hero } from '@/components/Hero';
 import { MealBuilder } from '@/components/meal/MealBuilder';
-import { Methodology } from '@/components/methodology/Methodology';
+import { SiteFooter } from '@/components/nav/SiteFooter';
+import { SiteHeader } from '@/components/nav/SiteHeader';
 import { DamageReport } from '@/components/results/DamageReport';
 import { SessionSetup } from '@/components/session/SessionSetup';
 import { LiveSummary } from '@/components/summary/LiveSummary';
@@ -35,7 +35,6 @@ export function CalculatorApp() {
     canShowReport: report.lines.length > 0,
   });
 
-  const [methodologyOpen, setMethodologyOpen] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
   const [status, announce] = useStatusMessage();
 
@@ -97,12 +96,11 @@ export function CalculatorApp() {
 
   return (
     <>
-      <Header
+      <SiteHeader
         onBrandClick={handleBrandClick}
         brandActionLabel={
           stage === 'report' ? 'Back to the meal builder' : 'Back to the top of the page'
         }
-        onOpenMethodology={() => setMethodologyOpen(true)}
       />
 
       <main className="relative z-10">
@@ -149,27 +147,16 @@ export function CalculatorApp() {
         </div>
       </main>
 
-      <footer className="relative z-10 border-t border-line px-4 pb-24 pt-6 sm:px-6 lg:pb-8">
-        <div className="mx-auto flex max-w-[1280px] flex-wrap items-center justify-between gap-3">
-          <p className="max-w-[52ch] text-xs leading-relaxed text-cream-700">
-            Estimates only. Prices, portions and nutrition vary by supplier, restaurant and
-            preparation. Estimated ingredient margin is not restaurant profit.
-          </p>
-          <button
-            type="button"
-            onClick={() => setMethodologyOpen(true)}
-            className="min-h-11 cursor-pointer px-1 text-xs font-semibold uppercase tracking-[0.1em] text-ember-500 underline-offset-4 hover:underline"
-          >
-            How we calculate it
-          </button>
-        </div>
-      </footer>
+      {/* The sticky summary bar overlays the foot of the page on small screens,
+          so the footer reserves room for it there. */}
+      <SiteFooter className="pb-24 lg:pb-8">
+        Estimates only. Prices, portions and nutrition vary by supplier, restaurant and preparation.
+        Estimated ingredient margin is not restaurant profit.
+      </SiteFooter>
 
       {stage === 'builder' && <StickySummaryBar report={report} onCalculate={handleCalculate} />}
 
       <StatusToast message={status} offset={stage === 'builder' && report.lines.length > 0} />
-
-      <Methodology open={methodologyOpen} onClose={() => setMethodologyOpen(false)} />
 
       <ConfirmDialog
         open={resetOpen}

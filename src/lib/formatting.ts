@@ -69,6 +69,20 @@ export function formatWeight(grams: number): string {
   return safe >= 1000 ? formatKg(safe / 1000) : formatGrams(safe);
 }
 
+const DATE_TIME = new Intl.DateTimeFormat('en-AU', {
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+  hour: 'numeric',
+  minute: '2-digit',
+});
+
+/** Renders a stored ISO timestamp, or an honest placeholder if it is unusable. */
+export function formatRecordedAt(iso: string): string {
+  const parsed = Date.parse(iso);
+  return Number.isNaN(parsed) ? 'Date unknown' : DATE_TIME.format(new Date(parsed));
+}
+
 export function formatPricePerKg(value: number): string {
   const safe = finite(value);
   const digits = Number.isInteger(safe) ? 0 : 2;
