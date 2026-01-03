@@ -11,7 +11,13 @@ import { openCalculator } from './helpers';
 
 const CACHE_NAME = 'ayce-shell-v1';
 
-/** Resolves once a service worker is installed, active and controlling the page. */
+/**
+ * Resolves once a service worker has finished activating.
+ *
+ * `registration.active` is already set while the worker is merely *activating*,
+ * which is before `clients.claim()` and the precache have run. Waiting on the
+ * state itself is what makes everything downstream deterministic.
+ */
 async function waitForServiceWorker(page: Page) {
   await page.waitForFunction(
     async () => {
@@ -19,7 +25,7 @@ async function waitForServiceWorker(page: Page) {
         return false;
       }
       const registration = await navigator.serviceWorker.getRegistration('/');
-      return Boolean(registration?.active);
+      return registration?.active?.state === 'activated';
     },
     undefined,
     { timeout: 20_000 },
@@ -95,9 +101,9 @@ test.describe('Service worker', () => {
     await openCalculator(page);
     await waitForServiceWorker(page);
 
-    const cached = await cachedUrls(page, CACHE_NAME);
-    expect(cached).toContain('/');
-    expect(cached).toContain('/offline');
+    // Precaching runs inside the install event's waitUntil, so it is polled.
+    await expect.poll(() => cachedUrls(page, CACHE_NAME)).toContain('/');
+    await expect.poll(() => cachedUrls(page, CACHE_NAME)).toContain('/offline');
   });
 
   test('caches the hashed build assets once it is controlling the page', async ({ page }) => {

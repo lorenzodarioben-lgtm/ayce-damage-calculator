@@ -113,7 +113,7 @@ export function CalculatorApp() {
             <div ref={reportRef} tabIndex={-1} className="outline-none">
               <DamageReport
                 report={report}
-                restaurantName={session.restaurantName}
+                session={session}
                 onEditMeal={handleEditMeal}
                 onStatus={announce}
               />
