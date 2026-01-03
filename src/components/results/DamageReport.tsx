@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { ArrowLeft, PencilLine } from 'lucide-react';
 import { ResultCard } from '@/components/results/ResultCard';
 import { ResultMetric } from '@/components/results/ResultMetric';
+import { SaveToHistory } from '@/components/results/SaveToHistory';
 import { ShareActions } from '@/components/results/ShareActions';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/cn';
@@ -19,11 +20,12 @@ import {
   formatSignedMoney,
 } from '@/lib/formatting';
 import { getHouseStatus, getVerdict } from '@/lib/verdicts';
-import type { DamageReport as DamageReportTotals } from '@/types/meal';
+import type { DamageReport as DamageReportTotals, MealSession } from '@/types/meal';
 
 interface DamageReportProps {
   report: DamageReportTotals;
-  restaurantName: string;
+  /** The canonical meal, needed to file the result into history. */
+  session: MealSession;
   onEditMeal: () => void;
   onStatus: (message: string) => void;
 }
@@ -36,7 +38,9 @@ const SEVERITY_TONE = {
   breach: 'text-char-500',
 } as const;
 
-export function DamageReport({ report, restaurantName, onEditMeal, onStatus }: DamageReportProps) {
+export function DamageReport({ report, session, onEditMeal, onStatus }: DamageReportProps) {
+  const restaurantName = session.restaurantName;
+
   const verdict = useMemo(
     () => getVerdict(report.totalRetailValue, report.totalAdmission),
     [report.totalRetailValue, report.totalAdmission],
@@ -188,7 +192,7 @@ export function DamageReport({ report, restaurantName, onEditMeal, onStatus }: D
         <div className="flex justify-center overflow-x-auto pb-1">
           <ResultCard model={cardModel} />
         </div>
-        <div className="mt-4">
+        <div className="mt-4 space-y-2">
           <ShareActions
             report={report}
             verdict={verdict}
@@ -196,6 +200,7 @@ export function DamageReport({ report, restaurantName, onEditMeal, onStatus }: D
             cardModel={cardModel}
             onStatus={onStatus}
           />
+          <SaveToHistory session={session} report={report} verdict={verdict} />
         </div>
       </section>
 
