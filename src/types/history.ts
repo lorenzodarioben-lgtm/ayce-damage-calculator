@@ -1,3 +1,4 @@
+import type { AchievementId } from '@/lib/achievements';
 import type { VerdictId } from '@/lib/verdicts';
 import type { MealItem, Nutrition } from '@/types/meal';
 
@@ -18,6 +19,8 @@ export interface SavedSessionSnapshot {
   readonly retailRecoveryPercent: number;
   readonly nutrition: Nutrition;
   readonly verdictId: VerdictId;
+  /** What the session earned when it was filed. Added in schema version 2. */
+  readonly achievementIds: readonly AchievementId[];
 }
 
 export interface SavedMealSession {

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import { AchievementList } from '@/components/results/AchievementList';
 import { ReportSummary } from '@/components/results/ReportSummary';
 import { getPlateSizeMeta, getQualityMeta } from '@/lib/constants';
 import { formatMoney, formatPlates, formatRecordedAt, formatWeight } from '@/lib/formatting';
@@ -70,7 +71,7 @@ export function HistoryDetail({ id }: { id: string }) {
     );
   }
 
-  const { record, report, verdict } = state.resolved;
+  const { record, report, verdict, achievements } = state.resolved;
 
   return (
     <div className="animate-fade-up space-y-6">
@@ -87,6 +88,9 @@ export function HistoryDetail({ id }: { id: string }) {
         headingId="saved-report-heading"
         subheading={`Recorded ${formatRecordedAt(record.createdAt)}`}
       />
+
+      {/* Read from the record, so a session shows what it earned at the time. */}
+      <AchievementList achievements={achievements} headingId="saved-achievements-heading" />
 
       <section aria-labelledby="recorded-plates-heading" className="panel p-4 sm:p-5">
         <h3 id="recorded-plates-heading" className="micro-label mb-3">
