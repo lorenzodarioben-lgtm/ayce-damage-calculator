@@ -158,6 +158,61 @@ describe('parseSavedSession', () => {
   });
 });
 
+describe('schema migration', () => {
+  /** A record as version 1 wrote it: no achievements on the snapshot. */
+  function asVersion1(record: SavedMealSession) {
+    const { achievementIds: _dropped, ...snapshot } = record.snapshot;
+    return { ...record, version: 1, snapshot };
+  }
+
+  it('brings a version 1 record forward by deriving its achievements', () => {
+    const record = saved({
+      items: [
+        item({ id: 'a', foodId: 'beef-ribeye' }),
+        item({ id: 'b', foodId: 'pork-belly' }),
+        item({ id: 'c', foodId: 'chicken-thigh' }),
+        item({ id: 'd', foodId: 'seafood-prawns' }),
+      ],
+    });
+    const parsed = parseSavedSession(asVersion1(record));
+
+    expect(parsed?.version).toBe(SAVED_SESSION_VERSION);
+    // Derivable purely from the meal, so nothing is lost in the upgrade.
+    expect(parsed?.snapshot.achievementIds).toContain('four-corners');
+    expect(parsed?.snapshot.achievementIds).toEqual(record.snapshot.achievementIds);
+  });
+
+  it('keeps the achievements a version 2 record already recorded', () => {
+    const record = saved();
+    const parsed = parseSavedSession({
+      ...record,
+      snapshot: { ...record.snapshot, achievementIds: ['kilogram-club'] },
+    });
+
+    expect(parsed?.snapshot.achievementIds).toEqual(['kilogram-club']);
+  });
+
+  it('discards stored achievement ids the engine no longer defines', () => {
+    const record = saved();
+    const parsed = parseSavedSession({
+      ...record,
+      snapshot: { ...record.snapshot, achievementIds: ['break-even', 'retired-award', 7] },
+    });
+
+    expect(parsed?.snapshot.achievementIds).toEqual(['break-even']);
+  });
+
+  it('treats a non-array achievement list as none recorded', () => {
+    const record = saved();
+    const parsed = parseSavedSession({
+      ...record,
+      snapshot: { ...record.snapshot, achievementIds: 'all of them' },
+    });
+
+    expect(parsed?.snapshot.achievementIds).toEqual([]);
+  });
+});
+
 describe('reportFromSaved', () => {
   it('recomputes totals from the canonical meal rather than the stored snapshot', () => {
     const record = saved();
