@@ -1,13 +1,14 @@
 'use client';
 
 import { useState, useSyncExternalStore } from 'react';
-import { Copy, Download, Share2 } from 'lucide-react';
+import { Copy, Download, Link2, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import type { ResultCardModel } from '@/lib/resultCard';
 import { renderResultCardBlob } from '@/lib/resultCardImage';
 import { buildShareText, canWebShare, copyToClipboard } from '@/lib/share';
+import { shareLinkPath } from '@/lib/shareLink';
 import type { Verdict } from '@/lib/verdicts';
-import type { DamageReport } from '@/types/meal';
+import type { DamageReport, MealSession } from '@/types/meal';
 
 /** Share capability cannot change within a page lifetime, so nothing to subscribe to. */
 const subscribeNever = () => () => {};
@@ -15,18 +16,13 @@ const subscribeNever = () => () => {};
 interface ShareActionsProps {
   report: DamageReport;
   verdict: Verdict;
-  restaurantName: string;
+  session: MealSession;
   cardModel: ResultCardModel;
   onStatus: (message: string) => void;
 }
 
-export function ShareActions({
-  report,
-  verdict,
-  restaurantName,
-  cardModel,
-  onStatus,
-}: ShareActionsProps) {
+export function ShareActions({ report, verdict, session, cardModel, onStatus }: ShareActionsProps) {
+  const restaurantName = session.restaurantName;
   const [isExporting, setIsExporting] = useState(false);
 
   // navigator.share is unavailable during SSR, so the server snapshot is false
@@ -49,6 +45,22 @@ export function ShareActions({
         onStatus('Sharing was not completed.');
       }
     }
+  }
+
+  async function handleCopyLink() {
+    const path = shareLinkPath(session);
+    if (!path) {
+      onStatus('There is nothing on the tab to share yet.');
+      return;
+    }
+
+    // Built from the live origin so the link works on any deployment.
+    const copied = await copyToClipboard(new URL(path, window.location.origin).toString());
+    onStatus(
+      copied
+        ? 'Share link copied. The whole report travels inside the link.'
+        : 'Copying is unavailable here.',
+    );
   }
 
   async function handleDownload() {
@@ -82,7 +94,12 @@ export function ShareActions({
   }
 
   return (
-    <div className="grid gap-2 sm:grid-cols-3">
+    <div className="grid gap-2 sm:grid-cols-2">
+      <Button variant="secondary" onClick={handleCopyLink}>
+        <Link2 size={16} aria-hidden="true" />
+        Copy share link
+      </Button>
+
       <Button variant="secondary" onClick={handleCopy}>
         <Copy size={16} aria-hidden="true" />
         Copy result
