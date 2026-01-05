@@ -9,6 +9,7 @@ import { evaluateAchievements } from '@/lib/achievements';
 import { buildDamageReport } from '@/lib/calculations';
 import { buildResultCardModel } from '@/lib/resultCard';
 import { decodeSharePayload } from '@/lib/shareLink';
+import { socialCardFromToken } from '@/lib/socialCard';
 import { getVerdict } from '@/lib/verdicts';
 
 interface SharePageProps {
@@ -22,11 +23,35 @@ interface SharePageProps {
  * the only way to act on the page is to start a session of your own.
  */
 
-export const metadata: Metadata = {
-  // A shared meal is personal, so it is not put in front of search engines.
-  // Social crawlers fetch the page directly and are unaffected.
-  robots: { index: false, follow: false },
-};
+/**
+ * Metadata is derived from the same token the page renders, so the preview a
+ * platform shows and the report a visitor lands on can never disagree. An
+ * unreadable token falls back to the app's own description rather than
+ * advertising a report that does not exist.
+ */
+export async function generateMetadata({ params }: SharePageProps): Promise<Metadata> {
+  const { token } = await params;
+  const card = socialCardFromToken(token);
+
+  return {
+    title: card.title,
+    description: card.description,
+    // A shared meal is personal, so it is kept out of search results. Social
+    // crawlers fetch the page directly and are unaffected.
+    robots: { index: false, follow: false },
+    openGraph: {
+      type: 'article',
+      title: card.title,
+      description: card.description,
+      siteName: 'AYCE Damage Calculator',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: card.title,
+      description: card.description,
+    },
+  };
+}
 
 const CTA_CLASS =
   'inline-flex min-h-14 items-center justify-center rounded-[10px] bg-ember-500 px-6 text-base ' +

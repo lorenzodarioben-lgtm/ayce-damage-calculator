@@ -104,6 +104,65 @@ test.describe('Sharing a report', () => {
   });
 });
 
+/** Reads a meta tag's content by property or name. */
+async function metaContent(page: Page, selector: string): Promise<string | null> {
+  return page.locator(`head > meta[${selector}]`).first().getAttribute('content');
+}
+
+test.describe('Social preview', () => {
+  // 6 large premium Wagyu Short Rib at $214.24 admission for 4 diners.
+  const TOKEN = '1.gj4.1.bg-2-2-6.U2VvdWwgR2FyZGVu';
+
+  test('describes the shared report in its metadata', async ({ page }) => {
+    await page.goto(`/share/${TOKEN}`);
+
+    await expect(page).toHaveTitle(/House Favourite — AYCE Damage Report/);
+    expect(await metaContent(page, 'property="og:title"')).toContain('House Favourite');
+
+    const description = await metaContent(page, 'property="og:description"');
+    expect(description).toContain('6 plates');
+    expect(description).toContain('Seoul Garden');
+    expect(description).toContain('68% recovered');
+
+    expect(await metaContent(page, 'name="twitter:card"')).toBe('summary_large_image');
+  });
+
+  test('points at a generated image of the right shape', async ({ page, request }) => {
+    await page.goto(`/share/${TOKEN}`);
+
+    const imageUrl = await metaContent(page, 'property="og:image"');
+    expect(imageUrl).toContain(`/share/${TOKEN}/opengraph-image`);
+    expect(await metaContent(page, 'property="og:image:width"')).toBe('1200');
+    expect(await metaContent(page, 'property="og:image:height"')).toBe('630');
+
+    // Requested by path: the advertised URL is absolute against metadataBase,
+    // which points at the deployment rather than at this test server.
+    const image = await request.get(new URL(imageUrl!).pathname);
+    expect(image.status()).toBe(200);
+    expect(image.headers()['content-type']).toContain('image/png');
+    // A blank or errored render would be far smaller than this.
+    expect((await image.body()).byteLength).toBeGreaterThan(10_000);
+  });
+
+  test('keeps a shared report out of search results', async ({ page }) => {
+    await page.goto(`/share/${TOKEN}`);
+
+    expect(await metaContent(page, 'name="robots"')).toContain('noindex');
+  });
+
+  test('falls back to the app description for an unreadable token', async ({ page, request }) => {
+    await page.goto('/share/completely-invalid');
+
+    await expect(page).toHaveTitle('AYCE Damage Calculator');
+    expect(await metaContent(page, 'property="og:description"')).toContain('beat the buffet');
+
+    // The image still renders rather than 500ing on a bad token.
+    const image = await request.get('/share/completely-invalid/opengraph-image');
+    expect(image.status()).toBe(200);
+    expect(image.headers()['content-type']).toContain('image/png');
+  });
+});
+
 test.describe('Unreadable share links', () => {
   test('explains a token that cannot be decoded', async ({ page }) => {
     await page.goto('/share/completely-invalid');
