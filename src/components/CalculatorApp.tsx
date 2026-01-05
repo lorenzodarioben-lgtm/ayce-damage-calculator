@@ -23,6 +23,7 @@ export function CalculatorApp() {
     setRestaurantName,
     setPricePerDiner,
     adjustDinerCount,
+    applySetup,
     addItem,
     incrementItem,
     decrementItem,
@@ -128,6 +129,8 @@ export function CalculatorApp() {
                   onRestaurantNameChange={setRestaurantName}
                   onPricePerDinerChange={setPricePerDiner}
                   onDinerCountChange={adjustDinerCount}
+                  onApplySetup={applySetup}
+                  onStatus={announce}
                 />
                 <MealBuilder onAdd={handleAdd} />
               </div>
