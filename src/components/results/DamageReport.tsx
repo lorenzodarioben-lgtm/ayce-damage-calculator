@@ -74,7 +74,7 @@ export function DamageReport({ report, session, onEditMeal, onStatus }: DamageRe
           <ShareActions
             report={report}
             verdict={verdict}
-            restaurantName={restaurantName}
+            session={session}
             cardModel={cardModel}
             onStatus={onStatus}
           />
