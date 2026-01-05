@@ -50,12 +50,21 @@ export function HistoryList() {
           Completed damage reports can be filed here from the report screen. Nothing is uploaded —
           the file stays on this device.
         </p>
-        <Link
-          href="/"
-          className="mt-6 inline-flex min-h-12 items-center justify-center rounded-[10px] border border-line-ember bg-ash-850 px-5 text-sm font-semibold uppercase tracking-[0.1em] text-ember-400 transition-colors duration-200 hover:bg-ash-800"
-        >
-          Start a session
-        </Link>
+        <div className="mt-6 flex flex-wrap justify-center gap-2">
+          <Link
+            href="/"
+            className="inline-flex min-h-12 items-center justify-center rounded-[10px] border border-line-ember bg-ash-850 px-5 text-sm font-semibold uppercase tracking-[0.1em] text-ember-400 transition-colors duration-200 hover:bg-ash-800"
+          >
+            Start a session
+          </Link>
+          {/* An empty file is exactly when someone arrives with a backup. */}
+          <Link
+            href="/history/data"
+            className="inline-flex min-h-12 items-center justify-center rounded-[10px] border border-line bg-ash-850 px-5 text-sm font-semibold uppercase tracking-[0.1em] text-cream-300 transition-colors duration-200 hover:bg-ash-800 hover:text-cream-50"
+          >
+            Restore a backup
+          </Link>
+        </div>
       </div>
     );
   }
@@ -105,6 +114,12 @@ export function HistoryList() {
               Compare
             </Link>
           )}
+          <Link
+            href="/history/data"
+            className="flex min-h-11 items-center rounded-[10px] border border-line px-3 text-xs font-semibold uppercase tracking-[0.1em] text-cream-300 transition-colors duration-200 hover:bg-ash-800 hover:text-cream-50"
+          >
+            Backup
+          </Link>
           <button
             type="button"
             onClick={() => setPending({ kind: 'all' })}

@@ -145,6 +145,31 @@ export async function saveSession(record: SavedMealSession): Promise<SaveOutcome
   }, 'unavailable');
 }
 
+/**
+ * Writes records verbatim, without the dedupe pass `saveSession` applies.
+ *
+ * Used by a restore, where the caller has already decided what the resulting
+ * set should be and the repository's own "is this the same meal again?" rule
+ * would work against that intent.
+ */
+export async function putSessions(records: readonly SavedMealSession[]): Promise<boolean> {
+  return withDb(async (db) => {
+    const tx = db.transaction(HISTORY_STORE, 'readwrite');
+    await Promise.all([...records.map((record) => tx.store.put(record)), tx.done]);
+    return true;
+  }, false);
+}
+
+/** Replaces the whole store in one transaction, so it cannot half-apply. */
+export async function replaceSessions(records: readonly SavedMealSession[]): Promise<boolean> {
+  return withDb(async (db) => {
+    const tx = db.transaction(HISTORY_STORE, 'readwrite');
+    await tx.store.clear();
+    await Promise.all([...records.map((record) => tx.store.put(record)), tx.done]);
+    return true;
+  }, false);
+}
+
 export async function deleteSession(id: string): Promise<boolean> {
   return withDb(async (db) => {
     await db.delete(HISTORY_STORE, id);
