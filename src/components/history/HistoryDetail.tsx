@@ -86,6 +86,7 @@ export function HistoryDetail({ id }: { id: string }) {
         restaurantName={record.restaurantName}
         heading="Filed Damage Report"
         headingId="saved-report-heading"
+        headingLevel={1}
         subheading={`Recorded ${formatRecordedAt(record.createdAt)}`}
       />
 

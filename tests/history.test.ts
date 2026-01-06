@@ -7,7 +7,7 @@ import {
   fingerprintSession,
   parseSavedSession,
   reportFromSaved,
-  sortSavedSessions,
+  sortResolvedSessions,
 } from '@/lib/history';
 import { getVerdict } from '@/lib/verdicts';
 import type { SavedMealSession } from '@/types/history';
@@ -226,7 +226,7 @@ describe('reportFromSaved', () => {
   });
 });
 
-describe('sortSavedSessions', () => {
+describe('sortResolvedSessions', () => {
   const older = { ...saved({}, 'older'), createdAt: '2026-08-14T12:00:00.000Z' };
   const bigger = {
     ...saved({ items: [item({ quantity: 9 })] }, 'bigger'),
@@ -235,26 +235,33 @@ describe('sortSavedSessions', () => {
   const newest = { ...saved({}, 'newest'), createdAt: '2026-08-16T12:00:00.000Z' };
   const records = [older, bigger, newest];
 
+  const ids = (key: 'newest' | 'recovery' | 'plates') =>
+    sortResolvedSessions(records, key).map((entry) => entry.record.id);
+
   it('orders by recency', () => {
-    expect(sortSavedSessions(records, 'newest').map((r) => r.id)).toEqual([
-      'newest',
-      'bigger',
-      'older',
-    ]);
+    expect(ids('newest')).toEqual(['newest', 'bigger', 'older']);
   });
 
   it('orders by plates recorded', () => {
-    expect(sortSavedSessions(records, 'plates')[0]?.id).toBe('bigger');
+    expect(ids('plates')[0]).toBe('bigger');
   });
 
   it('orders by retail recovery', () => {
-    expect(sortSavedSessions(records, 'recovery')[0]?.id).toBe('bigger');
+    expect(ids('recovery')[0]).toBe('bigger');
   });
 
   it('leaves the source array untouched', () => {
-    sortSavedSessions(records, 'plates');
+    sortResolvedSessions(records, 'plates');
 
     expect(records.map((r) => r.id)).toEqual(['older', 'bigger', 'newest']);
+  });
+
+  it('hands back the resolved report, so callers need not recompute it', () => {
+    const [first] = sortResolvedSessions(records, 'plates');
+
+    expect(first?.report.totalPlates).toBe(9);
+    expect(first?.verdict.id).toBeTruthy();
+    expect(first?.achievements).toBeDefined();
   });
 });
 

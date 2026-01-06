@@ -5,6 +5,7 @@ import { Hero } from '@/components/Hero';
 import { MealBuilder } from '@/components/meal/MealBuilder';
 import { SiteFooter } from '@/components/nav/SiteFooter';
 import { SiteHeader } from '@/components/nav/SiteHeader';
+import { MAIN_CONTENT_ID } from '@/components/nav/destinations';
 import { DamageReport } from '@/components/results/DamageReport';
 import { SessionSetup } from '@/components/session/SessionSetup';
 import { LiveSummary } from '@/components/summary/LiveSummary';
@@ -104,7 +105,7 @@ export function CalculatorApp() {
         }
       />
 
-      <main className="relative z-10">
+      <main id={MAIN_CONTENT_ID} className="relative z-10">
         {stage === 'builder' && <Hero />}
 
         <div className="mx-auto max-w-[1280px] px-4 pb-32 pt-6 sm:px-6 lg:pb-16">
