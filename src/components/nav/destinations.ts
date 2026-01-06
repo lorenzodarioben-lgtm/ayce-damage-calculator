@@ -1,3 +1,6 @@
+/** Target of the skip link; every page's `main` carries it. */
+export const MAIN_CONTENT_ID = 'main-content';
+
 export interface Destination {
   readonly href: string;
   readonly label: string;

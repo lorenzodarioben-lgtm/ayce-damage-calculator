@@ -8,6 +8,7 @@ import { AddCutDialog } from '@/components/live/AddCutDialog';
 import { QuickLogRow } from '@/components/live/QuickLogRow';
 import { SiteFooter } from '@/components/nav/SiteFooter';
 import { SiteHeader } from '@/components/nav/SiteHeader';
+import { MAIN_CONTENT_ID } from '@/components/nav/destinations';
 import { DamageMeter } from '@/components/summary/DamageMeter';
 import { Button } from '@/components/ui/Button';
 import { StatusToast } from '@/components/ui/StatusToast';
@@ -65,7 +66,10 @@ export function LiveMealMode() {
     <>
       <SiteHeader />
 
-      <main className="relative z-10 mx-auto max-w-[640px] px-4 pt-4 pb-28 sm:px-6">
+      <main
+        id={MAIN_CONTENT_ID}
+        className="relative z-10 mx-auto max-w-[640px] px-4 pt-4 pb-28 sm:px-6"
+      >
         {/* Pinned under the header: the number the whole mode exists to move. */}
         <section
           aria-labelledby="live-damage-heading"

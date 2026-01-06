@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { SiteFooter } from '@/components/nav/SiteFooter';
 import { SiteHeader } from '@/components/nav/SiteHeader';
+import { MAIN_CONTENT_ID } from '@/components/nav/destinations';
 import { AchievementList } from '@/components/results/AchievementList';
 import { ReportSummary } from '@/components/results/ReportSummary';
 import { ResultCard } from '@/components/results/ResultCard';
@@ -59,9 +60,12 @@ const CTA_CLASS =
 
 function UnreadableToken() {
   return (
-    <main className="relative z-10 mx-auto max-w-[560px] px-4 pt-16 pb-16 sm:px-6">
+    <main
+      id={MAIN_CONTENT_ID}
+      className="relative z-10 mx-auto max-w-[560px] px-4 pt-16 pb-16 sm:px-6"
+    >
       <div className="panel border-dashed px-6 py-14 text-center">
-        <p className="display-type text-3xl text-cream-300">This report cannot be read.</p>
+        <h1 className="display-type text-3xl text-cream-300">This report cannot be read.</h1>
         <p className="mx-auto mt-4 max-w-[44ch] text-sm leading-relaxed text-cream-700">
           The link is incomplete, was altered in transit, or was produced by a version of the
           calculator this one does not understand. Nothing was lost — a shared report lives entirely
@@ -100,7 +104,10 @@ export default async function SharePage({ params }: SharePageProps) {
     <>
       <SiteHeader />
 
-      <main className="relative z-10 mx-auto max-w-[900px] px-4 pt-8 pb-16 sm:px-6">
+      <main
+        id={MAIN_CONTENT_ID}
+        className="relative z-10 mx-auto max-w-[900px] px-4 pt-8 pb-16 sm:px-6"
+      >
         <p className="micro-label mb-4">A shared damage report</p>
 
         <ReportSummary
@@ -109,6 +116,7 @@ export default async function SharePage({ params }: SharePageProps) {
           restaurantName={payload.restaurantName}
           heading="AYCE Damage Report"
           headingId="shared-report-heading"
+          headingLevel={1}
         />
 
         <div className="mt-6">

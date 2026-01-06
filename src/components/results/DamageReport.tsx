@@ -64,6 +64,8 @@ export function DamageReport({ report, session, onEditMeal, onStatus }: DamageRe
         restaurantName={restaurantName}
         heading="AYCE Damage Report"
         headingId="report-heading"
+        // The hero, and its h1, is gone once the report is showing.
+        headingLevel={1}
       />
 
       <AchievementList achievements={achievements} headingId="achievements-heading" />
