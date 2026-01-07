@@ -266,6 +266,14 @@ export const FOODS: readonly FoodItem[] = [
   },
 ];
 
+/**
+ * How many cuts the dataset holds.
+ *
+ * Exported so the interface can state the size of the menu without a copy of
+ * the number going stale the moment a cut is added or retired.
+ */
+export const FOOD_COUNT = FOODS.length;
+
 const FOOD_BY_ID: ReadonlyMap<string, FoodItem> = new Map(FOODS.map((food) => [food.id, food]));
 
 export function findFood(foodId: string): FoodItem | undefined {
