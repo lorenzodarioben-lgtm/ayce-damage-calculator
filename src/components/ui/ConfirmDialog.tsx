@@ -9,6 +9,8 @@ interface ConfirmDialogProps {
   title: string;
   body: string;
   confirmLabel: string;
+  /** Names what backing out preserves; worth stating rather than "Cancel". */
+  cancelLabel?: string;
   onConfirm: () => void;
   onCancel: () => void;
 }
@@ -18,6 +20,7 @@ export function ConfirmDialog({
   title,
   body,
   confirmLabel,
+  cancelLabel = 'Keep my tab',
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
@@ -28,7 +31,7 @@ export function ConfirmDialog({
       <p className="text-sm leading-relaxed text-cream-300">{body}</p>
       <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
         <Button variant="ghost" onClick={onCancel}>
-          Keep my tab
+          {cancelLabel}
         </Button>
         <Button variant="primary" onClick={onConfirm}>
           {confirmLabel}

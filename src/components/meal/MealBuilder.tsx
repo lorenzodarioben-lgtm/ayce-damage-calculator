@@ -2,6 +2,7 @@
 
 import { useId, useMemo, useState } from 'react';
 import { Flame } from 'lucide-react';
+import { FavoriteQuickAdd, FavoriteToggle } from '@/components/favorites/FavoriteQuickAdd';
 import { CategoryTabs } from '@/components/meal/CategoryTabs';
 import { FoodCard } from '@/components/meal/FoodCard';
 import { PlateSizeSelector } from '@/components/meal/PlateSizeSelector';
@@ -17,7 +18,9 @@ import {
   MIN_QUANTITY,
   getPlateSizeMeta,
 } from '@/lib/constants';
+import { describeFavorite } from '@/lib/favorites';
 import { formatGrams, formatMoney } from '@/lib/formatting';
+import { useFavorites } from '@/hooks/useFavorites';
 import type { AddItemPayload } from '@/hooks/useMealSession';
 import type { FoodCategory, PlateSize, QualityTier } from '@/types/meal';
 
@@ -27,6 +30,7 @@ interface MealBuilderProps {
 
 export function MealBuilder({ onAdd }: MealBuilderProps) {
   const panelId = useId();
+  const { favorites, toggle, remove, has } = useFavorites();
 
   const [category, setCategory] = useState<FoodCategory>('beef');
   const [selectedFoodId, setSelectedFoodId] = useState<string | null>(null);
@@ -72,6 +76,15 @@ export function MealBuilder({ onAdd }: MealBuilderProps) {
         </h2>
         <p className="text-xs text-cream-700">18 cuts</p>
       </div>
+
+      {/* Saved orders sit above the picker: for a repeat visit they are the
+          fastest path, and they cost nothing when the list is empty. */}
+      <section aria-labelledby="saved-orders-heading" className="mb-4">
+        <h3 id="saved-orders-heading" className="micro-label mb-2">
+          Saved orders
+        </h3>
+        <FavoriteQuickAdd favorites={favorites} onAdd={onAdd} onRemove={remove} />
+      </section>
 
       <CategoryTabs value={category} onChange={handleCategoryChange} panelId={panelId} />
 
@@ -136,10 +149,20 @@ export function MealBuilder({ onAdd }: MealBuilderProps) {
               )}
             </div>
 
-            <Button size="lg" fullWidth onClick={handleAdd}>
-              <Flame size={18} aria-hidden="true" />
-              Add to my damage
-            </Button>
+            <div className="flex items-stretch gap-2">
+              <Button size="lg" fullWidth onClick={handleAdd}>
+                <Flame size={18} aria-hidden="true" />
+                Add to my damage
+              </Button>
+              <FavoriteToggle
+                active={has({ foodId: selectedFood.id, quality, plateSize })}
+                onToggle={() => toggle({ foodId: selectedFood.id, quality, plateSize })}
+                description={
+                  describeFavorite({ foodId: selectedFood.id, quality, plateSize }) ??
+                  selectedFood.name
+                }
+              />
+            </div>
           </div>
         ) : (
           <p className="py-2 text-center text-sm text-cream-700">
