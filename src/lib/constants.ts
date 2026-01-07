@@ -2,6 +2,12 @@ import type { FoodCategory, PlateSize, QualityTier } from '@/types/meal';
 
 export const KG_TO_LB = 2.2046226218;
 
+/**
+ * The base surface colour, mirroring `--color-ash-950`. Declared here because
+ * the manifest and browser chrome need it outside a stylesheet.
+ */
+export const THEME_COLOUR = '#0d0c0a';
+
 export const FOOD_CATEGORIES = ['beef', 'pork', 'chicken', 'seafood'] as const;
 
 export interface CategoryMeta {

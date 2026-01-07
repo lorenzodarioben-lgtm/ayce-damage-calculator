@@ -9,8 +9,9 @@ import {
   MIN_DINERS,
   MIN_PRICE_PER_DINER,
 } from '@/lib/constants';
+import { RestaurantPresets } from '@/components/session/RestaurantPresets';
 import { formatMoney } from '@/lib/formatting';
-import type { MealSession } from '@/types/meal';
+import type { MealSession, SessionConfig } from '@/types/meal';
 
 interface SessionSetupProps {
   session: MealSession;
@@ -18,6 +19,8 @@ interface SessionSetupProps {
   onRestaurantNameChange: (value: string) => void;
   onPricePerDinerChange: (value: number) => void;
   onDinerCountChange: (delta: number) => void;
+  onApplySetup: (setup: SessionConfig) => void;
+  onStatus: (message: string) => void;
 }
 
 export function SessionSetup({
@@ -26,6 +29,8 @@ export function SessionSetup({
   onRestaurantNameChange,
   onPricePerDinerChange,
   onDinerCountChange,
+  onApplySetup,
+  onStatus,
 }: SessionSetupProps) {
   const nameId = useId();
   const priceId = useId();
@@ -164,6 +169,23 @@ export function SessionSetup({
           {formatMoney(totalAdmission)}
         </p>
       </div>
+
+      <RestaurantPresets
+        setup={{
+          name: session.restaurantName,
+          pricePerDiner: session.pricePerDiner,
+          dinerCount: session.dinerCount,
+        }}
+        hasMealInProgress={session.items.length > 0}
+        onApply={(preset) =>
+          onApplySetup({
+            restaurantName: preset.name,
+            pricePerDiner: preset.pricePerDiner,
+            dinerCount: preset.dinerCount,
+          })
+        }
+        onStatus={onStatus}
+      />
     </section>
   );
 }
