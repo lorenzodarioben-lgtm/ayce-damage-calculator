@@ -9,7 +9,7 @@ import { PlateSizeSelector } from '@/components/meal/PlateSizeSelector';
 import { QualitySelector } from '@/components/meal/QualitySelector';
 import { QuantityStepper } from '@/components/meal/QuantityStepper';
 import { Button } from '@/components/ui/Button';
-import { foodsInCategory } from '@/data/foods';
+import { FOOD_COUNT, foodsInCategory } from '@/data/foods';
 import { calculateLineItem } from '@/lib/calculations';
 import {
   DEFAULT_PLATE_SIZE,
@@ -74,7 +74,7 @@ export function MealBuilder({ onAdd }: MealBuilderProps) {
         <h2 id="builder-heading" className="display-type text-2xl text-cream-50 sm:text-3xl">
           Build the meal
         </h2>
-        <p className="text-xs text-cream-700">18 cuts</p>
+        <p className="text-xs text-cream-700">{FOOD_COUNT} cuts</p>
       </div>
 
       {/* Saved orders sit above the picker: for a repeat visit they are the
