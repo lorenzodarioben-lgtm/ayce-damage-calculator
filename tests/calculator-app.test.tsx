@@ -69,6 +69,26 @@ describe('CalculatorApp', () => {
     expect(screen.getByText(/no damage yet/i)).toBeInTheDocument();
   });
 
+  it('offers an undo that puts a removed line back as it was', async () => {
+    const user = userEvent.setup();
+    render(<CalculatorApp />);
+    await addPlates(user, 'Ribeye');
+
+    const tab = screen.getByRole('region', { name: /your tab/i });
+    await user.click(within(tab).getByRole('button', { name: /add one plate of Ribeye/i }));
+    await user.click(within(tab).getByRole('button', { name: /remove ribeye.*from your tab/i }));
+
+    const updates = screen.getByRole('status', { name: /session updates/i });
+    expect(updates).toHaveTextContent(/Ribeye removed from your tab/i);
+
+    await user.click(within(updates).getByRole('button', { name: /undo/i }));
+
+    // Two plates went in, so two plates must come back.
+    const restored = screen.getByRole('region', { name: /your tab/i });
+    expect(within(restored).getByText('2 plates · 310 g')).toBeInTheDocument();
+    expect(updates).toHaveTextContent(/Ribeye put back/i);
+  });
+
   it('reflects session configuration in total admission', async () => {
     const user = userEvent.setup();
     render(<CalculatorApp />);
