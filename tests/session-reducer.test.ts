@@ -88,6 +88,72 @@ describe('sessionReducer', () => {
     expect(state.restaurantName).toHaveLength(60);
   });
 
+  it('restores a removed line to the position it was taken from', () => {
+    let state = sessionReducer(INITIAL_SESSION, {
+      type: 'add-item',
+      payload: { foodId: 'beef-brisket', quality: 'standard', plateSize: 'regular', quantity: 1 },
+    });
+    state = sessionReducer(state, addRibeye);
+    state = sessionReducer(state, {
+      type: 'add-item',
+      payload: { foodId: 'pork-belly', quality: 'standard', plateSize: 'large', quantity: 3 },
+    });
+
+    const removed = state.items[1];
+    expect(removed).toBeDefined();
+
+    const without = sessionReducer(state, { type: 'remove-item', id: removed!.id });
+    expect(without.items).toHaveLength(2);
+
+    const restored = sessionReducer(without, { type: 'restore-item', item: removed!, index: 1 });
+    expect(restored.items).toEqual(state.items);
+  });
+
+  it('restores the removed quantity, not a fresh plate', () => {
+    const state = sessionReducer(INITIAL_SESSION, addRibeye);
+    const removed = state.items[0];
+    expect(removed?.quantity).toBe(2);
+
+    const restored = sessionReducer(INITIAL_SESSION, {
+      type: 'restore-item',
+      item: removed!,
+      index: 0,
+    });
+    expect(restored.items[0]?.quantity).toBe(2);
+  });
+
+  it('clamps a restored quantity that is out of bounds', () => {
+    const state = sessionReducer(INITIAL_SESSION, addRibeye);
+    const removed = state.items[0];
+
+    const restored = sessionReducer(INITIAL_SESSION, {
+      type: 'restore-item',
+      item: { ...removed!, quantity: 5000 },
+      index: 0,
+    });
+    expect(restored.items[0]?.quantity).toBe(99);
+  });
+
+  it('appends a restored line when its old position no longer exists', () => {
+    const state = sessionReducer(INITIAL_SESSION, addRibeye);
+    const removed = state.items[0];
+
+    const restored = sessionReducer(INITIAL_SESSION, {
+      type: 'restore-item',
+      item: removed!,
+      index: 42,
+    });
+    expect(restored.items).toHaveLength(1);
+  });
+
+  it('does not duplicate a line that is already back on the tab', () => {
+    const state = sessionReducer(INITIAL_SESSION, addRibeye);
+    const removed = state.items[0];
+
+    const restored = sessionReducer(state, { type: 'restore-item', item: removed!, index: 0 });
+    expect(restored).toBe(state);
+  });
+
   it('clears everything on reset', () => {
     let state = sessionReducer(INITIAL_SESSION, addRibeye);
     state = sessionReducer(state, { type: 'set-restaurant-name', value: 'Seoul Garden' });
