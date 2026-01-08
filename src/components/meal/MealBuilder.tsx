@@ -5,11 +5,12 @@ import { Flame } from 'lucide-react';
 import { FavoriteQuickAdd, FavoriteToggle } from '@/components/favorites/FavoriteQuickAdd';
 import { CategoryTabs } from '@/components/meal/CategoryTabs';
 import { FoodCard } from '@/components/meal/FoodCard';
+import { FoodSearch } from '@/components/meal/FoodSearch';
 import { PlateSizeSelector } from '@/components/meal/PlateSizeSelector';
 import { QualitySelector } from '@/components/meal/QualitySelector';
 import { QuantityStepper } from '@/components/meal/QuantityStepper';
 import { Button } from '@/components/ui/Button';
-import { FOOD_COUNT, foodsInCategory } from '@/data/foods';
+import { FOOD_COUNT, findFood, foodsInCategory, searchFoods } from '@/data/foods';
 import { calculateLineItem } from '@/lib/calculations';
 import {
   DEFAULT_PLATE_SIZE,
@@ -28,18 +29,30 @@ interface MealBuilderProps {
   onAdd: (payload: AddItemPayload, confirmation: string) => void;
 }
 
+const GRID_CLASS = 'grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-3';
+
 export function MealBuilder({ onAdd }: MealBuilderProps) {
   const panelId = useId();
   const { favorites, toggle, remove, has } = useFavorites();
 
   const [category, setCategory] = useState<FoodCategory>('beef');
+  const [query, setQuery] = useState('');
   const [selectedFoodId, setSelectedFoodId] = useState<string | null>(null);
   const [quality, setQuality] = useState<QualityTier>(DEFAULT_QUALITY);
   const [plateSize, setPlateSize] = useState<PlateSize>(DEFAULT_PLATE_SIZE);
   const [quantity, setQuantity] = useState(1);
 
-  const foods = useMemo(() => foodsInCategory(category), [category]);
-  const selectedFood = foods.find((food) => food.id === selectedFoodId) ?? null;
+  const trimmedQuery = query.trim();
+  const searching = trimmedQuery.length > 0;
+
+  const foods = useMemo(
+    () => (searching ? searchFoods(trimmedQuery) : foodsInCategory(category)),
+    [searching, trimmedQuery, category],
+  );
+
+  // Resolved from the whole dataset rather than the visible list: a cut chosen
+  // from search results must survive the search being cleared.
+  const selectedFood = (selectedFoodId ? findFood(selectedFoodId) : undefined) ?? null;
 
   const preview = useMemo(() => {
     if (!selectedFood) {
@@ -55,6 +68,15 @@ export function MealBuilder({ onAdd }: MealBuilderProps) {
     setCategory(next);
     setSelectedFoodId(null);
   }
+
+  const cards = foods.map((food) => (
+    <FoodCard
+      key={food.id}
+      food={food}
+      selected={food.id === selectedFoodId}
+      onSelect={setSelectedFoodId}
+    />
+  ));
 
   function handleAdd() {
     if (!selectedFood) {
@@ -86,24 +108,34 @@ export function MealBuilder({ onAdd }: MealBuilderProps) {
         <FavoriteQuickAdd favorites={favorites} onAdd={onAdd} onRemove={remove} />
       </section>
 
-      <CategoryTabs value={category} onChange={handleCategoryChange} panelId={panelId} />
+      <FoodSearch value={query} onChange={setQuery} resultCount={searching ? foods.length : null} />
 
-      <div
-        id={panelId}
-        role="tabpanel"
-        aria-labelledby={`category-tab-${category}`}
-        tabIndex={-1}
-        className="mt-3 grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-3"
-      >
-        {foods.map((food) => (
-          <FoodCard
-            key={food.id}
-            food={food}
-            selected={food.id === selectedFoodId}
-            onSelect={setSelectedFoodId}
-          />
-        ))}
-      </div>
+      {/* Search results span every category, so the tablist steps aside rather
+          than claiming to describe what is on show. */}
+      {searching ? (
+        <div role="group" aria-label={`Cuts matching ${trimmedQuery}`} className={GRID_CLASS}>
+          {cards}
+        </div>
+      ) : (
+        <>
+          <CategoryTabs value={category} onChange={handleCategoryChange} panelId={panelId} />
+          <div
+            id={panelId}
+            role="tabpanel"
+            aria-labelledby={`category-tab-${category}`}
+            tabIndex={-1}
+            className={`mt-3 ${GRID_CLASS}`}
+          >
+            {cards}
+          </div>
+        </>
+      )}
+
+      {searching && foods.length === 0 && (
+        <p className="py-6 text-center text-sm text-cream-700">
+          Nothing on the menu matches “{trimmedQuery}”.
+        </p>
+      )}
 
       <div className="mt-5 border-t border-line-soft pt-5">
         {selectedFood ? (
