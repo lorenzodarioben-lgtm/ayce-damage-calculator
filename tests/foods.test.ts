@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FOODS, FOOD_COUNT, findFood, foodsInCategory } from '@/data/foods';
+import { FOODS, FOOD_COUNT, findFood, foodsInCategory, searchFoods } from '@/data/foods';
 import { CATEGORY_META, FOOD_CATEGORIES } from '@/lib/constants';
 
 /**
@@ -71,11 +71,73 @@ describe('food dataset', () => {
     expect(food.proteinPer100g + food.fatPer100g + food.carbsPer100g).toBeLessThanOrEqual(100);
   });
 
+  it.each(FOODS.map((food) => [food.id, food] as const))('%s is findable by name', (_id, food) => {
+    expect(searchFoods(food.name).map((match) => match.id)).toContain(food.id);
+  });
+
   it.each(FOODS.map((food) => [food.id, food] as const))('%s is presentable', (_id, food) => {
     expect(food.name.trim()).not.toBe('');
     expect(food.shortName.trim()).not.toBe('');
     expect(food.description.trim()).not.toBe('');
     // The short name is what the narrow surfaces render; a longer one is a bug.
     expect(food.shortName.length).toBeLessThanOrEqual(food.name.length);
+  });
+});
+
+describe('searchFoods', () => {
+  function ids(query: string): string[] {
+    return searchFoods(query).map((food) => food.id);
+  }
+
+  it('matches nothing for an empty or whitespace-only query', () => {
+    expect(searchFoods('')).toHaveLength(0);
+    expect(searchFoods('   ')).toHaveLength(0);
+    expect(searchFoods('\t\n')).toHaveLength(0);
+  });
+
+  it('matches a name regardless of case', () => {
+    expect(ids('BRISKET')).toContain('beef-brisket');
+    expect(ids('brisket')).toContain('beef-brisket');
+  });
+
+  it('matches a partial word', () => {
+    expect(ids('scal')).toContain('seafood-scallops');
+  });
+
+  it('reaches across every category from one query', () => {
+    const spicy = ids('spicy');
+    expect(spicy).toContain('pork-spicy');
+    expect(spicy).toContain('chicken-spicy');
+  });
+
+  it('searches by category name', () => {
+    expect(ids('seafood')).toEqual([
+      'seafood-prawns',
+      'seafood-squid',
+      'seafood-salmon',
+      'seafood-scallops',
+    ]);
+  });
+
+  it('narrows rather than widens as words are added', () => {
+    const broad = searchFoods('pork');
+    const narrow = searchFoods('pork belly');
+    expect(narrow.length).toBeLessThan(broad.length);
+    expect(narrow.map((food) => food.id)).toContain('pork-belly');
+  });
+
+  it('ignores surrounding and repeated whitespace', () => {
+    expect(ids('  short   rib  ')).toEqual(ids('short rib'));
+  });
+
+  it('returns nothing for a query no cut satisfies', () => {
+    expect(searchFoods('brisket prawns')).toHaveLength(0);
+    expect(searchFoods('tiramisu')).toHaveLength(0);
+  });
+
+  it('preserves the dataset order', () => {
+    const matched = ids('beef');
+    const canonical = FOODS.filter((food) => matched.includes(food.id)).map((food) => food.id);
+    expect(matched).toEqual(canonical);
   });
 });
