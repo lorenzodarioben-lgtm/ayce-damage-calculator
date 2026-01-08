@@ -284,6 +284,25 @@ export function foodsInCategory(category: FoodCategory): readonly FoodItem[] {
   return FOODS.filter((food) => food.category === category);
 }
 
+/**
+ * How the picker orders cuts.
+ *
+ * `menu` is the dataset's own order, which groups cuts the way a menu would.
+ * `value` puts the dearest retail price per kilogram first, which is the order
+ * a diner optimising for recovery actually wants to read in.
+ */
+export type FoodSortKey = 'menu' | 'value';
+
+export function sortFoods(foods: readonly FoodItem[], key: FoodSortKey): readonly FoodItem[] {
+  if (key === 'menu') {
+    return foods;
+  }
+  // Ties break on name so the order cannot shuffle between renders.
+  return [...foods].sort(
+    (a, b) => b.retailPricePerKg - a.retailPricePerKg || a.name.localeCompare(b.name),
+  );
+}
+
 /** Everything about a cut that a diner might reasonably type. */
 function haystack(food: FoodItem): string {
   return `${food.name} ${food.shortName} ${food.category} ${food.description}`.toLowerCase();
