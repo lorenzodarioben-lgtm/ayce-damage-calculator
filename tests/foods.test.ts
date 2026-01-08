@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FOODS, FOOD_COUNT, findFood, foodsInCategory, searchFoods } from '@/data/foods';
+import { FOODS, FOOD_COUNT, findFood, foodsInCategory, searchFoods, sortFoods } from '@/data/foods';
 import { CATEGORY_META, FOOD_CATEGORIES } from '@/lib/constants';
 
 /**
@@ -139,5 +139,48 @@ describe('searchFoods', () => {
     const matched = ids('beef');
     const canonical = FOODS.filter((food) => matched.includes(food.id)).map((food) => food.id);
     expect(matched).toEqual(canonical);
+  });
+});
+
+describe('sortFoods', () => {
+  it('leaves menu order exactly as given', () => {
+    expect(sortFoods(FOODS, 'menu')).toBe(FOODS);
+  });
+
+  it('puts the dearest retail price per kilogram first', () => {
+    const sorted = sortFoods(FOODS, 'value');
+    for (let index = 1; index < sorted.length; index += 1) {
+      const previous = sorted[index - 1];
+      const current = sorted[index];
+      expect(previous).toBeDefined();
+      expect(current).toBeDefined();
+      expect(previous!.retailPricePerKg).toBeGreaterThanOrEqual(current!.retailPricePerKg);
+    }
+  });
+
+  it('keeps every cut when reordering', () => {
+    const sorted = sortFoods(FOODS, 'value');
+    expect(sorted).toHaveLength(FOOD_COUNT);
+    expect(new Set(sorted.map((food) => food.id)).size).toBe(FOOD_COUNT);
+  });
+
+  it('does not mutate the list it was given', () => {
+    const original = [...FOODS];
+    sortFoods(FOODS, 'value');
+    expect([...FOODS]).toEqual(original);
+  });
+
+  it('breaks ties on name, so the order is stable', () => {
+    const first = sortFoods(FOODS, 'value').map((food) => food.id);
+    const second = sortFoods([...FOODS].reverse(), 'value').map((food) => food.id);
+    expect(second).toEqual(first);
+  });
+
+  it('sorts a filtered list as readily as the whole dataset', () => {
+    const seafood = sortFoods(foodsInCategory('seafood'), 'value');
+    expect(seafood).toHaveLength(foodsInCategory('seafood').length);
+    expect(seafood[0]?.retailPricePerKg).toBe(
+      Math.max(...foodsInCategory('seafood').map((food) => food.retailPricePerKg)),
+    );
   });
 });
