@@ -15,6 +15,7 @@ import { StatusToast } from '@/components/ui/StatusToast';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useMealSession, type AddItemPayload } from '@/hooks/useMealSession';
 import { useStatusMessage } from '@/hooks/useStatusMessage';
+import { useUndoableRemove } from '@/hooks/useUndoableRemove';
 import { REPORT_STAGE, STAGE_PARAM } from '@/hooks/useStageHistory';
 import { findFood } from '@/data/foods';
 import { formatKg, formatMoney, formatPlates } from '@/lib/formatting';
@@ -31,7 +32,8 @@ const REPORT_HREF = `/?${STAGE_PARAM}=${REPORT_STAGE}`;
  * critical path, and the running total pinned in view.
  */
 export function LiveMealMode() {
-  const { session, report, addItem, incrementItem, decrementItem, removeItem } = useMealSession();
+  const { session, report, addItem, incrementItem, decrementItem, removeItem, restoreItem } =
+    useMealSession();
   const { favorites, remove: removeFavorite } = useFavorites();
 
   const [addOpen, setAddOpen] = useState(false);
@@ -59,6 +61,14 @@ export function LiveMealMode() {
     },
     [incrementItem],
   );
+
+  const handleRemove = useUndoableRemove({
+    items: session.items,
+    removeItem,
+    restoreItem,
+    announce,
+    location: 'the quick log',
+  });
 
   const hasItems = report.lines.length > 0;
 
@@ -103,7 +113,7 @@ export function LiveMealMode() {
                 line={line}
                 onIncrement={handleIncrement}
                 onDecrement={decrementItem}
-                onRemove={removeItem}
+                onRemove={handleRemove}
               />
             ))}
           </ul>

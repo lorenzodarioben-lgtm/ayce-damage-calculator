@@ -15,6 +15,7 @@ import { StatusToast } from '@/components/ui/StatusToast';
 import { useMealSession, type AddItemPayload } from '@/hooks/useMealSession';
 import { useStageHistory } from '@/hooks/useStageHistory';
 import { useStatusMessage } from '@/hooks/useStatusMessage';
+import { useUndoableRemove } from '@/hooks/useUndoableRemove';
 
 export function CalculatorApp() {
   const {
@@ -29,6 +30,7 @@ export function CalculatorApp() {
     incrementItem,
     decrementItem,
     removeItem,
+    restoreItem,
     resetSession,
   } = useMealSession();
 
@@ -50,6 +52,14 @@ export function CalculatorApp() {
     },
     [addItem, announce],
   );
+
+  const handleRemove = useUndoableRemove({
+    items: session.items,
+    removeItem,
+    restoreItem,
+    announce,
+    location: 'your tab',
+  });
 
   // Moves the viewport and focus to whichever stage was just revealed. Running
   // as an effect guarantees the target is mounted, and skips the first render
@@ -141,7 +151,7 @@ export function CalculatorApp() {
                   report={report}
                   onIncrement={incrementItem}
                   onDecrement={decrementItem}
-                  onRemove={removeItem}
+                  onRemove={handleRemove}
                   onCalculate={handleCalculate}
                   onReset={() => setResetOpen(true)}
                 />
