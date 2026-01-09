@@ -7,7 +7,13 @@ import {
   type AchievementId,
 } from '@/lib/achievements';
 import { buildDamageReport, clampDinerCount, clampPricePerDiner } from '@/lib/calculations';
-import { MAX_LINE_QUANTITY, MIN_QUANTITY, isPlateSize, isQualityTier } from '@/lib/constants';
+import {
+  MAX_LINE_QUANTITY,
+  MAX_SESSION_NOTE_LENGTH,
+  MIN_QUANTITY,
+  isPlateSize,
+  isQualityTier,
+} from '@/lib/constants';
 import { sanitiseRestaurantName } from '@/lib/storage';
 import { getVerdict, isVerdictId, type Verdict } from '@/lib/verdicts';
 import type { SavedMealSession, SavedSessionSnapshot } from '@/types/history';
@@ -18,11 +24,12 @@ import type { DamageReport, MealItem, MealSession, Nutrition } from '@/types/mea
  *
  * 1 — original.
  * 2 — snapshots carry the achievements the session earned.
+ * 3 — records carry a free-text note.
  */
-export const SAVED_SESSION_VERSION = 2;
+export const SAVED_SESSION_VERSION = 3;
 
 /** Versions `parseSavedSession` knows how to read, current one included. */
-export const SUPPORTED_SESSION_VERSIONS = [1, 2] as const;
+export const SUPPORTED_SESSION_VERSIONS = [1, 2, 3] as const;
 
 /** Beyond this the oldest records are pruned, so storage cannot grow forever. */
 export const MAX_HISTORY_RECORDS = 200;
@@ -77,9 +84,24 @@ export function buildSnapshot(
   };
 }
 
+/**
+ * Trims a note to something a card can render.
+ *
+ * Whitespace is collapsed for the same reason the restaurant name collapses it:
+ * a pasted paragraph should not be able to stretch the layout it lands in.
+ */
+export function sanitiseSessionNote(value: unknown): string {
+  if (typeof value !== 'string') {
+    return '';
+  }
+  return value.replace(/\s+/g, ' ').trim().slice(0, MAX_SESSION_NOTE_LENGTH);
+}
+
 export interface CreateSavedSessionOptions {
   readonly id: string;
   readonly createdAt: string;
+  /** What the diner wrote about the meal, if anything. */
+  readonly note?: string;
 }
 
 export function createSavedSession(
@@ -95,6 +117,7 @@ export function createSavedSession(
     restaurantName: sanitiseRestaurantName(session.restaurantName),
     pricePerDiner: clampPricePerDiner(session.pricePerDiner),
     dinerCount: clampDinerCount(session.dinerCount),
+    note: sanitiseSessionNote(options.note),
     items: session.items.map((item) => ({ ...item })),
     fingerprint: fingerprintSession(session),
     snapshot: buildSnapshot(report, verdict, clampDinerCount(session.dinerCount)),
@@ -246,6 +269,8 @@ export function parseSavedSession(value: unknown): SavedMealSession | null {
     restaurantName,
     pricePerDiner: safePrice,
     dinerCount: safeDiners,
+    // Records written before version 3 simply have nothing to say.
+    note: sanitiseSessionNote(value.note),
     items,
     fingerprint:
       typeof value.fingerprint === 'string' && value.fingerprint.length > 0

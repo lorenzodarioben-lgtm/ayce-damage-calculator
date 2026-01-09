@@ -34,6 +34,12 @@ export interface SavedMealSession {
   readonly pricePerDiner: number;
   readonly dinerCount: number;
 
+  /**
+   * What the diner wrote about the meal. Empty when nothing was written, which
+   * is the normal case. Added in schema version 3.
+   */
+  readonly note: string;
+
   readonly items: readonly MealItem[];
 
   /**
