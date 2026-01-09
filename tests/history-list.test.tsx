@@ -36,6 +36,7 @@ async function file(
   createdAt: string,
   restaurantName: string,
   items: readonly MealItem[],
+  note = '',
 ) {
   const session: MealSession = { restaurantName, pricePerDiner: 59.9, dinerCount: 1, items };
   const report = buildDamageReport(session.items, session);
@@ -47,6 +48,7 @@ async function file(
       {
         id,
         createdAt,
+        note,
       },
     ),
   );
@@ -54,7 +56,13 @@ async function file(
 
 async function seed() {
   await file('small', '2026-08-10T12:00:00.000Z', 'Little Seoul', [line('chicken-thigh', 1)]);
-  await file('huge', '2026-08-12T12:00:00.000Z', 'Wagyu House', [line('beef-wagyu-short-rib', 9)]);
+  await file(
+    'huge',
+    '2026-08-12T12:00:00.000Z',
+    'Wagyu House',
+    [line('beef-wagyu-short-rib', 9)],
+    'Anniversary dinner',
+  );
   await file('recent', '2026-08-16T12:00:00.000Z', 'Seoul Garden', [line('beef-ribeye', 2)]);
 }
 
@@ -134,6 +142,60 @@ describe('HistoryList', () => {
     await user.click(screen.getByRole('button', { name: /clear everything/i }));
 
     expect(await screen.findByText('No prior incidents on record.')).toBeInTheDocument();
+  });
+
+  it('narrows the file by restaurant and by note', async () => {
+    const user = userEvent.setup();
+    await seed();
+    render(<HistoryList />);
+    await screen.findAllByRole('listitem');
+
+    const search = screen.getByLabelText(/find a session/i);
+
+    await user.type(search, 'seoul');
+    expect(screen.getAllByRole('listitem')).toHaveLength(2);
+    expect(screen.getByText(/2 of 3 sessions match/i)).toBeInTheDocument();
+
+    await user.clear(search);
+    await user.type(search, 'anniversary');
+    expect(screen.getAllByRole('listitem')).toHaveLength(1);
+    expect(screen.getByText('Wagyu House')).toBeInTheDocument();
+  });
+
+  it('says so plainly when a search matches nothing', async () => {
+    const user = userEvent.setup();
+    await seed();
+    render(<HistoryList />);
+    await screen.findAllByRole('listitem');
+
+    await user.type(screen.getByLabelText(/find a session/i), 'tiramisu');
+
+    expect(screen.queryAllByRole('listitem')).toHaveLength(0);
+    expect(screen.getByText(/no session on file matches that/i)).toBeInTheDocument();
+    // The records are filtered, never deleted.
+    expect(screen.getByText(/0 of 3 sessions match/i)).toBeInTheDocument();
+  });
+
+  it('restores the whole file when the search is cleared', async () => {
+    const user = userEvent.setup();
+    await seed();
+    render(<HistoryList />);
+    await screen.findAllByRole('listitem');
+
+    const search = screen.getByLabelText(/find a session/i);
+    await user.type(search, 'wagyu');
+    expect(screen.getAllByRole('listitem')).toHaveLength(1);
+
+    await user.click(screen.getByRole('button', { name: /clear the search/i }));
+    expect(screen.getAllByRole('listitem')).toHaveLength(3);
+  });
+
+  it('keeps the search out of the way of a short file', async () => {
+    await file('only', '2026-08-16T12:00:00.000Z', 'Seoul Garden', [line('beef-ribeye', 1)]);
+    render(<HistoryList />);
+    await screen.findAllByRole('listitem');
+
+    expect(screen.queryByLabelText(/find a session/i)).not.toBeInTheDocument();
   });
 
   it('names an unnamed restaurant rather than showing a blank row', async () => {
