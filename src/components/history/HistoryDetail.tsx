@@ -90,6 +90,15 @@ export function HistoryDetail({ id }: { id: string }) {
         subheading={`Recorded ${formatRecordedAt(record.createdAt)}`}
       />
 
+      {record.note && (
+        <section aria-labelledby="saved-note-heading" className="panel p-4 sm:p-5">
+          <h3 id="saved-note-heading" className="micro-label mb-2">
+            Note on file
+          </h3>
+          <p className="break-words text-sm leading-relaxed text-cream-300">{record.note}</p>
+        </section>
+      )}
+
       {/* Read from the record, so a session shows what it earned at the time. */}
       <AchievementList achievements={achievements} headingId="saved-achievements-heading" />
 
