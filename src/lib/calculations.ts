@@ -125,11 +125,49 @@ export function calculateSessionTotals(items: readonly MealItem[]): SessionTotal
   };
 }
 
+export interface PerDinerTotals {
+  readonly dinerCount: number;
+  readonly admission: number;
+  readonly retailValue: number;
+  readonly plates: number;
+  readonly weightG: number;
+  readonly nutrition: Nutrition;
+}
+
+/**
+ * The table's totals divided evenly by head.
+ *
+ * An even split is a stated assumption, not a measurement: the calculator
+ * records one shared tab and has no idea who reached for what. It is still the
+ * only division available, and it is the one a table actually does when the
+ * bill lands, so it is offered plainly rather than dressed up as a per-person
+ * measurement.
+ */
+export function perDinerTotals(report: DamageReport): PerDinerTotals {
+  const dinerCount = clampDinerCount(report.dinerCount);
+  const per = (value: number) => safeRatio(value, dinerCount);
+
+  return {
+    dinerCount,
+    admission: per(report.totalAdmission),
+    retailValue: per(report.totalRetailValue),
+    plates: per(report.totalPlates),
+    weightG: per(report.totalWeightG),
+    nutrition: {
+      calories: per(report.nutrition.calories),
+      protein: per(report.nutrition.protein),
+      fat: per(report.nutrition.fat),
+      carbs: per(report.nutrition.carbs),
+    },
+  };
+}
+
 export function buildDamageReport(
   items: readonly MealItem[],
   config: Pick<SessionConfig, 'pricePerDiner' | 'dinerCount'>,
 ): DamageReport {
   const totals = calculateSessionTotals(items);
+  const dinerCount = clampDinerCount(config.dinerCount);
   const totalAdmission = calculateAdmission(config);
 
   const retailValueDifference = totals.totalRetailValue - totalAdmission;
@@ -144,6 +182,7 @@ export function buildDamageReport(
 
   return {
     ...totals,
+    dinerCount,
     totalAdmission,
     retailValueDifference,
     retailRecoveryPercent,
