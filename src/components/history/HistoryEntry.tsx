@@ -42,6 +42,13 @@ export function HistoryEntry({ session, onDelete }: HistoryEntryProps) {
             </Link>
           </h3>
           <p className={cn('display-type mt-1.5 text-xl', TONE[verdict.tone])}>{verdict.title}</p>
+          {/* Clamped rather than truncated in code, so the full note is still
+              in the DOM for anyone reading the card with a screen reader. */}
+          {record.note && (
+            <p className="mt-1.5 line-clamp-2 break-words text-xs leading-snug text-cream-500">
+              {record.note}
+            </p>
+          )}
         </div>
 
         <button

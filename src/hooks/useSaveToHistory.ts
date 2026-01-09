@@ -11,7 +11,7 @@ export type SaveState = 'idle' | 'saving' | 'inserted' | 'updated' | 'unavailabl
 
 export interface UseSaveToHistoryResult {
   state: SaveState;
-  save: () => Promise<void>;
+  save: (note?: string) => Promise<void>;
 }
 
 /**
@@ -36,19 +36,23 @@ export function useSaveToHistory(
     setState('idle');
   }
 
-  const save = useCallback(async () => {
-    setState('saving');
+  const save = useCallback(
+    async (note?: string) => {
+      setState('saving');
 
-    const outcome = await saveSession(
-      createSavedSession(session, report, verdict, {
-        id: createId(),
-        createdAt: new Date().toISOString(),
-      }),
-    );
+      const outcome = await saveSession(
+        createSavedSession(session, report, verdict, {
+          id: createId(),
+          createdAt: new Date().toISOString(),
+          ...(note === undefined ? {} : { note }),
+        }),
+      );
 
-    setSavedFingerprint(outcome === 'unavailable' ? null : fingerprintSession(session));
-    setState(outcome === 'unavailable' ? 'unavailable' : outcome);
-  }, [session, report, verdict]);
+      setSavedFingerprint(outcome === 'unavailable' ? null : fingerprintSession(session));
+      setState(outcome === 'unavailable' ? 'unavailable' : outcome);
+    },
+    [session, report, verdict],
+  );
 
   return { state, save };
 }
