@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { ArrowLeft, PencilLine, Printer } from 'lucide-react';
 import { AchievementList } from '@/components/results/AchievementList';
 import { DamageReceipt } from '@/components/results/DamageReceipt';
+import { MealBreakdown } from '@/components/results/MealBreakdown';
 import { ReportSummary } from '@/components/results/ReportSummary';
 import { ResultCard } from '@/components/results/ResultCard';
 import { SaveToHistory } from '@/components/results/SaveToHistory';
@@ -67,6 +68,8 @@ export function DamageReport({ report, session, onEditMeal, onStatus }: DamageRe
         // The hero, and its h1, is gone once the report is showing.
         headingLevel={1}
       />
+
+      <MealBreakdown lines={report.lines} headingId="breakdown-heading" heading="What you ate" />
 
       <AchievementList achievements={achievements} headingId="achievements-heading" />
 
