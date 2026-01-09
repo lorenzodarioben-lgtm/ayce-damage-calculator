@@ -96,6 +96,8 @@ export interface SessionTotals {
 }
 
 export interface DamageReport extends SessionTotals {
+  /** Diners the admission was charged for, clamped to the supported range. */
+  readonly dinerCount: number;
   readonly totalAdmission: number;
   /** Positive when retail value exceeds admission, negative otherwise. */
   readonly retailValueDifference: number;

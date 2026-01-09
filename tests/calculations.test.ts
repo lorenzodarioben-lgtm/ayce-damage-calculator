@@ -9,6 +9,7 @@ import {
   calculateSessionTotals,
   clampDinerCount,
   clampPricePerDiner,
+  perDinerTotals,
 } from '@/lib/calculations';
 import { KG_TO_LB } from '@/lib/constants';
 import type { MealItem } from '@/types/meal';
@@ -228,6 +229,56 @@ describe('damage report', () => {
     );
     expect(report.estimatedIngredientMargin).toBeLessThan(0);
     expect(report.estimatedFoodCostPercent).toBeGreaterThan(100);
+  });
+});
+
+describe('per-diner split', () => {
+  const meal = [item({ foodId: ribeye.id, plateSize: 'large', quantity: 8 })];
+
+  it('carries the clamped diner count on the report', () => {
+    expect(buildDamageReport(meal, { pricePerDiner: 50, dinerCount: 4 }).dinerCount).toBe(4);
+    expect(buildDamageReport(meal, { pricePerDiner: 50, dinerCount: 99 }).dinerCount).toBe(12);
+    expect(buildDamageReport(meal, { pricePerDiner: 50, dinerCount: 0 }).dinerCount).toBe(1);
+    expect(buildDamageReport(meal, { pricePerDiner: 50, dinerCount: 2.4 }).dinerCount).toBe(2);
+  });
+
+  it('divides the table evenly by head', () => {
+    const report = buildDamageReport(meal, { pricePerDiner: 50, dinerCount: 4 });
+    const each = perDinerTotals(report);
+
+    expect(each.dinerCount).toBe(4);
+    expect(each.admission).toBeCloseTo(50, 10);
+    expect(each.retailValue).toBeCloseTo(report.totalRetailValue / 4, 10);
+    expect(each.weightG).toBeCloseTo(report.totalWeightG / 4, 10);
+    expect(each.plates).toBeCloseTo(2, 10);
+    expect(each.nutrition.protein).toBeCloseTo(report.nutrition.protein / 4, 10);
+  });
+
+  it('returns the table itself for a single diner', () => {
+    const report = buildDamageReport(meal, { pricePerDiner: 50, dinerCount: 1 });
+    const each = perDinerTotals(report);
+
+    expect(each.retailValue).toBeCloseTo(report.totalRetailValue, 10);
+    expect(each.admission).toBeCloseTo(report.totalAdmission, 10);
+  });
+
+  it('adds back up to the totals it came from', () => {
+    const report = buildDamageReport(meal, { pricePerDiner: 42.5, dinerCount: 3 });
+    const each = perDinerTotals(report);
+
+    expect(each.retailValue * 3).toBeCloseTo(report.totalRetailValue, 10);
+    expect(each.admission * 3).toBeCloseTo(report.totalAdmission, 10);
+    expect(each.nutrition.calories * 3).toBeCloseTo(report.nutrition.calories, 10);
+  });
+
+  it('splits an empty meal without producing NaN', () => {
+    const each = perDinerTotals(buildDamageReport([], { pricePerDiner: 60, dinerCount: 5 }));
+
+    expect(each.retailValue).toBe(0);
+    expect(each.plates).toBe(0);
+    expect(each.weightG).toBe(0);
+    expect(each.nutrition.fat).toBe(0);
+    expect(each.admission).toBeCloseTo(60, 10);
   });
 });
 
