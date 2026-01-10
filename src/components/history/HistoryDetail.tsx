@@ -1,14 +1,19 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { ArrowLeft, RotateCcw } from 'lucide-react';
 import { AchievementList } from '@/components/results/AchievementList';
 import { MealBreakdown } from '@/components/results/MealBreakdown';
 import { ReportSummary } from '@/components/results/ReportSummary';
-import { formatRecordedAt } from '@/lib/formatting';
-import { resolveSavedSession, type ResolvedSavedSession } from '@/lib/history';
+import { Button } from '@/components/ui/Button';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { formatPlates, formatRecordedAt } from '@/lib/formatting';
+import { resolveSavedSession, sessionFromSaved, type ResolvedSavedSession } from '@/lib/history';
 import { getSession } from '@/lib/historyRepository';
+import { loadSession, saveSession as saveActiveSession } from '@/lib/storage';
+import type { SavedMealSession } from '@/types/history';
 
 type LoadState =
   | { status: 'loading' }
@@ -26,7 +31,38 @@ const BACK_LINK =
  * device; there is nothing for a server to render.
  */
 export function HistoryDetail({ id }: { id: string }) {
+  const router = useRouter();
   const [state, setState] = useState<LoadState>({ status: 'loading' });
+  const [pendingRerun, setPendingRerun] = useState<SavedMealSession | null>(null);
+
+  /**
+   * Loads the filed meal into the calculator and hands the diner over to it.
+   *
+   * The record itself is untouched: it is copied into the in-progress session,
+   * which is the same versioned envelope the calculator writes itself, so the
+   * calculator hydrates from it on arrival with nothing special to know.
+   */
+  const rerun = useCallback(
+    (record: SavedMealSession) => {
+      saveActiveSession(sessionFromSaved(record));
+      router.push('/');
+    },
+    [router],
+  );
+
+  const handleRerun = useCallback(
+    (record: SavedMealSession) => {
+      const current = loadSession();
+      // Overwriting plates someone is in the middle of eating is not a thing to
+      // do quietly.
+      if (current && current.items.length > 0) {
+        setPendingRerun(record);
+        return;
+      }
+      rerun(record);
+    },
+    [rerun],
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -103,6 +139,29 @@ export function HistoryDetail({ id }: { id: string }) {
       <AchievementList achievements={achievements} headingId="saved-achievements-heading" />
 
       <MealBreakdown lines={report.lines} headingId="recorded-plates-heading" />
+
+      {/* The point of keeping a record of a good order is being able to place
+          it again. */}
+      <Button variant="secondary" size="lg" fullWidth onClick={() => handleRerun(record)}>
+        <RotateCcw size={18} aria-hidden="true" />
+        Order this again
+      </Button>
+
+      <ConfirmDialog
+        open={pendingRerun !== null}
+        title="Replace the meal in progress?"
+        body={`There is already a tab open in the calculator. Loading this record replaces it with ${formatPlates(report.totalPlates)} from ${record.restaurantName || 'an unnamed restaurant'}. The filed record itself is not changed.`}
+        confirmLabel="Load this meal"
+        cancelLabel="Keep my tab"
+        onConfirm={() => {
+          const target = pendingRerun;
+          setPendingRerun(null);
+          if (target) {
+            rerun(target);
+          }
+        }}
+        onCancel={() => setPendingRerun(null)}
+      />
     </div>
   );
 }
