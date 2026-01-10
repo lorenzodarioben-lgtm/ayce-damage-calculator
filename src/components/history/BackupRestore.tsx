@@ -2,7 +2,7 @@
 
 import { useCallback, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Download, Upload } from 'lucide-react';
+import { ArrowLeft, Download, FileSpreadsheet, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import {
@@ -17,6 +17,7 @@ import {
   type BackupSummary,
   type RestoreMode,
 } from '@/lib/backup';
+import { csvFilename, historyToCsv } from '@/lib/csv';
 import { loadFavorites, saveFavorites } from '@/lib/favorites';
 import { formatRecordedAt } from '@/lib/formatting';
 import { listSessions, putSessions, replaceSessions } from '@/lib/historyRepository';
@@ -30,6 +31,19 @@ type Stage =
 const BACK_LINK =
   '-ml-2 inline-flex min-h-11 items-center gap-1.5 rounded-[10px] px-2 text-xs font-semibold ' +
   'uppercase tracking-[0.1em] text-cream-500 transition-colors duration-200 hover:bg-ash-850 hover:text-cream-100';
+
+/** Hands the browser a file built in memory, and never leaks the object URL. */
+function download(contents: string, type: string, filename: string): void {
+  const url = URL.createObjectURL(new Blob([contents], { type }));
+  try {
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.click();
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
 
 /**
  * Export and restore, with the file previewed before anything is written.
@@ -49,20 +63,28 @@ export function BackupRestore() {
       const now = new Date();
       const backup = buildBackup(await listSessions(), loadFavorites(), now.toISOString());
 
-      const blob = new Blob([serialiseBackup(backup)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      try {
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = backupFilename(now);
-        link.click();
-      } finally {
-        URL.revokeObjectURL(url);
-      }
+      download(serialiseBackup(backup), 'application/json', backupFilename(now));
 
       setStage({
         kind: 'done',
         message: `Exported ${backup.history.length} sessions and ${backup.favorites.length} saved orders.`,
+      });
+    } finally {
+      setBusy(false);
+    }
+  }, []);
+
+  const handleExportCsv = useCallback(async () => {
+    setBusy(true);
+    try {
+      const now = new Date();
+      const history = await listSessions();
+
+      download(historyToCsv(history), 'text/csv;charset=utf-8', csvFilename(now));
+
+      setStage({
+        kind: 'done',
+        message: `Wrote ${history.length} sessions to a spreadsheet, one row per plate.`,
       });
     } finally {
       setBusy(false);
@@ -128,10 +150,22 @@ export function BackupRestore() {
           Writes every filed session and saved order to a single JSON file. Keep it somewhere safe —
           it is the only copy of data that otherwise never leaves this browser.
         </p>
-        <Button variant="secondary" onClick={() => void handleExport()} disabled={busy}>
-          <Download size={16} aria-hidden="true" />
-          Download backup
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="secondary" onClick={() => void handleExport()} disabled={busy}>
+            <Download size={16} aria-hidden="true" />
+            Download backup
+          </Button>
+          {/* A second format, for a different job: the JSON file restores this
+              app, the CSV takes the numbers somewhere else. */}
+          <Button variant="secondary" onClick={() => void handleExportCsv()} disabled={busy}>
+            <FileSpreadsheet size={16} aria-hidden="true" />
+            Download spreadsheet
+          </Button>
+        </div>
+        <p className="mt-3 text-xs leading-relaxed text-cream-700">
+          The spreadsheet is history only, one row per plate, and cannot be restored from. Saved
+          orders and the ability to restore live in the JSON backup.
+        </p>
       </section>
 
       <section aria-labelledby="import-heading" className="panel p-4 sm:p-5">
