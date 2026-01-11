@@ -1,0 +1,34 @@
+name: Idea
+description: Suggest something the calculator could do.
+labels: ['enhancement']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Two things are out of scope by design: real restaurants with their real
+        prices, and anything that sends data off the device. The README explains
+        why for both.
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: The idea
+      description: What should it do?
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What it would solve
+      description: >
+        The situation you were in when you wanted it. This is the part that
+        decides whether an idea gets built, so it is worth more than the
+        proposed solution.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: What you do instead today
