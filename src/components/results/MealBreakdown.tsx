@@ -57,8 +57,11 @@ export function MealBreakdown({
         ))}
       </ul>
 
+      {/* Labelled simply "Total": it sits under a column of retail values, and
+          repeating the headline metric's own label here would give the report
+          two things called the same thing. */}
       <div className="flex items-baseline justify-between gap-3 pt-3">
-        <p className="micro-label">Est. retail value</p>
+        <p className="micro-label">Total</p>
         <p className="tabular text-base font-bold text-cream-50">{formatMoney(total)}</p>
       </div>
     </section>
