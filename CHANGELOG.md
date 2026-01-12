@@ -5,6 +5,62 @@ All notable changes to this project are recorded here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project uses
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0]
+
+A follow-up release. Nothing here changes how a number is calculated; everything here is about
+finding a cut faster, recovering from a mis-tap, seeing what the verdict was actually built from,
+and getting your own records back out.
+
+### Added
+
+**Meal building**
+
+- **Cut search** — one field that reaches across every category at once, matching on name, category
+  or description. Each word narrows, so "premium pork" means what it looks like.
+- **Value ordering** — order the picker by menu or by retail price per kilogram.
+- **Undo on removal** — removing a tab line now offers it straight back, with its quality, plate
+  size, quantity and position intact. Available in the full builder and in Live Meal Mode.
+
+**The report**
+
+- **Itemised breakdown** — every line on the tab, with its configuration, volume and value, on the
+  report itself. Previously this detail existed only on the printable receipt. Shared by the live
+  report, a filed record and a shared link, so the three cannot drift apart.
+- **The even split** — when the table is more than one, admission, retail value, food and calories
+  per head, stated plainly as an even division rather than dressed up as a per-person measurement.
+
+**History**
+
+- **Session notes** — write a note against a filed session and read it back on the record and in the
+  list. Saved records are now schema version 3; version 1 and 2 records are migrated forward on
+  read, as before.
+- **Search the file** — narrow filed sessions by restaurant name or by anything in a note. Appears
+  once the file is long enough to lose something in.
+- **Order this again** — load a filed meal back into the calculator. The record is untouched, and an
+  open tab is never replaced without asking.
+- **Spreadsheet export** — history as CSV, one row per plate, alongside the existing JSON backup.
+  Fields that a spreadsheet would read as formulas are neutralised on the way out.
+
+**Project**
+
+- A sitemap and crawling rules, with shared reports excluded from both.
+- Dependabot, grouped so a framework bump arrives as one reviewable pull request.
+- A contributing guide, issue forms and a pull request template.
+
+### Changed
+
+- The builder states the size of the dataset from the dataset itself rather than from a number typed
+  into the markup.
+- Reports state the diner count they were built for, so anything downstream can divide by it without
+  being handed it separately.
+- The breakdown's total is labelled "Total" rather than repeating the headline metric's own label.
+
+### Tests
+
+- 568 unit and component tests across 25 files, up from 410 across 20. New coverage for the food
+  dataset's integrity, search and ordering, undoable removal, the per-diner split, session notes and
+  their migration, history filtering, CSV escaping, and the sitemap and robots rules.
+
 ## [2.0.0]
 
 A major release. V1's calculator is unchanged in behaviour and still the front door; everything
