@@ -8,7 +8,13 @@ import {
   MAX_LINE_QUANTITY,
   MIN_QUANTITY,
 } from '@/lib/constants';
-import { clearSession, loadSession, sanitiseRestaurantName, saveSession } from '@/lib/storage';
+import {
+  clearSession,
+  loadSession,
+  normaliseRestaurantNameInput,
+  sanitiseRestaurantName,
+  saveSession,
+} from '@/lib/storage';
 import type {
   DamageReport,
   MealItem,
@@ -62,7 +68,7 @@ export function sessionReducer(state: MealSession, action: SessionAction): MealS
       return action.session;
 
     case 'set-restaurant-name':
-      return { ...state, restaurantName: sanitiseRestaurantName(action.value) };
+      return { ...state, restaurantName: normaliseRestaurantNameInput(action.value) };
 
     case 'set-price-per-diner':
       return { ...state, pricePerDiner: clampPricePerDiner(action.value) };
