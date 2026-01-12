@@ -1,4 +1,5 @@
 import { clampDinerCount, clampPricePerDiner } from '@/lib/calculations';
+import { isIsoTimestamp } from '@/lib/datetime';
 import { sanitiseRestaurantName } from '@/lib/storage';
 
 export const PRESETS_STORAGE_KEY = 'ayce-damage-presets';
@@ -117,10 +118,7 @@ function parsePreset(value: unknown): RestaurantPreset | null {
     name,
     pricePerDiner: clampPricePerDiner(value.pricePerDiner),
     dinerCount: clampDinerCount(value.dinerCount),
-    createdAt:
-      typeof value.createdAt === 'string' && !Number.isNaN(Date.parse(value.createdAt))
-        ? value.createdAt
-        : new Date(0).toISOString(),
+    createdAt: isIsoTimestamp(value.createdAt) ? value.createdAt : new Date(0).toISOString(),
   };
 }
 
