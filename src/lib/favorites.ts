@@ -1,5 +1,6 @@
 import { findFood } from '@/data/foods';
 import { getPlateSizeMeta, getQualityMeta, isPlateSize, isQualityTier } from '@/lib/constants';
+import { isIsoTimestamp } from '@/lib/datetime';
 import type { PlateSize, QualityTier } from '@/types/meal';
 
 export const FAVORITES_STORAGE_KEY = 'ayce-damage-favorites';
@@ -99,10 +100,7 @@ function parseFavorite(value: unknown): MealFavorite | null {
   return {
     id: favoriteId(config),
     ...config,
-    createdAt:
-      typeof createdAt === 'string' && !Number.isNaN(Date.parse(createdAt))
-        ? createdAt
-        : new Date(0).toISOString(),
+    createdAt: isIsoTimestamp(createdAt) ? createdAt : new Date(0).toISOString(),
   };
 }
 
