@@ -15,6 +15,7 @@ import {
   isQualityTier,
 } from '@/lib/constants';
 import { sanitiseRestaurantName } from '@/lib/storage';
+import { isIsoTimestamp } from '@/lib/datetime';
 import { getVerdict, isVerdictId, type Verdict } from '@/lib/verdicts';
 import type { SavedMealSession, SavedSessionSnapshot } from '@/types/history';
 import type { DamageReport, MealItem, MealSession, Nutrition } from '@/types/meal';
@@ -218,8 +219,8 @@ export function parseSavedSession(value: unknown): SavedMealSession | null {
     return null;
   }
 
-  const createdAt = typeof value.createdAt === 'string' ? value.createdAt : null;
-  if (createdAt === null || Number.isNaN(Date.parse(createdAt))) {
+  const createdAt = value.createdAt;
+  if (!isIsoTimestamp(createdAt)) {
     return null;
   }
 
