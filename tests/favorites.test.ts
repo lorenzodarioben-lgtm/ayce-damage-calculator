@@ -5,6 +5,7 @@ import {
   FAVORITES_STORAGE_KEY,
   FAVORITES_VERSION,
   MAX_FAVORITES,
+  MAX_STORED_FAVORITES_LENGTH,
   createFavorite,
   describeFavorite,
   favoriteId,
@@ -153,6 +154,10 @@ describe('parseStoredFavorites', () => {
     ['a bare array', '[]'],
   ])('returns an empty list for %s', (_label, raw) => {
     expect(parseStoredFavorites(raw)).toEqual([]);
+  });
+
+  it('refuses an oversized storage entry before parsing it', () => {
+    expect(parseStoredFavorites('x'.repeat(MAX_STORED_FAVORITES_LENGTH + 1))).toEqual([]);
   });
 
   it('rejects a payload from a different schema version', () => {
