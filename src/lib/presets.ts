@@ -5,6 +5,9 @@ import { sanitiseRestaurantName } from '@/lib/storage';
 export const PRESETS_STORAGE_KEY = 'ayce-damage-presets';
 export const PRESETS_VERSION = 1;
 
+/** Presets are a short personal list, not an unbounded JSON document. */
+export const MAX_STORED_PRESETS_LENGTH = 32 * 1024;
+
 /** A short list by design: this is a personal set of regular haunts. */
 export const MAX_PRESETS = 12;
 
@@ -123,7 +126,7 @@ function parsePreset(value: unknown): RestaurantPreset | null {
 }
 
 export function parseStoredPresets(raw: string | null): readonly RestaurantPreset[] {
-  if (!raw) {
+  if (!raw || raw.length > MAX_STORED_PRESETS_LENGTH) {
     return [];
   }
 
