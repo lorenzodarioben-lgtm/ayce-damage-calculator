@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { buildDamageReport } from '@/lib/calculations';
 import {
   MAX_HISTORY_RECORDS,
+  MAX_SAVED_SESSION_ID_LENGTH,
   SAVED_SESSION_VERSION,
   createSavedSession,
   filterSessions,
@@ -106,6 +107,11 @@ describe('parseSavedSession', () => {
     ['null', null],
     ['an array', []],
     ['a record with no id', { ...saved(), id: '' }],
+    ['a record with a route-breaking id', { ...saved(), id: '../share' }],
+    [
+      'a record with an oversized id',
+      { ...saved(), id: 'a'.repeat(MAX_SAVED_SESSION_ID_LENGTH + 1) },
+    ],
     ['a record from a future schema', { ...saved(), version: 99 }],
     ['a record with an unparseable timestamp', { ...saved(), createdAt: 'whenever' }],
     ['a record with a non-canonical timestamp', { ...saved(), createdAt: '2026-08-16' }],
