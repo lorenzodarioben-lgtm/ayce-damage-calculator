@@ -15,6 +15,7 @@ import {
   sanitiseRestaurantName,
   saveSession,
 } from '@/lib/storage';
+import { mealItemId } from '@/lib/mealItems';
 import type {
   DamageReport,
   MealItem,
@@ -58,10 +59,6 @@ function clampQuantity(value: number): number {
   return Math.min(MAX_LINE_QUANTITY, Math.max(MIN_QUANTITY, Math.floor(value)));
 }
 
-function createItemId(payload: AddItemPayload): string {
-  return `${payload.foodId}__${payload.quality}__${payload.plateSize}`;
-}
-
 export function sessionReducer(state: MealSession, action: SessionAction): MealSession {
   switch (action.type) {
     case 'hydrate':
@@ -88,7 +85,7 @@ export function sessionReducer(state: MealSession, action: SessionAction): MealS
 
     case 'add-item': {
       const quantity = clampQuantity(action.payload.quantity);
-      const id = createItemId(action.payload);
+      const id = mealItemId(action.payload);
       const existing = state.items.find((item) => item.id === id);
 
       if (existing) {

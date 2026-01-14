@@ -1,6 +1,7 @@
 import { findFood } from '@/data/foods';
 import { getPlateSizeMeta, getQualityMeta, isPlateSize, isQualityTier } from '@/lib/constants';
 import { isIsoTimestamp } from '@/lib/datetime';
+import { mealItemId } from '@/lib/mealItems';
 import type { PlateSize, QualityTier } from '@/types/meal';
 
 export const FAVORITES_STORAGE_KEY = 'ayce-damage-favorites';
@@ -37,7 +38,7 @@ interface StoredEnvelope {
  * so the two models line up.
  */
 export function favoriteId(config: FavoriteConfig): string {
-  return `${config.foodId}__${config.quality}__${config.plateSize}`;
+  return mealItemId(config);
 }
 
 export function createFavorite(config: FavoriteConfig, createdAt: string): MealFavorite {
