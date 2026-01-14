@@ -35,6 +35,18 @@ export const SUPPORTED_SESSION_VERSIONS = [1, 2, 3] as const;
 /** Beyond this the oldest records are pruned, so storage cannot grow forever. */
 export const MAX_HISTORY_RECORDS = 200;
 
+/** IDs appear in route segments and IndexedDB keys, so keep their alphabet safe. */
+export const MAX_SAVED_SESSION_ID_LENGTH = 100;
+
+function isSavedSessionId(value: unknown): value is string {
+  return (
+    typeof value === 'string' &&
+    value.length > 0 &&
+    value.length <= MAX_SAVED_SESSION_ID_LENGTH &&
+    /^[A-Za-z0-9_-]+$/.test(value)
+  );
+}
+
 /**
  * Re-saving the same meal inside this window updates the existing record rather
  * than adding another. It is long enough to cover one sitting and short enough
@@ -215,7 +227,7 @@ export function parseSavedSession(value: unknown): SavedMealSession | null {
     return null;
   }
 
-  if (typeof value.id !== 'string' || value.id.length === 0) {
+  if (!isSavedSessionId(value.id)) {
     return null;
   }
 
