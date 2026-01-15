@@ -116,6 +116,16 @@ describe('parseStoredSession', () => {
     expect(restored?.items[0]?.id).toBe('beef-ribeye__premium__regular');
   });
 
+  it('merges duplicate configurations from a hand-edited session', () => {
+    const duplicate = { ...validSession.items[0], quantity: 4, id: 'different-id' };
+    const restored = parseStoredSession(
+      envelope({ ...validSession, items: [...validSession.items, duplicate] }),
+    );
+
+    expect(restored?.items).toHaveLength(1);
+    expect(restored?.items[0]?.quantity).toBe(7);
+  });
+
   it('clamps item quantities into range', () => {
     const restored = parseStoredSession(
       envelope({
