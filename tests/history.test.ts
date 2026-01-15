@@ -157,6 +157,16 @@ describe('parseSavedSession', () => {
     expect(parsed?.items[0]?.id).toBe('beef-ribeye__standard__regular');
   });
 
+  it('merges duplicate configurations from a hand-edited record', () => {
+    const parsed = parseSavedSession({
+      ...saved(),
+      items: [item(), item({ id: 'duplicate', quantity: 4 })],
+    });
+
+    expect(parsed?.items).toHaveLength(1);
+    expect(parsed?.items[0]?.quantity).toBe(6);
+  });
+
   it('rebuilds a missing fingerprint so old records still deduplicate', () => {
     const record = saved();
     const parsed = parseSavedSession({ ...record, fingerprint: undefined });
