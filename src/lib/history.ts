@@ -16,6 +16,7 @@ import {
 } from '@/lib/constants';
 import { sanitiseRestaurantName } from '@/lib/storage';
 import { isIsoTimestamp } from '@/lib/datetime';
+import { mealItemId } from '@/lib/mealItems';
 import { getVerdict, isVerdictId, type Verdict } from '@/lib/verdicts';
 import type { SavedMealSession, SavedSessionSnapshot } from '@/types/history';
 import type { DamageReport, MealItem, MealSession, Nutrition } from '@/types/meal';
@@ -137,11 +138,11 @@ export function createSavedSession(
   };
 }
 
-function parseItem(value: unknown, index: number): MealItem | null {
+function parseItem(value: unknown): MealItem | null {
   if (!isRecord(value)) {
     return null;
   }
-  const { foodId, quality, plateSize, quantity, id } = value;
+  const { foodId, quality, plateSize, quantity } = value;
 
   if (typeof foodId !== 'string' || !findFood(foodId)) {
     return null;
@@ -155,7 +156,7 @@ function parseItem(value: unknown, index: number): MealItem | null {
   }
 
   return {
-    id: typeof id === 'string' && id.length > 0 ? id : `restored-${index}-${foodId}`,
+    id: mealItemId({ foodId, quality, plateSize }),
     foodId,
     quality,
     plateSize,
@@ -244,7 +245,7 @@ export function parseSavedSession(value: unknown): SavedMealSession | null {
 
   const rawItems = Array.isArray(value.items) ? value.items : [];
   const items = rawItems
-    .map((item, index) => parseItem(item, index))
+    .map(parseItem)
     .filter((item): item is MealItem => item !== null);
 
   // A record whose every line was rejected describes nothing.
