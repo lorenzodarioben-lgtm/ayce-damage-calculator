@@ -7,6 +7,7 @@ import {
   isPlateSize,
   isQualityTier,
 } from '@/lib/constants';
+import { mealItemId } from '@/lib/mealItems';
 import type { MealItem, MealSession } from '@/types/meal';
 
 export const STORAGE_KEY = 'ayce-damage-calculator';
@@ -41,12 +42,12 @@ export function normaliseRestaurantNameInput(value: string): string {
   return value.replace(/\s+/g, ' ').trimStart().slice(0, MAX_RESTAURANT_NAME_LENGTH);
 }
 
-function parseMealItem(value: unknown, index: number): MealItem | null {
+function parseMealItem(value: unknown): MealItem | null {
   if (!isRecord(value)) {
     return null;
   }
 
-  const { foodId, quality, plateSize, quantity, id } = value;
+  const { foodId, quality, plateSize, quantity } = value;
 
   if (typeof foodId !== 'string' || !findFood(foodId)) {
     return null;
@@ -61,7 +62,7 @@ function parseMealItem(value: unknown, index: number): MealItem | null {
   const safeQuantity = Math.min(MAX_LINE_QUANTITY, Math.max(MIN_QUANTITY, Math.floor(quantity)));
 
   return {
-    id: typeof id === 'string' && id.length > 0 ? id : `restored-${index}-${foodId}`,
+    id: mealItemId({ foodId, quality, plateSize }),
     foodId,
     quality,
     plateSize,
@@ -90,7 +91,7 @@ export function parseStoredSession(raw: string | null): MealSession | null {
   const rawItems = Array.isArray(session.items) ? session.items : [];
 
   const items = rawItems
-    .map((item, index) => parseMealItem(item, index))
+    .map(parseMealItem)
     .filter((item): item is MealItem => item !== null);
 
   const pricePerDiner =
