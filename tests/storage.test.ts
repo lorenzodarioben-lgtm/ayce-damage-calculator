@@ -17,7 +17,13 @@ const validSession: MealSession = {
   pricePerDiner: 59.9,
   dinerCount: 2,
   items: [
-    { id: 'a', foodId: 'beef-ribeye', quality: 'premium', plateSize: 'regular', quantity: 3 },
+    {
+      id: 'beef-ribeye__premium__regular',
+      foodId: 'beef-ribeye',
+      quality: 'premium',
+      plateSize: 'regular',
+      quantity: 3,
+    },
   ],
 };
 
@@ -97,6 +103,17 @@ describe('parseStoredSession', () => {
     );
     expect(restored?.items).toHaveLength(1);
     expect(restored?.items[0]?.foodId).toBe('pork-belly');
+  });
+
+  it('rebuilds a stored line id from its configuration', () => {
+    const restored = parseStoredSession(
+      envelope({
+        ...validSession,
+        items: [{ ...validSession.items[0], id: 'hand-edited-id' }],
+      }),
+    );
+
+    expect(restored?.items[0]?.id).toBe('beef-ribeye__premium__regular');
   });
 
   it('clamps item quantities into range', () => {
