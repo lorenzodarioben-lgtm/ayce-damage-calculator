@@ -17,6 +17,7 @@ import {
 import { sanitiseRestaurantName } from '@/lib/storage';
 import { isIsoTimestamp } from '@/lib/datetime';
 import { mealItemId, mergeMealItems } from '@/lib/mealItems';
+import { DEFAULT_PRICING_PROFILE_ID } from '@/lib/pricing';
 import { getVerdict, isVerdictId, type Verdict } from '@/lib/verdicts';
 import type { SavedMealSession, SavedSessionSnapshot } from '@/types/history';
 import type { DamageReport, MealItem, MealSession, Nutrition } from '@/types/meal';
@@ -290,6 +291,7 @@ export function parseSavedSession(value: unknown): SavedMealSession | null {
       restaurantName,
       pricePerDiner: safePrice,
       dinerCount: safeDiners,
+      pricingProfileId: DEFAULT_PRICING_PROFILE_ID,
       items,
     }),
     snapshot,
@@ -317,6 +319,7 @@ export function sessionFromSaved(record: SavedMealSession): MealSession {
     restaurantName: record.restaurantName,
     pricePerDiner: record.pricePerDiner,
     dinerCount: record.dinerCount,
+    pricingProfileId: DEFAULT_PRICING_PROFILE_ID,
     items: record.items,
   };
 }

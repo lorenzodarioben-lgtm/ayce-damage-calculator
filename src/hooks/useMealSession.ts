@@ -16,6 +16,7 @@ import {
   saveSession,
 } from '@/lib/storage';
 import { mealItemId } from '@/lib/mealItems';
+import { DEFAULT_PRICING_PROFILE_ID } from '@/lib/pricing';
 import type {
   DamageReport,
   MealItem,
@@ -29,6 +30,7 @@ export const INITIAL_SESSION: MealSession = {
   restaurantName: '',
   pricePerDiner: DEFAULT_PRICE_PER_DINER,
   dinerCount: DEFAULT_DINER_COUNT,
+  pricingProfileId: DEFAULT_PRICING_PROFILE_ID,
   items: [],
 };
 
@@ -81,6 +83,7 @@ export function sessionReducer(state: MealSession, action: SessionAction): MealS
         restaurantName: sanitiseRestaurantName(action.setup.restaurantName),
         pricePerDiner: clampPricePerDiner(action.setup.pricePerDiner),
         dinerCount: clampDinerCount(action.setup.dinerCount),
+        pricingProfileId: action.setup.pricingProfileId ?? DEFAULT_PRICING_PROFILE_ID,
       };
 
     case 'add-item': {

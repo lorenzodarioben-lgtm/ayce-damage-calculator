@@ -11,6 +11,7 @@ import {
 } from '@/lib/constants';
 import { RestaurantPresets } from '@/components/session/RestaurantPresets';
 import { formatMoney } from '@/lib/formatting';
+import { DEFAULT_PRICING_PROFILE_ID } from '@/lib/pricing';
 import type { MealSession, SessionConfig } from '@/types/meal';
 
 interface SessionSetupProps {
@@ -182,6 +183,7 @@ export function SessionSetup({
             restaurantName: preset.name,
             pricePerDiner: preset.pricePerDiner,
             dinerCount: preset.dinerCount,
+            pricingProfileId: DEFAULT_PRICING_PROFILE_ID,
           })
         }
         onStatus={onStatus}
