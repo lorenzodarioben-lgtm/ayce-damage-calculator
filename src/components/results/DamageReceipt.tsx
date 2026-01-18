@@ -1,4 +1,5 @@
 import { getPlateSizeMeta, getQualityMeta } from '@/lib/constants';
+import { usePricingProfile } from '@/components/session/PricingContext';
 import {
   formatCalories,
   formatGrams,
@@ -47,6 +48,7 @@ export function DamageReceipt({
   achievements,
   issuedAt,
 }: DamageReceiptProps) {
+  const pricingProfile = usePricingProfile();
   return (
     <div
       className="print-receipt hidden font-mono text-[11px] leading-snug text-black"
@@ -96,7 +98,9 @@ export function DamageReceipt({
                     {getPlateSizeMeta(line.item.plateSize).label} · {line.weightG} g
                   </span>
                 </td>
-                <td className="pt-1 text-right">{formatMoney(line.retailValue)}</td>
+                <td className="pt-1 text-right">
+                  {formatMoney(line.retailValue, pricingProfile.money)}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -114,12 +118,21 @@ export function DamageReceipt({
         <p className="mt-2 whitespace-pre overflow-hidden">{THIN_RULE}</p>
 
         <div className="mt-2">
-          <Row label="EST. RETAIL VALUE" value={formatMoney(report.totalRetailValue)} />
-          <Row label="ADMISSION PAID" value={formatMoney(report.totalAdmission)} />
-          <Row label="EST. INGREDIENT COST" value={formatMoney(report.totalRestaurantCost)} />
+          <Row
+            label="EST. RETAIL VALUE"
+            value={formatMoney(report.totalRetailValue, pricingProfile.money)}
+          />
+          <Row
+            label="ADMISSION PAID"
+            value={formatMoney(report.totalAdmission, pricingProfile.money)}
+          />
+          <Row
+            label="EST. INGREDIENT COST"
+            value={formatMoney(report.totalRestaurantCost, pricingProfile.money)}
+          />
           <Row
             label="EST. INGREDIENT MARGIN"
-            value={formatMoney(report.estimatedIngredientMargin)}
+            value={formatMoney(report.estimatedIngredientMargin, pricingProfile.money)}
           />
           <Row label="RETAIL RECOVERY" value={formatPercent(report.retailRecoveryPercent)} />
         </div>

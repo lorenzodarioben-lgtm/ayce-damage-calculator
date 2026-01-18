@@ -8,22 +8,27 @@ import { SiteHeader } from '@/components/nav/SiteHeader';
 import { MAIN_CONTENT_ID } from '@/components/nav/destinations';
 import { DamageReport } from '@/components/results/DamageReport';
 import { SessionSetup } from '@/components/session/SessionSetup';
+import { PricingProfileProvider } from '@/components/session/PricingContext';
 import { LiveSummary } from '@/components/summary/LiveSummary';
 import { StickySummaryBar } from '@/components/summary/StickySummaryBar';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { StatusToast } from '@/components/ui/StatusToast';
 import { useMealSession, type AddItemPayload } from '@/hooks/useMealSession';
+import { usePricingProfiles } from '@/hooks/usePricingProfiles';
 import { useStageHistory } from '@/hooks/useStageHistory';
 import { useStatusMessage } from '@/hooks/useStatusMessage';
 import { useUndoableRemove } from '@/hooks/useUndoableRemove';
+import { DEFAULT_PRICING_PROFILE_ID } from '@/lib/pricing';
 
 export function CalculatorApp() {
+  const pricingProfiles = usePricingProfiles();
   const {
     session,
     report,
     hydrated,
     setRestaurantName,
     setPricePerDiner,
+    setPricingProfile,
     adjustDinerCount,
     applySetup,
     addItem,
@@ -32,7 +37,8 @@ export function CalculatorApp() {
     removeItem,
     restoreItem,
     resetSession,
-  } = useMealSession();
+    pricingProfile,
+  } = useMealSession(pricingProfiles.profiles);
 
   const { stage, showReport, showBuilder } = useStageHistory({
     ready: hydrated,
@@ -106,80 +112,97 @@ export function CalculatorApp() {
     announce('Session reset. The buffet remembers nothing.');
   }, [resetSession, showBuilder, announce]);
 
+  const handleRemovePricingProfile = useCallback(
+    (id: string) => {
+      pricingProfiles.remove(id);
+      if (session.pricingProfileId === id) {
+        setPricingProfile(DEFAULT_PRICING_PROFILE_ID);
+        announce('The removed profile was active, so Australian estimates are back on this table.');
+      }
+    },
+    [pricingProfiles, session.pricingProfileId, setPricingProfile, announce],
+  );
+
   return (
-    <>
-      <SiteHeader
-        onBrandClick={handleBrandClick}
-        brandActionLabel={
-          stage === 'report' ? 'Back to the meal builder' : 'Back to the top of the page'
-        }
-      />
+    <PricingProfileProvider profile={pricingProfile}>
+      <>
+        <SiteHeader
+          onBrandClick={handleBrandClick}
+          brandActionLabel={
+            stage === 'report' ? 'Back to the meal builder' : 'Back to the top of the page'
+          }
+        />
 
-      <main id={MAIN_CONTENT_ID} className="relative z-10">
-        {stage === 'builder' && <Hero />}
+        <main id={MAIN_CONTENT_ID} className="relative z-10">
+          {stage === 'builder' && <Hero />}
 
-        <div className="mx-auto max-w-[1280px] px-4 pb-32 pt-6 sm:px-6 lg:pb-16">
-          {stage === 'report' ? (
-            <div ref={reportRef} tabIndex={-1} className="outline-none">
-              <DamageReport
-                report={report}
-                session={session}
-                onEditMeal={handleEditMeal}
-                onStatus={announce}
-              />
-            </div>
-          ) : (
-            <div
-              ref={builderRef}
-              className="grid items-start gap-4 lg:grid-cols-[1fr_380px] lg:gap-6"
-            >
-              <div className="space-y-4 lg:space-y-6">
-                <SessionSetup
+          <div className="mx-auto max-w-[1280px] px-4 pb-32 pt-6 sm:px-6 lg:pb-16">
+            {stage === 'report' ? (
+              <div ref={reportRef} tabIndex={-1} className="outline-none">
+                <DamageReport
+                  report={report}
                   session={session}
-                  totalAdmission={report.totalAdmission}
-                  onRestaurantNameChange={setRestaurantName}
-                  onPricePerDinerChange={setPricePerDiner}
-                  onDinerCountChange={adjustDinerCount}
-                  onApplySetup={applySetup}
+                  onEditMeal={handleEditMeal}
                   onStatus={announce}
                 />
-                <MealBuilder onAdd={handleAdd} />
               </div>
+            ) : (
+              <div
+                ref={builderRef}
+                className="grid items-start gap-4 lg:grid-cols-[1fr_380px] lg:gap-6"
+              >
+                <div className="space-y-4 lg:space-y-6">
+                  <SessionSetup
+                    session={session}
+                    totalAdmission={report.totalAdmission}
+                    onRestaurantNameChange={setRestaurantName}
+                    onPricePerDinerChange={setPricePerDiner}
+                    onPricingProfileChange={setPricingProfile}
+                    pricingProfiles={pricingProfiles.profiles}
+                    onSavePricingProfile={pricingProfiles.save}
+                    onRemovePricingProfile={handleRemovePricingProfile}
+                    onDinerCountChange={adjustDinerCount}
+                    onApplySetup={applySetup}
+                    onStatus={announce}
+                  />
+                  <MealBuilder onAdd={handleAdd} />
+                </div>
 
-              <div className="lg:sticky lg:top-[4.5rem]">
-                <LiveSummary
-                  report={report}
-                  onIncrement={incrementItem}
-                  onDecrement={decrementItem}
-                  onRemove={handleRemove}
-                  onCalculate={handleCalculate}
-                  onReset={() => setResetOpen(true)}
-                />
+                <div className="lg:sticky lg:top-[4.5rem]">
+                  <LiveSummary
+                    report={report}
+                    onIncrement={incrementItem}
+                    onDecrement={decrementItem}
+                    onRemove={handleRemove}
+                    onCalculate={handleCalculate}
+                    onReset={() => setResetOpen(true)}
+                  />
+                </div>
               </div>
-            </div>
-          )}
-        </div>
-      </main>
+            )}
+          </div>
+        </main>
 
-      {/* The sticky summary bar overlays the foot of the page on small screens,
+        {/* The sticky summary bar overlays the foot of the page on small screens,
           so the footer reserves room for it there. */}
-      <SiteFooter className="pb-24 lg:pb-8">
-        Estimates only. Prices, portions and nutrition vary by supplier, restaurant and preparation.
-        Estimated ingredient margin is not restaurant profit.
-      </SiteFooter>
+        <SiteFooter className="pb-24 lg:pb-8">
+          Estimates only. Prices, portions and nutrition vary by supplier, restaurant and
+          preparation. Estimated ingredient margin is not restaurant profit.
+        </SiteFooter>
 
-      {stage === 'builder' && <StickySummaryBar report={report} onCalculate={handleCalculate} />}
+        {stage === 'builder' && <StickySummaryBar report={report} onCalculate={handleCalculate} />}
 
-      <StatusToast message={status} offset={stage === 'builder' && report.lines.length > 0} />
+        <StatusToast message={status} offset={stage === 'builder' && report.lines.length > 0} />
 
-      <ConfirmDialog
-        open={resetOpen}
-        title="Reset session?"
-        body="This clears the restaurant name, entry price, diners and every plate on your tab. It cannot be undone."
-        confirmLabel="Reset everything"
-        onConfirm={handleConfirmReset}
-        onCancel={() => setResetOpen(false)}
-      />
-    </>
+        <ConfirmDialog
+          open={resetOpen}
+          title="Reset session?"
+          body="This clears the restaurant name, entry price, diners and every plate on your tab. It cannot be undone."
+          confirmLabel="Reset everything"
+          onConfirm={handleConfirmReset}
+          onCancel={() => setResetOpen(false)}
+        />
+      </>
+    </PricingProfileProvider>
   );
 }

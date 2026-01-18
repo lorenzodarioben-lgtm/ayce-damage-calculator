@@ -7,10 +7,12 @@ import { Dialog } from '@/components/ui/Dialog';
 import { formatPricePerKg } from '@/lib/formatting';
 import { SUPPORTED_CURRENCIES, defaultLocaleForCurrency, type CurrencyCode } from '@/lib/money';
 import { nextPricingProfileId, createPricingProfile } from '@/lib/pricingProfiles';
-import { usePricingProfiles } from '@/hooks/usePricingProfiles';
-import type { FoodPricing, PricingProfile } from '@/types/pricing';
+import type { FoodPricing, PricingProfile, PricingProfileId } from '@/types/pricing';
 
 interface PricingProfileManagerProps {
+  profiles: readonly PricingProfile[];
+  onSave: (profile: PricingProfile) => void;
+  onRemove: (id: PricingProfileId) => void;
   onStatus: (message: string) => void;
 }
 
@@ -231,14 +233,18 @@ function ProfileEditor({
 }
 
 /** A modest local menu cabinet: default estimates plus personal variations. */
-export function PricingProfileManager({ onStatus }: PricingProfileManagerProps) {
-  const { profiles, save, remove } = usePricingProfiles();
+export function PricingProfileManager({
+  profiles,
+  onSave,
+  onRemove,
+  onStatus,
+}: PricingProfileManagerProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const editing = profiles.find((profile) => profile.id === editingId) ?? null;
 
   function handleSave(profile: PricingProfile) {
-    save(profile);
+    onSave(profile);
     setEditingId(null);
     setCreating(false);
     onStatus(`${profile.name} pricing saved on this device.`);
@@ -292,7 +298,7 @@ export function PricingProfileManager({ onStatus }: PricingProfileManagerProps) 
                 <button
                   type="button"
                   onClick={() => {
-                    remove(profile.id);
+                    onRemove(profile.id);
                     onStatus(`${profile.name} pricing removed from this device.`);
                   }}
                   aria-label={`Delete ${profile.name} pricing`}
