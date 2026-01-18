@@ -12,11 +12,21 @@ import {
   perDinerTotals,
 } from '@/lib/calculations';
 import { KG_TO_LB } from '@/lib/constants';
+import { DEFAULT_PRICING_PROFILE } from '@/lib/pricing';
+import type { PricingProfile } from '@/types/pricing';
 import type { MealItem } from '@/types/meal';
 
 const ribeye = findFood('beef-ribeye')!;
 const porkBelly = findFood('pork-belly')!;
 const prawns = findFood('seafood-prawns')!;
+const marketPricing: PricingProfile = {
+  ...DEFAULT_PRICING_PROFILE,
+  id: 'sydney-market',
+  name: 'Sydney market estimates',
+  overrides: {
+    [ribeye.id]: { retailPricePerKg: 80, restaurantCostPerKg: 43 },
+  },
+};
 
 function item(overrides: Partial<MealItem> & Pick<MealItem, 'foodId'>): MealItem {
   return {
@@ -64,6 +74,11 @@ describe('line item retail value', () => {
     expect(adjustedRetailPricePerKg(ribeye, 'standard')).toBeCloseTo(52, 10);
     expect(adjustedRetailPricePerKg(ribeye, 'premium')).toBeCloseTo(52 * 1.35, 10);
   });
+
+  it('uses the active profile override without changing the catalogue item', () => {
+    expect(adjustedRetailPricePerKg(ribeye, 'standard', marketPricing)).toBe(80);
+    expect(ribeye.retailPricePerKg).toBe(52);
+  });
 });
 
 describe('line item restaurant cost', () => {
@@ -80,6 +95,10 @@ describe('line item restaurant cost', () => {
     );
     // 0.44 kg x $12/kg
     expect(line.restaurantCost).toBeCloseTo(5.28, 10);
+  });
+
+  it('uses profile restaurant-cost assumptions independently', () => {
+    expect(adjustedRestaurantCostPerKg(ribeye, 'standard', marketPricing)).toBe(43);
   });
 });
 
@@ -159,6 +178,15 @@ describe('session totals', () => {
     expect(totals.lines).toHaveLength(1);
     expect(Number.isFinite(totals.totalRetailValue)).toBe(true);
   });
+
+  it('resolves profile prices across the session', () => {
+    const totals = calculateSessionTotals(
+      [item({ foodId: ribeye.id, plateSize: 'regular', quantity: 2 })],
+      marketPricing,
+    );
+    expect(totals.totalRetailValue).toBeCloseTo(0.31 * 80, 10);
+    expect(totals.totalRestaurantCost).toBeCloseTo(0.31 * 43, 10);
+  });
 });
 
 describe('admission', () => {
@@ -192,6 +220,15 @@ describe('damage report', () => {
     expect(report.retailValueDifference).toBeCloseTo(91.52 - 59.9, 10);
     expect(report.retailValueDifference).toBeGreaterThan(0);
     expect(report.hasBeatenBuffet).toBe(true);
+  });
+
+  it('carries the selected profile through the report calculation', () => {
+    const report = buildDamageReport(
+      [item({ foodId: ribeye.id, plateSize: 'regular', quantity: 2 })],
+      config,
+      marketPricing,
+    );
+    expect(report.totalRetailValue).toBeCloseTo(0.31 * 80, 10);
   });
 
   it('reports a negative difference below admission', () => {
