@@ -138,6 +138,14 @@ export function findPricingProfile(
   );
 }
 
+/** Looks up an id in an already-complete profile list, such as a hydrated hook result. */
+export function resolvePricingProfile(
+  profiles: readonly PricingProfile[],
+  id: PricingProfileId | undefined,
+): PricingProfile {
+  return profiles.find((profile) => profile.id === id) ?? DEFAULT_PRICING_PROFILE;
+}
+
 function parsePricingProfile(value: unknown): PricingProfile | null {
   if (!isRecord(value) || !isPricingProfileId(value.id)) {
     return null;

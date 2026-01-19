@@ -2,6 +2,7 @@
 
 import { cn } from '@/lib/cn';
 import { formatMoney, formatPercent } from '@/lib/formatting';
+import { usePricingProfile } from '@/components/session/PricingContext';
 
 interface DamageMeterProps {
   retailValue: number;
@@ -18,6 +19,7 @@ export function DamageMeter({
   remainingGap,
   compact = false,
 }: DamageMeterProps) {
+  const pricingProfile = usePricingProfile();
   const beaten = recoveryPercent >= 100;
   // The bar caps at 100% while the numeric readout keeps climbing, so a 250%
   // meal cannot blow out the layout.
@@ -28,8 +30,10 @@ export function DamageMeter({
       <div className="flex items-baseline justify-between gap-2">
         <span className="micro-label">Retail damage</span>
         <span className="tabular text-sm font-semibold text-cream-300">
-          {formatMoney(retailValue)}{' '}
-          <span className="text-cream-700">/ {formatMoney(totalAdmission)}</span>
+          {formatMoney(retailValue, pricingProfile.money)}{' '}
+          <span className="text-cream-700">
+            / {formatMoney(totalAdmission, pricingProfile.money)}
+          </span>
         </span>
       </div>
 
@@ -67,7 +71,7 @@ export function DamageMeter({
               <span className="sr-only"> by estimated supermarket retail value</span>
             </>
           ) : (
-            `${formatMoney(remainingGap)} until retail break-even`
+            `${formatMoney(remainingGap, pricingProfile.money)} until retail break-even`
           )}
         </p>
         <p

@@ -2,6 +2,7 @@ import { describe, expect, it, beforeEach, vi } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { CalculatorApp } from '@/components/CalculatorApp';
+import { PRICING_PROFILES_STORAGE_KEY } from '@/lib/pricingProfiles';
 import { STORAGE_KEY } from '@/lib/storage';
 
 // jsdom implements none of these, and all run on the stage transitions.
@@ -97,6 +98,38 @@ describe('CalculatorApp', () => {
 
     const setup = screen.getByRole('region', { name: /session setup/i });
     expect(within(setup).getByText('$119.80')).toBeInTheDocument();
+  });
+
+  it('recalculates a live tab when a different menu pricing profile is selected', async () => {
+    window.localStorage.setItem(
+      PRICING_PROFILES_STORAGE_KEY,
+      JSON.stringify({
+        version: 1,
+        profiles: [
+          {
+            id: 'custom-downtown-lunch',
+            name: 'Downtown lunch',
+            money: { currency: 'USD', locale: 'en-US' },
+            overrides: {
+              'beef-ribeye': { retailPricePerKg: 80, restaurantCostPerKg: 45 },
+            },
+            builtIn: false,
+          },
+        ],
+      }),
+    );
+    const user = userEvent.setup();
+    render(<CalculatorApp />);
+
+    await user.selectOptions(
+      screen.getByRole('combobox', { name: /^menu pricing$/i }),
+      'custom-downtown-lunch',
+    );
+    await addPlates(user, 'Ribeye');
+
+    const tab = screen.getByRole('region', { name: /your tab/i });
+    expect(within(tab).getAllByText('$12.40')).toHaveLength(2);
+    expect(window.localStorage.getItem(STORAGE_KEY)).toContain('custom-downtown-lunch');
   });
 
   it('clamps an absurd price rather than poisoning totals', async () => {

@@ -11,15 +11,21 @@ import {
 } from '@/lib/constants';
 import { RestaurantPresets } from '@/components/session/RestaurantPresets';
 import { PricingProfileManager } from '@/components/session/PricingProfileManager';
+import { usePricingProfile } from '@/components/session/PricingContext';
 import { formatMoney } from '@/lib/formatting';
 import { DEFAULT_PRICING_PROFILE_ID } from '@/lib/pricing';
 import type { MealSession, SessionConfig } from '@/types/meal';
+import type { PricingProfile, PricingProfileId } from '@/types/pricing';
 
 interface SessionSetupProps {
   session: MealSession;
   totalAdmission: number;
   onRestaurantNameChange: (value: string) => void;
   onPricePerDinerChange: (value: number) => void;
+  onPricingProfileChange: (id: PricingProfileId) => void;
+  pricingProfiles: readonly PricingProfile[];
+  onSavePricingProfile: (profile: PricingProfile) => void;
+  onRemovePricingProfile: (id: PricingProfileId) => void;
   onDinerCountChange: (delta: number) => void;
   onApplySetup: (setup: SessionConfig) => void;
   onStatus: (message: string) => void;
@@ -30,10 +36,15 @@ export function SessionSetup({
   totalAdmission,
   onRestaurantNameChange,
   onPricePerDinerChange,
+  onPricingProfileChange,
+  pricingProfiles,
+  onSavePricingProfile,
+  onRemovePricingProfile,
   onDinerCountChange,
   onApplySetup,
   onStatus,
 }: SessionSetupProps) {
+  const pricingProfile = usePricingProfile();
   const nameId = useId();
   const priceId = useId();
   const priceHintId = useId();
@@ -144,6 +155,36 @@ export function SessionSetup({
           </p>
         </div>
 
+        <div className="sm:col-span-2">
+          <label
+            htmlFor="pricing-profile"
+            className="mb-1.5 block text-sm font-semibold text-cream-300"
+          >
+            Menu pricing
+          </label>
+          <select
+            id="pricing-profile"
+            value={pricingProfile.id}
+            onChange={(event) => {
+              onPricingProfileChange(event.target.value);
+              const next = pricingProfiles.find((profile) => profile.id === event.target.value);
+              if (next) {
+                onStatus(`${next.name} pricing applied to this table.`);
+              }
+            }}
+            className="h-12 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-base text-cream-50 focus:border-ember-600"
+          >
+            {pricingProfiles.map((profile) => (
+              <option key={profile.id} value={profile.id}>
+                {profile.name} · {profile.money.currency}
+              </option>
+            ))}
+          </select>
+          <p className="mt-1.5 text-xs text-cream-700">
+            Switching profiles recalculates the whole tab with that menu&rsquo;s assumptions.
+          </p>
+        </div>
+
         <div>
           <span className="mb-1.5 block text-sm font-semibold text-cream-300">Diners</span>
           <QuantityStepper
@@ -163,12 +204,12 @@ export function SessionSetup({
         <div>
           <p className="micro-label">Total entry</p>
           <p className="tabular text-xs text-cream-500">
-            {formatMoney(session.pricePerDiner)} per person × {session.dinerCount}{' '}
-            {session.dinerCount === 1 ? 'diner' : 'diners'}
+            {formatMoney(session.pricePerDiner, pricingProfile.money)} per person ×{' '}
+            {session.dinerCount} {session.dinerCount === 1 ? 'diner' : 'diners'}
           </p>
         </div>
         <p className="tabular display-type text-3xl text-ember-400">
-          {formatMoney(totalAdmission)}
+          {formatMoney(totalAdmission, pricingProfile.money)}
         </p>
       </div>
 
@@ -190,7 +231,12 @@ export function SessionSetup({
         onStatus={onStatus}
       />
 
-      <PricingProfileManager onStatus={onStatus} />
+      <PricingProfileManager
+        profiles={pricingProfiles}
+        onSave={onSavePricingProfile}
+        onRemove={onRemovePricingProfile}
+        onStatus={onStatus}
+      />
     </section>
   );
 }
