@@ -22,7 +22,7 @@ function describe(record: SavedMealSession): string {
 
 /** Amber for a neutral move, green or red only where "better" is meaningful. */
 function deltaTone(metric: MetricComparison): string {
-  if (metric.delta === 0) {
+  if (metric.delta === null || metric.delta === 0) {
     return 'text-cream-700';
   }
   if (metric.bias === 'neutral') {
@@ -37,21 +37,27 @@ function MetricRow({ metric }: { metric: MetricComparison }) {
       <p className="micro-label col-span-2 sm:col-span-1 sm:!text-cream-300">{metric.label}</p>
 
       <p className="tabular text-sm text-cream-500">
-        {formatMetricValue(metric.previous, metric.unit)}
+        {formatMetricValue(metric.previous, metric.unit, metric.previousMoney)}
         <span aria-hidden="true" className="px-2 text-cream-700">
           →
         </span>
         <span className="font-bold text-cream-50">
-          {formatMetricValue(metric.current, metric.unit)}
+          {formatMetricValue(metric.current, metric.unit, metric.currentMoney)}
         </span>
       </p>
 
       <p className={cn('tabular text-right text-sm font-semibold', deltaTone(metric))}>
-        {formatDelta(metric.delta, metric.unit)}
-        {metric.relativeChange !== null && metric.relativeChange !== 0 && (
-          <span className="ml-1 text-xs font-normal text-cream-700">
-            ({formatPercent(metric.relativeChange)})
-          </span>
+        {metric.comparable && metric.delta !== null ? (
+          <>
+            {formatDelta(metric.delta, metric.unit, metric.currentMoney)}
+            {metric.relativeChange !== null && metric.relativeChange !== 0 && (
+              <span className="ml-1 text-xs font-normal text-cream-700">
+                ({formatPercent(metric.relativeChange)})
+              </span>
+            )}
+          </>
+        ) : (
+          <span className="text-xs font-normal text-cream-600">Different currencies</span>
         )}
       </p>
     </div>
@@ -203,6 +209,12 @@ export function ComparisonView() {
                 <MetricRow key={metric.id} metric={metric} />
               ))}
             </div>
+            {comparison.metrics.some((metric) => !metric.comparable) && (
+              <p className="mt-3 text-xs leading-relaxed text-cream-700">
+                Money figures are shown in the currency recorded for each visit. No currency delta
+                is claimed without an exchange-rate assumption.
+              </p>
+            )}
           </section>
 
           <section aria-labelledby="category-shift-heading" className="panel p-4 sm:p-5">
