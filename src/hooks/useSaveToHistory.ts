@@ -6,6 +6,7 @@ import { saveSession } from '@/lib/historyRepository';
 import { createId } from '@/lib/id';
 import type { Verdict } from '@/lib/verdicts';
 import type { DamageReport, MealSession } from '@/types/meal';
+import type { PricingProfile } from '@/types/pricing';
 
 export type SaveState = 'idle' | 'saving' | 'inserted' | 'updated' | 'unavailable';
 
@@ -23,6 +24,7 @@ export function useSaveToHistory(
   session: MealSession,
   report: DamageReport,
   verdict: Verdict,
+  pricingProfile: PricingProfile,
 ): UseSaveToHistoryResult {
   const [state, setState] = useState<SaveState>('idle');
   const [savedFingerprint, setSavedFingerprint] = useState<string | null>(null);
@@ -45,13 +47,14 @@ export function useSaveToHistory(
           id: createId(),
           createdAt: new Date().toISOString(),
           ...(note === undefined ? {} : { note }),
+          pricingProfile,
         }),
       );
 
       setSavedFingerprint(outcome === 'unavailable' ? null : fingerprintSession(session));
       setState(outcome === 'unavailable' ? 'unavailable' : outcome);
     },
-    [session, report, verdict],
+    [session, report, verdict, pricingProfile],
   );
 
   return { state, save };
