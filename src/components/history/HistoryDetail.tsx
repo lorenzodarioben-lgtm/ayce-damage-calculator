@@ -7,6 +7,7 @@ import { ArrowLeft, RotateCcw } from 'lucide-react';
 import { AchievementList } from '@/components/results/AchievementList';
 import { MealBreakdown } from '@/components/results/MealBreakdown';
 import { ReportSummary } from '@/components/results/ReportSummary';
+import { PricingProfileProvider } from '@/components/session/PricingContext';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { formatPlates, formatRecordedAt } from '@/lib/formatting';
@@ -110,58 +111,60 @@ export function HistoryDetail({ id }: { id: string }) {
   const { record, report, verdict, achievements } = state.resolved;
 
   return (
-    <div className="animate-fade-up space-y-6">
-      <Link href="/history" className={BACK_LINK}>
-        <ArrowLeft size={15} aria-hidden="true" />
-        Back to the file
-      </Link>
+    <PricingProfileProvider profile={record.pricingProfile}>
+      <div className="animate-fade-up space-y-6">
+        <Link href="/history" className={BACK_LINK}>
+          <ArrowLeft size={15} aria-hidden="true" />
+          Back to the file
+        </Link>
 
-      <ReportSummary
-        report={report}
-        verdict={verdict}
-        restaurantName={record.restaurantName}
-        heading="Filed Damage Report"
-        headingId="saved-report-heading"
-        headingLevel={1}
-        subheading={`Recorded ${formatRecordedAt(record.createdAt)}`}
-      />
+        <ReportSummary
+          report={report}
+          verdict={verdict}
+          restaurantName={record.restaurantName}
+          heading="Filed Damage Report"
+          headingId="saved-report-heading"
+          headingLevel={1}
+          subheading={`Recorded ${formatRecordedAt(record.createdAt)}`}
+        />
 
-      {record.note && (
-        <section aria-labelledby="saved-note-heading" className="panel p-4 sm:p-5">
-          <h3 id="saved-note-heading" className="micro-label mb-2">
-            Note on file
-          </h3>
-          <p className="break-words text-sm leading-relaxed text-cream-300">{record.note}</p>
-        </section>
-      )}
+        {record.note && (
+          <section aria-labelledby="saved-note-heading" className="panel p-4 sm:p-5">
+            <h3 id="saved-note-heading" className="micro-label mb-2">
+              Note on file
+            </h3>
+            <p className="break-words text-sm leading-relaxed text-cream-300">{record.note}</p>
+          </section>
+        )}
 
-      {/* Read from the record, so a session shows what it earned at the time. */}
-      <AchievementList achievements={achievements} headingId="saved-achievements-heading" />
+        {/* Read from the record, so a session shows what it earned at the time. */}
+        <AchievementList achievements={achievements} headingId="saved-achievements-heading" />
 
-      <MealBreakdown lines={report.lines} headingId="recorded-plates-heading" />
+        <MealBreakdown lines={report.lines} headingId="recorded-plates-heading" />
 
-      {/* The point of keeping a record of a good order is being able to place
+        {/* The point of keeping a record of a good order is being able to place
           it again. */}
-      <Button variant="secondary" size="lg" fullWidth onClick={() => handleRerun(record)}>
-        <RotateCcw size={18} aria-hidden="true" />
-        Order this again
-      </Button>
+        <Button variant="secondary" size="lg" fullWidth onClick={() => handleRerun(record)}>
+          <RotateCcw size={18} aria-hidden="true" />
+          Order this again
+        </Button>
 
-      <ConfirmDialog
-        open={pendingRerun !== null}
-        title="Replace the meal in progress?"
-        body={`There is already a tab open in the calculator. Loading this record replaces it with ${formatPlates(report.totalPlates)} from ${record.restaurantName || 'an unnamed restaurant'}. The filed record itself is not changed.`}
-        confirmLabel="Load this meal"
-        cancelLabel="Keep my tab"
-        onConfirm={() => {
-          const target = pendingRerun;
-          setPendingRerun(null);
-          if (target) {
-            rerun(target);
-          }
-        }}
-        onCancel={() => setPendingRerun(null)}
-      />
-    </div>
+        <ConfirmDialog
+          open={pendingRerun !== null}
+          title="Replace the meal in progress?"
+          body={`There is already a tab open in the calculator. Loading this record replaces it with ${formatPlates(report.totalPlates)} from ${record.restaurantName || 'an unnamed restaurant'}. The filed record itself is not changed.`}
+          confirmLabel="Load this meal"
+          cancelLabel="Keep my tab"
+          onConfirm={() => {
+            const target = pendingRerun;
+            setPendingRerun(null);
+            if (target) {
+              rerun(target);
+            }
+          }}
+          onCancel={() => setPendingRerun(null)}
+        />
+      </div>
+    </PricingProfileProvider>
   );
 }

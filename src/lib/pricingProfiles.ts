@@ -146,7 +146,7 @@ export function resolvePricingProfile(
   return profiles.find((profile) => profile.id === id) ?? DEFAULT_PRICING_PROFILE;
 }
 
-function parsePricingProfile(value: unknown): PricingProfile | null {
+export function parseCustomPricingProfile(value: unknown): PricingProfile | null {
   if (!isRecord(value) || !isPricingProfileId(value.id)) {
     return null;
   }
@@ -186,7 +186,7 @@ export function parseStoredPricingProfiles(raw: string | null): readonly Pricing
   const profiles: PricingProfile[] = [];
   const ids = new Set<PricingProfileId>();
   for (const entry of parsed.profiles) {
-    const profile = parsePricingProfile(entry);
+    const profile = parseCustomPricingProfile(entry);
     if (profile && !ids.has(profile.id) && profile.id !== DEFAULT_PRICING_PROFILE.id) {
       ids.add(profile.id);
       profiles.push(profile);
