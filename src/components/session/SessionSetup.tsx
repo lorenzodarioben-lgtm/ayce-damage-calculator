@@ -11,6 +11,7 @@ import {
 } from '@/lib/constants';
 import { RestaurantPresets } from '@/components/session/RestaurantPresets';
 import { PricingProfileManager } from '@/components/session/PricingProfileManager';
+import { CustomFoodManager } from '@/components/session/CustomFoodManager';
 import { usePricingProfile } from '@/components/session/PricingContext';
 import { formatMoney } from '@/lib/formatting';
 import type { MealSession, SessionConfig } from '@/types/meal';
@@ -237,6 +238,8 @@ export function SessionSetup({
         onRemove={onRemovePricingProfile}
         onStatus={onStatus}
       />
+
+      <CustomFoodManager onStatus={onStatus} />
     </section>
   );
 }
