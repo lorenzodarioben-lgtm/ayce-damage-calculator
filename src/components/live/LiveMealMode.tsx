@@ -48,7 +48,7 @@ export function LiveMealMode() {
     removeItem,
     restoreItem,
   } = useMealSession(pricingProfiles.profiles, customFoods.foods);
-  const { favorites, remove: removeFavorite } = useFavorites();
+  const { favorites, remove: removeFavorite } = useFavorites(catalogue);
 
   const [addOpen, setAddOpen] = useState(false);
   const [status, announce] = useStatusMessage();
@@ -151,6 +151,7 @@ export function LiveMealMode() {
               </h2>
               <FavoriteQuickAdd
                 favorites={favorites}
+                foods={catalogue}
                 onAdd={handleFavoriteAdd}
                 onRemove={removeFavorite}
                 size="large"

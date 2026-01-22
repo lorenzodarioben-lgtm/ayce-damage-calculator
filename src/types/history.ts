@@ -2,6 +2,7 @@ import type { AchievementId } from '@/lib/achievements';
 import type { VerdictId } from '@/lib/verdicts';
 import type { MealItem, Nutrition } from '@/types/meal';
 import type { PricingProfile } from '@/types/pricing';
+import type { CustomFood } from '@/types/customFoods';
 
 /**
  * What the diner was actually shown when the session was recorded.
@@ -37,6 +38,9 @@ export interface SavedMealSession {
 
   /** A complete local pricing snapshot, so filed totals never drift after edits. */
   readonly pricingProfile: PricingProfile;
+
+  /** Custom catalogue entries used by this meal, copied for a durable record. */
+  readonly customFoods: readonly CustomFood[];
 
   /**
    * What the diner wrote about the meal. Empty when nothing was written, which
