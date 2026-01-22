@@ -12,14 +12,7 @@ import { QualitySelector } from '@/components/meal/QualitySelector';
 import { QuantityStepper } from '@/components/meal/QuantityStepper';
 import { Button } from '@/components/ui/Button';
 import { usePricingProfile } from '@/components/session/PricingContext';
-import {
-  FOOD_COUNT,
-  findFood,
-  foodsInCategory,
-  searchFoods,
-  sortFoods,
-  type FoodSortKey,
-} from '@/data/foods';
+import { sortFoods, type FoodSortKey } from '@/data/foods';
 import { calculateLineItem } from '@/lib/calculations';
 import {
   DEFAULT_PLATE_SIZE,
@@ -28,22 +21,31 @@ import {
   MIN_QUANTITY,
   getPlateSizeMeta,
 } from '@/lib/constants';
+import {
+  findFoodInCatalogue,
+  foodCatalogue,
+  foodsInCatalogueCategory,
+  searchFoodCatalogue,
+} from '@/lib/foodCatalogue';
 import { describeFavorite } from '@/lib/favorites';
 import { formatGrams, formatMoney } from '@/lib/formatting';
 import { useFavorites } from '@/hooks/useFavorites';
 import type { AddItemPayload } from '@/hooks/useMealSession';
 import type { FoodCategory, PlateSize, QualityTier } from '@/types/meal';
+import type { CustomFood } from '@/types/customFoods';
 
 interface MealBuilderProps {
   onAdd: (payload: AddItemPayload, confirmation: string) => void;
+  customFoods?: readonly CustomFood[];
 }
 
 const GRID_CLASS = 'grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-3';
 
-export function MealBuilder({ onAdd }: MealBuilderProps) {
+export function MealBuilder({ onAdd, customFoods = [] }: MealBuilderProps) {
   const panelId = useId();
   const { favorites, toggle, remove, has } = useFavorites();
   const pricingProfile = usePricingProfile();
+  const catalogue = useMemo(() => foodCatalogue(customFoods), [customFoods]);
 
   const [category, setCategory] = useState<FoodCategory>('beef');
   const [query, setQuery] = useState('');
@@ -59,16 +61,19 @@ export function MealBuilder({ onAdd }: MealBuilderProps) {
   const foods = useMemo(
     () =>
       sortFoods(
-        searching ? searchFoods(trimmedQuery) : foodsInCategory(category),
+        searching
+          ? searchFoodCatalogue(catalogue, trimmedQuery)
+          : foodsInCatalogueCategory(catalogue, category),
         sort,
         pricingProfile,
       ),
-    [searching, trimmedQuery, category, sort, pricingProfile],
+    [searching, trimmedQuery, category, sort, pricingProfile, catalogue],
   );
 
   // Resolved from the whole dataset rather than the visible list: a cut chosen
   // from search results must survive the search being cleared.
-  const selectedFood = (selectedFoodId ? findFood(selectedFoodId) : undefined) ?? null;
+  const selectedFood =
+    (selectedFoodId ? findFoodInCatalogue(catalogue, selectedFoodId) : undefined) ?? null;
 
   const preview = useMemo(() => {
     if (!selectedFood) {
@@ -113,7 +118,7 @@ export function MealBuilder({ onAdd }: MealBuilderProps) {
         <h2 id="builder-heading" className="display-type text-2xl text-cream-50 sm:text-3xl">
           Build the meal
         </h2>
-        <p className="text-xs text-cream-700">{FOOD_COUNT} cuts</p>
+        <p className="text-xs text-cream-700">{catalogue.length} cuts</p>
       </div>
 
       {/* Saved orders sit above the picker: for a repeat visit they are the

@@ -15,6 +15,7 @@ import { CustomFoodManager } from '@/components/session/CustomFoodManager';
 import { usePricingProfile } from '@/components/session/PricingContext';
 import { formatMoney } from '@/lib/formatting';
 import type { MealSession, SessionConfig } from '@/types/meal';
+import type { CustomFood } from '@/types/customFoods';
 import type { PricingProfile, PricingProfileId } from '@/types/pricing';
 
 interface SessionSetupProps {
@@ -26,6 +27,9 @@ interface SessionSetupProps {
   pricingProfiles: readonly PricingProfile[];
   onSavePricingProfile: (profile: PricingProfile) => void;
   onRemovePricingProfile: (id: PricingProfileId) => void;
+  customFoods: readonly CustomFood[];
+  onSaveCustomFood: (food: CustomFood) => void;
+  onRemoveCustomFood: (id: string) => void;
   onDinerCountChange: (delta: number) => void;
   onApplySetup: (setup: SessionConfig) => void;
   onStatus: (message: string) => void;
@@ -40,6 +44,9 @@ export function SessionSetup({
   pricingProfiles,
   onSavePricingProfile,
   onRemovePricingProfile,
+  customFoods,
+  onSaveCustomFood,
+  onRemoveCustomFood,
   onDinerCountChange,
   onApplySetup,
   onStatus,
@@ -239,7 +246,12 @@ export function SessionSetup({
         onStatus={onStatus}
       />
 
-      <CustomFoodManager onStatus={onStatus} />
+      <CustomFoodManager
+        foods={customFoods}
+        onSave={onSaveCustomFood}
+        onRemove={onRemoveCustomFood}
+        onStatus={onStatus}
+      />
     </section>
   );
 }
