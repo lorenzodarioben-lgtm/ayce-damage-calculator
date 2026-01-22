@@ -10,6 +10,10 @@ import {
   saveCustomFoods,
   upsertCustomFood,
 } from '@/lib/customFoods';
+import { calculateSessionTotals } from '@/lib/calculations';
+import { foodCatalogue } from '@/lib/foodCatalogue';
+import { DEFAULT_PRICING_PROFILE } from '@/lib/pricing';
+import { parseStoredSession } from '@/lib/storage';
 import type { CustomFoodDraft } from '@/types/customFoods';
 
 const DRAFT: CustomFoodDraft = {
@@ -48,6 +52,32 @@ describe('custom food catalogue', () => {
       createCustomFood({ ...DRAFT, name: '  ', retailPricePerKg: 18 }, 'custom-food-empty'),
     ).toBeNull();
     expect(createCustomFood({ ...DRAFT, retailPricePerKg: -1 }, 'custom-food-negative')).toBeNull();
+  });
+
+  it('participates in the shared calculation and session-persistence paths', () => {
+    const custom = food();
+    const items = [
+      {
+        id: 'custom-food-cheese-corn__standard__regular',
+        foodId: custom.id,
+        quality: 'standard' as const,
+        plateSize: 'regular' as const,
+        quantity: 1,
+      },
+    ];
+    expect(
+      calculateSessionTotals(items, DEFAULT_PRICING_PROFILE, foodCatalogue([custom]))
+        .totalRetailValue,
+    ).toBeCloseTo(0.155 * 18, 10);
+
+    const restored = parseStoredSession(
+      JSON.stringify({
+        version: 2,
+        session: { restaurantName: '', pricePerDiner: 59.9, dinerCount: 1, items },
+      }),
+      foodCatalogue([custom]),
+    );
+    expect(restored?.items[0]?.foodId).toBe(custom.id);
   });
 
   it('allocates readable ids and keeps the personal menu bounded', () => {

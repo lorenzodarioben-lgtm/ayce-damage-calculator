@@ -5,11 +5,13 @@ import { useId, useState } from 'react';
 import { Dialog } from '@/components/ui/Dialog';
 import { CATEGORY_META } from '@/lib/constants';
 import { createCustomFood, nextCustomFoodId } from '@/lib/customFoods';
-import { useCustomFoods } from '@/hooks/useCustomFoods';
 import type { CustomFood } from '@/types/customFoods';
 import type { FoodCategory } from '@/types/meal';
 
 interface CustomFoodManagerProps {
+  foods: readonly CustomFood[];
+  onSave: (food: CustomFood) => void;
+  onRemove: (id: string) => void;
   onStatus: (message: string) => void;
 }
 
@@ -228,8 +230,7 @@ function CustomFoodEditor({
 }
 
 /** Personal menu controls, shaped like the rest of the setup rather than an admin screen. */
-export function CustomFoodManager({ onStatus }: CustomFoodManagerProps) {
-  const { foods, save, remove } = useCustomFoods();
+export function CustomFoodManager({ foods, onSave, onRemove, onStatus }: CustomFoodManagerProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const editing = foods.find((food) => food.id === editingId) ?? null;
@@ -289,7 +290,7 @@ export function CustomFoodManager({ onStatus }: CustomFoodManagerProps) {
                 <button
                   type="button"
                   onClick={() => {
-                    remove(food.id);
+                    onRemove(food.id);
                     onStatus(`${food.name} removed from your menu.`);
                   }}
                   aria-label={`Delete ${food.name}`}
@@ -310,7 +311,7 @@ export function CustomFoodManager({ onStatus }: CustomFoodManagerProps) {
           foods={foods}
           onClose={close}
           onSave={(food) => {
-            save(food);
+            onSave(food);
             close();
             onStatus(`${food.name} saved to your menu.`);
           }}

@@ -7,15 +7,16 @@ import { PlateSizeSelector } from '@/components/meal/PlateSizeSelector';
 import { QualitySelector } from '@/components/meal/QualitySelector';
 import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
-import { foodsInCategory } from '@/data/foods';
 import { DEFAULT_PLATE_SIZE, DEFAULT_QUALITY } from '@/lib/constants';
+import { foodsInCatalogueCategory } from '@/lib/foodCatalogue';
 import type { AddItemPayload } from '@/hooks/useMealSession';
-import type { FoodCategory, PlateSize, QualityTier } from '@/types/meal';
+import type { FoodCategory, FoodItem, PlateSize, QualityTier } from '@/types/meal';
 
 interface AddCutDialogProps {
   open: boolean;
   onClose: () => void;
   onAdd: (payload: AddItemPayload) => void;
+  foods: readonly FoodItem[];
 }
 
 /**
@@ -24,7 +25,7 @@ interface AddCutDialogProps {
  * The same selectors as the full builder, so a cut configured here is
  * indistinguishable from one configured there — there is only one meal model.
  */
-export function AddCutDialog({ open, onClose, onAdd }: AddCutDialogProps) {
+export function AddCutDialog({ open, onClose, onAdd, foods: catalogue }: AddCutDialogProps) {
   const titleId = useId();
   const panelId = useId();
 
@@ -33,7 +34,7 @@ export function AddCutDialog({ open, onClose, onAdd }: AddCutDialogProps) {
   const [quality, setQuality] = useState<QualityTier>(DEFAULT_QUALITY);
   const [plateSize, setPlateSize] = useState<PlateSize>(DEFAULT_PLATE_SIZE);
 
-  const foods = useMemo(() => foodsInCategory(category), [category]);
+  const foods = useMemo(() => foodsInCatalogueCategory(catalogue, category), [catalogue, category]);
 
   function handleAdd() {
     if (!selectedFoodId) {

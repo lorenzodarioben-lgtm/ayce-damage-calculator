@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useReducer } from 'react';
+import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react';
 import { buildDamageReport, clampDinerCount, clampPricePerDiner } from '@/lib/calculations';
 import {
   DEFAULT_DINER_COUNT,
@@ -18,6 +18,7 @@ import {
 import { mealItemId } from '@/lib/mealItems';
 import { DEFAULT_PRICING_PROFILE_ID } from '@/lib/pricing';
 import { resolvePricingProfile } from '@/lib/pricingProfiles';
+import { foodCatalogue } from '@/lib/foodCatalogue';
 import type {
   DamageReport,
   MealItem,
@@ -27,6 +28,7 @@ import type {
   SessionConfig,
 } from '@/types/meal';
 import type { PricingProfile } from '@/types/pricing';
+import type { CustomFood } from '@/types/customFoods';
 
 export const INITIAL_SESSION: MealSession = {
   restaurantName: '',
@@ -198,12 +200,19 @@ function hydrationReducer(state: HydrationState, action: SessionAction): Hydrati
 
 export function useMealSession(
   pricingProfiles: readonly PricingProfile[] = [],
+  customFoods: readonly CustomFood[] = [],
 ): UseMealSessionResult & { pricingProfile: PricingProfile } {
   const [{ session, hydrated }, dispatch] = useReducer(hydrationReducer, INITIAL_STATE);
+  const foods = useMemo(() => foodCatalogue(customFoods), [customFoods]);
+  const loaded = useRef(false);
 
   useEffect(() => {
-    dispatch({ type: 'hydrate', session: loadSession() ?? INITIAL_SESSION });
-  }, []);
+    if (loaded.current) {
+      return;
+    }
+    loaded.current = true;
+    dispatch({ type: 'hydrate', session: loadSession(foods) ?? INITIAL_SESSION });
+  }, [foods]);
 
   useEffect(() => {
     if (!hydrated) {
@@ -224,8 +233,8 @@ export function useMealSession(
     [pricingProfiles, session.pricingProfileId],
   );
   const report = useMemo(
-    () => buildDamageReport(session.items, session, pricingProfile),
-    [session, pricingProfile],
+    () => buildDamageReport(session.items, session, pricingProfile, foods),
+    [session, pricingProfile, foods],
   );
 
   const setRestaurantName = useCallback((value: string) => {
