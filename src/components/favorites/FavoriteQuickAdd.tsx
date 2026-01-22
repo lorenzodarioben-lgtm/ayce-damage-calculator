@@ -1,15 +1,18 @@
 'use client';
 
 import { Plus, Star, X } from 'lucide-react';
-import { findFood } from '@/data/foods';
+import { FOODS } from '@/data/foods';
 import { getPlateSizeMeta, getQualityMeta } from '@/lib/constants';
+import { findFoodInCatalogue } from '@/lib/foodCatalogue';
 import { describeFavorite, type MealFavorite } from '@/lib/favorites';
 import type { AddItemPayload } from '@/hooks/useMealSession';
+import type { FoodItem } from '@/types/meal';
 
 interface FavoriteQuickAddProps {
   favorites: readonly MealFavorite[];
   onAdd: (payload: AddItemPayload, confirmation: string) => void;
   onRemove: (id: string) => void;
+  foods?: readonly FoodItem[];
   /** Larger targets for the at-the-table surface. */
   size?: 'compact' | 'large';
 }
@@ -25,6 +28,7 @@ export function FavoriteQuickAdd({
   favorites,
   onAdd,
   onRemove,
+  foods = FOODS,
   size = 'compact',
 }: FavoriteQuickAddProps) {
   if (favorites.length === 0) {
@@ -40,8 +44,8 @@ export function FavoriteQuickAdd({
   return (
     <ul className="flex flex-wrap gap-2">
       {favorites.map((favorite) => {
-        const food = findFood(favorite.foodId);
-        const description = describeFavorite(favorite);
+        const food = findFoodInCatalogue(foods, favorite.foodId);
+        const description = describeFavorite(favorite, foods);
         if (!food || !description) {
           return null;
         }

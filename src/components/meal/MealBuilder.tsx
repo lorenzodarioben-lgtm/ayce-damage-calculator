@@ -43,9 +43,9 @@ const GRID_CLASS = 'grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-3';
 
 export function MealBuilder({ onAdd, customFoods = [] }: MealBuilderProps) {
   const panelId = useId();
-  const { favorites, toggle, remove, has } = useFavorites();
   const pricingProfile = usePricingProfile();
   const catalogue = useMemo(() => foodCatalogue(customFoods), [customFoods]);
+  const { favorites, toggle, remove, has } = useFavorites(catalogue);
 
   const [category, setCategory] = useState<FoodCategory>('beef');
   const [query, setQuery] = useState('');
@@ -127,7 +127,7 @@ export function MealBuilder({ onAdd, customFoods = [] }: MealBuilderProps) {
         <h3 id="saved-orders-heading" className="micro-label mb-2">
           Saved orders
         </h3>
-        <FavoriteQuickAdd favorites={favorites} onAdd={onAdd} onRemove={remove} />
+        <FavoriteQuickAdd favorites={favorites} foods={catalogue} onAdd={onAdd} onRemove={remove} />
       </section>
 
       <FoodSearch value={query} onChange={setQuery} resultCount={searching ? foods.length : null} />
@@ -216,7 +216,7 @@ export function MealBuilder({ onAdd, customFoods = [] }: MealBuilderProps) {
                 active={has({ foodId: selectedFood.id, quality, plateSize })}
                 onToggle={() => toggle({ foodId: selectedFood.id, quality, plateSize })}
                 description={
-                  describeFavorite({ foodId: selectedFood.id, quality, plateSize }) ??
+                  describeFavorite({ foodId: selectedFood.id, quality, plateSize }, catalogue) ??
                   selectedFood.name
                 }
               />
