@@ -41,7 +41,7 @@ test.describe('Sharing a report', () => {
     await calculateDamage(page);
 
     const link = await copyShareLink(page);
-    expect(link).toContain('/share/1.');
+    expect(link).toContain('/share/2.');
 
     const recipientPage = await openAsRecipient(browser, link);
 
