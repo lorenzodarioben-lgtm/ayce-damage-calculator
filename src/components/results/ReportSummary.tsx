@@ -1,3 +1,5 @@
+'use client';
+
 import { ResultMetric } from '@/components/results/ResultMetric';
 import { usePricingProfile } from '@/components/session/PricingContext';
 import { perDinerTotals } from '@/lib/calculations';
