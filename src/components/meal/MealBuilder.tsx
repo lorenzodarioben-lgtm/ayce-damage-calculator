@@ -11,14 +11,8 @@ import { PlateSizeSelector } from '@/components/meal/PlateSizeSelector';
 import { QualitySelector } from '@/components/meal/QualitySelector';
 import { QuantityStepper } from '@/components/meal/QuantityStepper';
 import { Button } from '@/components/ui/Button';
-import {
-  FOOD_COUNT,
-  findFood,
-  foodsInCategory,
-  searchFoods,
-  sortFoods,
-  type FoodSortKey,
-} from '@/data/foods';
+import { usePricingProfile } from '@/components/session/PricingContext';
+import { sortFoods, type FoodSortKey } from '@/data/foods';
 import { calculateLineItem } from '@/lib/calculations';
 import {
   DEFAULT_PLATE_SIZE,
@@ -27,21 +21,31 @@ import {
   MIN_QUANTITY,
   getPlateSizeMeta,
 } from '@/lib/constants';
+import {
+  findFoodInCatalogue,
+  foodCatalogue,
+  foodsInCatalogueCategory,
+  searchFoodCatalogue,
+} from '@/lib/foodCatalogue';
 import { describeFavorite } from '@/lib/favorites';
 import { formatGrams, formatMoney } from '@/lib/formatting';
 import { useFavorites } from '@/hooks/useFavorites';
 import type { AddItemPayload } from '@/hooks/useMealSession';
 import type { FoodCategory, PlateSize, QualityTier } from '@/types/meal';
+import type { CustomFood } from '@/types/customFoods';
 
 interface MealBuilderProps {
   onAdd: (payload: AddItemPayload, confirmation: string) => void;
+  customFoods?: readonly CustomFood[];
 }
 
 const GRID_CLASS = 'grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-3';
 
-export function MealBuilder({ onAdd }: MealBuilderProps) {
+export function MealBuilder({ onAdd, customFoods = [] }: MealBuilderProps) {
   const panelId = useId();
-  const { favorites, toggle, remove, has } = useFavorites();
+  const pricingProfile = usePricingProfile();
+  const catalogue = useMemo(() => foodCatalogue(customFoods), [customFoods]);
+  const { favorites, toggle, remove, has } = useFavorites(catalogue);
 
   const [category, setCategory] = useState<FoodCategory>('beef');
   const [query, setQuery] = useState('');
@@ -55,13 +59,21 @@ export function MealBuilder({ onAdd }: MealBuilderProps) {
   const searching = trimmedQuery.length > 0;
 
   const foods = useMemo(
-    () => sortFoods(searching ? searchFoods(trimmedQuery) : foodsInCategory(category), sort),
-    [searching, trimmedQuery, category, sort],
+    () =>
+      sortFoods(
+        searching
+          ? searchFoodCatalogue(catalogue, trimmedQuery)
+          : foodsInCatalogueCategory(catalogue, category),
+        sort,
+        pricingProfile,
+      ),
+    [searching, trimmedQuery, category, sort, pricingProfile, catalogue],
   );
 
   // Resolved from the whole dataset rather than the visible list: a cut chosen
   // from search results must survive the search being cleared.
-  const selectedFood = (selectedFoodId ? findFood(selectedFoodId) : undefined) ?? null;
+  const selectedFood =
+    (selectedFoodId ? findFoodInCatalogue(catalogue, selectedFoodId) : undefined) ?? null;
 
   const preview = useMemo(() => {
     if (!selectedFood) {
@@ -70,8 +82,9 @@ export function MealBuilder({ onAdd }: MealBuilderProps) {
     return calculateLineItem(
       { id: 'preview', foodId: selectedFood.id, quality, plateSize, quantity },
       selectedFood,
+      pricingProfile,
     );
-  }, [selectedFood, quality, plateSize, quantity]);
+  }, [selectedFood, quality, plateSize, quantity, pricingProfile]);
 
   function handleCategoryChange(next: FoodCategory) {
     setCategory(next);
@@ -105,7 +118,7 @@ export function MealBuilder({ onAdd }: MealBuilderProps) {
         <h2 id="builder-heading" className="display-type text-2xl text-cream-50 sm:text-3xl">
           Build the meal
         </h2>
-        <p className="text-xs text-cream-700">{FOOD_COUNT} cuts</p>
+        <p className="text-xs text-cream-700">{catalogue.length} cuts</p>
       </div>
 
       {/* Saved orders sit above the picker: for a repeat visit they are the
@@ -114,7 +127,7 @@ export function MealBuilder({ onAdd }: MealBuilderProps) {
         <h3 id="saved-orders-heading" className="micro-label mb-2">
           Saved orders
         </h3>
-        <FavoriteQuickAdd favorites={favorites} onAdd={onAdd} onRemove={remove} />
+        <FavoriteQuickAdd favorites={favorites} foods={catalogue} onAdd={onAdd} onRemove={remove} />
       </section>
 
       <FoodSearch value={query} onChange={setQuery} resultCount={searching ? foods.length : null} />
@@ -187,7 +200,7 @@ export function MealBuilder({ onAdd }: MealBuilderProps) {
                   <div className="flex items-baseline justify-end gap-2">
                     <dt className="text-cream-700">Retail value</dt>
                     <dd className="font-semibold text-ember-400">
-                      {formatMoney(preview.retailValue)}
+                      {formatMoney(preview.retailValue, pricingProfile.money)}
                     </dd>
                   </div>
                 </dl>
@@ -203,7 +216,7 @@ export function MealBuilder({ onAdd }: MealBuilderProps) {
                 active={has({ foodId: selectedFood.id, quality, plateSize })}
                 onToggle={() => toggle({ foodId: selectedFood.id, quality, plateSize })}
                 description={
-                  describeFavorite({ foodId: selectedFood.id, quality, plateSize }) ??
+                  describeFavorite({ foodId: selectedFood.id, quality, plateSize }, catalogue) ??
                   selectedFood.name
                 }
               />

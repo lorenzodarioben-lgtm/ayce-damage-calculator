@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useReducer } from 'react';
+import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react';
 import { buildDamageReport, clampDinerCount, clampPricePerDiner } from '@/lib/calculations';
 import {
   DEFAULT_DINER_COUNT,
@@ -16,6 +16,9 @@ import {
   saveSession,
 } from '@/lib/storage';
 import { mealItemId } from '@/lib/mealItems';
+import { DEFAULT_PRICING_PROFILE_ID } from '@/lib/pricing';
+import { resolvePricingProfile } from '@/lib/pricingProfiles';
+import { foodCatalogue } from '@/lib/foodCatalogue';
 import type {
   DamageReport,
   MealItem,
@@ -24,11 +27,14 @@ import type {
   QualityTier,
   SessionConfig,
 } from '@/types/meal';
+import type { PricingProfile } from '@/types/pricing';
+import type { CustomFood } from '@/types/customFoods';
 
 export const INITIAL_SESSION: MealSession = {
   restaurantName: '',
   pricePerDiner: DEFAULT_PRICE_PER_DINER,
   dinerCount: DEFAULT_DINER_COUNT,
+  pricingProfileId: DEFAULT_PRICING_PROFILE_ID,
   items: [],
 };
 
@@ -43,6 +49,7 @@ export type SessionAction =
   | { type: 'hydrate'; session: MealSession }
   | { type: 'set-restaurant-name'; value: string }
   | { type: 'set-price-per-diner'; value: number }
+  | { type: 'set-pricing-profile'; id: string }
   | { type: 'adjust-diner-count'; delta: number }
   | { type: 'apply-setup'; setup: SessionConfig }
   | { type: 'add-item'; payload: AddItemPayload }
@@ -70,6 +77,9 @@ export function sessionReducer(state: MealSession, action: SessionAction): MealS
     case 'set-price-per-diner':
       return { ...state, pricePerDiner: clampPricePerDiner(action.value) };
 
+    case 'set-pricing-profile':
+      return { ...state, pricingProfileId: action.id };
+
     case 'adjust-diner-count':
       return { ...state, dinerCount: clampDinerCount(state.dinerCount + action.delta) };
 
@@ -81,6 +91,7 @@ export function sessionReducer(state: MealSession, action: SessionAction): MealS
         restaurantName: sanitiseRestaurantName(action.setup.restaurantName),
         pricePerDiner: clampPricePerDiner(action.setup.pricePerDiner),
         dinerCount: clampDinerCount(action.setup.dinerCount),
+        pricingProfileId: action.setup.pricingProfileId ?? DEFAULT_PRICING_PROFILE_ID,
       };
 
     case 'add-item': {
@@ -155,6 +166,7 @@ export interface UseMealSessionResult {
   hydrated: boolean;
   setRestaurantName: (value: string) => void;
   setPricePerDiner: (value: number) => void;
+  setPricingProfile: (id: string) => void;
   adjustDinerCount: (delta: number) => void;
   applySetup: (setup: SessionConfig) => void;
   addItem: (payload: AddItemPayload) => void;
@@ -186,12 +198,21 @@ function hydrationReducer(state: HydrationState, action: SessionAction): Hydrati
   return { session: sessionReducer(state.session, action), hydrated: state.hydrated };
 }
 
-export function useMealSession(): UseMealSessionResult {
+export function useMealSession(
+  pricingProfiles: readonly PricingProfile[] = [],
+  customFoods: readonly CustomFood[] = [],
+): UseMealSessionResult & { pricingProfile: PricingProfile } {
   const [{ session, hydrated }, dispatch] = useReducer(hydrationReducer, INITIAL_STATE);
+  const foods = useMemo(() => foodCatalogue(customFoods), [customFoods]);
+  const loaded = useRef(false);
 
   useEffect(() => {
-    dispatch({ type: 'hydrate', session: loadSession() ?? INITIAL_SESSION });
-  }, []);
+    if (loaded.current) {
+      return;
+    }
+    loaded.current = true;
+    dispatch({ type: 'hydrate', session: loadSession(foods) ?? INITIAL_SESSION });
+  }, [foods]);
 
   useEffect(() => {
     if (!hydrated) {
@@ -207,7 +228,14 @@ export function useMealSession(): UseMealSessionResult {
     saveSession(session);
   }, [session, hydrated]);
 
-  const report = useMemo(() => buildDamageReport(session.items, session), [session]);
+  const pricingProfile = useMemo(
+    () => resolvePricingProfile(pricingProfiles, session.pricingProfileId),
+    [pricingProfiles, session.pricingProfileId],
+  );
+  const report = useMemo(
+    () => buildDamageReport(session.items, session, pricingProfile, foods),
+    [session, pricingProfile, foods],
+  );
 
   const setRestaurantName = useCallback((value: string) => {
     dispatch({ type: 'set-restaurant-name', value });
@@ -215,6 +243,10 @@ export function useMealSession(): UseMealSessionResult {
 
   const setPricePerDiner = useCallback((value: number) => {
     dispatch({ type: 'set-price-per-diner', value });
+  }, []);
+
+  const setPricingProfile = useCallback((id: string) => {
+    dispatch({ type: 'set-pricing-profile', id });
   }, []);
 
   const adjustDinerCount = useCallback((delta: number) => {
@@ -256,6 +288,7 @@ export function useMealSession(): UseMealSessionResult {
     hydrated,
     setRestaurantName,
     setPricePerDiner,
+    setPricingProfile,
     adjustDinerCount,
     applySetup,
     addItem,
@@ -264,5 +297,6 @@ export function useMealSession(): UseMealSessionResult {
     removeItem,
     restoreItem,
     resetSession,
+    pricingProfile,
   };
 }

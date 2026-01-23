@@ -1,4 +1,5 @@
 import { buildDamageReport } from '@/lib/calculations';
+import { foodCatalogue } from '@/lib/foodCatalogue';
 import { formatMoney, formatPercent, formatPlates } from '@/lib/formatting';
 import { decodeSharePayload, type SharePayload } from '@/lib/shareLink';
 import { getVerdict } from '@/lib/verdicts';
@@ -61,14 +62,19 @@ export const FALLBACK_SOCIAL_CARD: SocialCardModel = {
 };
 
 export function buildSocialCardModel(payload: SharePayload): SocialCardModel {
-  const report = buildDamageReport(payload.items, payload);
+  const report = buildDamageReport(
+    payload.items,
+    payload,
+    payload.pricingProfile,
+    foodCatalogue(payload.customFoods),
+  );
   const verdict = getVerdict(report.totalRetailValue, report.totalAdmission);
 
   const restaurantName = truncateForCard(payload.restaurantName);
   const recovery = formatPercent(report.retailRecoveryPercent);
   const plates = formatPlates(report.totalPlates);
-  const retailValue = formatMoney(report.totalRetailValue);
-  const admission = formatMoney(report.totalAdmission);
+  const retailValue = formatMoney(report.totalRetailValue, payload.pricingProfile.money);
+  const admission = formatMoney(report.totalAdmission, payload.pricingProfile.money);
 
   const at = restaurantName ? ` at ${restaurantName}` : '';
 

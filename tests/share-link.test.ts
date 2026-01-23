@@ -2,6 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { FOODS } from '@/data/foods';
 import { buildDamageReport } from '@/lib/calculations';
 import { MAX_RESTAURANT_NAME_LENGTH } from '@/lib/constants';
+import { createCustomFood } from '@/lib/customFoods';
+import { foodCatalogue } from '@/lib/foodCatalogue';
+import { DEFAULT_PRICING_PROFILE } from '@/lib/pricing';
 import {
   FOOD_SHARE_CODES,
   MAX_SHARE_ITEMS,
@@ -12,6 +15,24 @@ import {
   shareLinkPath,
 } from '@/lib/shareLink';
 import type { MealItem, MealSession } from '@/types/meal';
+import type { CustomFoodDraft } from '@/types/customFoods';
+import type { PricingProfile } from '@/types/pricing';
+
+const CUSTOM_FOOD_DRAFT: CustomFoodDraft = {
+  name: 'Cheese Corn',
+  shortName: 'Cheese Corn',
+  category: 'chicken',
+  retailPricePerKg: 18,
+  restaurantCostPerKg: 7,
+};
+
+const US_PROFILE: PricingProfile = {
+  id: 'custom-weekend-market',
+  name: 'Weekend Market',
+  money: { currency: 'USD', locale: 'en-US' },
+  overrides: { 'beef-ribeye': { retailPricePerKg: 75, restaurantCostPerKg: 42 } },
+  builtIn: false,
+};
 
 function line(
   foodId: string,
@@ -134,7 +155,7 @@ describe('Round trip', () => {
       }),
     );
 
-    expect(token!.length).toBeLessThan(120);
+    expect(token!.length).toBeLessThan(MAX_SHARE_TOKEN_LENGTH);
   });
 
   it('does not put readable JSON in the URL', () => {
@@ -146,7 +167,46 @@ describe('Round trip', () => {
   });
 
   it('builds a path a recipient can open', () => {
-    expect(shareLinkPath(session())).toMatch(/^\/share\/1\./);
+    expect(shareLinkPath(session())).toMatch(/^\/share\/2\./);
+  });
+
+  it('carries the pricing and custom menu context needed to reproduce a meal', () => {
+    const customFood = createCustomFood(CUSTOM_FOOD_DRAFT, 'custom-food-cheese-corn');
+    expect(customFood).not.toBeNull();
+    const original = session({
+      pricePerDiner: 42,
+      items: [line('beef-ribeye', 2), line(customFood!.id, 3, 'premium', 'large')],
+    });
+    const token = encodeSharePayload(original, {
+      pricingProfile: US_PROFILE,
+      customFoods: [customFood!],
+    });
+    const decoded = decodeSharePayload(token);
+
+    expect(decoded?.pricingProfile).toEqual(US_PROFILE);
+    expect(decoded?.customFoods).toEqual([customFood]);
+    const before = buildDamageReport(
+      original.items,
+      original,
+      US_PROFILE,
+      foodCatalogue([customFood!]),
+    );
+    const after = buildDamageReport(
+      decoded!.items,
+      decoded!,
+      decoded!.pricingProfile,
+      foodCatalogue(decoded!.customFoods),
+    );
+    expect(after.totalRetailValue).toBeCloseTo(before.totalRetailValue, 6);
+    expect(after.totalAdmission).toBeCloseTo(before.totalAdmission, 6);
+  });
+
+  it('keeps existing version 1 links readable with the original menu context', () => {
+    const decoded = decodeSharePayload('1.abc.1.bc-0-1-2.');
+
+    expect(decoded?.pricingProfile).toEqual(DEFAULT_PRICING_PROFILE);
+    expect(decoded?.customFoods).toEqual([]);
+    expect(decoded?.items[0]?.foodId).toBe('beef-ribeye');
   });
 });
 

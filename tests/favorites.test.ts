@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { FOODS } from '@/data/foods';
+import { createCustomFood } from '@/lib/customFoods';
 import { PLATE_SIZES, QUALITY_TIERS } from '@/lib/constants';
+import { foodCatalogue } from '@/lib/foodCatalogue';
 import {
   FAVORITES_STORAGE_KEY,
   FAVORITES_VERSION,
@@ -138,6 +140,16 @@ describe('describeFavorite', () => {
   it('returns nothing for a cut that no longer exists', () => {
     expect(describeFavorite({ ...RIBEYE, foodId: 'beef-unicorn' })).toBeNull();
   });
+
+  it('can describe a favourite from the local custom catalogue', () => {
+    const custom = createCustomFood(
+      { name: 'Cheese corn', category: 'chicken', retailPricePerKg: 18, restaurantCostPerKg: 7 },
+      'custom-food-cheese-corn',
+    )!;
+    expect(describeFavorite({ ...RIBEYE, foodId: custom.id }, foodCatalogue([custom]))).toBe(
+      'Cheese corn · Premium · Large',
+    );
+  });
 });
 
 describe('parseStoredFavorites', () => {
@@ -145,6 +157,15 @@ describe('parseStoredFavorites', () => {
     const favorites = [createFavorite(RIBEYE, AT), createFavorite(PORK, AT)];
 
     expect(parseStoredFavorites(stored(favorites))).toEqual(favorites);
+  });
+
+  it('retains a custom-food favourite when its local catalogue is present', () => {
+    const custom = createCustomFood(
+      { name: 'Cheese corn', category: 'chicken', retailPricePerKg: 18, restaurantCostPerKg: 7 },
+      'custom-food-cheese-corn',
+    )!;
+    const favorite = createFavorite({ ...RIBEYE, foodId: custom.id }, AT);
+    expect(parseStoredFavorites(stored([favorite]), foodCatalogue([custom]))).toEqual([favorite]);
   });
 
   it.each([

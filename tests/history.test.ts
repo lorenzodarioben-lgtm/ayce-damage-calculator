@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildDamageReport } from '@/lib/calculations';
+import { createCustomFood } from '@/lib/customFoods';
+import { foodCatalogue } from '@/lib/foodCatalogue';
 import {
   MAX_HISTORY_RECORDS,
   MAX_SAVED_SESSION_ID_LENGTH,
@@ -12,6 +14,7 @@ import {
   sortResolvedSessions,
 } from '@/lib/history';
 import { MAX_SESSION_NOTE_LENGTH } from '@/lib/constants';
+import { DEFAULT_PRICING_PROFILE } from '@/lib/pricing';
 import { getVerdict } from '@/lib/verdicts';
 import type { SavedMealSession } from '@/types/history';
 import type { MealItem, MealSession } from '@/types/meal';
@@ -92,6 +95,64 @@ describe('createSavedSession', () => {
     const record = saved({ restaurantName: '  Seoul    Garden  ' });
 
     expect(record.restaurantName).toBe('Seoul Garden');
+  });
+
+  it('copies the active pricing profile so filed totals retain their assumptions', () => {
+    const pricingProfile = {
+      ...DEFAULT_PRICING_PROFILE,
+      id: 'custom-lunch',
+      name: 'Lunch menu',
+      money: { currency: 'USD' as const, locale: 'en-US' },
+      overrides: { 'beef-ribeye': { retailPricePerKg: 80, restaurantCostPerKg: 45 } },
+      builtIn: false,
+    };
+    const meal = session({ pricingProfileId: pricingProfile.id });
+    const report = buildDamageReport(meal.items, meal, pricingProfile);
+    const record = createSavedSession(
+      meal,
+      report,
+      getVerdict(report.totalRetailValue, report.totalAdmission),
+      {
+        id: 'priced-record',
+        createdAt: '2026-08-16T12:00:00.000Z',
+        pricingProfile,
+      },
+    );
+
+    expect(record.pricingProfile).toEqual(pricingProfile);
+    expect(reportFromSaved(record).totalRetailValue).toBeCloseTo(0.31 * 80, 10);
+  });
+
+  it('snapshots a custom menu item so the filed report can resolve it later', () => {
+    const custom = createCustomFood(
+      { name: 'Cheese corn', category: 'chicken', retailPricePerKg: 18, restaurantCostPerKg: 7 },
+      'custom-food-cheese-corn',
+    )!;
+    const meal = session({
+      items: [
+        {
+          id: 'custom-food-cheese-corn__standard__regular',
+          foodId: custom.id,
+          quality: 'standard',
+          plateSize: 'regular',
+          quantity: 2,
+        },
+      ],
+    });
+    const report = buildDamageReport(meal.items, meal, undefined, foodCatalogue([custom]));
+    const record = createSavedSession(
+      meal,
+      report,
+      getVerdict(report.totalRetailValue, report.totalAdmission),
+      {
+        id: 'custom-record',
+        createdAt: '2026-08-16T12:00:00.000Z',
+        customFoods: [custom],
+      },
+    );
+
+    expect(parseSavedSession(JSON.parse(JSON.stringify(record)))?.customFoods).toEqual([custom]);
+    expect(reportFromSaved(record).lines[0]?.food.name).toBe('Cheese corn');
   });
 });
 
@@ -254,6 +315,20 @@ describe('schema migration', () => {
     const parsed = parseSavedSession(withoutNote);
     expect(parsed?.version).toBe(SAVED_SESSION_VERSION);
     expect(parsed?.note).toBe('');
+  });
+
+  it('gives a record written before pricing snapshots the original AU context', () => {
+    const record = saved();
+    const { pricingProfile: _dropped, ...versionThree } = record;
+    const parsed = parseSavedSession({ ...versionThree, version: 3 });
+
+    expect(parsed?.pricingProfile).toEqual(DEFAULT_PRICING_PROFILE);
+  });
+
+  it('gives a record written before custom snapshots an empty custom menu', () => {
+    const record = saved();
+    const { customFoods: _dropped, ...versionFour } = record;
+    expect(parseSavedSession({ ...versionFour, version: 4 })?.customFoods).toEqual([]);
   });
 });
 

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { INITIAL_SESSION, sessionReducer } from '@/hooks/useMealSession';
+import { DEFAULT_PRICING_PROFILE_ID } from '@/lib/pricing';
 import type { MealSession } from '@/types/meal';
 
 const addRibeye = {
@@ -8,6 +9,19 @@ const addRibeye = {
 } as const;
 
 describe('sessionReducer', () => {
+  it('starts every new session in the built-in pricing context', () => {
+    expect(INITIAL_SESSION.pricingProfileId).toBe(DEFAULT_PRICING_PROFILE_ID);
+  });
+
+  it('changes only the active pricing profile when one is selected', () => {
+    const next = sessionReducer(INITIAL_SESSION, {
+      type: 'set-pricing-profile',
+      id: 'custom-downtown-lunch',
+    });
+    expect(next.pricingProfileId).toBe('custom-downtown-lunch');
+    expect(next.items).toBe(INITIAL_SESSION.items);
+    expect(next.pricePerDiner).toBe(INITIAL_SESSION.pricePerDiner);
+  });
   it('merges identical food, quality and plate size into one line', () => {
     const once = sessionReducer(INITIAL_SESSION, addRibeye);
     const twice = sessionReducer(once, addRibeye);
