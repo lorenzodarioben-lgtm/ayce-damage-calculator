@@ -46,6 +46,8 @@ export interface FoodItem {
   readonly carbsPer100g: number;
 
   readonly visualVariant: VisualVariant;
+  /** Present only for diner-authored catalogue entries. */
+  readonly isCustom?: boolean;
 }
 
 export interface MealItem {
@@ -60,6 +62,11 @@ export interface SessionConfig {
   readonly restaurantName: string;
   readonly pricePerDiner: number;
   readonly dinerCount: number;
+  /**
+   * The local pricing assumptions used for this live meal. Legacy in-memory
+   * callers may omit it; persistence immediately restores the default.
+   */
+  readonly pricingProfileId?: PricingProfileId;
 }
 
 export interface MealSession extends SessionConfig {
@@ -113,3 +120,4 @@ export interface DamageReport extends SessionTotals {
   /** Estimated further plates of average value needed to break even. */
   readonly platesToBreakEven: number;
 }
+import type { PricingProfileId } from '@/types/pricing';

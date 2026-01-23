@@ -1,5 +1,8 @@
+'use client';
+
 import { getPlateSizeMeta, getQualityMeta } from '@/lib/constants';
 import { formatMoney, formatPlates, formatWeight } from '@/lib/formatting';
+import { usePricingProfile } from '@/components/session/PricingContext';
 import type { LineItemTotals } from '@/types/meal';
 
 interface MealBreakdownProps {
@@ -22,6 +25,7 @@ export function MealBreakdown({
   headingId,
   heading = 'What was recorded',
 }: MealBreakdownProps) {
+  const pricingProfile = usePricingProfile();
   if (lines.length === 0) {
     return null;
   }
@@ -51,7 +55,7 @@ export function MealBreakdown({
               </p>
             </div>
             <p className="tabular shrink-0 text-sm font-bold text-ember-400">
-              {formatMoney(line.retailValue)}
+              {formatMoney(line.retailValue, pricingProfile.money)}
             </p>
           </li>
         ))}
@@ -62,7 +66,9 @@ export function MealBreakdown({
           two things called the same thing. */}
       <div className="flex items-baseline justify-between gap-3 pt-3">
         <p className="micro-label">Total</p>
-        <p className="tabular text-base font-bold text-cream-50">{formatMoney(total)}</p>
+        <p className="tabular text-base font-bold text-cream-50">
+          {formatMoney(total, pricingProfile.money)}
+        </p>
       </div>
     </section>
   );

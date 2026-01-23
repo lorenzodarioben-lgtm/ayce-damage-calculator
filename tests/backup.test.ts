@@ -10,11 +10,15 @@ import {
   serialiseBackup,
 } from '@/lib/backup';
 import { buildDamageReport } from '@/lib/calculations';
+import { createCustomFood } from '@/lib/customFoods';
 import { createFavorite, type MealFavorite } from '@/lib/favorites';
 import { createSavedSession } from '@/lib/history';
+import { createPreset } from '@/lib/presets';
+import type { BackupConfiguration } from '@/lib/backup';
 import { getVerdict } from '@/lib/verdicts';
 import type { SavedMealSession } from '@/types/history';
 import type { MealItem, MealSession } from '@/types/meal';
+import type { PricingProfile } from '@/types/pricing';
 
 const AT = '2026-08-16T12:00:00.000Z';
 
@@ -54,11 +58,55 @@ const PORK_FAVORITE = createFavorite(
   AT,
 );
 
+const MARKET_PROFILE: PricingProfile = {
+  id: 'custom-weekend-market',
+  name: 'Weekend Market',
+  money: { currency: 'USD', locale: 'en-US' },
+  overrides: { 'beef-ribeye': { retailPricePerKg: 75, restaurantCostPerKg: 42 } },
+  builtIn: false,
+};
+
+const CHEESE_CORN = createCustomFood(
+  {
+    name: 'Cheese Corn',
+    shortName: 'Cheese Corn',
+    category: 'chicken',
+    retailPricePerKg: 18,
+    restaurantCostPerKg: 7,
+  },
+  'custom-food-cheese-corn',
+);
+
+if (!CHEESE_CORN) {
+  throw new Error('Could not create the custom menu fixture.');
+}
+
+const CONFIGURATION: BackupConfiguration = {
+  pricingProfiles: [MARKET_PROFILE],
+  customFoods: [CHEESE_CORN],
+  presets: [
+    createPreset(
+      {
+        name: 'Friday KBBQ',
+        pricePerDiner: 42,
+        dinerCount: 2,
+        pricingProfileId: MARKET_PROFILE.id,
+      },
+      AT,
+    )!,
+  ],
+};
+
 function exported(
   history: readonly SavedMealSession[] = [record('a')],
   favorites: readonly MealFavorite[] = [RIBEYE_FAVORITE],
+  configuration: BackupConfiguration = {
+    pricingProfiles: [],
+    customFoods: [],
+    presets: [],
+  },
 ): string {
-  return serialiseBackup(buildBackup(history, favorites, AT));
+  return serialiseBackup(buildBackup(history, favorites, AT, configuration));
 }
 
 describe('backupFilename', () => {
@@ -89,7 +137,13 @@ describe('Round trip', () => {
     expect(parsed.contents.history).toEqual(history);
     expect(parsed.contents.favorites).toEqual(favorites);
     expect(parsed.contents.exportedAt).toBe(AT);
-    expect(parsed.summary).toEqual({ skippedHistory: 0, skippedFavorites: 0 });
+    expect(parsed.summary).toEqual({
+      skippedHistory: 0,
+      skippedFavorites: 0,
+      skippedPricingProfiles: 0,
+      skippedCustomFoods: 0,
+      skippedPresets: 0,
+    });
   });
 
   it('stamps the file with the format and version', () => {
@@ -113,6 +167,39 @@ describe('Round trip', () => {
     expect(parsed.ok).toBe(true);
     if (!parsed.ok) return;
     expect(parsed.contents.history).toEqual([]);
+  });
+
+  it('carries custom menu configuration and the favourites that use it', () => {
+    const customFavorite = createFavorite(
+      { foodId: CHEESE_CORN.id, quality: 'premium', plateSize: 'large' },
+      AT,
+    );
+    const parsed = parseBackup(exported([], [customFavorite], CONFIGURATION));
+
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+    expect(parsed.contents.configuration).toEqual(CONFIGURATION);
+    expect(parsed.contents.favorites).toEqual([customFavorite]);
+  });
+
+  it('continues to restore version 1 files without a configuration section', () => {
+    const parsed = parseBackup(
+      JSON.stringify({
+        format: BACKUP_FORMAT,
+        version: 1,
+        exportedAt: AT,
+        history: [record('legacy')],
+        favorites: [RIBEYE_FAVORITE],
+      }),
+    );
+
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+    expect(parsed.contents.configuration).toEqual({
+      pricingProfiles: [],
+      customFoods: [],
+      presets: [],
+    });
   });
 });
 
@@ -200,7 +287,37 @@ describe('Discarding unusable records', () => {
     if (!parsed.ok) return;
     expect(parsed.contents.history).toHaveLength(1);
     expect(parsed.contents.favorites).toHaveLength(1);
-    expect(parsed.summary).toEqual({ skippedHistory: 2, skippedFavorites: 1 });
+    expect(parsed.summary).toEqual({
+      skippedHistory: 2,
+      skippedFavorites: 1,
+      skippedPricingProfiles: 0,
+      skippedCustomFoods: 0,
+      skippedPresets: 0,
+    });
+  });
+
+  it('drops malformed configuration entries while retaining valid menu data', () => {
+    const raw = JSON.stringify({
+      format: BACKUP_FORMAT,
+      version: BACKUP_VERSION,
+      history: [],
+      favorites: [],
+      configuration: {
+        pricingProfiles: [MARKET_PROFILE, { ...MARKET_PROFILE, id: 'bad id' }],
+        customFoods: [CHEESE_CORN, { ...CHEESE_CORN, retailPricePerKg: -1 }],
+        presets: [CONFIGURATION.presets[0], { ...CONFIGURATION.presets[0], name: '' }],
+      },
+    });
+    const parsed = parseBackup(raw);
+
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+    expect(parsed.contents.configuration).toEqual(CONFIGURATION);
+    expect(parsed.summary).toMatchObject({
+      skippedPricingProfiles: 1,
+      skippedCustomFoods: 1,
+      skippedPresets: 1,
+    });
   });
 
   it('collapses a record repeated inside the file', () => {

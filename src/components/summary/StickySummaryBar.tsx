@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/Button';
 import { formatMoney, formatPercent, formatPlates } from '@/lib/formatting';
+import { usePricingProfile } from '@/components/session/PricingContext';
 import type { DamageReport } from '@/types/meal';
 
 interface StickySummaryBarProps {
@@ -11,6 +12,7 @@ interface StickySummaryBarProps {
 
 /** Mobile-only condensed tab. Hidden entirely until the meal has content. */
 export function StickySummaryBar({ report, onCalculate }: StickySummaryBarProps) {
+  const pricingProfile = usePricingProfile();
   if (report.lines.length === 0) {
     return null;
   }
@@ -36,10 +38,10 @@ export function StickySummaryBar({ report, onCalculate }: StickySummaryBarProps)
       >
         <div className="min-w-0">
           <p className="tabular text-sm font-bold text-cream-50">
-            {formatMoney(report.totalRetailValue)}
+            {formatMoney(report.totalRetailValue, pricingProfile.money)}
             <span className="font-normal text-cream-700">
               {' '}
-              / {formatMoney(report.totalAdmission)}
+              / {formatMoney(report.totalAdmission, pricingProfile.money)}
             </span>
           </p>
           <p className="tabular truncate text-xs text-cream-500">

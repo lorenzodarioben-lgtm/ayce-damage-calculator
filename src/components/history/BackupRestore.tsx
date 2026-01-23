@@ -18,9 +18,13 @@ import {
   type RestoreMode,
 } from '@/lib/backup';
 import { csvFilename, historyToCsv } from '@/lib/csv';
+import { loadCustomFoods, saveCustomFoods } from '@/lib/customFoods';
 import { loadFavorites, saveFavorites } from '@/lib/favorites';
+import { foodCatalogue } from '@/lib/foodCatalogue';
 import { formatRecordedAt } from '@/lib/formatting';
 import { listSessions, putSessions, replaceSessions } from '@/lib/historyRepository';
+import { loadPresets, savePresets } from '@/lib/presets';
+import { loadPricingProfiles, savePricingProfiles } from '@/lib/pricingProfiles';
 
 type Stage =
   | { kind: 'idle' }
@@ -45,6 +49,14 @@ function download(contents: string, type: string, filename: string): void {
   }
 }
 
+function configurationCount(contents: BackupContents): number {
+  return (
+    contents.configuration.pricingProfiles.length +
+    contents.configuration.customFoods.length +
+    contents.configuration.presets.length
+  );
+}
+
 /**
  * Export and restore, with the file previewed before anything is written.
  *
@@ -61,13 +73,23 @@ export function BackupRestore() {
     setBusy(true);
     try {
       const now = new Date();
-      const backup = buildBackup(await listSessions(), loadFavorites(), now.toISOString());
+      const customFoods = loadCustomFoods();
+      const backup = buildBackup(
+        await listSessions(),
+        loadFavorites(foodCatalogue(customFoods)),
+        now.toISOString(),
+        {
+          pricingProfiles: loadPricingProfiles(),
+          customFoods,
+          presets: loadPresets(),
+        },
+      );
 
       download(serialiseBackup(backup), 'application/json', backupFilename(now));
 
       setStage({
         kind: 'done',
-        message: `Exported ${backup.history.length} sessions and ${backup.favorites.length} saved orders.`,
+        message: `Exported ${backup.history.length} sessions, ${backup.favorites.length} saved orders and ${configurationCount(backup)} menu settings.`,
       });
     } finally {
       setBusy(false);
@@ -110,22 +132,38 @@ export function BackupRestore() {
     try {
       if (mode === 'replace') {
         await replaceSessions(contents.history);
+        savePricingProfiles(contents.configuration.pricingProfiles);
+        saveCustomFoods(contents.configuration.customFoods);
+        savePresets(contents.configuration.presets);
         saveFavorites(contents.favorites);
         setStage({
           kind: 'done',
-          message: `Replaced everything with ${contents.history.length} sessions and ${contents.favorites.length} saved orders.`,
+          message: `Replaced everything with ${contents.history.length} sessions, ${contents.favorites.length} saved orders and ${configurationCount(contents)} menu settings.`,
         });
         return;
       }
 
       const history = mergeById(await listSessions(), contents.history);
-      const favorites = mergeById(loadFavorites(), contents.favorites);
+      const existingCustomFoods = loadCustomFoods();
+      const pricingProfiles = mergeById(
+        loadPricingProfiles(),
+        contents.configuration.pricingProfiles,
+      );
+      const customFoods = mergeById(existingCustomFoods, contents.configuration.customFoods);
+      const presets = mergeById(loadPresets(), contents.configuration.presets);
+      const favorites = mergeById(
+        loadFavorites(foodCatalogue(existingCustomFoods)),
+        contents.favorites,
+      );
       await putSessions(history.result);
+      savePricingProfiles(pricingProfiles.result);
+      saveCustomFoods(customFoods.result);
+      savePresets(presets.result);
       saveFavorites(favorites.result);
 
       setStage({
         kind: 'done',
-        message: `Added ${history.added} sessions and ${favorites.added} saved orders. Nothing already here was changed.`,
+        message: `Added ${history.added} sessions, ${favorites.added} saved orders and ${pricingProfiles.added + customFoods.added + presets.added} menu settings. Nothing already here was changed.`,
       });
     } finally {
       setBusy(false);
@@ -147,8 +185,9 @@ export function BackupRestore() {
           Export
         </h2>
         <p className="mb-4 max-w-[56ch] text-sm leading-relaxed text-cream-300">
-          Writes every filed session and saved order to a single JSON file. Keep it somewhere safe —
-          it is the only copy of data that otherwise never leaves this browser.
+          Writes every filed session, saved order and personal menu setting to a single JSON file.
+          Keep it somewhere safe — it is the only copy of data that otherwise never leaves this
+          browser.
         </p>
         <div className="flex flex-wrap gap-2">
           <Button variant="secondary" onClick={() => void handleExport()} disabled={busy}>
@@ -164,7 +203,7 @@ export function BackupRestore() {
         </div>
         <p className="mt-3 text-xs leading-relaxed text-cream-700">
           The spreadsheet is history only, one row per plate, and cannot be restored from. Saved
-          orders and the ability to restore live in the JSON backup.
+          orders, menu settings and the ability to restore live in the JSON backup.
         </p>
       </section>
 
@@ -213,15 +252,24 @@ export function BackupRestore() {
             <ul className="tabular mt-2 space-y-1 text-sm text-cream-100">
               <li>{stage.contents.history.length} filed sessions</li>
               <li>{stage.contents.favorites.length} saved orders</li>
+              <li>{stage.contents.configuration.pricingProfiles.length} pricing profiles</li>
+              <li>{stage.contents.configuration.customFoods.length} custom foods</li>
+              <li>{stage.contents.configuration.presets.length} restaurant presets</li>
               <li className="text-xs text-cream-700">
                 Exported {formatRecordedAt(stage.contents.exportedAt)}
               </li>
             </ul>
 
-            {(stage.summary.skippedHistory > 0 || stage.summary.skippedFavorites > 0) && (
+            {(stage.summary.skippedHistory > 0 ||
+              stage.summary.skippedFavorites > 0 ||
+              stage.summary.skippedPricingProfiles > 0 ||
+              stage.summary.skippedCustomFoods > 0 ||
+              stage.summary.skippedPresets > 0) && (
               <p className="mt-3 text-xs text-ember-400">
                 {stage.summary.skippedHistory} sessions and {stage.summary.skippedFavorites} saved
-                orders in the file could not be read and will be left out.
+                orders, {stage.summary.skippedPricingProfiles} pricing profiles,{' '}
+                {stage.summary.skippedCustomFoods} custom foods and {stage.summary.skippedPresets}{' '}
+                restaurant presets in the file could not be read and will be left out.
               </p>
             )}
 
@@ -245,7 +293,7 @@ export function BackupRestore() {
 
             <p className="mt-3 text-xs leading-relaxed text-cream-700">
               Merging keeps everything already on this device and adds anything new. Replacing
-              discards what is here first.
+              discards the current history, saved orders and menu settings first.
             </p>
           </div>
         )}
@@ -254,7 +302,7 @@ export function BackupRestore() {
       <ConfirmDialog
         open={pendingReplace !== null}
         title="Replace everything on this device?"
-        body="Every filed session and saved order currently on this device will be permanently discarded and replaced with the contents of the backup. It cannot be undone."
+        body="Every filed session, saved order and menu setting currently on this device will be permanently discarded and replaced with the contents of the backup. It cannot be undone."
         confirmLabel="Replace everything"
         cancelLabel="Keep what I have"
         onConfirm={() => {

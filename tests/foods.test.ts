@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { FOODS, FOOD_COUNT, findFood, foodsInCategory, searchFoods, sortFoods } from '@/data/foods';
 import { CATEGORY_META, FOOD_CATEGORIES } from '@/lib/constants';
+import { DEFAULT_PRICING_PROFILE } from '@/lib/pricing';
+import type { PricingProfile } from '@/types/pricing';
 
 /**
  * The dataset is the one place in the app where a typo is silent: every price,
@@ -182,5 +184,17 @@ describe('sortFoods', () => {
     expect(seafood[0]?.retailPricePerKg).toBe(
       Math.max(...foodsInCategory('seafood').map((food) => food.retailPricePerKg)),
     );
+  });
+
+  it('uses the chosen profile when ordering for value', () => {
+    const profile: PricingProfile = {
+      ...DEFAULT_PRICING_PROFILE,
+      id: 'specials',
+      name: 'Specials',
+      overrides: {
+        'chicken-thigh': { retailPricePerKg: 120, restaurantCostPerKg: 8 },
+      },
+    };
+    expect(sortFoods(FOODS, 'value', profile)[0]?.id).toBe('chicken-thigh');
   });
 });

@@ -1,8 +1,9 @@
-import { findFood } from '@/data/foods';
+import { FOODS } from '@/data/foods';
 import { getPlateSizeMeta, getQualityMeta, isPlateSize, isQualityTier } from '@/lib/constants';
 import { isIsoTimestamp } from '@/lib/datetime';
+import { findFoodInCatalogue } from '@/lib/foodCatalogue';
 import { mealItemId } from '@/lib/mealItems';
-import type { PlateSize, QualityTier } from '@/types/meal';
+import type { FoodItem, PlateSize, QualityTier } from '@/types/meal';
 
 export const FAVORITES_STORAGE_KEY = 'ayce-damage-favorites';
 export const FAVORITES_VERSION = 1;
@@ -73,8 +74,11 @@ export function removeFavorite(
 }
 
 /** Human-readable, derived from the dataset rather than stored on the record. */
-export function describeFavorite(favorite: FavoriteConfig): string | null {
-  const food = findFood(favorite.foodId);
+export function describeFavorite(
+  favorite: FavoriteConfig,
+  foods: readonly FoodItem[] = FOODS,
+): string | null {
+  const food = findFoodInCatalogue(foods, favorite.foodId);
   if (!food) {
     return null;
   }
@@ -85,7 +89,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-function parseFavorite(value: unknown): MealFavorite | null {
+function parseFavorite(value: unknown, foods: readonly FoodItem[]): MealFavorite | null {
   if (!isRecord(value)) {
     return null;
   }
@@ -93,7 +97,7 @@ function parseFavorite(value: unknown): MealFavorite | null {
 
   // A favourite pointing at a cut that no longer exists is unusable, so it is
   // dropped rather than rendered as a blank chip.
-  if (typeof foodId !== 'string' || !findFood(foodId)) {
+  if (typeof foodId !== 'string' || !findFoodInCatalogue(foods, foodId)) {
     return null;
   }
   if (!isQualityTier(quality) || !isPlateSize(plateSize)) {
@@ -109,7 +113,10 @@ function parseFavorite(value: unknown): MealFavorite | null {
 }
 
 /** Returns an empty list whenever stored data is absent, stale or unusable. */
-export function parseStoredFavorites(raw: string | null): readonly MealFavorite[] {
+export function parseStoredFavorites(
+  raw: string | null,
+  foods: readonly FoodItem[] = FOODS,
+): readonly MealFavorite[] {
   if (!raw || raw.length > MAX_STORED_FAVORITES_LENGTH) {
     return [];
   }
@@ -130,7 +137,7 @@ export function parseStoredFavorites(raw: string | null): readonly MealFavorite[
   const favorites: MealFavorite[] = [];
 
   for (const entry of rawFavorites) {
-    const favorite = parseFavorite(entry);
+    const favorite = parseFavorite(entry, foods);
     // A file edited by hand, or restored from a backup, can repeat an entry.
     if (favorite && !seen.has(favorite.id)) {
       seen.add(favorite.id);
@@ -144,12 +151,12 @@ export function parseStoredFavorites(raw: string | null): readonly MealFavorite[
   return favorites;
 }
 
-export function loadFavorites(): readonly MealFavorite[] {
+export function loadFavorites(foods: readonly FoodItem[] = FOODS): readonly MealFavorite[] {
   if (typeof window === 'undefined') {
     return [];
   }
   try {
-    return parseStoredFavorites(window.localStorage.getItem(FAVORITES_STORAGE_KEY));
+    return parseStoredFavorites(window.localStorage.getItem(FAVORITES_STORAGE_KEY), foods);
   } catch {
     // Storage can be unavailable in private modes or when quota-blocked.
     return [];
