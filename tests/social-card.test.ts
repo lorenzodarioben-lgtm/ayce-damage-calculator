@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { DEFAULT_PRICING_PROFILE } from '@/lib/pricing';
 import { encodeSharePayload } from '@/lib/shareLink';
 import {
   FALLBACK_SOCIAL_CARD,
@@ -164,6 +165,12 @@ describe('socialCardFromToken', () => {
   it('agrees with the page for the same token', () => {
     const token = encodeSharePayload(session())!;
 
-    expect(socialCardFromToken(token)).toEqual(buildSocialCardModel({ ...session() }));
+    expect(socialCardFromToken(token)).toEqual(
+      buildSocialCardModel({
+        ...session(),
+        pricingProfile: DEFAULT_PRICING_PROFILE,
+        customFoods: [],
+      }),
+    );
   });
 });
