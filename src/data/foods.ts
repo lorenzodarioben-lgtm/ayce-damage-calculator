@@ -1,4 +1,6 @@
 import type { FoodCategory, FoodItem } from '@/types/meal';
+import { DEFAULT_PRICING_PROFILE, resolveFoodPricing } from '@/lib/pricing';
+import type { PricingProfile } from '@/types/pricing';
 
 /**
  * Illustrative Australian estimates. Retail and restaurant figures are AUD per
@@ -293,13 +295,19 @@ export function foodsInCategory(category: FoodCategory): readonly FoodItem[] {
  */
 export type FoodSortKey = 'menu' | 'value';
 
-export function sortFoods(foods: readonly FoodItem[], key: FoodSortKey): readonly FoodItem[] {
+export function sortFoods(
+  foods: readonly FoodItem[],
+  key: FoodSortKey,
+  pricingProfile: PricingProfile = DEFAULT_PRICING_PROFILE,
+): readonly FoodItem[] {
   if (key === 'menu') {
     return foods;
   }
   // Ties break on name so the order cannot shuffle between renders.
   return [...foods].sort(
-    (a, b) => b.retailPricePerKg - a.retailPricePerKg || a.name.localeCompare(b.name),
+    (a, b) =>
+      resolveFoodPricing(b, pricingProfile).retailPricePerKg -
+        resolveFoodPricing(a, pricingProfile).retailPricePerKg || a.name.localeCompare(b.name),
   );
 }
 

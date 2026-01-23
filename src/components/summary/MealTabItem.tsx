@@ -4,6 +4,7 @@ import { Trash2 } from 'lucide-react';
 import { QuantityStepper } from '@/components/meal/QuantityStepper';
 import { MAX_LINE_QUANTITY, MIN_QUANTITY, getPlateSizeMeta, getQualityMeta } from '@/lib/constants';
 import { formatMoney, formatPlates, formatWeight } from '@/lib/formatting';
+import { usePricingProfile } from '@/components/session/PricingContext';
 import type { LineItemTotals } from '@/types/meal';
 
 interface MealTabItemProps {
@@ -14,6 +15,7 @@ interface MealTabItemProps {
 }
 
 export function MealTabItem({ line, onIncrement, onDecrement, onRemove }: MealTabItemProps) {
+  const pricingProfile = usePricingProfile();
   const { item, food } = line;
   const descriptor = `${food.name}, ${getQualityMeta(item.quality).label}, ${getPlateSizeMeta(item.plateSize).label}`;
 
@@ -31,7 +33,7 @@ export function MealTabItem({ line, onIncrement, onDecrement, onRemove }: MealTa
           </p>
         </div>
         <p className="tabular shrink-0 text-sm font-bold text-ember-400">
-          {formatMoney(line.retailValue)}
+          {formatMoney(line.retailValue, pricingProfile.money)}
         </p>
       </div>
 

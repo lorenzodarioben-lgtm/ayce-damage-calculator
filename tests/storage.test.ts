@@ -10,12 +10,14 @@ import {
   sanitiseRestaurantName,
   saveSession,
 } from '@/lib/storage';
+import { DEFAULT_PRICING_PROFILE_ID } from '@/lib/pricing';
 import type { MealSession } from '@/types/meal';
 
 const validSession: MealSession = {
   restaurantName: 'Seoul Garden',
   pricePerDiner: 59.9,
   dinerCount: 2,
+  pricingProfileId: DEFAULT_PRICING_PROFILE_ID,
   items: [
     {
       id: 'beef-ribeye__premium__regular',
@@ -54,6 +56,13 @@ describe('parseStoredSession', () => {
   it('rejects an incompatible version', () => {
     expect(parseStoredSession(envelope(validSession, 0))).toBeNull();
     expect(parseStoredSession(envelope(validSession, 99))).toBeNull();
+  });
+
+  it('migrates the original session schema to the built-in pricing profile', () => {
+    const { pricingProfileId: _profile, ...legacy } = validSession;
+    const restored = parseStoredSession(envelope(legacy, 1));
+
+    expect(restored?.pricingProfileId).toBe(DEFAULT_PRICING_PROFILE_ID);
   });
 
   it('rejects a session missing required numeric fields', () => {

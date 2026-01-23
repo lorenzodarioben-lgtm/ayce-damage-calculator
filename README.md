@@ -13,8 +13,8 @@ got through. Then it delivers a verdict on whether you beat the buffet or quietl
 investors.
 
 The premise is a joke. The calculation engine, the verdict thresholds, the offline support and the
-686-test suite are not. Everything runs in the browser — no accounts, no backend, no API keys, and
-nothing you record ever leaves your device.
+automated test suite are not. Everything runs in the browser — no accounts, no backend, no API
+keys, and nothing you record ever leaves your device.
 
 ---
 
@@ -36,6 +36,16 @@ nothing you record ever leaves your device.
 - Optional restaurant name, printed on the final report
 - Configurable AYCE price per diner and diner count, validated and clamped
 - Restaurant presets you write yourself — save a setup, apply it on the next visit
+
+**Personal menus**
+
+- Currency-aware pricing profiles, starting from the built-in Australian KBBQ estimates and using
+  explicit local currency and locale choices rather than exchange-rate guesses
+- Per-cut price assumptions that flow through the builder, live mode, results, history and sharing
+- Custom menu foods with a name, category, nutrition and price assumptions, illustrated with the
+  same in-app food artwork system as the built-in catalogue
+- A quick personal-menu editor that stays optional: a diner can start calculating with the default
+  menu immediately
 
 **Live Meal Mode** (`/live`)
 
@@ -73,13 +83,14 @@ nothing you record ever leaves your device.
   the difference actually is
 - Local analytics (`/stats`) — totals, averages, bests, category and grade mix, and a recovery
   trend chart drawn in plain SVG
-- Backup and restore (`/history/data`) — versioned JSON export, validated import, merge or replace
+- Backup and restore (`/history/data`) — versioned JSON export of history, saved orders, personal
+  menus and restaurant presets; validated import, merge or replace
 - Spreadsheet export — history as CSV, one row per plate, for taking the numbers elsewhere
 
 **Sharing**
 
 - Shareable report links (`/share/<token>`) that carry the whole meal inside the URL, with no
-  database behind them
+  database behind them, including the active pricing profile and custom foods used in the meal
 - Dynamic Open Graph images generated per report, so a posted link previews the actual verdict
 
 **Everything else**
@@ -140,8 +151,8 @@ records are migrated forward on read rather than discarded.
 
 **Recalculation over cached derivation.** History records store the canonical meal _and_ the totals
 that were shown at the time. Everything the app displays is recalculated from the meal, so history,
-comparisons and analytics always agree with the current engine; the stored snapshot exists so a
-record whose food later left the dataset does not silently lose those plates.
+comparisons and analytics always agree with the current engine; each record also snapshots its menu
+context so a later personal-menu edit does not silently rewrite what was filed.
 
 **Untrusted input at every boundary.** Share tokens, imported backups, IndexedDB rows, localStorage
 and the URL are all validated field by field, with explicit bounds on every number and a hard length
@@ -149,8 +160,9 @@ limit before parsing begins. A malformed input fails to `null` and is reported; 
 it can never produce a meal the calculator itself could not have produced.
 
 **Stateless sharing.** A shared report has no server-side record. The token is a compact, versioned,
-URL-safe encoding of the meal itself — stable two-character food codes, base-36 numbers, and one
-base64 field for the restaurant name — small enough that no compression dependency is needed.
+URL-safe encoding of the meal itself and the menu context needed to reproduce it. Older links keep
+their original decoder, while current links carry the active pricing profile and just the custom
+foods used on that tab.
 
 **Conservative caching.** The service worker is network-first for documents and cache-first only for
 content-hashed build assets, so a new deployment can never be masked by a stale shell. Its policy is
@@ -205,27 +217,29 @@ for percentage-valued metrics entirely, so the two can never be conflated in the
 
 Everything is local by default and stays that way.
 
-- Your in-progress meal, filed history, saved orders and restaurant presets live in this browser
+- Your in-progress meal, filed history, saved orders, restaurant presets, pricing profiles and
+  custom foods live in this browser
 - Analytics are derived on the device from your own records; no usage is tracked or transmitted
 - There is no account system, no backend and no third-party service of any kind
-- Shared report links carry the meal snapshot **inside the URL itself** — the plates, the entry
-  price and the restaurant name. Nothing is uploaded, and nothing else travels with the link. Shared
-  pages are marked `noindex`, and opening one never touches the recipient's own session.
+- Shared report links carry the meal snapshot **inside the URL itself** — the plates, entry price,
+  pricing context and any custom foods used. Nothing is uploaded, and nothing else travels with the
+  link. Shared pages are marked `noindex`, and opening one never touches the recipient's own session.
 
 ## Testing
 
 ```bash
-npm run test:run    # 568 unit and component tests across 25 files
-npm run test:e2e    # 118 end-to-end tests across 15 files, on two viewports
+npm run test:run    # unit and component tests
+npm run test:e2e    # end-to-end tests, on desktop and mobile viewports
 ```
 
 **Unit and component tests (Vitest + React Testing Library)** cover the calculation engine, the food
 dataset's own integrity, cut search and ordering, verdict boundaries tested on both sides of every
-threshold, number and currency formatting, the session reducer including undo, storage recovery from
-corrupt or stale data, the IndexedDB repository against `fake-indexeddb`, saved-session migration
-across all three schema versions, session comparison, the achievement engine, favourites, restaurant
-presets, share-token encoding and decoding, backup import and export, CSV escaping, local analytics,
-browser-stage history, the sitemap and crawling rules, and the service worker's caching policy.
+threshold, number and currency formatting, pricing profiles, custom foods, the session reducer
+including undo, storage recovery from corrupt or stale data, the IndexedDB repository against
+`fake-indexeddb`, saved-session migration, session comparison, the achievement engine, favourites,
+restaurant presets, share-token encoding and decoding, backup import and export, CSV escaping, local
+analytics, browser-stage history, the sitemap and crawling rules, and the service worker's caching
+policy.
 
 **End-to-end tests (Playwright)** run against a production build on a 1440×900 desktop viewport and a
 390×844 mobile one, covering the full meal journey, report navigation, real browser Back and Forward,
@@ -276,12 +290,13 @@ src/
 │                 share/[token] with its generated OG image, offline, manifest,
 │                 sitemap, robots
 ├── components/   meal builder, live mode, session setup, summary, results,
-│                 history, stats, favourites, navigation, methodology, PWA, UI
+│                 history, stats, favourites, custom menus, navigation, methodology, PWA, UI
 ├── data/         the 18-item food dataset, with search and ordering
 ├── hooks/        session reducer, stage history, meal history, favourites,
-│                 presets, status messaging, undoable removal
+│                 presets, pricing profiles, custom foods, status messaging, undoable removal
 ├── lib/          calculations, verdicts, achievements, comparison, analytics,
-│                 history and its repository, favourites, presets, share tokens,
+│                 history and its repository, favourites, presets, pricing profiles, custom foods,
+│                 share tokens,
 │                 social cards, backup, CSV, formatting, storage, card rendering
 └── types/        domain types
 
@@ -308,7 +323,7 @@ restaurant presets are yours to write.
 
 Not implemented — possible directions for later versions:
 
-- Regional price datasets and currencies beyond AUD
+- More curated regional price assumptions and currency contexts
 - Other buffet formats such as hotpot or sushi
 - An optional, opt-in cloud sync adapter behind the existing storage interface
 - Anonymous public leaderboards

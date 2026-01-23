@@ -3,12 +3,14 @@ import Link from 'next/link';
 import { SiteFooter } from '@/components/nav/SiteFooter';
 import { SiteHeader } from '@/components/nav/SiteHeader';
 import { MAIN_CONTENT_ID } from '@/components/nav/destinations';
+import { PricingProfileProvider } from '@/components/session/PricingContext';
 import { AchievementList } from '@/components/results/AchievementList';
 import { MealBreakdown } from '@/components/results/MealBreakdown';
 import { ReportSummary } from '@/components/results/ReportSummary';
 import { ResultCard } from '@/components/results/ResultCard';
 import { evaluateAchievements } from '@/lib/achievements';
 import { buildDamageReport } from '@/lib/calculations';
+import { foodCatalogue } from '@/lib/foodCatalogue';
 import { buildResultCardModel } from '@/lib/resultCard';
 import { decodeSharePayload } from '@/lib/shareLink';
 import { socialCardFromToken } from '@/lib/socialCard';
@@ -96,7 +98,12 @@ export default async function SharePage({ params }: SharePageProps) {
     );
   }
 
-  const report = buildDamageReport(payload.items, payload);
+  const report = buildDamageReport(
+    payload.items,
+    payload,
+    payload.pricingProfile,
+    foodCatalogue(payload.customFoods),
+  );
   const verdict = getVerdict(report.totalRetailValue, report.totalAdmission);
   const achievements = evaluateAchievements(report, payload.dinerCount);
   const cardModel = buildResultCardModel(report, verdict, payload.restaurantName);
@@ -105,51 +112,53 @@ export default async function SharePage({ params }: SharePageProps) {
     <>
       <SiteHeader />
 
-      <main
-        id={MAIN_CONTENT_ID}
-        className="relative z-10 mx-auto max-w-[900px] px-4 pt-8 pb-16 sm:px-6"
-      >
-        <p className="micro-label mb-4">A shared damage report</p>
+      <PricingProfileProvider profile={payload.pricingProfile}>
+        <main
+          id={MAIN_CONTENT_ID}
+          className="relative z-10 mx-auto max-w-[900px] px-4 pt-8 pb-16 sm:px-6"
+        >
+          <p className="micro-label mb-4">A shared damage report</p>
 
-        <ReportSummary
-          report={report}
-          verdict={verdict}
-          restaurantName={payload.restaurantName}
-          heading="AYCE Damage Report"
-          headingId="shared-report-heading"
-          headingLevel={1}
-        />
-
-        <div className="mt-6">
-          <MealBreakdown
-            lines={report.lines}
-            headingId="shared-breakdown-heading"
-            heading="What was eaten"
+          <ReportSummary
+            report={report}
+            verdict={verdict}
+            restaurantName={payload.restaurantName}
+            heading="AYCE Damage Report"
+            headingId="shared-report-heading"
+            headingLevel={1}
           />
-        </div>
 
-        <div className="mt-6">
-          <AchievementList achievements={achievements} headingId="shared-achievements-heading" />
-        </div>
-
-        <section aria-labelledby="shared-card-heading" className="panel mt-6 p-4 sm:p-5">
-          <h3 id="shared-card-heading" className="micro-label mb-4">
-            The card
-          </h3>
-          <div className="flex justify-center overflow-x-auto pb-1">
-            <ResultCard model={cardModel} />
+          <div className="mt-6">
+            <MealBreakdown
+              lines={report.lines}
+              headingId="shared-breakdown-heading"
+              heading="What was eaten"
+            />
           </div>
-        </section>
 
-        <div className="mt-8 text-center">
-          <Link href="/" className={CTA_CLASS}>
-            Run your own damage report
-          </Link>
-          <p className="mt-3 text-xs text-cream-700">
-            This report is read-only and has not changed anything on your device.
-          </p>
-        </div>
-      </main>
+          <div className="mt-6">
+            <AchievementList achievements={achievements} headingId="shared-achievements-heading" />
+          </div>
+
+          <section aria-labelledby="shared-card-heading" className="panel mt-6 p-4 sm:p-5">
+            <h3 id="shared-card-heading" className="micro-label mb-4">
+              The card
+            </h3>
+            <div className="flex justify-center overflow-x-auto pb-1">
+              <ResultCard model={cardModel} />
+            </div>
+          </section>
+
+          <div className="mt-8 text-center">
+            <Link href="/" className={CTA_CLASS}>
+              Run your own damage report
+            </Link>
+            <p className="mt-3 text-xs text-cream-700">
+              This report is read-only and has not changed anything on your device.
+            </p>
+          </div>
+        </main>
+      </PricingProfileProvider>
 
       <SiteFooter>
         This link contains the shared meal itself — the plates, the entry price and the restaurant

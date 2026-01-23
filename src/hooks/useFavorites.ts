@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useState } from 'react';
+import { FOODS } from '@/data/foods';
 import {
   isFavorited,
   loadFavorites,
@@ -10,6 +11,7 @@ import {
   type FavoriteConfig,
   type MealFavorite,
 } from '@/lib/favorites';
+import type { FoodItem } from '@/types/meal';
 
 export interface UseFavoritesResult {
   favorites: readonly MealFavorite[];
@@ -34,11 +36,11 @@ const INITIAL: State = { favorites: [], hydrated: false };
  * is small and synchronous, and doing it here avoids a frame where a returning
  * user is shown the empty state they have already dismissed.
  */
-export function useFavorites(): UseFavoritesResult {
+export function useFavorites(foods: readonly FoodItem[] = FOODS): UseFavoritesResult {
   const [state, setState] = useState<State>(INITIAL);
 
   if (!state.hydrated && typeof window !== 'undefined') {
-    setState({ favorites: loadFavorites(), hydrated: true });
+    setState({ favorites: loadFavorites(foods), hydrated: true });
   }
 
   const toggle = useCallback((config: FavoriteConfig) => {

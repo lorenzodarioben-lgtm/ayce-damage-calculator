@@ -1,12 +1,5 @@
 import type { DeltaUnit } from '@/lib/comparison';
-
-const AUD = new Intl.NumberFormat('en-AU', {
-  style: 'currency',
-  currency: 'AUD',
-  currencyDisplay: 'narrowSymbol',
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
+import { DEFAULT_MONEY_CONTEXT, type MoneyContext, resolveMoneyContext } from '@/lib/money';
 
 const INTEGER = new Intl.NumberFormat('en-AU', { maximumFractionDigits: 0 });
 
@@ -23,17 +16,30 @@ function finite(value: number): number {
   return Number.isFinite(value) ? value : 0;
 }
 
-export function formatMoney(value: number): string {
-  return AUD.format(finite(value));
+function currencyFormatter(context: MoneyContext, digits = 2): Intl.NumberFormat {
+  return new Intl.NumberFormat(context.locale, {
+    style: 'currency',
+    currency: context.currency,
+    currencyDisplay: 'narrowSymbol',
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+  });
+}
+
+export function formatMoney(value: number, context: MoneyContext = DEFAULT_MONEY_CONTEXT): string {
+  return currencyFormatter(resolveMoneyContext(context)).format(finite(value));
 }
 
 /** Renders an explicit sign so gains and gaps are never ambiguous. */
-export function formatSignedMoney(value: number): string {
+export function formatSignedMoney(
+  value: number,
+  context: MoneyContext = DEFAULT_MONEY_CONTEXT,
+): string {
   const safe = finite(value);
   // -0 would otherwise render as "-$0.00".
   const normalised = Object.is(safe, -0) ? 0 : safe;
   const sign = normalised < 0 ? '-' : '+';
-  return `${sign}${AUD.format(Math.abs(normalised))}`;
+  return `${sign}${formatMoney(Math.abs(normalised), context)}`;
 }
 
 export function formatPercent(value: number): string {
@@ -85,10 +91,13 @@ export function formatRecordedAt(iso: string): string {
   return Number.isNaN(parsed) ? 'Date unknown' : DATE_TIME.format(new Date(parsed));
 }
 
-export function formatPricePerKg(value: number): string {
+export function formatPricePerKg(
+  value: number,
+  context: MoneyContext = DEFAULT_MONEY_CONTEXT,
+): string {
   const safe = finite(value);
   const digits = Number.isInteger(safe) ? 0 : 2;
-  return `$${DECIMAL(digits).format(safe)}/kg`;
+  return `${currencyFormatter(resolveMoneyContext(context), digits).format(safe)}/kg`;
 }
 
 function signOf(value: number): string {
@@ -103,14 +112,18 @@ function signOf(value: number): string {
  * because "+38%" and "+38 percentage points" are different claims and only one
  * of them is true of a recovery figure moving from 134% to 172%.
  */
-export function formatDelta(value: number, unit: DeltaUnit): string {
+export function formatDelta(
+  value: number,
+  unit: DeltaUnit,
+  moneyContext: MoneyContext = DEFAULT_MONEY_CONTEXT,
+): string {
   const safe = finite(value);
   const magnitude = Math.abs(safe);
   const sign = signOf(safe);
 
   switch (unit) {
     case 'currency':
-      return `${sign}${AUD.format(magnitude)}`;
+      return `${sign}${formatMoney(magnitude, moneyContext)}`;
     case 'kilograms':
       return `${sign}${KG.format(magnitude)} kg`;
     case 'grams':
@@ -125,10 +138,14 @@ export function formatDelta(value: number, unit: DeltaUnit): string {
 }
 
 /** Renders a metric's own value in the unit it is measured in. */
-export function formatMetricValue(value: number, unit: DeltaUnit): string {
+export function formatMetricValue(
+  value: number,
+  unit: DeltaUnit,
+  moneyContext: MoneyContext = DEFAULT_MONEY_CONTEXT,
+): string {
   switch (unit) {
     case 'currency':
-      return formatMoney(value);
+      return formatMoney(value, moneyContext);
     case 'kilograms':
       return formatKg(value);
     case 'grams':
