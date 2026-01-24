@@ -65,6 +65,98 @@ describe('parseStoredSession', () => {
     expect(restored?.pricingProfileId).toBe(DEFAULT_PRICING_PROFILE_ID);
   });
 
+  it('continues to load version 2 sessions as a shared table', () => {
+    const restored = parseStoredSession(envelope(validSession, 2));
+
+    expect(restored).toEqual(validSession);
+    expect(restored?.diners).toBeUndefined();
+    expect(restored?.items[0]?.allocations).toBeUndefined();
+  });
+
+  it('restores a valid diner roster and bounded allocations from version 3', () => {
+    const tableSession: MealSession = {
+      ...validSession,
+      dinerCount: 2,
+      diners: [
+        { id: 'lorenzo', displayName: 'Lorenzo', admissionPrice: 45 },
+        { id: 'omar', displayName: 'Omar' },
+      ],
+      items: [
+        {
+          ...validSession.items[0]!,
+          quantity: 3,
+          allocations: [{ dinerId: 'lorenzo', quantity: 2 }],
+        },
+      ],
+    };
+
+    expect(parseStoredSession(envelope(tableSession))).toEqual(tableSession);
+  });
+
+  it('degrades malformed Table Mode data to a readable shared meal', () => {
+    const restored = parseStoredSession(
+      envelope({
+        ...validSession,
+        diners: [
+          { id: 'lorenzo', displayName: '  Lorenzo  ' },
+          { id: 'lorenzo', displayName: 'Duplicate' },
+          { id: 'bad id', displayName: 'Invalid ID' },
+          { id: 'omar', displayName: '' },
+          { id: 'valid-2', displayName: 'Diner 2', admissionPrice: Number.POSITIVE_INFINITY },
+        ],
+        items: [
+          {
+            ...validSession.items[0],
+            quantity: 2,
+            allocations: [
+              { dinerId: 'retired', quantity: 1 },
+              { dinerId: 'lorenzo', quantity: -3 },
+              { dinerId: 'lorenzo', quantity: 9 },
+            ],
+          },
+        ],
+      }),
+    );
+
+    expect(restored?.diners).toEqual([
+      { id: 'lorenzo', displayName: 'Lorenzo' },
+      { id: 'valid-2', displayName: 'Diner 2' },
+    ]);
+    expect(restored?.items[0]?.allocations).toEqual([{ dinerId: 'lorenzo', quantity: 2 }]);
+    expect(restored?.items[0]?.quantity).toBe(2);
+  });
+
+  it('keeps allocations while merging hand-edited duplicate Table Mode lines', () => {
+    const restored = parseStoredSession(
+      envelope({
+        ...validSession,
+        diners: [
+          { id: 'lorenzo', displayName: 'Lorenzo' },
+          { id: 'omar', displayName: 'Omar' },
+        ],
+        items: [
+          {
+            ...validSession.items[0],
+            quantity: 1,
+            allocations: [{ dinerId: 'lorenzo', quantity: 1 }],
+          },
+          {
+            ...validSession.items[0],
+            quantity: 2,
+            allocations: [{ dinerId: 'omar', quantity: 1 }],
+          },
+        ],
+      }),
+    );
+
+    expect(restored?.items).toHaveLength(1);
+    expect(restored?.items[0]?.quantity).toBe(3);
+    expect(restored?.items[0]?.allocations).toEqual([
+      { dinerId: 'lorenzo', quantity: 1 },
+      { dinerId: 'omar', quantity: 1 },
+    ]);
+  });
+
   it('rejects a session missing required numeric fields', () => {
     expect(parseStoredSession(envelope({ ...validSession, pricePerDiner: 'lots' }))).toBeNull();
     expect(parseStoredSession(envelope({ ...validSession, dinerCount: null }))).toBeNull();
