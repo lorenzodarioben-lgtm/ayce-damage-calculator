@@ -1,6 +1,7 @@
 import { FOODS } from '@/data/foods';
 import { clampDinerCount, clampPricePerDiner } from '@/lib/calculations';
 import {
+  MAX_DINERS,
   MAX_LINE_QUANTITY,
   MAX_RESTAURANT_NAME_LENGTH,
   MIN_QUANTITY,
@@ -9,12 +10,18 @@ import {
 } from '@/lib/constants';
 import { mealItemId, mergeMealItems } from '@/lib/mealItems';
 import { findFoodInCatalogue } from '@/lib/foodCatalogue';
-import type { FoodItem } from '@/types/meal';
+import {
+  isDinerId,
+  normaliseAllocations,
+  normaliseDinerName,
+  reconcileItemAllocations,
+} from '@/lib/diners';
+import type { Diner, DinerAllocation, FoodItem } from '@/types/meal';
 import { DEFAULT_PRICING_PROFILE_ID, isPricingProfileId } from '@/lib/pricing';
 import type { MealItem, MealSession } from '@/types/meal';
 
 export const STORAGE_KEY = 'ayce-damage-calculator';
-export const STORAGE_VERSION = 2;
+export const STORAGE_VERSION = 3;
 
 /** A normal tab is tiny; refuse an edited storage entry before parsing it. */
 export const MAX_STORED_SESSION_LENGTH = 64 * 1024;
@@ -45,7 +52,45 @@ export function normaliseRestaurantNameInput(value: string): string {
   return value.replace(/\s+/g, ' ').trimStart().slice(0, MAX_RESTAURANT_NAME_LENGTH);
 }
 
-function parseMealItem(value: unknown, foods: readonly FoodItem[]): MealItem | null {
+function parseDiners(value: unknown): readonly Diner[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  const diners: Diner[] = [];
+  const ids = new Set<string>();
+  for (const entry of value) {
+    if (!isRecord(entry) || !isDinerId(entry.id) || ids.has(entry.id)) {
+      continue;
+    }
+    const displayName = normaliseDinerName(entry.displayName);
+    if (!displayName) {
+      continue;
+    }
+    ids.add(entry.id);
+    const admissionPrice =
+      typeof entry.admissionPrice === 'number' &&
+      Number.isFinite(entry.admissionPrice) &&
+      entry.admissionPrice > 0
+        ? clampPricePerDiner(entry.admissionPrice)
+        : undefined;
+    diners.push({
+      id: entry.id,
+      displayName,
+      ...(admissionPrice === undefined ? {} : { admissionPrice }),
+    });
+    if (diners.length >= MAX_DINERS) {
+      break;
+    }
+  }
+  return diners;
+}
+
+function parseMealItem(
+  value: unknown,
+  foods: readonly FoodItem[],
+  diners: readonly Diner[],
+): MealItem | null {
   if (!isRecord(value)) {
     return null;
   }
@@ -64,13 +109,21 @@ function parseMealItem(value: unknown, foods: readonly FoodItem[]): MealItem | n
 
   const safeQuantity = Math.min(MAX_LINE_QUANTITY, Math.max(MIN_QUANTITY, Math.floor(quantity)));
 
-  return {
+  const base = {
     id: mealItemId({ foodId, quality, plateSize }),
     foodId,
     quality,
     plateSize,
     quantity: safeQuantity,
   };
+  const allocations = normaliseAllocations(
+    Array.isArray(value.allocations)
+      ? (value.allocations as readonly DinerAllocation[])
+      : undefined,
+    safeQuantity,
+    diners,
+  );
+  return allocations.length > 0 ? { ...base, allocations } : base;
 }
 
 /** Returns null whenever stored data is absent, stale or untrustworthy. */
@@ -91,7 +144,7 @@ export function parseStoredSession(
 
   if (
     !isRecord(parsed) ||
-    (parsed.version !== 1 && parsed.version !== STORAGE_VERSION) ||
+    (parsed.version !== 1 && parsed.version !== 2 && parsed.version !== STORAGE_VERSION) ||
     !isRecord(parsed.session)
   ) {
     return null;
@@ -99,12 +152,14 @@ export function parseStoredSession(
 
   const session = parsed.session;
   const rawItems = Array.isArray(session.items) ? session.items : [];
+  // V1 and V2 had no roster by design; their full tabs continue as shared food.
+  const diners = parsed.version === STORAGE_VERSION ? parseDiners(session.diners) : [];
 
   const items = mergeMealItems(
     rawItems
-      .map((item) => parseMealItem(item, foods))
+      .map((item) => parseMealItem(item, foods, diners))
       .filter((item): item is MealItem => item !== null),
-  );
+  ).map((item) => reconcileItemAllocations(item, diners));
 
   const pricePerDiner =
     typeof session.pricePerDiner === 'number' ? clampPricePerDiner(session.pricePerDiner) : null;
@@ -123,6 +178,7 @@ export function parseStoredSession(
       ? session.pricingProfileId
       : DEFAULT_PRICING_PROFILE_ID,
     items,
+    ...(diners.length > 0 ? { diners } : {}),
   };
 }
 
