@@ -74,6 +74,54 @@ describe('sessionReducer', () => {
     expect(state.dinerCount).toBe(4);
   });
 
+  it('keeps roster management optional and returns removed allocations to Table', () => {
+    let state = sessionReducer(INITIAL_SESSION, {
+      type: 'add-diner',
+      diner: { id: 'lorenzo', displayName: 'Lorenzo' },
+    });
+    state = sessionReducer(state, {
+      type: 'add-diner',
+      diner: { id: 'omar', displayName: 'Omar' },
+    });
+    state = sessionReducer(state, {
+      type: 'add-item',
+      payload: { foodId: 'beef-ribeye', quality: 'standard', plateSize: 'regular', quantity: 2 },
+    });
+    const line = state.items[0]!;
+    state = {
+      ...state,
+      items: [{ ...line, allocations: [{ dinerId: 'lorenzo', quantity: 2 }] }],
+    };
+
+    state = sessionReducer(state, { type: 'remove-diner', id: 'lorenzo' });
+
+    expect(state.diners).toEqual([{ id: 'omar', displayName: 'Omar' }]);
+    expect(state.dinerCount).toBe(1);
+    expect(state.items[0]?.quantity).toBe(2);
+    expect(state.items[0]?.allocations).toBeUndefined();
+  });
+
+  it('renames, reorders and clears a roster without altering table plates', () => {
+    let state = sessionReducer(INITIAL_SESSION, {
+      type: 'add-diner',
+      diner: { id: 'lorenzo', displayName: 'Lorenzo' },
+    });
+    state = sessionReducer(state, {
+      type: 'add-diner',
+      diner: { id: 'omar', displayName: 'Omar' },
+    });
+    state = sessionReducer(state, {
+      type: 'add-item',
+      payload: { foodId: 'pork-belly', quality: 'standard', plateSize: 'small', quantity: 3 },
+    });
+    state = sessionReducer(state, { type: 'rename-diner', id: 'omar', displayName: '  Omar K. ' });
+    state = sessionReducer(state, { type: 'move-diner', id: 'omar', direction: -1 });
+    state = sessionReducer(state, { type: 'clear-diners' });
+
+    expect(state.diners).toBeUndefined();
+    expect(state.items[0]?.quantity).toBe(3);
+  });
+
   it('removes a line', () => {
     const state = sessionReducer(INITIAL_SESSION, addRibeye);
     const id = state.items[0]!.id;
