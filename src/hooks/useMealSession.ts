@@ -45,6 +45,7 @@ export interface AddItemPayload {
   quality: QualityTier;
   plateSize: PlateSize;
   quantity: number;
+  dinerId?: string;
 }
 
 export type SessionAction =
@@ -221,12 +222,27 @@ export function sessionReducer(state: MealSession, action: SessionAction): MealS
       const quantity = clampQuantity(action.payload.quantity);
       const id = mealItemId(action.payload);
       const existing = state.items.find((item) => item.id === id);
+      const dinerId = findActiveDinerId(state.diners, action.payload.dinerId);
 
       if (existing) {
+        const nextQuantity = clampQuantity(existing.quantity + quantity);
+        const addedQuantity = nextQuantity - existing.quantity;
+        const allocations = dinerId
+          ? [...(existing.allocations ?? []), { dinerId, quantity: addedQuantity }]
+          : existing.allocations;
         return {
           ...state,
           items: state.items.map((item) =>
-            item.id === id ? { ...item, quantity: clampQuantity(item.quantity + quantity) } : item,
+            item.id === id
+              ? reconcileItemAllocations(
+                  {
+                    ...item,
+                    quantity: clampQuantity(item.quantity + quantity),
+                    ...(allocations?.length ? { allocations } : {}),
+                  },
+                  state.diners,
+                )
+              : item,
           ),
         };
       }
@@ -237,6 +253,7 @@ export function sessionReducer(state: MealSession, action: SessionAction): MealS
         quality: action.payload.quality,
         plateSize: action.payload.plateSize,
         quantity,
+        ...(dinerId ? { allocations: [{ dinerId, quantity }] } : {}),
       };
       return { ...state, items: [...state.items, item] };
     }
@@ -280,6 +297,13 @@ export function sessionReducer(state: MealSession, action: SessionAction): MealS
     case 'reset':
       return INITIAL_SESSION;
   }
+}
+
+function findActiveDinerId(
+  diners: readonly Diner[] | undefined,
+  id: string | undefined,
+): string | null {
+  return id && diners?.some((diner) => diner.id === id) ? id : null;
 }
 
 export interface UseMealSessionResult {
