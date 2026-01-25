@@ -16,6 +16,7 @@ import type {
   FoodItem,
   LineItemTotals,
   MealItem,
+  MealSession,
   Nutrition,
   SessionConfig,
   SessionTotals,
@@ -45,8 +46,39 @@ export function clampDinerCount(value: number): number {
   return Math.min(MAX_DINERS, Math.max(MIN_DINERS, Math.round(value)));
 }
 
-export function calculateAdmission(config: Pick<SessionConfig, 'pricePerDiner' | 'dinerCount'>) {
-  return clampPricePerDiner(config.pricePerDiner) * clampDinerCount(config.dinerCount);
+type AdmissionConfig = Pick<SessionConfig, 'pricePerDiner' | 'dinerCount'> &
+  Pick<MealSession, 'diners'>;
+
+export function calculateAdmission(config: AdmissionConfig) {
+  const defaultPrice = clampPricePerDiner(config.pricePerDiner);
+  const dinerCount = clampDinerCount(config.dinerCount);
+  const diners = config.diners ?? [];
+  const hasOverride = diners.some(
+    (diner) =>
+      typeof diner.admissionPrice === 'number' &&
+      Number.isFinite(diner.admissionPrice) &&
+      diner.admissionPrice > 0,
+  );
+
+  // The ordinary calculator remains byte-for-byte the same economic model
+  // until someone deliberately supplies a per-diner price.
+  if (!hasOverride) {
+    return defaultPrice * dinerCount;
+  }
+
+  const rosterAdmission = diners.reduce(
+    (total, diner) =>
+      total +
+      (typeof diner.admissionPrice === 'number' &&
+      Number.isFinite(diner.admissionPrice) &&
+      diner.admissionPrice > 0
+        ? clampPricePerDiner(diner.admissionPrice)
+        : defaultPrice),
+    0,
+  );
+  // A partially named roster can still retain generic diners from the original
+  // session setup; they inherit the table default rather than disappearing.
+  return rosterAdmission + defaultPrice * Math.max(0, dinerCount - diners.length);
 }
 
 export function adjustedRetailPricePerKg(
@@ -189,7 +221,7 @@ export function perDinerTotals(report: DamageReport): PerDinerTotals {
 
 export function buildDamageReport(
   items: readonly MealItem[],
-  config: Pick<SessionConfig, 'pricePerDiner' | 'dinerCount'>,
+  config: AdmissionConfig,
   pricingProfile: PricingProfile = DEFAULT_PRICING_PROFILE,
   foods = FOODS,
 ): DamageReport {

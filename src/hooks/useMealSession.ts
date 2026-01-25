@@ -56,6 +56,7 @@ export type SessionAction =
   | { type: 'apply-setup'; setup: SessionConfig }
   | { type: 'add-diner'; diner: Diner }
   | { type: 'rename-diner'; id: string; displayName: string }
+  | { type: 'set-diner-admission-price'; id: string; value: number | undefined }
   | { type: 'remove-diner'; id: string }
   | { type: 'move-diner'; id: string; direction: -1 | 1 }
   | { type: 'clear-diners' }
@@ -111,7 +112,20 @@ export function sessionReducer(state: MealSession, action: SessionAction): MealS
       ) {
         return state;
       }
-      const diners = [...(state.diners ?? []), { ...action.diner, displayName }];
+      const admissionPrice =
+        typeof action.diner.admissionPrice === 'number' &&
+        Number.isFinite(action.diner.admissionPrice) &&
+        action.diner.admissionPrice > 0
+          ? clampPricePerDiner(action.diner.admissionPrice)
+          : undefined;
+      const diners = [
+        ...(state.diners ?? []),
+        {
+          id: action.diner.id,
+          displayName,
+          ...(admissionPrice === undefined ? {} : { admissionPrice }),
+        },
+      ];
       return { ...state, diners, dinerCount: diners.length };
     }
 
@@ -125,6 +139,24 @@ export function sessionReducer(state: MealSession, action: SessionAction): MealS
         diners: state.diners.map((diner) =>
           diner.id === action.id ? { ...diner, displayName } : diner,
         ),
+      };
+    }
+
+    case 'set-diner-admission-price': {
+      if (!state.diners?.some((diner) => diner.id === action.id)) {
+        return state;
+      }
+      const admissionPrice =
+        typeof action.value === 'number' && Number.isFinite(action.value) && action.value > 0
+          ? clampPricePerDiner(action.value)
+          : undefined;
+      return {
+        ...state,
+        diners: state.diners.map((diner) => {
+          if (diner.id !== action.id) return diner;
+          const { admissionPrice: _admissionPrice, ...defaultDiner } = diner;
+          return admissionPrice === undefined ? defaultDiner : { ...defaultDiner, admissionPrice };
+        }),
       };
     }
 
@@ -262,6 +294,7 @@ export interface UseMealSessionResult {
   applySetup: (setup: SessionConfig) => void;
   addDiner: (diner: Diner) => void;
   renameDiner: (id: string, displayName: string) => void;
+  setDinerAdmissionPrice: (id: string, value: number | undefined) => void;
   removeDiner: (id: string) => void;
   moveDiner: (id: string, direction: -1 | 1) => void;
   clearDiners: () => void;
@@ -361,6 +394,10 @@ export function useMealSession(
     dispatch({ type: 'rename-diner', id, displayName });
   }, []);
 
+  const setDinerAdmissionPrice = useCallback((id: string, value: number | undefined) => {
+    dispatch({ type: 'set-diner-admission-price', id, value });
+  }, []);
+
   const removeDiner = useCallback((id: string) => {
     dispatch({ type: 'remove-diner', id });
   }, []);
@@ -409,6 +446,7 @@ export function useMealSession(
     applySetup,
     addDiner,
     renameDiner,
+    setDinerAdmissionPrice,
     removeDiner,
     moveDiner,
     clearDiners,
