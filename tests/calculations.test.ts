@@ -5,6 +5,7 @@ import {
   adjustedRetailPricePerKg,
   buildDamageReport,
   calculateAdmission,
+  calculateDinerTotals,
   calculateLineItem,
   calculateSessionTotals,
   clampDinerCount,
@@ -350,6 +351,45 @@ describe('per-diner split', () => {
     expect(each.weightG).toBe(0);
     expect(each.nutrition.fat).toBe(0);
     expect(each.admission).toBeCloseTo(60, 10);
+  });
+});
+
+describe('diner-aware totals', () => {
+  it('splits shared food evenly and keeps explicit ownership exact', () => {
+    const items = [
+      item({ foodId: ribeye.id, quantity: 3, allocations: [{ dinerId: 'lorenzo', quantity: 1 }] }),
+    ];
+    const diners = [
+      { id: 'lorenzo', displayName: 'Lorenzo', admissionPrice: 70 },
+      { id: 'omar', displayName: 'Omar' },
+    ];
+    const totals = calculateDinerTotals(items, { pricePerDiner: 60, dinerCount: 2, diners });
+
+    expect(totals[0]).toMatchObject({
+      attributedPlates: 1,
+      sharedPlates: 1,
+      effectivePlates: 2,
+      admission: 70,
+    });
+    expect(totals[1]).toMatchObject({
+      attributedPlates: 0,
+      sharedPlates: 1,
+      effectivePlates: 1,
+      admission: 60,
+    });
+    const report = buildDamageReport(items, { pricePerDiner: 60, dinerCount: 2, diners });
+    expect(totals.reduce((sum, diner) => sum + diner.retailValue, 0)).toBeCloseTo(
+      report.totalRetailValue,
+      10,
+    );
+    expect(totals.reduce((sum, diner) => sum + diner.nutrition.calories, 0)).toBeCloseTo(
+      report.nutrition.calories,
+      10,
+    );
+  });
+
+  it('returns no per-diner results for an ordinary shared session', () => {
+    expect(calculateDinerTotals([], { pricePerDiner: 60, dinerCount: 2 })).toEqual([]);
   });
 });
 

@@ -10,9 +10,11 @@ import {
 } from '@/lib/constants';
 import { DEFAULT_PRICING_PROFILE, resolveFoodPricing } from '@/lib/pricing';
 import { findFoodInCatalogue } from '@/lib/foodCatalogue';
+import { sharedQuantity } from '@/lib/diners';
 import type { PricingProfile } from '@/types/pricing';
 import type {
   DamageReport,
+  DinerDamageTotals,
   FoodItem,
   LineItemTotals,
   MealItem,
@@ -217,6 +219,66 @@ export function perDinerTotals(report: DamageReport): PerDinerTotals {
       carbs: per(report.nutrition.carbs),
     },
   };
+}
+
+/** Calculates an estimate per active roster member while preserving table totals. */
+export function calculateDinerTotals(
+  items: readonly MealItem[],
+  config: AdmissionConfig,
+  pricingProfile: PricingProfile = DEFAULT_PRICING_PROFILE,
+  foods = FOODS,
+): readonly DinerDamageTotals[] {
+  const diners = config.diners ?? [];
+  if (diners.length === 0) return [];
+  const defaultAdmission = clampPricePerDiner(config.pricePerDiner);
+  const sharedDivisor = diners.length;
+
+  return diners.map((diner) => {
+    let attributedPlates = 0;
+    let sharedPlates = 0;
+    let weightG = 0;
+    let retailValue = 0;
+    let restaurantCost = 0;
+    let nutrition: Nutrition = { ...EMPTY_NUTRITION };
+    for (const item of items) {
+      const food = findFoodInCatalogue(foods, item.foodId);
+      if (!food) continue;
+      const line = calculateLineItem(item, food, pricingProfile);
+      const attributed =
+        item.allocations?.find((entry) => entry.dinerId === diner.id)?.quantity ?? 0;
+      const shared = sharedQuantity(item) / sharedDivisor;
+      const effective = Math.max(0, attributed) + shared;
+      const fraction = safeRatio(effective, line.plates);
+      attributedPlates += Math.max(0, attributed);
+      sharedPlates += shared;
+      weightG += line.weightG * fraction;
+      retailValue += line.retailValue * fraction;
+      restaurantCost += line.restaurantCost * fraction;
+      nutrition = {
+        calories: nutrition.calories + line.nutrition.calories * fraction,
+        protein: nutrition.protein + line.nutrition.protein * fraction,
+        fat: nutrition.fat + line.nutrition.fat * fraction,
+        carbs: nutrition.carbs + line.nutrition.carbs * fraction,
+      };
+    }
+    const admission =
+      typeof diner.admissionPrice === 'number' && diner.admissionPrice > 0
+        ? clampPricePerDiner(diner.admissionPrice)
+        : defaultAdmission;
+    const effectivePlates = attributedPlates + sharedPlates;
+    return {
+      diner,
+      admission,
+      attributedPlates,
+      sharedPlates,
+      effectivePlates,
+      weightG,
+      retailValue,
+      restaurantCost,
+      retailRecoveryPercent: safeRatio(retailValue, admission) * 100,
+      nutrition,
+    };
+  });
 }
 
 export function buildDamageReport(

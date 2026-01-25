@@ -142,4 +142,17 @@ export interface DamageReport extends SessionTotals {
   /** Estimated further plates of average value needed to break even. */
   readonly platesToBreakEven: number;
 }
+
+export interface DinerDamageTotals {
+  readonly diner: Diner;
+  readonly admission: number;
+  readonly attributedPlates: number;
+  readonly sharedPlates: number;
+  readonly effectivePlates: number;
+  readonly weightG: number;
+  readonly retailValue: number;
+  readonly restaurantCost: number;
+  readonly retailRecoveryPercent: number;
+  readonly nutrition: Nutrition;
+}
 import type { PricingProfileId } from '@/types/pricing';
