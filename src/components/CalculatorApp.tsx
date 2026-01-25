@@ -16,6 +16,7 @@ import { StatusToast } from '@/components/ui/StatusToast';
 import { useMealSession, type AddItemPayload } from '@/hooks/useMealSession';
 import { useCustomFoods } from '@/hooks/useCustomFoods';
 import { usePricingProfiles } from '@/hooks/usePricingProfiles';
+import { useRegularDiners } from '@/hooks/useRegularDiners';
 import { useStageHistory } from '@/hooks/useStageHistory';
 import { useStatusMessage } from '@/hooks/useStatusMessage';
 import { useUndoableRemove } from '@/hooks/useUndoableRemove';
@@ -24,6 +25,7 @@ import { DEFAULT_PRICING_PROFILE_ID } from '@/lib/pricing';
 export function CalculatorApp() {
   const pricingProfiles = usePricingProfiles();
   const customFoods = useCustomFoods();
+  const regularDiners = useRegularDiners();
   const {
     session,
     report,
@@ -33,6 +35,11 @@ export function CalculatorApp() {
     setPricingProfile,
     adjustDinerCount,
     applySetup,
+    addDiner,
+    renameDiner,
+    removeDiner,
+    moveDiner,
+    clearDiners,
     addItem,
     incrementItem,
     decrementItem,
@@ -168,6 +175,13 @@ export function CalculatorApp() {
                     onRemoveCustomFood={customFoods.remove}
                     onDinerCountChange={adjustDinerCount}
                     onApplySetup={applySetup}
+                    regularDiners={regularDiners.diners}
+                    onAddDiner={addDiner}
+                    onRenameDiner={renameDiner}
+                    onRemoveDiner={removeDiner}
+                    onMoveDiner={moveDiner}
+                    onClearDiners={clearDiners}
+                    onSaveRegularDiner={regularDiners.save}
                     onStatus={announce}
                   />
                   <MealBuilder onAdd={handleAdd} customFoods={customFoods.foods} />
