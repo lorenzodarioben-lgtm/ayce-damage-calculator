@@ -38,6 +38,7 @@ interface SessionSetupProps {
   regularDiners: readonly RegularDiner[];
   onAddDiner: (diner: Diner) => void;
   onRenameDiner: (id: string, displayName: string) => void;
+  onDinerAdmissionPriceChange: (id: string, value: number | undefined) => void;
   onRemoveDiner: (id: string) => void;
   onMoveDiner: (id: string, direction: -1 | 1) => void;
   onClearDiners: () => void;
@@ -62,6 +63,7 @@ export function SessionSetup({
   regularDiners,
   onAddDiner,
   onRenameDiner,
+  onDinerAdmissionPriceChange,
   onRemoveDiner,
   onMoveDiner,
   onClearDiners,
@@ -229,6 +231,7 @@ export function SessionSetup({
         regularDiners={regularDiners}
         onAdd={onAddDiner}
         onRename={onRenameDiner}
+        onAdmissionPriceChange={onDinerAdmissionPriceChange}
         onRemove={onRemoveDiner}
         onMove={onMoveDiner}
         onClear={onClearDiners}
@@ -240,8 +243,9 @@ export function SessionSetup({
         <div>
           <p className="micro-label">Total entry</p>
           <p className="tabular text-xs text-cream-500">
-            {formatMoney(session.pricePerDiner, pricingProfile.money)} per person ×{' '}
-            {session.dinerCount} {session.dinerCount === 1 ? 'diner' : 'diners'}
+            {session.diners?.some((diner) => diner.admissionPrice !== undefined)
+              ? 'Individual diner prices included.'
+              : `${formatMoney(session.pricePerDiner, pricingProfile.money)} per person × ${session.dinerCount} ${session.dinerCount === 1 ? 'diner' : 'diners'}`}
           </p>
         </div>
         <p className="tabular display-type text-3xl text-ember-400">

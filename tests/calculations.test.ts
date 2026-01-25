@@ -195,6 +195,40 @@ describe('admission', () => {
     expect(calculateAdmission({ pricePerDiner: 59.9, dinerCount: 2 })).toBeCloseTo(119.8, 10);
   });
 
+  it('uses explicit diner admission overrides while defaults retain the table price', () => {
+    expect(
+      calculateAdmission({
+        pricePerDiner: 60,
+        dinerCount: 3,
+        diners: [
+          { id: 'adult', displayName: 'Adult', admissionPrice: 72 },
+          { id: 'child', displayName: 'Child', admissionPrice: 30 },
+          { id: 'guest', displayName: 'Guest' },
+        ],
+      }),
+    ).toBe(162);
+  });
+
+  it('falls back safely when a persisted override is invalid or a diner is removed', () => {
+    expect(
+      calculateAdmission({
+        pricePerDiner: 60,
+        dinerCount: 2,
+        diners: [
+          { id: 'adult', displayName: 'Adult', admissionPrice: Number.NaN },
+          { id: 'guest', displayName: 'Guest', admissionPrice: 0 },
+        ],
+      }),
+    ).toBe(120);
+    expect(
+      calculateAdmission({
+        pricePerDiner: 60,
+        dinerCount: 1,
+        diners: [{ id: 'guest', displayName: 'Guest', admissionPrice: 30 }],
+      }),
+    ).toBe(30);
+  });
+
   it('clamps out-of-range and malformed configuration', () => {
     expect(clampPricePerDiner(Number.NaN)).toBe(1);
     expect(clampPricePerDiner(-40)).toBe(1);
