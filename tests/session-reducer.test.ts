@@ -122,6 +122,26 @@ describe('sessionReducer', () => {
     expect(state.items[0]?.quantity).toBe(3);
   });
 
+  it('clamps individual admission prices and falls back to the session default when cleared', () => {
+    let state = sessionReducer(INITIAL_SESSION, {
+      type: 'add-diner',
+      diner: { id: 'lorenzo', displayName: 'Lorenzo' },
+    });
+    state = sessionReducer(state, {
+      type: 'set-diner-admission-price',
+      id: 'lorenzo',
+      value: 9999,
+    });
+    expect(state.diners?.[0]?.admissionPrice).toBe(500);
+
+    state = sessionReducer(state, {
+      type: 'set-diner-admission-price',
+      id: 'lorenzo',
+      value: undefined,
+    });
+    expect(state.diners?.[0]?.admissionPrice).toBeUndefined();
+  });
+
   it('removes a line', () => {
     const state = sessionReducer(INITIAL_SESSION, addRibeye);
     const id = state.items[0]!.id;

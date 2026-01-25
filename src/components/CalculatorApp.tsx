@@ -37,6 +37,7 @@ export function CalculatorApp() {
     applySetup,
     addDiner,
     renameDiner,
+    setDinerAdmissionPrice,
     removeDiner,
     moveDiner,
     clearDiners,
@@ -178,6 +179,7 @@ export function CalculatorApp() {
                     regularDiners={regularDiners.diners}
                     onAddDiner={addDiner}
                     onRenameDiner={renameDiner}
+                    onDinerAdmissionPriceChange={setDinerAdmissionPrice}
                     onRemoveDiner={removeDiner}
                     onMoveDiner={moveDiner}
                     onClearDiners={clearDiners}

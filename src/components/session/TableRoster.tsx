@@ -5,6 +5,7 @@ import { ArrowDown, ArrowUp, Save, Trash2, UserPlus, UsersRound } from 'lucide-r
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { createId } from '@/lib/id';
+import { MAX_PRICE_PER_DINER, MIN_PRICE_PER_DINER } from '@/lib/constants';
 import { nextRegularDinerId, type RegularDiner } from '@/lib/regularDiners';
 import type { Diner, MealSession } from '@/types/meal';
 
@@ -13,6 +14,7 @@ interface TableRosterProps {
   readonly regularDiners: readonly RegularDiner[];
   readonly onAdd: (diner: Diner) => void;
   readonly onRename: (id: string, displayName: string) => void;
+  readonly onAdmissionPriceChange: (id: string, value: number | undefined) => void;
   readonly onRemove: (id: string) => void;
   readonly onMove: (id: string, direction: -1 | 1) => void;
   readonly onClear: () => void;
@@ -26,6 +28,7 @@ export function TableRoster({
   regularDiners,
   onAdd,
   onRename,
+  onAdmissionPriceChange,
   onRemove,
   onMove,
   onClear,
@@ -171,6 +174,25 @@ export function TableRoster({
                 value={diner.displayName}
                 onChange={(event) => onRename(diner.id, event.target.value)}
                 className="h-9 min-w-0 flex-1 rounded-[8px] border border-line bg-ash-850 px-2 text-sm text-cream-100 focus:border-ember-600"
+              />
+              <label className="sr-only" htmlFor={`diner-admission-${diner.id}`}>
+                {diner.displayName} admission price
+              </label>
+              <input
+                id={`diner-admission-${diner.id}`}
+                type="number"
+                inputMode="decimal"
+                min={MIN_PRICE_PER_DINER}
+                max={MAX_PRICE_PER_DINER}
+                step="0.10"
+                value={diner.admissionPrice ?? ''}
+                onChange={(event) => {
+                  const raw = event.target.value;
+                  const value = raw.trim() === '' ? undefined : Number.parseFloat(raw);
+                  onAdmissionPriceChange(diner.id, Number.isFinite(value) ? value : undefined);
+                }}
+                placeholder="Default"
+                className="h-9 w-24 rounded-[8px] border border-line bg-ash-850 px-2 text-right text-sm text-cream-100 placeholder:text-cream-700 focus:border-ember-600"
               />
               <div className="flex shrink-0">
                 <button
