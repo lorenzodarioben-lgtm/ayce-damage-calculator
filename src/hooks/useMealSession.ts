@@ -16,11 +16,13 @@ import {
   saveSession,
 } from '@/lib/storage';
 import { mealItemId } from '@/lib/mealItems';
+import { isDinerId, normaliseDinerName, reconcileItemAllocations } from '@/lib/diners';
 import { DEFAULT_PRICING_PROFILE_ID } from '@/lib/pricing';
 import { resolvePricingProfile } from '@/lib/pricingProfiles';
 import { foodCatalogue } from '@/lib/foodCatalogue';
 import type {
   DamageReport,
+  Diner,
   MealItem,
   MealSession,
   PlateSize,
@@ -52,6 +54,11 @@ export type SessionAction =
   | { type: 'set-pricing-profile'; id: string }
   | { type: 'adjust-diner-count'; delta: number }
   | { type: 'apply-setup'; setup: SessionConfig }
+  | { type: 'add-diner'; diner: Diner }
+  | { type: 'rename-diner'; id: string; displayName: string }
+  | { type: 'remove-diner'; id: string }
+  | { type: 'move-diner'; id: string; direction: -1 | 1 }
+  | { type: 'clear-diners' }
   | { type: 'add-item'; payload: AddItemPayload }
   | { type: 'increment-item'; id: string }
   | { type: 'decrement-item'; id: string }
@@ -93,6 +100,90 @@ export function sessionReducer(state: MealSession, action: SessionAction): MealS
         dinerCount: clampDinerCount(action.setup.dinerCount),
         pricingProfileId: action.setup.pricingProfileId ?? DEFAULT_PRICING_PROFILE_ID,
       };
+
+    case 'add-diner': {
+      const displayName = normaliseDinerName(action.diner.displayName);
+      if (
+        !displayName ||
+        !isDinerId(action.diner.id) ||
+        state.diners?.some((diner) => diner.id === action.diner.id) ||
+        (state.diners?.length ?? 0) >= 12
+      ) {
+        return state;
+      }
+      const diners = [...(state.diners ?? []), { ...action.diner, displayName }];
+      return { ...state, diners, dinerCount: diners.length };
+    }
+
+    case 'rename-diner': {
+      const displayName = normaliseDinerName(action.displayName);
+      if (!displayName || !state.diners?.some((diner) => diner.id === action.id)) {
+        return state;
+      }
+      return {
+        ...state,
+        diners: state.diners.map((diner) =>
+          diner.id === action.id ? { ...diner, displayName } : diner,
+        ),
+      };
+    }
+
+    case 'remove-diner': {
+      const diners = state.diners?.filter((diner) => diner.id !== action.id) ?? [];
+      if (diners.length === (state.diners?.length ?? 0)) {
+        return state;
+      }
+      const items = state.items.map((item) =>
+        reconcileItemAllocations(
+          item.allocations
+            ? {
+                ...item,
+                allocations: item.allocations.filter((entry) => entry.dinerId !== action.id),
+              }
+            : item,
+          diners,
+        ),
+      );
+      if (diners.length === 0) {
+        const { diners: _diners, ...sharedSession } = state;
+        return { ...sharedSession, items };
+      }
+      return {
+        ...state,
+        diners,
+        dinerCount: diners.length,
+        // A removed diner's plates become shared-table food. The line total is
+        // untouched, so neither value nor nutrition can disappear with them.
+        items,
+      };
+    }
+
+    case 'move-diner': {
+      const diners = [...(state.diners ?? [])];
+      const index = diners.findIndex((diner) => diner.id === action.id);
+      const destination = index + action.direction;
+      if (index < 0 || destination < 0 || destination >= diners.length) {
+        return state;
+      }
+      const [diner] = diners.splice(index, 1);
+      diners.splice(destination, 0, diner!);
+      return { ...state, diners };
+    }
+
+    case 'clear-diners':
+      if (!state.diners?.length) {
+        return state;
+      }
+      {
+        const { diners: _diners, ...sharedSession } = state;
+        return {
+          ...sharedSession,
+          items: state.items.map((item) => {
+            const { allocations: _allocations, ...sharedItem } = item;
+            return sharedItem;
+          }),
+        };
+      }
 
     case 'add-item': {
       const quantity = clampQuantity(action.payload.quantity);
@@ -169,6 +260,11 @@ export interface UseMealSessionResult {
   setPricingProfile: (id: string) => void;
   adjustDinerCount: (delta: number) => void;
   applySetup: (setup: SessionConfig) => void;
+  addDiner: (diner: Diner) => void;
+  renameDiner: (id: string, displayName: string) => void;
+  removeDiner: (id: string) => void;
+  moveDiner: (id: string, direction: -1 | 1) => void;
+  clearDiners: () => void;
   addItem: (payload: AddItemPayload) => void;
   incrementItem: (id: string) => void;
   decrementItem: (id: string) => void;
@@ -257,6 +353,26 @@ export function useMealSession(
     dispatch({ type: 'apply-setup', setup });
   }, []);
 
+  const addDiner = useCallback((diner: Diner) => {
+    dispatch({ type: 'add-diner', diner });
+  }, []);
+
+  const renameDiner = useCallback((id: string, displayName: string) => {
+    dispatch({ type: 'rename-diner', id, displayName });
+  }, []);
+
+  const removeDiner = useCallback((id: string) => {
+    dispatch({ type: 'remove-diner', id });
+  }, []);
+
+  const moveDiner = useCallback((id: string, direction: -1 | 1) => {
+    dispatch({ type: 'move-diner', id, direction });
+  }, []);
+
+  const clearDiners = useCallback(() => {
+    dispatch({ type: 'clear-diners' });
+  }, []);
+
   const addItem = useCallback((payload: AddItemPayload) => {
     dispatch({ type: 'add-item', payload });
   }, []);
@@ -291,6 +407,11 @@ export function useMealSession(
     setPricingProfile,
     adjustDinerCount,
     applySetup,
+    addDiner,
+    renameDiner,
+    removeDiner,
+    moveDiner,
+    clearDiners,
     addItem,
     incrementItem,
     decrementItem,
