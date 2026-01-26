@@ -1,6 +1,6 @@
 import type { AchievementId } from '@/lib/achievements';
 import type { VerdictId } from '@/lib/verdicts';
-import type { MealItem, Nutrition } from '@/types/meal';
+import type { Diner, MealItem, Nutrition } from '@/types/meal';
 import type { PricingProfile } from '@/types/pricing';
 import type { CustomFood } from '@/types/customFoods';
 
@@ -49,6 +49,7 @@ export interface SavedMealSession {
   readonly note: string;
 
   readonly items: readonly MealItem[];
+  readonly diners?: readonly Diner[];
 
   /**
    * Identifies the same meal recorded twice. Saving a report repeatedly must

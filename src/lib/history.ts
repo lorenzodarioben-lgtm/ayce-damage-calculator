@@ -17,6 +17,7 @@ import { sanitiseRestaurantName } from '@/lib/storage';
 import { isIsoTimestamp } from '@/lib/datetime';
 import { findFoodInCatalogue, foodCatalogue } from '@/lib/foodCatalogue';
 import { mealItemId, mergeMealItems } from '@/lib/mealItems';
+import { isDinerId, normaliseDinerName } from '@/lib/diners';
 import { DEFAULT_PRICING_PROFILE, DEFAULT_PRICING_PROFILE_ID } from '@/lib/pricing';
 import { parseCustomPricingProfile } from '@/lib/pricingProfiles';
 import { MAX_CUSTOM_FOODS, parseCustomFood } from '@/lib/customFoods';
@@ -35,10 +36,10 @@ import type { PricingProfile } from '@/types/pricing';
  * 4 — records retain a complete pricing context.
  * 5 — records retain custom food entries used by the meal.
  */
-export const SAVED_SESSION_VERSION = 5;
+export const SAVED_SESSION_VERSION = 6;
 
 /** Versions `parseSavedSession` knows how to read, current one included. */
-export const SUPPORTED_SESSION_VERSIONS = [1, 2, 3, 4, 5] as const;
+export const SUPPORTED_SESSION_VERSIONS = [1, 2, 3, 4, 5, 6] as const;
 
 /** Beyond this the oldest records are pruned, so storage cannot grow forever. */
 export const MAX_HISTORY_RECORDS = 200;
@@ -149,6 +150,7 @@ export function createSavedSession(
       .map((food) => ({ ...food })),
     note: sanitiseSessionNote(options.note),
     items: session.items.map((item) => ({ ...item })),
+    ...(session.diners ? { diners: session.diners.map((diner) => ({ ...diner })) } : {}),
     fingerprint: fingerprintSession(session),
     snapshot: buildSnapshot(report, verdict, clampDinerCount(session.dinerCount)),
   };
@@ -321,6 +323,13 @@ export function parseSavedSession(value: unknown): SavedMealSession | null {
   }
 
   const restaurantName = sanitiseRestaurantName(value.restaurantName);
+  const diners = Array.isArray(value.diners)
+    ? value.diners
+        .filter(isRecord)
+        .map((diner) => ({ id: diner.id, displayName: normaliseDinerName(diner.displayName) }))
+        .filter((diner) => isDinerId(diner.id) && diner.displayName)
+        .slice(0, 12)
+    : [];
   const pricingProfile =
     version >= 4 ? parsePricingSnapshot(value.pricingProfile) : DEFAULT_PRICING_PROFILE;
 
@@ -336,6 +345,7 @@ export function parseSavedSession(value: unknown): SavedMealSession | null {
     // Records written before version 3 simply have nothing to say.
     note: sanitiseSessionNote(value.note),
     items,
+    ...(diners.length ? { diners } : {}),
     fingerprint: fingerprintSession({
       restaurantName,
       pricePerDiner: safePrice,
