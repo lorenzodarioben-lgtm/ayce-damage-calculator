@@ -7,6 +7,7 @@ import { DamageReceipt } from '@/components/results/DamageReceipt';
 import { MealBreakdown } from '@/components/results/MealBreakdown';
 import { ReportSummary } from '@/components/results/ReportSummary';
 import { ResultCard } from '@/components/results/ResultCard';
+import { TableBreakdown } from '@/components/results/TableBreakdown';
 import { SaveToHistory } from '@/components/results/SaveToHistory';
 import { ShareActions } from '@/components/results/ShareActions';
 import { Button } from '@/components/ui/Button';
@@ -70,6 +71,8 @@ export function DamageReport({ report, session, onEditMeal, onStatus }: DamageRe
       />
 
       <MealBreakdown lines={report.lines} headingId="breakdown-heading" heading="What you ate" />
+
+      <TableBreakdown session={session} report={report} />
 
       <AchievementList achievements={achievements} headingId="achievements-heading" />
 
