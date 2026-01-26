@@ -14,7 +14,7 @@ import { parseCustomPricingProfile } from '@/lib/pricingProfiles';
 import { MAX_CUSTOM_FOODS, parseCustomFood } from '@/lib/customFoods';
 import type { CustomFood } from '@/types/customFoods';
 import type { PricingProfile } from '@/types/pricing';
-import type { FoodItem, MealItem, MealSession, PlateSize, QualityTier } from '@/types/meal';
+import type { Diner, FoodItem, MealItem, MealSession, PlateSize, QualityTier } from '@/types/meal';
 
 /**
  * Encodes a completed meal into a URL path segment.
@@ -78,6 +78,7 @@ export interface SharePayload {
   readonly pricingProfile: PricingProfile;
   readonly customFoods: readonly CustomFood[];
   readonly items: readonly MealItem[];
+  readonly diners?: readonly Diner[];
 }
 
 export interface ShareContext {
@@ -155,6 +156,10 @@ export function encodeSharePayload(
     dinerCount: clampDinerCount(session.dinerCount),
     pricingProfile: context.pricingProfile ?? DEFAULT_PRICING_PROFILE,
     customFoods,
+    diners: session.diners?.map((diner, index) => ({
+      id: diner.id,
+      displayName: `Diner ${index + 1}`,
+    })),
     items: session.items.slice(0, MAX_SHARE_ITEMS).map((item) => ({
       foodId: item.foodId,
       quality: item.quality,
@@ -365,6 +370,15 @@ function decodeConfigurableSharePayload(token: string): SharePayload | null {
   if (!items) {
     return null;
   }
+  const diners = Array.isArray(value.diners)
+    ? value.diners
+        .filter(isRecord)
+        .map((diner, index) => ({
+          id: typeof diner.id === 'string' ? diner.id : '',
+          displayName: `Diner ${index + 1}`,
+        }))
+        .filter((diner) => diner.id.length > 0)
+    : [];
   return {
     restaurantName: sanitiseRestaurantName(value.restaurantName),
     pricePerDiner: clampPricePerDiner(value.pricePerDiner),
@@ -372,6 +386,7 @@ function decodeConfigurableSharePayload(token: string): SharePayload | null {
     pricingProfile,
     customFoods,
     items,
+    ...(diners.length ? { diners } : {}),
   };
 }
 
