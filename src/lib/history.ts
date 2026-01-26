@@ -326,7 +326,10 @@ export function parseSavedSession(value: unknown): SavedMealSession | null {
   const diners = Array.isArray(value.diners)
     ? value.diners
         .filter(isRecord)
-        .map((diner) => ({ id: diner.id, displayName: normaliseDinerName(diner.displayName) }))
+        .map((diner) => ({
+          id: typeof diner.id === 'string' ? diner.id : '',
+          displayName: normaliseDinerName(diner.displayName),
+        }))
         .filter((diner) => isDinerId(diner.id) && diner.displayName)
         .slice(0, 12)
     : [];
