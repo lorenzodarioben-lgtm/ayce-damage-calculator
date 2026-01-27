@@ -19,6 +19,7 @@ import { isIsoTimestamp } from '@/lib/datetime';
 import { findFoodInCatalogue, foodCatalogue } from '@/lib/foodCatalogue';
 import { mealItemId, mergeMealItems } from '@/lib/mealItems';
 import { IDLE_LIFECYCLE, parseMealEvents, parseMealLifecycle } from '@/lib/mealEvents';
+import { parseMealDuration } from '@/lib/pacing';
 import {
   isDinerId,
   normaliseAllocations,
@@ -52,11 +53,12 @@ import type { PricingProfile } from '@/types/pricing';
  * 5 — records retain custom food entries used by the meal.
  * 6 — records retain the Table Mode roster.
  * 7 — records retain plate attribution and the timestamped meal ledger.
+ * 8 — records retain the booked meal duration.
  */
-export const SAVED_SESSION_VERSION = 7;
+export const SAVED_SESSION_VERSION = 8;
 
 /** Versions `parseSavedSession` knows how to read, current one included. */
-export const SUPPORTED_SESSION_VERSIONS = [1, 2, 3, 4, 5, 6, 7] as const;
+export const SUPPORTED_SESSION_VERSIONS = [1, 2, 3, 4, 5, 6, 7, 8] as const;
 
 /**
  * The first schema that could carry a timeline.
@@ -181,6 +183,9 @@ export function createSavedSession(
     // is: what is filed has to stay what happened.
     ...(session.events?.length ? { events: session.events.map((event) => ({ ...event })) } : {}),
     ...(session.lifecycle ? { lifecycle: { ...session.lifecycle } } : {}),
+    ...(session.plannedDurationMinutes === undefined
+      ? {}
+      : { plannedDurationMinutes: session.plannedDurationMinutes }),
     fingerprint: fingerprintSession(session),
     snapshot: buildSnapshot(report, verdict, clampDinerCount(session.dinerCount)),
   };
@@ -388,6 +393,8 @@ export function parseSavedSession(value: unknown): SavedMealSession | null {
   const events = version >= FIRST_TIMELINE_VERSION ? parseMealEvents(value.events, foods) : [];
   const lifecycle =
     version >= FIRST_TIMELINE_VERSION ? parseMealLifecycle(value.lifecycle) : IDLE_LIFECYCLE;
+  const plannedDurationMinutes =
+    version >= 8 ? parseMealDuration(value.plannedDurationMinutes) : undefined;
 
   return {
     id: value.id,
@@ -404,6 +411,7 @@ export function parseSavedSession(value: unknown): SavedMealSession | null {
     ...(diners.length ? { diners } : {}),
     ...(events.length ? { events } : {}),
     ...(lifecycle.status === 'idle' ? {} : { lifecycle }),
+    ...(plannedDurationMinutes === undefined ? {} : { plannedDurationMinutes }),
     fingerprint: fingerprintSession({
       restaurantName,
       pricePerDiner: safePrice,

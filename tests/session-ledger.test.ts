@@ -387,3 +387,40 @@ describe('the ledger never changes what the meal is worth', () => {
     expect(state.items[0]?.quantity).toBeGreaterThanOrEqual(1);
   });
 });
+
+describe('booking a meal window', () => {
+  it('stores a validated duration without starting the meal', () => {
+    const state = sessionReducer(INITIAL_SESSION, { type: 'set-meal-duration', minutes: 90 });
+
+    expect(state.plannedDurationMinutes).toBe(90);
+    expect(state.lifecycle).toBeUndefined();
+    expect(state.events).toBeUndefined();
+  });
+
+  it('holds an absurd custom length inside the supported range', () => {
+    expect(
+      sessionReducer(INITIAL_SESSION, { type: 'set-meal-duration', minutes: 5000 })
+        .plannedDurationMinutes,
+    ).toBe(300);
+    expect(
+      sessionReducer(INITIAL_SESSION, { type: 'set-meal-duration', minutes: 0 })
+        .plannedDurationMinutes,
+    ).toBe(15);
+  });
+
+  it('clears the window entirely rather than storing a zero', () => {
+    const timed = sessionReducer(INITIAL_SESSION, { type: 'set-meal-duration', minutes: 90 });
+    const untimed = sessionReducer(timed, { type: 'set-meal-duration', minutes: undefined });
+
+    expect(untimed).not.toHaveProperty('plannedDurationMinutes');
+  });
+
+  it('leaves the tab and the ledger exactly where they were', () => {
+    const eating = run([{ type: 'add-item', payload: ribeye, meta: meta() }]);
+    const timed = sessionReducer(eating, { type: 'set-meal-duration', minutes: 60 });
+
+    expect(timed.items).toEqual(eating.items);
+    expect(timed.events).toEqual(eating.events);
+    expect(timed.lifecycle).toEqual(eating.lifecycle);
+  });
+});
