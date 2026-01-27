@@ -29,7 +29,7 @@ test.describe('the meal event ledger', () => {
     await addPlate(page, 'Ribeye');
 
     const stored = await storedSession(page);
-    expect(stored?.version).toBe(4);
+    expect(stored?.version).toBe(5);
 
     const events = stored?.session.events ?? [];
     expect(events.map((event) => event.type)).toEqual(['meal-started', 'plates-added']);

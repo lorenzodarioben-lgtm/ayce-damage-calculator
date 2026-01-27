@@ -59,6 +59,8 @@ export interface UseMealSessionResult {
   removeItem: (id: string) => void;
   /** Puts a removed line back where it was, so a removal can be undone. */
   restoreItem: (item: MealItem, index: number) => void;
+  /** Books a meal window, or clears it with `undefined`. Never starts the meal. */
+  setMealDuration: (minutes: number | undefined) => void;
   pauseMeal: () => void;
   resumeMeal: () => void;
   completeMeal: () => void;
@@ -233,6 +235,10 @@ export function useMealSession(
     [meta],
   );
 
+  const setMealDuration = useCallback((minutes: number | undefined) => {
+    dispatch({ type: 'set-meal-duration', minutes });
+  }, []);
+
   const pauseMeal = useCallback(() => {
     dispatch({ type: 'pause-meal', meta: meta() });
   }, [meta]);
@@ -272,6 +278,7 @@ export function useMealSession(
     setItemAllocations,
     removeItem,
     restoreItem,
+    setMealDuration,
     pauseMeal,
     resumeMeal,
     completeMeal,

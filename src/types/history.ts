@@ -60,6 +60,8 @@ export interface SavedMealSession {
   readonly events?: readonly MealEvent[];
   /** The lifecycle the meal was in when it was filed. Absent alongside `events`. */
   readonly lifecycle?: MealLifecycle;
+  /** The window the table had booked, when they were running against one. */
+  readonly plannedDurationMinutes?: number;
 
   /**
    * Identifies the same meal recorded twice. Saving a report repeatedly must
