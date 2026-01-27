@@ -19,6 +19,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
   between 15 and 300, with start, pause, resume and finish. Elapsed time is derived from recorded
   instants rather than a counter, so it survives reloads, route changes, a backgrounded tab and
   offline use.
+- **Meal replay** — a filed meal recorded with a ledger gains a Timeline view: a scrubbable,
+  playable reconstruction with running plates, retail value, recovery, food weight and diner
+  contributions, an accessible plain-SVG chart with a full table equivalent, and named moments for
+  the first plate, break-even, the busiest run, the longest lull, the last plate and the meal being
+  called. Records filed before the ledger existed state that detailed timing was never recorded.
 - **Pacing forecast** — plates per hour, retail value per minute, recovery rate, a projected final
   recovery and the pace break-even would take before the window closes. Projections are withheld
   until a few minutes of meal have happened, and are labelled as extrapolations rather than

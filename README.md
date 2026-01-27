@@ -86,6 +86,11 @@ keys, and nothing you record ever leaves your device.
 - Sort by recency, retail recovery or plates; search by restaurant or note; open any record
   read-only; delete one or all
 - Load a filed meal back into the calculator to order it again, asking first if a tab is open
+- Replay a filed meal — scrub or play back the recorded timeline, with running plates, retail
+  value, recovery, food weight and diner contributions, and the moments worth naming: first plate,
+  break-even, the busiest run, the longest lull, the last plate and the meal being called
+- Records filed before the ledger existed say so plainly rather than being given a fabricated
+  timeline
 - Compare any two sessions (`/history/compare`), stated in percentage points where that is what
   the difference actually is
 - Local analytics (`/stats`) — totals, averages, bests, category and grade mix, and a recovery
@@ -106,7 +111,7 @@ keys, and nothing you record ever leaves your device.
 - Responsive from 320 px phones to desktop, with original SVG food illustrations
 - Skip link, keyboard-operable throughout, labelled controls, live-region confirmations,
   reduced-motion support, and AA contrast across the palette
-- 794 automated tests
+- 830 automated tests
 
 ## Tech stack
 
@@ -165,6 +170,12 @@ database, a blocked one, a corrupt row or a record from an older schema all degr
 sensible rather than taking the page down. Saved records carry a schema version, and older
 records are migrated forward on read rather than discarded — a record filed before the ledger
 existed is reported as having no timeline rather than being given fabricated timestamps.
+
+**Replay over interpolation.** A filed meal's timeline is rebuilt by replaying its ledger through
+the same calculation engine the report uses, so a point on the chart and the filed total agree by
+construction rather than by coincidence. The engine is pure and deterministic: the same record
+produces the same series, in the same order, every time. A record with no ledger produces an
+explicitly unavailable replay, never an invented one.
 
 **Recalculation over cached derivation.** History records store the canonical meal _and_ the totals
 that were shown at the time. Everything the app displays is recalculated from the meal, so history,
@@ -261,7 +272,7 @@ dataset's own integrity, cut search and ordering, verdict boundaries tested on b
 threshold, number and currency formatting, pricing profiles, custom foods, the session reducer
 including undo, storage recovery from corrupt or stale data, the IndexedDB repository against
 `fake-indexeddb`, saved-session migration, meal event validation, ordering and bounds, the pacing
-forecast on both sides of every boundary, session comparison, the achievement engine, favourites,
+forecast on both sides of every boundary, replay reconstruction and its named moments, session comparison, the achievement engine, favourites,
 restaurant presets, share-token encoding and decoding, backup import and export, CSV escaping, local
 analytics, browser-stage history, the sitemap and crawling rules, and the service worker's caching
 policy.
@@ -319,14 +330,15 @@ src/
 ├── data/         the 18-item food dataset, with search and ordering
 ├── hooks/        session reducer, meal clock, stage history, meal history, favourites,
 │                 presets, pricing profiles, custom foods, status messaging, undoable removal
-├── lib/          calculations, session reducer, meal events, verdicts, achievements, comparison, analytics,
+├── lib/          calculations, session reducer, meal events, replay, pacing, verdicts,
+│                 achievements, comparison, analytics,
 │                 history and its repository, favourites, presets, pricing profiles, custom foods,
 │                 share tokens,
 │                 social cards, backup, CSV, formatting, storage, card rendering
 └── types/        domain types
 
-e2e/              17 Playwright specs plus shared journey helpers
-tests/            39 Vitest suites
+e2e/              18 Playwright specs plus shared journey helpers
+tests/            41 Vitest suites
 public/           service worker and PWA icons
 .github/          CI workflow, Dependabot, issue and pull request templates
 ```
