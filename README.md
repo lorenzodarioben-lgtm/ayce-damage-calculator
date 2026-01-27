@@ -30,6 +30,7 @@ keys, and nothing you record ever leaves your device.
 - Adjustable plate counts, with identical selections merged into a single tab line
 - Editable running tab — adjust quantities or remove a line at any point, with undo
 - Saved orders: star a configured cut and re-add it in one tap
+- A timestamped meal event ledger recorded alongside the tab, so a meal knows when it happened
 
 **Session setup**
 
@@ -101,7 +102,7 @@ keys, and nothing you record ever leaves your device.
 - Responsive from 320 px phones to desktop, with original SVG food illustrations
 - Skip link, keyboard-operable throughout, labelled controls, live-region confirmations,
   reduced-motion support, and AA contrast across the palette
-- 686 automated tests
+- 738 automated tests
 
 ## Tech stack
 
@@ -141,15 +142,25 @@ facts, with every threshold named in one exported object. Nothing consults the c
 **One meal model.** Live Meal Mode, the full builder and the report all drive the same session
 reducer and the same calculation engine. There is no second meal shape and no second set of sums.
 
+**An aggregate tab, plus a ledger.** The tab in `MealSession.items` stays authoritative: every
+total, verdict and report is derived from it and never from an event. Alongside it, the reducer
+writes a bounded, timestamped ledger of what actually happened — plates added and taken back, lines
+removed and restored, attribution changes, roster changes and lifecycle transitions — each with a
+stable id, an ISO instant and a sequence number that breaks same-millisecond ties deterministically.
+The reducer stays pure: the moment and the identifier are handed to it by whichever surface
+dispatched the action, so nothing in the meal model reads a clock. A meal becomes _active_ from
+meal activity alone; editing the restaurant name or a pricing profile deliberately starts nothing.
+
 **Central session state.** One reducer owns restaurant name, price, diner count and every meal
 action. Hydration from storage is tracked as committed state rather than a ref, which is what stops
 the persistence effect from overwriting a saved session on first mount.
 
 **Versioned local persistence, twice over.** The in-progress session is a versioned localStorage
-envelope. Completed sessions go to IndexedDB behind a repository that never rejects: a missing
+envelope, now at version 4 with the ledger inside it. Completed sessions go to IndexedDB behind a repository that never rejects: a missing
 database, a blocked one, a corrupt row or a record from an older schema all degrade to something
-sensible rather than taking the page down. Saved records carry a schema version, and version 1
-records are migrated forward on read rather than discarded.
+sensible rather than taking the page down. Saved records carry a schema version, and older
+records are migrated forward on read rather than discarded — a record filed before the ledger
+existed is reported as having no timeline rather than being given fabricated timestamps.
 
 **Recalculation over cached derivation.** History records store the canonical meal _and_ the totals
 that were shown at the time. Everything the app displays is recalculated from the meal, so history,
@@ -239,7 +250,7 @@ npm run test:e2e    # end-to-end tests, on desktop and mobile viewports
 dataset's own integrity, cut search and ordering, verdict boundaries tested on both sides of every
 threshold, number and currency formatting, pricing profiles, custom foods, the session reducer
 including undo, storage recovery from corrupt or stale data, the IndexedDB repository against
-`fake-indexeddb`, saved-session migration, session comparison, the achievement engine, favourites,
+`fake-indexeddb`, saved-session migration, meal event validation, ordering and bounds, session comparison, the achievement engine, favourites,
 restaurant presets, share-token encoding and decoding, backup import and export, CSV escaping, local
 analytics, browser-stage history, the sitemap and crawling rules, and the service worker's caching
 policy.
@@ -297,14 +308,14 @@ src/
 ├── data/         the 18-item food dataset, with search and ordering
 ├── hooks/        session reducer, stage history, meal history, favourites,
 │                 presets, pricing profiles, custom foods, status messaging, undoable removal
-├── lib/          calculations, verdicts, achievements, comparison, analytics,
+├── lib/          calculations, session reducer, meal events, verdicts, achievements, comparison, analytics,
 │                 history and its repository, favourites, presets, pricing profiles, custom foods,
 │                 share tokens,
 │                 social cards, backup, CSV, formatting, storage, card rendering
 └── types/        domain types
 
-e2e/              15 Playwright specs plus shared journey helpers
-tests/            25 Vitest suites
+e2e/              16 Playwright specs plus shared journey helpers
+tests/            37 Vitest suites
 public/           service worker and PWA icons
 .github/          CI workflow, Dependabot, issue and pull request templates
 ```
