@@ -20,7 +20,13 @@ import type { PricingProfile } from '@/types/pricing';
  */
 
 export const BACKUP_FORMAT = 'ayce-damage-backup';
-export const BACKUP_VERSION = 2;
+
+/**
+ * 1 — history and saved orders.
+ * 2 — personal menus: pricing profiles, custom foods and restaurant presets.
+ * 3 — filed records may carry a meal ledger and lifecycle metadata.
+ */
+export const BACKUP_VERSION = 3;
 
 /** Roughly 8 MB of JSON; far beyond any real backup, but bounded. */
 export const MAX_BACKUP_BYTES = 8 * 1024 * 1024;

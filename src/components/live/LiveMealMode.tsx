@@ -48,7 +48,7 @@ export function LiveMealMode() {
     decrementItem,
     removeItem,
     restoreItem,
-  } = useMealSession(pricingProfiles.profiles, customFoods.foods);
+  } = useMealSession(pricingProfiles.profiles, customFoods.foods, { source: 'live' });
   const { favorites, remove: removeFavorite } = useFavorites(catalogue);
 
   const [addOpen, setAddOpen] = useState(false);

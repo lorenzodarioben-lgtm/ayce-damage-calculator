@@ -5,6 +5,32 @@ All notable changes to this project are recorded here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project uses
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Timestamped meal event ledger** — every plate added or taken back, every line removed or
+  restored, every attribution and roster change, and the meal's own lifecycle are recorded with a
+  stable id, an ISO instant and a deterministic sequence number.
+- **Meal lifecycle metadata** — a meal starts from meal activity, can be paused, resumed and
+  completed, and carries the time it spent paused. Editing the restaurant name, price or pricing
+  profile deliberately starts nothing.
+
+### Changed
+
+- The session reducer moved to `src/lib/sessionReducer.ts`, free of React, and stays pure: the
+  moment and identifier for each event are supplied by the dispatching surface.
+- The in-progress session envelope is version 4 and filed records are schema version 7. Older
+  sessions and records load unchanged and are treated as untimed rather than being given
+  fabricated timestamps.
+- Filed records now preserve Table Mode plate attribution, reconciled against their own roster.
+- Backups are format version 3, so a record's ledger survives an export and restore.
+
+### Privacy
+
+- Events reference diners by the same opaque local identifier the roster already uses. No display
+  name, note or other free text is written into the ledger.
+
 ## [3.1.0]
 
 ### Added

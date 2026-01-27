@@ -1,0 +1,598 @@
+import { clampDinerCount, clampPricePerDiner } from '@/lib/calculations';
+import {
+  DEFAULT_DINER_COUNT,
+  DEFAULT_PRICE_PER_DINER,
+  MAX_DINERS,
+  MAX_LINE_QUANTITY,
+  MIN_QUANTITY,
+} from '@/lib/constants';
+import { isDinerId, normaliseDinerName, reconcileItemAllocations } from '@/lib/diners';
+import { appendMealEvents, mealEventLine, nextEventSeq, sessionLifecycle } from '@/lib/mealEvents';
+import { mealItemId } from '@/lib/mealItems';
+import { DEFAULT_PRICING_PROFILE_ID } from '@/lib/pricing';
+import { normaliseRestaurantNameInput, sanitiseRestaurantName } from '@/lib/storage';
+import type {
+  Diner,
+  DinerAllocation,
+  MealItem,
+  MealSession,
+  PlateSize,
+  QualityTier,
+  SessionConfig,
+} from '@/types/meal';
+import type { MealEvent, MealEventSource, MealLifecycle } from '@/types/mealEvents';
+
+/**
+ * The one canonical meal reducer.
+ *
+ * It owns two things that must not drift apart: the aggregate tab every
+ * calculation reads, and the timestamped ledger describing how that tab came to
+ * look the way it does. The tab remains authoritative — no total is ever
+ * derived from an event — but the ledger is written in the same transition, so
+ * a plate cannot land without the moment it landed being recorded.
+ *
+ * Kept free of React so it stays a plain, exhaustively testable function.
+ */
+
+export const INITIAL_SESSION: MealSession = {
+  restaurantName: '',
+  pricePerDiner: DEFAULT_PRICE_PER_DINER,
+  dinerCount: DEFAULT_DINER_COUNT,
+  pricingProfileId: DEFAULT_PRICING_PROFILE_ID,
+  items: [],
+};
+
+/**
+ * What a dispatching surface knows that the reducer cannot: the current time,
+ * a fresh identifier, and which screen the diner was looking at.
+ *
+ * Optional throughout, so an action dispatched without it changes the tab and
+ * records nothing — which is the honest outcome when there is no moment to
+ * record it against.
+ */
+export interface MealEventMeta {
+  readonly id: string;
+  readonly at: string;
+  readonly source: MealEventSource;
+}
+
+export interface AddItemPayload {
+  foodId: string;
+  quality: QualityTier;
+  plateSize: PlateSize;
+  quantity: number;
+  dinerId?: string;
+}
+
+export type SessionAction =
+  | { type: 'hydrate'; session: MealSession }
+  | { type: 'set-restaurant-name'; value: string }
+  | { type: 'set-price-per-diner'; value: number }
+  | { type: 'set-pricing-profile'; id: string }
+  | { type: 'adjust-diner-count'; delta: number }
+  | { type: 'apply-setup'; setup: SessionConfig }
+  | { type: 'add-diner'; diner: Diner; meta?: MealEventMeta }
+  | { type: 'rename-diner'; id: string; displayName: string }
+  | { type: 'set-diner-admission-price'; id: string; value: number | undefined }
+  | { type: 'remove-diner'; id: string; meta?: MealEventMeta }
+  | { type: 'move-diner'; id: string; direction: -1 | 1 }
+  | { type: 'clear-diners'; meta?: MealEventMeta }
+  | { type: 'add-item'; payload: AddItemPayload; meta?: MealEventMeta }
+  | { type: 'increment-item'; id: string; meta?: MealEventMeta }
+  | { type: 'decrement-item'; id: string; meta?: MealEventMeta }
+  | {
+      type: 'set-item-allocations';
+      id: string;
+      allocations: readonly DinerAllocation[];
+      meta?: MealEventMeta;
+    }
+  | { type: 'remove-item'; id: string; meta?: MealEventMeta }
+  | { type: 'restore-item'; item: MealItem; index: number; meta?: MealEventMeta }
+  | { type: 'pause-meal'; meta: MealEventMeta }
+  | { type: 'resume-meal'; meta: MealEventMeta }
+  | { type: 'complete-meal'; meta: MealEventMeta }
+  | { type: 'reset' };
+
+function clampQuantity(value: number): number {
+  if (!Number.isFinite(value)) {
+    return MIN_QUANTITY;
+  }
+  return Math.min(MAX_LINE_QUANTITY, Math.max(MIN_QUANTITY, Math.floor(value)));
+}
+
+function findActiveDinerId(
+  diners: readonly Diner[] | undefined,
+  id: string | undefined,
+): string | null {
+  return id && diners?.some((diner) => diner.id === id) ? id : null;
+}
+
+/** Applies the tab change only. Ledger bookkeeping happens around it. */
+function applySessionAction(state: MealSession, action: SessionAction): MealSession {
+  switch (action.type) {
+    case 'hydrate':
+      return action.session;
+
+    case 'set-restaurant-name':
+      return { ...state, restaurantName: normaliseRestaurantNameInput(action.value) };
+
+    case 'set-price-per-diner':
+      return { ...state, pricePerDiner: clampPricePerDiner(action.value) };
+
+    case 'set-pricing-profile':
+      return { ...state, pricingProfileId: action.id };
+
+    case 'adjust-diner-count':
+      return { ...state, dinerCount: clampDinerCount(state.dinerCount + action.delta) };
+
+    case 'apply-setup':
+      // Replaces the session configuration only. The tab is deliberately
+      // untouched: applying a preset must never cost the user their plates.
+      return {
+        ...state,
+        restaurantName: sanitiseRestaurantName(action.setup.restaurantName),
+        pricePerDiner: clampPricePerDiner(action.setup.pricePerDiner),
+        dinerCount: clampDinerCount(action.setup.dinerCount),
+        pricingProfileId: action.setup.pricingProfileId ?? DEFAULT_PRICING_PROFILE_ID,
+      };
+
+    case 'add-diner': {
+      const displayName = normaliseDinerName(action.diner.displayName);
+      if (
+        !displayName ||
+        !isDinerId(action.diner.id) ||
+        state.diners?.some((diner) => diner.id === action.diner.id) ||
+        (state.diners?.length ?? 0) >= MAX_DINERS
+      ) {
+        return state;
+      }
+      const admissionPrice =
+        typeof action.diner.admissionPrice === 'number' &&
+        Number.isFinite(action.diner.admissionPrice) &&
+        action.diner.admissionPrice > 0
+          ? clampPricePerDiner(action.diner.admissionPrice)
+          : undefined;
+      const diners = [
+        ...(state.diners ?? []),
+        {
+          id: action.diner.id,
+          displayName,
+          ...(admissionPrice === undefined ? {} : { admissionPrice }),
+        },
+      ];
+      return { ...state, diners, dinerCount: diners.length };
+    }
+
+    case 'rename-diner': {
+      const displayName = normaliseDinerName(action.displayName);
+      if (!displayName || !state.diners?.some((diner) => diner.id === action.id)) {
+        return state;
+      }
+      return {
+        ...state,
+        diners: state.diners.map((diner) =>
+          diner.id === action.id ? { ...diner, displayName } : diner,
+        ),
+      };
+    }
+
+    case 'set-diner-admission-price': {
+      if (!state.diners?.some((diner) => diner.id === action.id)) {
+        return state;
+      }
+      const admissionPrice =
+        typeof action.value === 'number' && Number.isFinite(action.value) && action.value > 0
+          ? clampPricePerDiner(action.value)
+          : undefined;
+      return {
+        ...state,
+        diners: state.diners.map((diner) => {
+          if (diner.id !== action.id) return diner;
+          const { admissionPrice: _admissionPrice, ...defaultDiner } = diner;
+          return admissionPrice === undefined ? defaultDiner : { ...defaultDiner, admissionPrice };
+        }),
+      };
+    }
+
+    case 'remove-diner': {
+      const diners = state.diners?.filter((diner) => diner.id !== action.id) ?? [];
+      if (diners.length === (state.diners?.length ?? 0)) {
+        return state;
+      }
+      const items = state.items.map((item) =>
+        reconcileItemAllocations(
+          item.allocations
+            ? {
+                ...item,
+                allocations: item.allocations.filter((entry) => entry.dinerId !== action.id),
+              }
+            : item,
+          diners,
+        ),
+      );
+      if (diners.length === 0) {
+        const { diners: _diners, ...sharedSession } = state;
+        return { ...sharedSession, items };
+      }
+      return {
+        ...state,
+        diners,
+        dinerCount: diners.length,
+        // A removed diner's plates become shared-table food. The line total is
+        // untouched, so neither value nor nutrition can disappear with them.
+        items,
+      };
+    }
+
+    case 'move-diner': {
+      const diners = [...(state.diners ?? [])];
+      const index = diners.findIndex((diner) => diner.id === action.id);
+      const destination = index + action.direction;
+      if (index < 0 || destination < 0 || destination >= diners.length) {
+        return state;
+      }
+      const [diner] = diners.splice(index, 1);
+      diners.splice(destination, 0, diner!);
+      return { ...state, diners };
+    }
+
+    case 'clear-diners':
+      if (!state.diners?.length) {
+        return state;
+      }
+      {
+        const { diners: _diners, ...sharedSession } = state;
+        return {
+          ...sharedSession,
+          items: state.items.map((item) => {
+            const { allocations: _allocations, ...sharedItem } = item;
+            return sharedItem;
+          }),
+        };
+      }
+
+    case 'add-item': {
+      const quantity = clampQuantity(action.payload.quantity);
+      const id = mealItemId(action.payload);
+      const existing = state.items.find((item) => item.id === id);
+      const dinerId = findActiveDinerId(state.diners, action.payload.dinerId);
+
+      if (existing) {
+        const nextQuantity = clampQuantity(existing.quantity + quantity);
+        const addedQuantity = nextQuantity - existing.quantity;
+        const allocations = dinerId
+          ? [...(existing.allocations ?? []), { dinerId, quantity: addedQuantity }]
+          : existing.allocations;
+        return {
+          ...state,
+          items: state.items.map((item) =>
+            item.id === id
+              ? reconcileItemAllocations(
+                  {
+                    ...item,
+                    quantity: nextQuantity,
+                    ...(allocations?.length ? { allocations } : {}),
+                  },
+                  state.diners,
+                )
+              : item,
+          ),
+        };
+      }
+
+      const item: MealItem = {
+        id,
+        foodId: action.payload.foodId,
+        quality: action.payload.quality,
+        plateSize: action.payload.plateSize,
+        quantity,
+        ...(dinerId ? { allocations: [{ dinerId, quantity }] } : {}),
+      };
+      return { ...state, items: [...state.items, item] };
+    }
+
+    case 'increment-item':
+      return {
+        ...state,
+        items: state.items.map((item) =>
+          item.id === action.id ? { ...item, quantity: clampQuantity(item.quantity + 1) } : item,
+        ),
+      };
+
+    case 'decrement-item':
+      return {
+        ...state,
+        items: state.items.map((item) =>
+          item.id === action.id
+            ? reconcileItemAllocations(
+                { ...item, quantity: clampQuantity(item.quantity - 1) },
+                state.diners,
+              )
+            : item,
+        ),
+      };
+
+    case 'set-item-allocations':
+      return {
+        ...state,
+        items: state.items.map((item) =>
+          item.id === action.id
+            ? reconcileItemAllocations({ ...item, allocations: action.allocations }, state.diners)
+            : item,
+        ),
+      };
+
+    case 'remove-item':
+      return { ...state, items: state.items.filter((item) => item.id !== action.id) };
+
+    case 'restore-item': {
+      // Undoing a removal has to be a no-op if the same line is already back —
+      // the tab is keyed by configuration, so re-adding it by hand first and
+      // then taking the undo must not produce a duplicate.
+      if (state.items.some((item) => item.id === action.item.id)) {
+        return state;
+      }
+      const items = [...state.items];
+      // The index is where the line used to be. Anything outside the current
+      // bounds simply lands at the end rather than being rejected.
+      items.splice(Math.min(Math.max(0, action.index), items.length), 0, {
+        ...action.item,
+        quantity: clampQuantity(action.item.quantity),
+      });
+      return { ...state, items };
+    }
+
+    case 'pause-meal':
+    case 'resume-meal':
+    case 'complete-meal':
+      // Purely a lifecycle transition; the tab itself does not move.
+      return state;
+
+    case 'reset':
+      return INITIAL_SESSION;
+  }
+}
+
+/** Distributes over the union, so each variant keeps its own discriminant. */
+type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
+
+/** An event with everything but its identity, which the ledger assigns. */
+type MealEventDraft = DistributiveOmit<MealEvent, 'id' | 'at' | 'seq' | 'source'>;
+
+function quantityOf(session: MealSession, id: string): number {
+  return session.items.find((item) => item.id === id)?.quantity ?? 0;
+}
+
+function allocationsEqual(
+  a: readonly DinerAllocation[] | undefined,
+  b: readonly DinerAllocation[] | undefined,
+): boolean {
+  const left = a ?? [];
+  const right = b ?? [];
+  return (
+    left.length === right.length &&
+    left.every(
+      (entry, index) =>
+        entry.dinerId === right[index]?.dinerId && entry.quantity === right[index]?.quantity,
+    )
+  );
+}
+
+/** Describes what actually changed, so a no-op action records nothing. */
+function draftsForAction(
+  before: MealSession,
+  after: MealSession,
+  action: SessionAction,
+): readonly MealEventDraft[] {
+  switch (action.type) {
+    case 'add-item': {
+      const id = mealItemId(action.payload);
+      const added = quantityOf(after, id) - quantityOf(before, id);
+      if (added <= 0) {
+        return [];
+      }
+      const line = after.items.find((item) => item.id === id);
+      const dinerId = findActiveDinerId(before.diners, action.payload.dinerId);
+      return [
+        {
+          type: 'plates-added',
+          line: mealEventLine(line ?? action.payload),
+          quantity: added,
+          ...(dinerId ? { dinerId } : {}),
+        },
+      ];
+    }
+
+    case 'increment-item': {
+      const added = quantityOf(after, action.id) - quantityOf(before, action.id);
+      const line = after.items.find((item) => item.id === action.id);
+      return added > 0 && line
+        ? [{ type: 'plates-added', line: mealEventLine(line), quantity: added }]
+        : [];
+    }
+
+    case 'decrement-item': {
+      const removed = quantityOf(before, action.id) - quantityOf(after, action.id);
+      const line = before.items.find((item) => item.id === action.id);
+      return removed > 0 && line
+        ? [{ type: 'plates-reduced', line: mealEventLine(line), quantity: removed }]
+        : [];
+    }
+
+    case 'remove-item': {
+      const line = before.items.find((item) => item.id === action.id);
+      return line && !after.items.some((item) => item.id === action.id)
+        ? [{ type: 'line-removed', line: mealEventLine(line), quantity: line.quantity }]
+        : [];
+    }
+
+    case 'restore-item': {
+      const line = after.items.find((item) => item.id === action.item.id);
+      return line && !before.items.some((item) => item.id === action.item.id)
+        ? [{ type: 'line-restored', line: mealEventLine(line), quantity: line.quantity }]
+        : [];
+    }
+
+    case 'set-item-allocations': {
+      const previous = before.items.find((item) => item.id === action.id);
+      const line = after.items.find((item) => item.id === action.id);
+      if (!line || !previous || allocationsEqual(previous.allocations, line.allocations)) {
+        return [];
+      }
+      return [
+        {
+          type: 'allocation-changed',
+          line: mealEventLine(line),
+          allocations: line.allocations ?? [],
+        },
+      ];
+    }
+
+    case 'add-diner':
+      return after.diners?.some((diner) => diner.id === action.diner.id) &&
+        !before.diners?.some((diner) => diner.id === action.diner.id)
+        ? [{ type: 'diner-joined', dinerId: action.diner.id }]
+        : [];
+
+    case 'remove-diner':
+      return before.diners?.some((diner) => diner.id === action.id) &&
+        !after.diners?.some((diner) => diner.id === action.id)
+        ? [{ type: 'diner-left', dinerId: action.id }]
+        : [];
+
+    case 'clear-diners':
+      return before.diners?.length && !after.diners?.length ? [{ type: 'table-cleared' }] : [];
+
+    default:
+      return [];
+  }
+}
+
+function elapsedSince(from: string, to: string): number {
+  const span = Date.parse(to) - Date.parse(from);
+  return Number.isFinite(span) && span > 0 ? span : 0;
+}
+
+/** Closes an open pause, folding its duration into the running total. */
+function settlePause(lifecycle: MealLifecycle, at: string): MealLifecycle {
+  if (lifecycle.status !== 'paused' || !lifecycle.pausedAt) {
+    return lifecycle;
+  }
+  const { pausedAt, ...rest } = lifecycle;
+  return { ...rest, status: 'active', pausedMs: lifecycle.pausedMs + elapsedSince(pausedAt, at) };
+}
+
+interface LedgerTransition {
+  readonly lifecycle: MealLifecycle;
+  readonly leading: readonly MealEventDraft[];
+}
+
+/**
+ * Moves the meal's lifecycle on, given what just happened.
+ *
+ * Only meal activity starts a meal. Renaming the restaurant, choosing a pricing
+ * profile or adding a diner deliberately do not, because none of them is
+ * evidence that anyone has started eating.
+ */
+function advanceLifecycle(
+  lifecycle: MealLifecycle,
+  action: SessionAction,
+  drafts: readonly MealEventDraft[],
+  at: string,
+): LedgerTransition {
+  if (action.type === 'pause-meal') {
+    return lifecycle.status === 'active' && lifecycle.startedAt
+      ? {
+          lifecycle: { ...lifecycle, status: 'paused', pausedAt: at },
+          leading: [{ type: 'meal-paused' }],
+        }
+      : { lifecycle, leading: [] };
+  }
+
+  if (action.type === 'resume-meal') {
+    return lifecycle.status === 'paused'
+      ? { lifecycle: settlePause(lifecycle, at), leading: [{ type: 'meal-resumed' }] }
+      : { lifecycle, leading: [] };
+  }
+
+  if (action.type === 'complete-meal') {
+    if (lifecycle.status !== 'active' && lifecycle.status !== 'paused') {
+      return { lifecycle, leading: [] };
+    }
+    const settled = settlePause(lifecycle, at);
+    return {
+      lifecycle: { ...settled, status: 'completed', completedAt: at },
+      leading: [{ type: 'meal-completed' }],
+    };
+  }
+
+  const startsTheMeal = drafts.some((draft) => draft.type === 'plates-added');
+  if (!startsTheMeal) {
+    return { lifecycle, leading: [] };
+  }
+
+  if (lifecycle.status === 'idle') {
+    return {
+      lifecycle: { status: 'active', startedAt: at, pausedMs: 0 },
+      leading: [{ type: 'meal-started' }],
+    };
+  }
+  if (lifecycle.status === 'paused') {
+    return { lifecycle: settlePause(lifecycle, at), leading: [{ type: 'meal-resumed' }] };
+  }
+  if (lifecycle.status === 'completed') {
+    // Ordering again after calling it a night reopens the meal rather than
+    // recording plates against a session that claims to be over.
+    const { completedAt: _completedAt, ...rest } = lifecycle;
+    return { lifecycle: { ...rest, status: 'active' }, leading: [{ type: 'meal-resumed' }] };
+  }
+  return { lifecycle, leading: [] };
+}
+
+function materialise(
+  drafts: readonly MealEventDraft[],
+  meta: MealEventMeta,
+  startSeq: number,
+): readonly MealEvent[] {
+  return drafts.map((draft, index) => ({
+    ...draft,
+    id: `${meta.id}-${index}`,
+    at: meta.at,
+    seq: startSeq + index,
+    source: meta.source,
+  }));
+}
+
+function actionMeta(action: SessionAction): MealEventMeta | undefined {
+  return 'meta' in action ? action.meta : undefined;
+}
+
+export function sessionReducer(state: MealSession, action: SessionAction): MealSession {
+  const next = applySessionAction(state, action);
+
+  const meta = actionMeta(action);
+  if (!meta) {
+    return next;
+  }
+
+  const drafts = draftsForAction(state, next, action);
+  const { lifecycle, leading } = advanceLifecycle(
+    sessionLifecycle(state.lifecycle),
+    action,
+    drafts,
+    meta.at,
+  );
+
+  const appended = [...leading, ...drafts];
+  if (appended.length === 0) {
+    return next;
+  }
+
+  return {
+    ...next,
+    events: appendMealEvents(next.events, materialise(appended, meta, nextEventSeq(next.events))),
+    // An untouched meal carries no lifecycle at all, so a session that has only
+    // seen roster edits still persists as one nobody has started eating.
+    ...(lifecycle.status === 'idle' ? {} : { lifecycle }),
+  };
+}
