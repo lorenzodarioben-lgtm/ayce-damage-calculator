@@ -7,6 +7,7 @@ import {
 } from '@/lib/achievements';
 import { buildDamageReport, clampDinerCount, clampPricePerDiner } from '@/lib/calculations';
 import {
+  MAX_DINERS,
   MAX_LINE_QUANTITY,
   MAX_SESSION_NOTE_LENGTH,
   MIN_QUANTITY,
@@ -17,13 +18,27 @@ import { sanitiseRestaurantName } from '@/lib/storage';
 import { isIsoTimestamp } from '@/lib/datetime';
 import { findFoodInCatalogue, foodCatalogue } from '@/lib/foodCatalogue';
 import { mealItemId, mergeMealItems } from '@/lib/mealItems';
-import { isDinerId, normaliseDinerName } from '@/lib/diners';
+import { IDLE_LIFECYCLE, parseMealEvents, parseMealLifecycle } from '@/lib/mealEvents';
+import {
+  isDinerId,
+  normaliseAllocations,
+  normaliseDinerName,
+  reconcileItemAllocations,
+} from '@/lib/diners';
 import { DEFAULT_PRICING_PROFILE, DEFAULT_PRICING_PROFILE_ID } from '@/lib/pricing';
 import { parseCustomPricingProfile } from '@/lib/pricingProfiles';
 import { MAX_CUSTOM_FOODS, parseCustomFood } from '@/lib/customFoods';
 import { getVerdict, isVerdictId, type Verdict } from '@/lib/verdicts';
 import type { SavedMealSession, SavedSessionSnapshot } from '@/types/history';
-import type { DamageReport, FoodItem, MealItem, MealSession, Nutrition } from '@/types/meal';
+import type {
+  DamageReport,
+  Diner,
+  DinerAllocation,
+  FoodItem,
+  MealItem,
+  MealSession,
+  Nutrition,
+} from '@/types/meal';
 import type { CustomFood } from '@/types/customFoods';
 import type { PricingProfile } from '@/types/pricing';
 
@@ -35,11 +50,22 @@ import type { PricingProfile } from '@/types/pricing';
  * 3 — records carry a free-text note.
  * 4 — records retain a complete pricing context.
  * 5 — records retain custom food entries used by the meal.
+ * 6 — records retain the Table Mode roster.
+ * 7 — records retain plate attribution and the timestamped meal ledger.
  */
-export const SAVED_SESSION_VERSION = 6;
+export const SAVED_SESSION_VERSION = 7;
 
 /** Versions `parseSavedSession` knows how to read, current one included. */
-export const SUPPORTED_SESSION_VERSIONS = [1, 2, 3, 4, 5, 6] as const;
+export const SUPPORTED_SESSION_VERSIONS = [1, 2, 3, 4, 5, 6, 7] as const;
+
+/**
+ * The first schema that could carry a timeline.
+ *
+ * Anything older is a legitimate record of a meal that was simply never timed.
+ * The replay surfaces say so plainly rather than deriving timestamps from a
+ * created-at date the diner never claimed anything about.
+ */
+export const FIRST_TIMELINE_VERSION = 7;
 
 /** Beyond this the oldest records are pruned, so storage cannot grow forever. */
 export const MAX_HISTORY_RECORDS = 200;
@@ -151,12 +177,20 @@ export function createSavedSession(
     note: sanitiseSessionNote(options.note),
     items: session.items.map((item) => ({ ...item })),
     ...(session.diners ? { diners: session.diners.map((diner) => ({ ...diner })) } : {}),
+    // Copied rather than referenced, for the same reason the pricing snapshot
+    // is: what is filed has to stay what happened.
+    ...(session.events?.length ? { events: session.events.map((event) => ({ ...event })) } : {}),
+    ...(session.lifecycle ? { lifecycle: { ...session.lifecycle } } : {}),
     fingerprint: fingerprintSession(session),
     snapshot: buildSnapshot(report, verdict, clampDinerCount(session.dinerCount)),
   };
 }
 
-function parseItem(value: unknown, foods: readonly FoodItem[]): MealItem | null {
+function parseItem(
+  value: unknown,
+  foods: readonly FoodItem[],
+  diners: readonly Diner[],
+): MealItem | null {
   if (!isRecord(value)) {
     return null;
   }
@@ -173,13 +207,24 @@ function parseItem(value: unknown, foods: readonly FoodItem[]): MealItem | null 
     return null;
   }
 
-  return {
+  const safeQuantity = Math.min(MAX_LINE_QUANTITY, Math.max(MIN_QUANTITY, Math.floor(rawQuantity)));
+  const base = {
     id: mealItemId({ foodId, quality, plateSize }),
     foodId,
     quality,
     plateSize,
-    quantity: Math.min(MAX_LINE_QUANTITY, Math.max(MIN_QUANTITY, Math.floor(rawQuantity))),
+    quantity: safeQuantity,
   };
+  // Ownership is reconciled against the record's own roster, so a filed table
+  // breakdown reads exactly as it did when the meal was recorded.
+  const allocations = normaliseAllocations(
+    Array.isArray(value.allocations)
+      ? (value.allocations as readonly DinerAllocation[])
+      : undefined,
+    safeQuantity,
+    diners,
+  );
+  return allocations.length > 0 ? { ...base, allocations } : base;
 }
 
 const ZERO_NUTRITION: Nutrition = { calories: 0, protein: 0, fat: 0, carbs: 0 };
@@ -289,12 +334,24 @@ export function parseSavedSession(value: unknown): SavedMealSession | null {
 
   const customFoods = version >= 5 ? parseCustomFoodSnapshots(value.customFoods) : [];
   const foods = foodCatalogue(customFoods);
+  // Parsed before the items, because plate attribution is only meaningful
+  // against a roster that has itself been validated.
+  const diners = Array.isArray(value.diners)
+    ? value.diners
+        .filter(isRecord)
+        .map((diner) => ({
+          id: typeof diner.id === 'string' ? diner.id : '',
+          displayName: normaliseDinerName(diner.displayName),
+        }))
+        .filter((diner) => isDinerId(diner.id) && diner.displayName)
+        .slice(0, MAX_DINERS)
+    : [];
   const rawItems = Array.isArray(value.items) ? value.items : [];
   const items = mergeMealItems(
     rawItems
-      .map((item) => parseItem(item, foods))
+      .map((item) => parseItem(item, foods, diners))
       .filter((item): item is MealItem => item !== null),
-  );
+  ).map((item) => reconcileItemAllocations(item, diners));
 
   // A record whose every line was rejected describes nothing.
   if (items.length === 0) {
@@ -323,18 +380,14 @@ export function parseSavedSession(value: unknown): SavedMealSession | null {
   }
 
   const restaurantName = sanitiseRestaurantName(value.restaurantName);
-  const diners = Array.isArray(value.diners)
-    ? value.diners
-        .filter(isRecord)
-        .map((diner) => ({
-          id: typeof diner.id === 'string' ? diner.id : '',
-          displayName: normaliseDinerName(diner.displayName),
-        }))
-        .filter((diner) => isDinerId(diner.id) && diner.displayName)
-        .slice(0, 12)
-    : [];
   const pricingProfile =
     version >= 4 ? parsePricingSnapshot(value.pricingProfile) : DEFAULT_PRICING_PROFILE;
+
+  // Older records predate the ledger entirely. They are kept exactly as they
+  // were filed and reported as having no timeline, rather than being given one.
+  const events = version >= FIRST_TIMELINE_VERSION ? parseMealEvents(value.events, foods) : [];
+  const lifecycle =
+    version >= FIRST_TIMELINE_VERSION ? parseMealLifecycle(value.lifecycle) : IDLE_LIFECYCLE;
 
   return {
     id: value.id,
@@ -349,6 +402,8 @@ export function parseSavedSession(value: unknown): SavedMealSession | null {
     note: sanitiseSessionNote(value.note),
     items,
     ...(diners.length ? { diners } : {}),
+    ...(events.length ? { events } : {}),
+    ...(lifecycle.status === 'idle' ? {} : { lifecycle }),
     fingerprint: fingerprintSession({
       restaurantName,
       pricePerDiner: safePrice,
@@ -381,13 +436,34 @@ export function verdictFromSaved(record: SavedMealSession): Verdict {
   return getVerdict(report.totalRetailValue, report.totalAdmission);
 }
 
+/**
+ * Whether this record was filed with a ledger worth replaying.
+ *
+ * A record without one is not damaged and not incomplete — it is a meal from
+ * before the app timed anything, and the interface says exactly that rather
+ * than manufacturing a timeline out of its filing date.
+ */
+export function hasRecordedTimeline(record: SavedMealSession): boolean {
+  return (record.events?.length ?? 0) > 0;
+}
+
+/**
+ * The meal, ready to be ordered again.
+ *
+ * Deliberately without the ledger: a new sitting is a new meal, and carrying
+ * last month's timestamps into tonight's tab would date a session that has not
+ * happened yet.
+ */
 export function sessionFromSaved(record: SavedMealSession): MealSession {
   return {
     restaurantName: record.restaurantName,
     pricePerDiner: record.pricePerDiner,
     dinerCount: record.dinerCount,
     pricingProfileId: record.pricingProfile.id,
-    items: record.items,
+    items: record.items.map((item) => {
+      const { allocations: _allocations, ...sharedItem } = item;
+      return sharedItem;
+    }),
   };
 }
 

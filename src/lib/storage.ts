@@ -9,6 +9,7 @@ import {
   isQualityTier,
 } from '@/lib/constants';
 import { mealItemId, mergeMealItems } from '@/lib/mealItems';
+import { IDLE_LIFECYCLE, parseMealEvents, parseMealLifecycle } from '@/lib/mealEvents';
 import { findFoodInCatalogue } from '@/lib/foodCatalogue';
 import {
   isDinerId,
@@ -21,10 +22,24 @@ import { DEFAULT_PRICING_PROFILE_ID, isPricingProfileId } from '@/lib/pricing';
 import type { MealItem, MealSession } from '@/types/meal';
 
 export const STORAGE_KEY = 'ayce-damage-calculator';
-export const STORAGE_VERSION = 3;
 
-/** A normal tab is tiny; refuse an edited storage entry before parsing it. */
-export const MAX_STORED_SESSION_LENGTH = 64 * 1024;
+/**
+ * 1 — the original tab.
+ * 2 — pricing context.
+ * 3 — the Table Mode roster and plate attribution.
+ * 4 — the timestamped meal event ledger and lifecycle metadata.
+ */
+export const STORAGE_VERSION = 4;
+
+/** Versions `parseStoredSession` can read, current one included. */
+export const SUPPORTED_STORAGE_VERSIONS = [1, 2, 3, 4] as const;
+
+/**
+ * A tab is small; a full evening's ledger is still only tens of kilobytes.
+ * Generous enough for the longest bounded meal, and a hard stop before parsing
+ * an entry someone has edited into something else.
+ */
+export const MAX_STORED_SESSION_LENGTH = 192 * 1024;
 
 interface StoredEnvelope {
   version: number;
@@ -144,16 +159,18 @@ export function parseStoredSession(
 
   if (
     !isRecord(parsed) ||
-    (parsed.version !== 1 && parsed.version !== 2 && parsed.version !== STORAGE_VERSION) ||
+    typeof parsed.version !== 'number' ||
+    !SUPPORTED_STORAGE_VERSIONS.some((version) => version === parsed.version) ||
     !isRecord(parsed.session)
   ) {
     return null;
   }
 
+  const version = parsed.version;
   const session = parsed.session;
   const rawItems = Array.isArray(session.items) ? session.items : [];
   // V1 and V2 had no roster by design; their full tabs continue as shared food.
-  const diners = parsed.version === STORAGE_VERSION ? parseDiners(session.diners) : [];
+  const diners = version >= 3 ? parseDiners(session.diners) : [];
 
   const items = mergeMealItems(
     rawItems
@@ -170,6 +187,14 @@ export function parseStoredSession(
     return null;
   }
 
+  /*
+   * A session written before version 4 has no ledger, and inventing one would
+   * mean stamping made-up times on a meal nobody timed. It stays a valid,
+   * fully usable session that simply has no timeline.
+   */
+  const events = version >= 4 ? parseMealEvents(session.events, foods) : [];
+  const lifecycle = version >= 4 ? parseMealLifecycle(session.lifecycle) : IDLE_LIFECYCLE;
+
   return {
     restaurantName: sanitiseRestaurantName(session.restaurantName),
     pricePerDiner,
@@ -179,6 +204,8 @@ export function parseStoredSession(
       : DEFAULT_PRICING_PROFILE_ID,
     items,
     ...(diners.length > 0 ? { diners } : {}),
+    ...(events.length > 0 ? { events } : {}),
+    ...(lifecycle.status === 'idle' ? {} : { lifecycle }),
   };
 }
 

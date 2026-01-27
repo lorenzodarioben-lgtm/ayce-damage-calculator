@@ -93,6 +93,14 @@ export interface MealSession extends SessionConfig {
   readonly items: readonly MealItem[];
   /** Optional so an ordinary shared-table session remains zero-setup. */
   readonly diners?: readonly Diner[];
+  /**
+   * How the meal developed over time. Absent on a session recorded before the
+   * ledger existed, which is what makes such a session an explicitly untimed
+   * record rather than one with fabricated timestamps.
+   */
+  readonly events?: readonly MealEvent[];
+  /** Absent until meaningful meal activity starts the meal. */
+  readonly lifecycle?: MealLifecycle;
 }
 
 export interface Nutrition {
@@ -156,3 +164,4 @@ export interface DinerDamageTotals {
   readonly nutrition: Nutrition;
 }
 import type { PricingProfileId } from '@/types/pricing';
+import type { MealEvent, MealLifecycle } from '@/types/mealEvents';
