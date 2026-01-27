@@ -8,6 +8,7 @@ import {
 } from '@/lib/constants';
 import { isDinerId, normaliseDinerName, reconcileItemAllocations } from '@/lib/diners';
 import { appendMealEvents, mealEventLine, nextEventSeq, sessionLifecycle } from '@/lib/mealEvents';
+import { clampMealDuration } from '@/lib/pacing';
 import { mealItemId } from '@/lib/mealItems';
 import { DEFAULT_PRICING_PROFILE_ID } from '@/lib/pricing';
 import { normaliseRestaurantNameInput, sanitiseRestaurantName } from '@/lib/storage';
@@ -88,6 +89,7 @@ export type SessionAction =
     }
   | { type: 'remove-item'; id: string; meta?: MealEventMeta }
   | { type: 'restore-item'; item: MealItem; index: number; meta?: MealEventMeta }
+  | { type: 'set-meal-duration'; minutes: number | undefined }
   | { type: 'pause-meal'; meta: MealEventMeta }
   | { type: 'resume-meal'; meta: MealEventMeta }
   | { type: 'complete-meal'; meta: MealEventMeta }
@@ -340,6 +342,15 @@ function applySessionAction(state: MealSession, action: SessionAction): MealSess
         quantity: clampQuantity(action.item.quantity),
       });
       return { ...state, items };
+    }
+
+    case 'set-meal-duration': {
+      // Choosing or clearing a time limit is a plan, not meal activity: it
+      // never starts the meal and never touches the tab.
+      const { plannedDurationMinutes: _planned, ...untimed } = state;
+      return action.minutes === undefined
+        ? untimed
+        : { ...untimed, plannedDurationMinutes: clampMealDuration(action.minutes) };
     }
 
     case 'pause-meal':

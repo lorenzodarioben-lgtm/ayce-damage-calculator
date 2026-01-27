@@ -156,3 +156,50 @@ export function formatMetricValue(
       return formatCount(value);
   }
 }
+
+/**
+ * A running meal clock, as `1:24:05` or `24:05`.
+ *
+ * Deliberately terse: it sits above the tab and is read at a glance. The
+ * spoken form below is what assistive technology gets instead, because
+ * "1:24:05" is not a sentence.
+ */
+export function formatClock(ms: number): string {
+  const total = Math.max(0, Math.floor(finite(ms) / 1000));
+  const hours = Math.floor(total / 3600);
+  const minutes = Math.floor((total % 3600) / 60);
+  const seconds = total % 60;
+  const pad = (value: number) => String(value).padStart(2, '0');
+  return hours > 0 ? `${hours}:${pad(minutes)}:${pad(seconds)}` : `${minutes}:${pad(seconds)}`;
+}
+
+/** The same span, said out loud: "1 hour 24 minutes", "45 minutes", "under a minute". */
+export function formatDurationLabel(ms: number): string {
+  const totalMinutes = Math.floor(Math.max(0, finite(ms)) / 60_000);
+  if (totalMinutes < 1) {
+    return 'under a minute';
+  }
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  const parts: string[] = [];
+  if (hours > 0) {
+    parts.push(`${hours} ${hours === 1 ? 'hour' : 'hours'}`);
+  }
+  if (minutes > 0) {
+    parts.push(`${minutes} ${minutes === 1 ? 'minute' : 'minutes'}`);
+  }
+  return parts.join(' ');
+}
+
+/** A rate expressed per hour, such as plates cleared. */
+export function formatPerHour(value: number): string {
+  return `${DECIMAL(1).format(finite(value))}/hr`;
+}
+
+/** A money rate expressed per minute of eating. */
+export function formatMoneyPerMinute(
+  value: number,
+  context: MoneyContext = DEFAULT_MONEY_CONTEXT,
+): string {
+  return `${formatMoney(value, context)}/min`;
+}

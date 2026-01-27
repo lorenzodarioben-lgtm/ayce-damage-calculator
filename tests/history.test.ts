@@ -624,3 +624,24 @@ describe('filed plate attribution', () => {
     ]);
   });
 });
+
+describe('the filed meal window', () => {
+  it('keeps the window the table had booked', () => {
+    const record = saved({ plannedDurationMinutes: 90 });
+
+    expect(record.plannedDurationMinutes).toBe(90);
+    expect(parseSavedSession(record)?.plannedDurationMinutes).toBe(90);
+  });
+
+  it('treats a record filed before windows existed as untimed', () => {
+    const legacy = { ...saved({ plannedDurationMinutes: 90 }), version: 7 };
+
+    expect(parseSavedSession(legacy)).not.toHaveProperty('plannedDurationMinutes');
+  });
+
+  it('drops a hand-edited window outside the supported range', () => {
+    const tampered = { ...saved(), plannedDurationMinutes: 100_000 };
+
+    expect(parseSavedSession(tampered)).not.toHaveProperty('plannedDurationMinutes');
+  });
+});

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Plus, Receipt } from 'lucide-react';
 import { FavoriteQuickAdd } from '@/components/favorites/FavoriteQuickAdd';
 import { AddCutDialog } from '@/components/live/AddCutDialog';
+import { MealPacing } from '@/components/live/MealPacing';
 import { QuickLogRow } from '@/components/live/QuickLogRow';
 import { DinerAttribution } from '@/components/meal/DinerAttribution';
 import { SiteFooter } from '@/components/nav/SiteFooter';
@@ -43,11 +44,16 @@ export function LiveMealMode() {
     session,
     report,
     pricingProfile,
+    lifecycle,
     addItem,
     incrementItem,
     decrementItem,
     removeItem,
     restoreItem,
+    setMealDuration,
+    pauseMeal,
+    resumeMeal,
+    completeMeal,
   } = useMealSession(pricingProfiles.profiles, customFoods.foods, { source: 'live' });
   const { favorites, remove: removeFavorite } = useFavorites(catalogue);
 
@@ -123,6 +129,16 @@ export function LiveMealMode() {
               />
             </div>
           </section>
+
+          <MealPacing
+            report={report}
+            lifecycle={lifecycle}
+            plannedDurationMinutes={session.plannedDurationMinutes}
+            onDurationChange={setMealDuration}
+            onPause={pauseMeal}
+            onResume={resumeMeal}
+            onFinish={completeMeal}
+          />
 
           <DinerAttribution
             diners={session.diners ?? []}
