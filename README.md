@@ -60,6 +60,20 @@ keys, and nothing you record ever leaves your device.
 - Pacing forecast — plates per hour, retail value per minute, recovery rate, a projected final
   recovery and the pace break-even would take, withheld until there is enough meal to project from
 
+**Damage planner** (`/plan`)
+
+- An optional pre-meal menu simulation: given an entry price, a diner count and a set of
+  assumptions, it works out which plates would reach a chosen share of admission by estimated
+  retail value
+- Target recovery from 50% to 250%, with three explicit strategies — fewest plates, lowest
+  estimated food weight, or a balanced spread that repeats no configuration more than three times
+- Include or exclude cuts, lock the ones you want, cap repeats, and restrict quality tiers and
+  serving sizes
+- Shows the proposed configuration, estimated retail value, recovery, plate count, food weight,
+  nutrition, and why the search settled where it did
+- Planned food is never eaten food: the plan can be copied, and loading it into the calculator as a
+  meal takes an explicit confirmation that says exactly what it does
+
 **The numbers**
 
 - Live retail damage meter tracking recovered value against total admission
@@ -111,7 +125,7 @@ keys, and nothing you record ever leaves your device.
 - Responsive from 320 px phones to desktop, with original SVG food illustrations
 - Skip link, keyboard-operable throughout, labelled controls, live-region confirmations,
   reduced-motion support, and AA contrast across the palette
-- 830 automated tests
+- 867 automated tests
 
 ## Tech stack
 
@@ -143,6 +157,13 @@ records. No component anywhere hardcodes a price or a macro value.
 break-even estimates are all plain functions in `src/lib/` with no React dependency. They're
 trivially testable, and every division is guarded so no code path can produce `NaN` or `Infinity` —
 including the empty-meal case.
+
+**A bounded optimiser.** The planner is a dynamic program over accumulated retail value in
+fifty-cent buckets, clamped at the target so "more than enough" is one state rather than an
+unbounded tail. Every dimension of the search — candidates, per-item cap, state width, plate
+ceiling — is a constant declared in one place, so the worst case is fixed and no input can make the
+browser sit and think. Ties resolve to the earliest candidate in a stable order, so the same
+request always produces the same plan.
 
 **Deterministic verdict and achievement engines.** Verdicts come from explicit ratio thresholds in a
 single ordered table, not randomness. Achievements are the same idea: a table of rules over derived
@@ -272,7 +293,7 @@ dataset's own integrity, cut search and ordering, verdict boundaries tested on b
 threshold, number and currency formatting, pricing profiles, custom foods, the session reducer
 including undo, storage recovery from corrupt or stale data, the IndexedDB repository against
 `fake-indexeddb`, saved-session migration, meal event validation, ordering and bounds, the pacing
-forecast on both sides of every boundary, replay reconstruction and its named moments, session comparison, the achievement engine, favourites,
+forecast on both sides of every boundary, replay reconstruction and its named moments, the planner's determinism and bounds, session comparison, the achievement engine, favourites,
 restaurant presets, share-token encoding and decoding, backup import and export, CSV escaping, local
 analytics, browser-stage history, the sitemap and crawling rules, and the service worker's caching
 policy.
@@ -322,23 +343,23 @@ npm run verify       # format check, lint, typecheck, tests and build in sequenc
 
 ```text
 src/
-├── app/          routes: calculator, live, history, compare, backup, stats,
+├── app/          routes: calculator, live, plan, history, compare, backup, stats,
 │                 share/[token] with its generated OG image, offline, manifest,
 │                 sitemap, robots
-├── components/   meal builder, live mode, session setup, summary, results,
+├── components/   meal builder, live mode, planner, session setup, summary, results,
 │                 history, stats, favourites, custom menus, navigation, methodology, PWA, UI
 ├── data/         the 18-item food dataset, with search and ordering
 ├── hooks/        session reducer, meal clock, stage history, meal history, favourites,
 │                 presets, pricing profiles, custom foods, status messaging, undoable removal
 ├── lib/          calculations, session reducer, meal events, replay, pacing, verdicts,
-│                 achievements, comparison, analytics,
+│                 achievements, planner, comparison, analytics,
 │                 history and its repository, favourites, presets, pricing profiles, custom foods,
 │                 share tokens,
 │                 social cards, backup, CSV, formatting, storage, card rendering
 └── types/        domain types
 
-e2e/              18 Playwright specs plus shared journey helpers
-tests/            41 Vitest suites
+e2e/              19 Playwright specs plus shared journey helpers
+tests/            43 Vitest suites
 public/           service worker and PWA icons
 .github/          CI workflow, Dependabot, issue and pull request templates
 ```
