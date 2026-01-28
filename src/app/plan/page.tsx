@@ -1,0 +1,42 @@
+import type { Metadata } from 'next';
+import { DamagePlanner } from '@/components/planner/DamagePlanner';
+import { SiteFooter } from '@/components/nav/SiteFooter';
+import { SiteHeader } from '@/components/nav/SiteHeader';
+import { MAIN_CONTENT_ID } from '@/components/nav/destinations';
+
+export const metadata: Metadata = {
+  title: 'Damage planner — AYCE Damage Calculator',
+  description:
+    'Explore how menu assumptions affect estimated retail recovery before a meal. A mathematical simulation, not a recommendation.',
+};
+
+export default function PlanPage() {
+  return (
+    <>
+      <SiteHeader />
+
+      <main
+        id={MAIN_CONTENT_ID}
+        className="relative z-10 mx-auto max-w-[900px] px-4 pt-8 pb-16 sm:px-6"
+      >
+        <h1 className="display-type text-4xl text-cream-50 sm:text-5xl">The pre-meal briefing</h1>
+        <p className="mt-3 max-w-[60ch] text-sm leading-relaxed text-cream-300">
+          A mathematical menu simulation. Given an entry price and a set of assumptions, it works
+          out which combination of plates would reach a chosen share of admission by estimated
+          retail value. It is arithmetic about a menu, not a recommendation about what anyone should
+          eat, and nothing here touches the meal you are actually tracking.
+        </p>
+
+        <div className="mt-8">
+          <DamagePlanner />
+        </div>
+      </main>
+
+      <SiteFooter>
+        Planned food is not eaten food. The planner never adds anything to your tab on its own, and
+        every price and portion it uses is the same illustrative estimate the calculator uses
+        elsewhere.
+      </SiteFooter>
+    </>
+  );
+}
