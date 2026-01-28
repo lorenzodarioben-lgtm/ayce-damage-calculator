@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, RotateCcw } from 'lucide-react';
 import { MealReplay, UntimedMealNotice } from '@/components/history/MealReplay';
+import { UncertaintyPanel } from '@/components/methodology/UncertaintyPanel';
 import { AchievementList } from '@/components/results/AchievementList';
 import { MealBreakdown } from '@/components/results/MealBreakdown';
 import { ReportSummary } from '@/components/results/ReportSummary';
@@ -18,6 +19,7 @@ import {
   sessionFromSaved,
   type ResolvedSavedSession,
 } from '@/lib/history';
+import { foodCatalogue } from '@/lib/foodCatalogue';
 import { buildMealReplay } from '@/lib/replay';
 import { getSession } from '@/lib/historyRepository';
 import { loadSession, saveSession as saveActiveSession } from '@/lib/storage';
@@ -148,6 +150,15 @@ export function HistoryDetail({ id }: { id: string }) {
         <AchievementList achievements={achievements} headingId="saved-achievements-heading" />
 
         <MealBreakdown lines={report.lines} headingId="recorded-plates-heading" />
+
+        <UncertaintyPanel
+          items={record.items}
+          pricePerDiner={record.pricePerDiner}
+          dinerCount={record.dinerCount}
+          diners={record.diners}
+          foods={foodCatalogue(record.customFoods)}
+          headingId="saved-uncertainty-heading"
+        />
 
         {/* The ordinary report above is unchanged; the replay is an addition to
             it, and a record filed before the ledger existed says so plainly. */}
