@@ -23,7 +23,7 @@ import { loadFavorites, saveFavorites } from '@/lib/favorites';
 import { foodCatalogue } from '@/lib/foodCatalogue';
 import { formatRecordedAt } from '@/lib/formatting';
 import { listSessions, putSessions, replaceSessions } from '@/lib/historyRepository';
-import { loadPresets, savePresets } from '@/lib/presets';
+import { loadRestaurants, saveRestaurants } from '@/lib/restaurants';
 import { loadPricingProfiles, savePricingProfiles } from '@/lib/pricingProfiles';
 
 type Stage =
@@ -53,7 +53,7 @@ function configurationCount(contents: BackupContents): number {
   return (
     contents.configuration.pricingProfiles.length +
     contents.configuration.customFoods.length +
-    contents.configuration.presets.length
+    contents.configuration.restaurants.length
   );
 }
 
@@ -81,7 +81,7 @@ export function BackupRestore() {
         {
           pricingProfiles: loadPricingProfiles(),
           customFoods,
-          presets: loadPresets(),
+          restaurants: loadRestaurants(),
         },
       );
 
@@ -134,7 +134,7 @@ export function BackupRestore() {
         await replaceSessions(contents.history);
         savePricingProfiles(contents.configuration.pricingProfiles);
         saveCustomFoods(contents.configuration.customFoods);
-        savePresets(contents.configuration.presets);
+        saveRestaurants(contents.configuration.restaurants);
         saveFavorites(contents.favorites);
         setStage({
           kind: 'done',
@@ -150,7 +150,7 @@ export function BackupRestore() {
         contents.configuration.pricingProfiles,
       );
       const customFoods = mergeById(existingCustomFoods, contents.configuration.customFoods);
-      const presets = mergeById(loadPresets(), contents.configuration.presets);
+      const restaurants = mergeById(loadRestaurants(), contents.configuration.restaurants);
       const favorites = mergeById(
         loadFavorites(foodCatalogue(existingCustomFoods)),
         contents.favorites,
@@ -158,12 +158,12 @@ export function BackupRestore() {
       await putSessions(history.result);
       savePricingProfiles(pricingProfiles.result);
       saveCustomFoods(customFoods.result);
-      savePresets(presets.result);
+      saveRestaurants(restaurants.result);
       saveFavorites(favorites.result);
 
       setStage({
         kind: 'done',
-        message: `Added ${history.added} sessions, ${favorites.added} saved orders and ${pricingProfiles.added + customFoods.added + presets.added} menu settings. Nothing already here was changed.`,
+        message: `Added ${history.added} sessions, ${favorites.added} saved orders and ${pricingProfiles.added + customFoods.added + restaurants.added} menu settings. Nothing already here was changed.`,
       });
     } finally {
       setBusy(false);
@@ -254,7 +254,7 @@ export function BackupRestore() {
               <li>{stage.contents.favorites.length} saved orders</li>
               <li>{stage.contents.configuration.pricingProfiles.length} pricing profiles</li>
               <li>{stage.contents.configuration.customFoods.length} custom foods</li>
-              <li>{stage.contents.configuration.presets.length} restaurant presets</li>
+              <li>{stage.contents.configuration.restaurants.length} saved restaurants</li>
               <li className="text-xs text-cream-700">
                 Exported {formatRecordedAt(stage.contents.exportedAt)}
               </li>
@@ -264,12 +264,13 @@ export function BackupRestore() {
               stage.summary.skippedFavorites > 0 ||
               stage.summary.skippedPricingProfiles > 0 ||
               stage.summary.skippedCustomFoods > 0 ||
-              stage.summary.skippedPresets > 0) && (
+              stage.summary.skippedRestaurants > 0) && (
               <p className="mt-3 text-xs text-ember-400">
                 {stage.summary.skippedHistory} sessions and {stage.summary.skippedFavorites} saved
                 orders, {stage.summary.skippedPricingProfiles} pricing profiles,{' '}
-                {stage.summary.skippedCustomFoods} custom foods and {stage.summary.skippedPresets}{' '}
-                restaurant presets in the file could not be read and will be left out.
+                {stage.summary.skippedCustomFoods} custom foods and{' '}
+                {stage.summary.skippedRestaurants} saved restaurants in the file could not be read
+                and will be left out.
               </p>
             )}
 

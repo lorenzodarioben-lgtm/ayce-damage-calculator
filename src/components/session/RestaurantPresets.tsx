@@ -1,32 +1,39 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { BookmarkPlus, X } from 'lucide-react';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { formatMoney } from '@/lib/formatting';
-import { presetMatchesSetup, type PresetDraft, type RestaurantPreset } from '@/lib/presets';
-import { useRestaurantPresets } from '@/hooks/useRestaurantPresets';
+import {
+  restaurantMatchesSetup,
+  type RestaurantDraft,
+  type RestaurantProfile,
+} from '@/lib/restaurants';
+import { useRestaurants } from '@/hooks/useRestaurants';
 
 interface RestaurantPresetsProps {
-  setup: PresetDraft;
-  onApply: (preset: RestaurantPreset) => void;
+  setup: RestaurantDraft;
+  onApply: (preset: RestaurantProfile) => void;
   /** Whether a meal is already on the tab, which changes what applying means. */
   hasMealInProgress: boolean;
   onStatus: (message: string) => void;
 }
 
-function describe(preset: RestaurantPreset): string {
+function describe(preset: RestaurantProfile): string {
   return `${preset.name}, ${formatMoney(preset.pricePerDiner)} per diner, ${preset.dinerCount} ${
     preset.dinerCount === 1 ? 'diner' : 'diners'
   }`;
 }
 
 /**
- * Saved session setups, applied in one tap.
+ * Saved restaurants, applied in one tap.
  *
  * Applying only ever changes the restaurant, price and diner count — it never
  * touches the plates on the tab. It does move the totals underneath a meal in
- * progress, though, so that case is confirmed rather than silently applied.
+ * progress, though, so that case is confirmed rather than silently applied. It
+ * also links the meal to that place, which is what lets a filed visit appear in
+ * the restaurant's own history.
  */
 export function RestaurantPresets({
   setup,
@@ -34,8 +41,8 @@ export function RestaurantPresets({
   hasMealInProgress,
   onStatus,
 }: RestaurantPresetsProps) {
-  const { presets, save, remove } = useRestaurantPresets();
-  const [pending, setPending] = useState<RestaurantPreset | null>(null);
+  const { restaurants: presets, save, remove } = useRestaurants();
+  const [pending, setPending] = useState<RestaurantProfile | null>(null);
 
   const nameGiven = setup.name.trim().length > 0;
 
@@ -43,14 +50,14 @@ export function RestaurantPresets({
     const saved = save(setup);
     onStatus(
       saved
-        ? `${saved.name} saved as a preset.`
-        : 'Give the restaurant a name before saving it as a preset.',
+        ? `${saved.name} saved to your restaurants.`
+        : 'Give the restaurant a name before saving it.',
     );
   }
 
-  function requestApply(preset: RestaurantPreset) {
+  function requestApply(preset: RestaurantProfile) {
     // Nothing to disturb, or nothing would change: apply straight away.
-    if (!hasMealInProgress || presetMatchesSetup(preset, setup)) {
+    if (!hasMealInProgress || restaurantMatchesSetup(preset, setup)) {
       onApply(preset);
       onStatus(`${preset.name} applied.`);
       return;
@@ -62,6 +69,12 @@ export function RestaurantPresets({
     <div className="mt-4 border-t border-line-soft pt-4">
       <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
         <h3 className="micro-label">Saved restaurants</h3>
+        <Link
+          href="/restaurants"
+          className="inline-flex min-h-9 items-center rounded-[8px] px-2 text-xs font-semibold uppercase tracking-[0.1em] text-cream-500 transition-colors duration-200 hover:bg-ash-800 hover:text-cream-100"
+        >
+          Open the hub
+        </Link>
         <button
           type="button"
           onClick={handleSave}

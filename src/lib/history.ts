@@ -20,6 +20,7 @@ import { findFoodInCatalogue, foodCatalogue } from '@/lib/foodCatalogue';
 import { mealItemId, mergeMealItems } from '@/lib/mealItems';
 import { IDLE_LIFECYCLE, parseMealEvents, parseMealLifecycle } from '@/lib/mealEvents';
 import { parseMealDuration } from '@/lib/pacing';
+import { isRestaurantId } from '@/lib/restaurants';
 import {
   isDinerId,
   normaliseAllocations,
@@ -54,11 +55,12 @@ import type { PricingProfile } from '@/types/pricing';
  * 6 — records retain the Table Mode roster.
  * 7 — records retain plate attribution and the timestamped meal ledger.
  * 8 — records retain the booked meal duration.
+ * 9 — records retain the local restaurant profile the visit belongs to.
  */
-export const SAVED_SESSION_VERSION = 8;
+export const SAVED_SESSION_VERSION = 9;
 
 /** Versions `parseSavedSession` knows how to read, current one included. */
-export const SUPPORTED_SESSION_VERSIONS = [1, 2, 3, 4, 5, 6, 7, 8] as const;
+export const SUPPORTED_SESSION_VERSIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9] as const;
 
 /**
  * The first schema that could carry a timeline.
@@ -170,6 +172,7 @@ export function createSavedSession(
     version: SAVED_SESSION_VERSION,
     createdAt: options.createdAt,
     restaurantName: sanitiseRestaurantName(session.restaurantName),
+    ...(session.restaurantId === undefined ? {} : { restaurantId: session.restaurantId }),
     pricePerDiner: clampPricePerDiner(session.pricePerDiner),
     dinerCount: clampDinerCount(session.dinerCount),
     pricingProfile: options.pricingProfile ?? DEFAULT_PRICING_PROFILE,
@@ -395,12 +398,15 @@ export function parseSavedSession(value: unknown): SavedMealSession | null {
     version >= FIRST_TIMELINE_VERSION ? parseMealLifecycle(value.lifecycle) : IDLE_LIFECYCLE;
   const plannedDurationMinutes =
     version >= 8 ? parseMealDuration(value.plannedDurationMinutes) : undefined;
+  const linkedRestaurantId =
+    version >= 9 && isRestaurantId(value.restaurantId) ? value.restaurantId : undefined;
 
   return {
     id: value.id,
     version: SAVED_SESSION_VERSION,
     createdAt,
     restaurantName,
+    ...(linkedRestaurantId === undefined ? {} : { restaurantId: linkedRestaurantId }),
     pricePerDiner: safePrice,
     dinerCount: safeDiners,
     pricingProfile,
@@ -465,6 +471,9 @@ export function hasRecordedTimeline(record: SavedMealSession): boolean {
 export function sessionFromSaved(record: SavedMealSession): MealSession {
   return {
     restaurantName: record.restaurantName,
+    // The place is carried forward, because ordering the same meal again is
+    // still a visit to the same restaurant.
+    ...(record.restaurantId === undefined ? {} : { restaurantId: record.restaurantId }),
     pricePerDiner: record.pricePerDiner,
     dinerCount: record.dinerCount,
     pricingProfileId: record.pricingProfile.id,

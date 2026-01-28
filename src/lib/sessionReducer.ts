@@ -115,8 +115,16 @@ function applySessionAction(state: MealSession, action: SessionAction): MealSess
     case 'hydrate':
       return action.session;
 
-    case 'set-restaurant-name':
-      return { ...state, restaurantName: normaliseRestaurantNameInput(action.value) };
+    case 'set-restaurant-name': {
+      /*
+       * Editing the name by hand unlinks the meal from a saved place. The link
+       * is a statement that this is that restaurant; typing something else is a
+       * statement that it is not, and a wrong link would file the visit under
+       * somewhere the diner never went.
+       */
+      const { restaurantId: _restaurantId, ...unlinked } = state;
+      return { ...unlinked, restaurantName: normaliseRestaurantNameInput(action.value) };
+    }
 
     case 'set-price-per-diner':
       return { ...state, pricePerDiner: clampPricePerDiner(action.value) };
@@ -127,16 +135,22 @@ function applySessionAction(state: MealSession, action: SessionAction): MealSess
     case 'adjust-diner-count':
       return { ...state, dinerCount: clampDinerCount(state.dinerCount + action.delta) };
 
-    case 'apply-setup':
+    case 'apply-setup': {
       // Replaces the session configuration only. The tab is deliberately
-      // untouched: applying a preset must never cost the user their plates.
+      // untouched: applying a saved restaurant must never cost the user their
+      // plates.
+      const { restaurantId: _restaurantId, ...base } = state;
       return {
-        ...state,
+        ...base,
         restaurantName: sanitiseRestaurantName(action.setup.restaurantName),
         pricePerDiner: clampPricePerDiner(action.setup.pricePerDiner),
         dinerCount: clampDinerCount(action.setup.dinerCount),
         pricingProfileId: action.setup.pricingProfileId ?? DEFAULT_PRICING_PROFILE_ID,
+        ...(action.setup.restaurantId === undefined
+          ? {}
+          : { restaurantId: action.setup.restaurantId }),
       };
+    }
 
     case 'add-diner': {
       const displayName = normaliseDinerName(action.diner.displayName);
