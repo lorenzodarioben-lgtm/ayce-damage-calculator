@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { STORAGE_VERSION } from '../src/lib/storage';
 import { addPlate, openCalculator, sessionSetup, setRestaurantName, tab } from './helpers';
 
 interface StoredEnvelope {
@@ -29,7 +30,9 @@ test.describe('the meal event ledger', () => {
     await addPlate(page, 'Ribeye');
 
     const stored = await storedSession(page);
-    expect(stored?.version).toBe(5);
+    // Read from the module rather than pinned here, so the persistence contract
+    // is asserted rather than a number that has to be chased on every bump.
+    expect(stored?.version).toBe(STORAGE_VERSION);
 
     const events = stored?.session.events ?? [];
     expect(events.map((event) => event.type)).toEqual(['meal-started', 'plates-added']);
