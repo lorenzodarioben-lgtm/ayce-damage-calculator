@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { ArrowLeft, PencilLine, Printer } from 'lucide-react';
+import { UncertaintyPanel } from '@/components/methodology/UncertaintyPanel';
 import { AchievementList } from '@/components/results/AchievementList';
 import { DamageReceipt } from '@/components/results/DamageReceipt';
 import { MealBreakdown } from '@/components/results/MealBreakdown';
@@ -12,6 +13,8 @@ import { SaveToHistory } from '@/components/results/SaveToHistory';
 import { ShareActions } from '@/components/results/ShareActions';
 import { Button } from '@/components/ui/Button';
 import { evaluateAchievements } from '@/lib/achievements';
+import { useCustomFoods } from '@/hooks/useCustomFoods';
+import { foodCatalogue } from '@/lib/foodCatalogue';
 import { buildResultCardModel } from '@/lib/resultCard';
 import { getVerdict } from '@/lib/verdicts';
 import type { DamageReport as DamageReportTotals, MealSession } from '@/types/meal';
@@ -26,6 +29,8 @@ interface DamageReportProps {
 
 export function DamageReport({ report, session, onEditMeal, onStatus }: DamageReportProps) {
   const restaurantName = session.restaurantName;
+  const customFoods = useCustomFoods();
+  const catalogue = useMemo(() => foodCatalogue(customFoods.foods), [customFoods.foods]);
 
   const verdict = useMemo(
     () => getVerdict(report.totalRetailValue, report.totalAdmission),
@@ -75,6 +80,17 @@ export function DamageReport({ report, session, onEditMeal, onStatus }: DamageRe
       <TableBreakdown session={session} report={report} />
 
       <AchievementList achievements={achievements} headingId="achievements-heading" />
+
+      {/* The point estimate above stays the report's answer. This is for the
+          reader who wants to know how much it depends on assumptions. */}
+      <UncertaintyPanel
+        items={session.items}
+        pricePerDiner={session.pricePerDiner}
+        dinerCount={session.dinerCount}
+        diners={session.diners}
+        foods={catalogue}
+        headingId="uncertainty-heading"
+      />
 
       {/* Shareable card + actions */}
       <section aria-labelledby="share-heading" className="panel p-4 sm:p-5">

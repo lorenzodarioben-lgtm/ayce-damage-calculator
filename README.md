@@ -82,6 +82,9 @@ keys, and nothing you record ever leaves your device.
 - Calories, protein, fat and carbohydrates
 - Total food weight in grams, kilograms and pounds
 - Retail break-even estimate — how many more average plates it would take
+- An explicit uncertainty range behind the headline figure: conservative, base and upper scenarios
+  built by moving the serving-weight, retail-price and ingredient-cost assumptions to the ends of a
+  stated band, with a sensitivity ranking of which assumption moves the result most
 - An even split across the table, stated as the assumption it is, whenever there is more than one
   diner
 - Table Mode preserves explicit plate ownership; remaining shared plates are estimated evenly across the active roster
@@ -125,7 +128,7 @@ keys, and nothing you record ever leaves your device.
 - Responsive from 320 px phones to desktop, with original SVG food illustrations
 - Skip link, keyboard-operable throughout, labelled controls, live-region confirmations,
   reduced-motion support, and AA contrast across the palette
-- 867 automated tests
+- 900 automated tests
 
 ## Tech stack
 
@@ -250,6 +253,19 @@ of it is entertainment: nobody has to eat to a number.
 
 Values are held at full precision throughout and rounded only for display.
 
+## The headline figure is a point estimate, and says so
+
+Every report carries a range alongside its number. Three named scenarios — conservative, base and
+upper — re-run the same calculation with the serving-weight, retail-price and ingredient-cost
+assumptions moved to the ends of a band the project chose and states in the interface. Alongside
+them, a sensitivity ranking says which assumption moves the result most, and flags any assumption
+that decides the verdict on its own.
+
+They are **not confidence intervals**. Nothing was sampled and no distribution was estimated. They
+are scenarios built from stated bounds, which is a much weaker and much more honest claim, and the
+interface says exactly that. The point estimate remains the report's answer; the range is collapsed
+behind a disclosure for the reader who wants to know how much that answer depends on assumptions.
+
 ## Retail value is not restaurant cost
 
 This distinction matters, so the app is careful about it.
@@ -293,7 +309,7 @@ dataset's own integrity, cut search and ordering, verdict boundaries tested on b
 threshold, number and currency formatting, pricing profiles, custom foods, the session reducer
 including undo, storage recovery from corrupt or stale data, the IndexedDB repository against
 `fake-indexeddb`, saved-session migration, meal event validation, ordering and bounds, the pacing
-forecast on both sides of every boundary, replay reconstruction and its named moments, the planner's determinism and bounds, session comparison, the achievement engine, favourites,
+forecast on both sides of every boundary, replay reconstruction and its named moments, the planner's determinism and bounds, uncertainty scenarios and sensitivity ordering, session comparison, the achievement engine, favourites,
 restaurant presets, share-token encoding and decoding, backup import and export, CSV escaping, local
 analytics, browser-stage history, the sitemap and crawling rules, and the service worker's caching
 policy.
@@ -352,14 +368,14 @@ src/
 ├── hooks/        session reducer, meal clock, stage history, meal history, favourites,
 │                 presets, pricing profiles, custom foods, status messaging, undoable removal
 ├── lib/          calculations, session reducer, meal events, replay, pacing, verdicts,
-│                 achievements, planner, comparison, analytics,
+│                 achievements, planner, uncertainty, comparison, analytics,
 │                 history and its repository, favourites, presets, pricing profiles, custom foods,
 │                 share tokens,
 │                 social cards, backup, CSV, formatting, storage, card rendering
 └── types/        domain types
 
-e2e/              19 Playwright specs plus shared journey helpers
-tests/            43 Vitest suites
+e2e/              20 Playwright specs plus shared journey helpers
+tests/            45 Vitest suites
 public/           service worker and PWA icons
 .github/          CI workflow, Dependabot, issue and pull request templates
 ```
