@@ -9,6 +9,7 @@ import {
   MIN_DINERS,
   MIN_PRICE_PER_DINER,
 } from '@/lib/constants';
+import { MenuShare } from '@/components/session/MenuShare';
 import { RestaurantPresets } from '@/components/session/RestaurantPresets';
 import { PricingProfileManager } from '@/components/session/PricingProfileManager';
 import { CustomFoodManager } from '@/components/session/CustomFoodManager';
@@ -286,6 +287,17 @@ export function SessionSetup({
         foods={customFoods}
         onSave={onSaveCustomFood}
         onRemove={onRemoveCustomFood}
+        onStatus={onStatus}
+      />
+
+      <MenuShare
+        pricingProfile={pricingProfile}
+        customFoods={customFoods}
+        restaurant={{
+          name: session.restaurantName,
+          pricePerDiner: session.pricePerDiner,
+          dinerCount: session.dinerCount,
+        }}
         onStatus={onStatus}
       />
     </section>

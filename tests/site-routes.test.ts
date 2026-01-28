@@ -73,12 +73,16 @@ describe('sitemap', () => {
 });
 
 describe('robots', () => {
-  it('welcomes crawlers to the app but not to shared reports', async () => {
+  it('welcomes crawlers to the app but not to anything shared', async () => {
     const { robots } = await load();
     const rules = robots().rules;
 
     expect(Array.isArray(rules)).toBe(false);
-    expect(rules).toMatchObject({ userAgent: '*', allow: '/', disallow: '/share/' });
+    expect(rules).toMatchObject({
+      userAgent: '*',
+      allow: '/',
+      disallow: ['/share/', '/menu/'],
+    });
   });
 
   it('points at the sitemap on the same origin', async () => {

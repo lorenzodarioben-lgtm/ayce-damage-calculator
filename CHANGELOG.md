@@ -19,6 +19,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
   between 15 and 300, with start, pause, resume and finish. Elapsed time is derived from recorded
   instants rather than a counter, so it survives reloads, route changes, a backgrounded tab and
   offline use.
+- **Stateless menu sharing** (`/menu/<token>`) — a versioned, bounded, validated link that carries
+  a personal menu: the pricing assumptions, the diner's own foods and, optionally, a restaurant
+  setup. The recipient sees a read-only preview, imports only on request, and nothing of theirs is
+  ever replaced — a colliding name comes in as a separate entry, and the preview says so first.
+- **QR codes for menu links**, with a copyable link always offered alongside.
 - **Restaurant hub** (`/restaurants`) — a local list of saved places with a detail page for each:
   visits, first and latest, average admission, average and best recovery, average plates and
   weight, most ordered foods, category mix, a recovery trend and the recent visits. A meal can be
@@ -50,6 +55,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Changed
 
+- Added `qrcode-generator`, the project's one dependency beyond the framework and its icons. A
+  standards-correct QR encoder has no browser-native equivalent and is not something to hand-roll;
+  the module is dependency-free and MIT, and the SVG rendering remains the app's own.
+
 - The session reducer moved to `src/lib/sessionReducer.ts`, free of React, and stays pure: the
   moment and identifier for each event are supplied by the dispatching surface.
 - The in-progress session envelope is version 5 and filed records are schema version 8. Older
@@ -63,6 +72,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Privacy
 
+- A shared menu carries the menu and nothing else: no history, saved orders, diner names, notes or
+  backups travel with it, and opening one writes nothing.
 - Events reference diners by the same opaque local identifier the roster already uses. No display
   name, note or other free text is written into the ledger.
 
