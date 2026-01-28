@@ -83,6 +83,12 @@ export interface SessionConfig {
   readonly pricePerDiner: number;
   readonly dinerCount: number;
   /**
+   * The local restaurant profile this meal was started from, when it was.
+   * Absent for an ad-hoc meal, and cleared the moment the name is edited by
+   * hand — a different name is a different place until someone says otherwise.
+   */
+  readonly restaurantId?: string;
+  /**
    * The local pricing assumptions used for this live meal. Legacy in-memory
    * callers may omit it; persistence immediately restores the default.
    */

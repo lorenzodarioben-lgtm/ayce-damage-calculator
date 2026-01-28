@@ -11,6 +11,7 @@ import {
 import { mealItemId, mergeMealItems } from '@/lib/mealItems';
 import { IDLE_LIFECYCLE, parseMealEvents, parseMealLifecycle } from '@/lib/mealEvents';
 import { parseMealDuration } from '@/lib/pacing';
+import { isRestaurantId } from '@/lib/restaurants';
 import { findFoodInCatalogue } from '@/lib/foodCatalogue';
 import {
   isDinerId,
@@ -30,11 +31,12 @@ export const STORAGE_KEY = 'ayce-damage-calculator';
  * 3 — the Table Mode roster and plate attribution.
  * 4 — the timestamped meal event ledger and lifecycle metadata.
  * 5 — the optional booked meal duration.
+ * 6 — the local restaurant profile the meal was started from.
  */
-export const STORAGE_VERSION = 5;
+export const STORAGE_VERSION = 6;
 
 /** Versions `parseStoredSession` can read, current one included. */
-export const SUPPORTED_STORAGE_VERSIONS = [1, 2, 3, 4, 5] as const;
+export const SUPPORTED_STORAGE_VERSIONS = [1, 2, 3, 4, 5, 6] as const;
 
 /**
  * A tab is small; a full evening's ledger is still only tens of kilobytes.
@@ -198,6 +200,8 @@ export function parseStoredSession(
   const lifecycle = version >= 4 ? parseMealLifecycle(session.lifecycle) : IDLE_LIFECYCLE;
   const plannedDurationMinutes =
     version >= 5 ? parseMealDuration(session.plannedDurationMinutes) : undefined;
+  const linkedRestaurantId =
+    version >= 6 && isRestaurantId(session.restaurantId) ? session.restaurantId : undefined;
 
   return {
     restaurantName: sanitiseRestaurantName(session.restaurantName),
@@ -211,6 +215,7 @@ export function parseStoredSession(
     ...(events.length > 0 ? { events } : {}),
     ...(lifecycle.status === 'idle' ? {} : { lifecycle }),
     ...(plannedDurationMinutes === undefined ? {} : { plannedDurationMinutes }),
+    ...(linkedRestaurantId === undefined ? {} : { restaurantId: linkedRestaurantId }),
   };
 }
 

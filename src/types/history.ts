@@ -34,6 +34,12 @@ export interface SavedMealSession {
   readonly createdAt: string;
 
   readonly restaurantName: string;
+  /**
+   * The local restaurant profile this visit belongs to, when the meal was
+   * started from one or the diner linked it later. A record never joins a
+   * profile because their names happen to match.
+   */
+  readonly restaurantId?: string;
   readonly pricePerDiner: number;
   readonly dinerCount: number;
 

@@ -3,7 +3,13 @@ import { parseStoredCustomFoods } from '@/lib/customFoods';
 import { isIsoTimestamp } from '@/lib/datetime';
 import { foodCatalogue } from '@/lib/foodCatalogue';
 import { parseSavedSession } from '@/lib/history';
-import { parseStoredPresets, type RestaurantPreset } from '@/lib/presets';
+import { parseStoredPresets } from '@/lib/presets';
+import {
+  RESTAURANTS_VERSION,
+  parseStoredRestaurants,
+  restaurantsFromPresets,
+  type RestaurantProfile,
+} from '@/lib/restaurants';
 import { parseStoredPricingProfiles } from '@/lib/pricingProfiles';
 import type { CustomFood } from '@/types/customFoods';
 import type { SavedMealSession } from '@/types/history';
@@ -25,8 +31,9 @@ export const BACKUP_FORMAT = 'ayce-damage-backup';
  * 1 — history and saved orders.
  * 2 — personal menus: pricing profiles, custom foods and restaurant presets.
  * 3 — filed records may carry a meal ledger and lifecycle metadata.
+ * 4 — restaurant profiles replace the old preset list.
  */
-export const BACKUP_VERSION = 3;
+export const BACKUP_VERSION = 4;
 
 /** Roughly 8 MB of JSON; far beyond any real backup, but bounded. */
 export const MAX_BACKUP_BYTES = 8 * 1024 * 1024;
@@ -44,7 +51,7 @@ export interface BackupFile {
 export interface BackupConfiguration {
   readonly pricingProfiles: readonly PricingProfile[];
   readonly customFoods: readonly CustomFood[];
-  readonly presets: readonly RestaurantPreset[];
+  readonly restaurants: readonly RestaurantProfile[];
 }
 
 export type BackupError =
@@ -75,7 +82,7 @@ export interface BackupSummary {
   readonly skippedFavorites: number;
   readonly skippedPricingProfiles: number;
   readonly skippedCustomFoods: number;
-  readonly skippedPresets: number;
+  readonly skippedRestaurants: number;
 }
 
 export type BackupParseResult =
@@ -93,7 +100,7 @@ export function buildBackup(
   configuration: BackupConfiguration = {
     pricingProfiles: [],
     customFoods: [],
-    presets: [],
+    restaurants: [],
   },
 ): BackupFile {
   return {
@@ -161,8 +168,23 @@ export function parseBackup(raw: string): BackupParseResult {
     ? rawConfiguration.customFoods
     : [];
   const customFoods = parseStoredCustomFoods(JSON.stringify({ version: 1, foods: rawCustomFoods }));
+  /*
+   * Restaurant profiles superseded the preset list. A backup written before
+   * that carried presets instead, so both are read and the older shape is
+   * migrated forward rather than dropped.
+   */
+  const rawRestaurants = Array.isArray(rawConfiguration.restaurants)
+    ? rawConfiguration.restaurants
+    : [];
   const rawPresets = Array.isArray(rawConfiguration.presets) ? rawConfiguration.presets : [];
-  const presets = parseStoredPresets(JSON.stringify({ version: 2, presets: rawPresets }));
+  const stored = parseStoredRestaurants(
+    JSON.stringify({ version: RESTAURANTS_VERSION, restaurants: rawRestaurants }),
+  );
+  const migrated = restaurantsFromPresets(
+    parseStoredPresets(JSON.stringify({ version: 2, presets: rawPresets })),
+  );
+  const known = new Set(stored.map((entry) => entry.id));
+  const restaurants = [...stored, ...migrated.filter((entry) => !known.has(entry.id))];
 
   // Favourites reuse the storage parser, so exactly the same rules apply to a
   // restored list as to one written by the app itself. Custom foods are parsed
@@ -180,7 +202,7 @@ export function parseBackup(raw: string): BackupParseResult {
     favorites.length === 0 &&
     pricingProfiles.length === 0 &&
     customFoods.length === 0 &&
-    presets.length === 0
+    restaurants.length === 0
   ) {
     return { ok: false, error: 'nothing-usable' };
   }
@@ -195,7 +217,7 @@ export function parseBackup(raw: string): BackupParseResult {
       exportedAt,
       history,
       favorites,
-      configuration: { pricingProfiles, customFoods, presets },
+      configuration: { pricingProfiles, customFoods, restaurants },
     },
     summary: {
       skippedHistory: rawHistory.length - history.length,
@@ -203,7 +225,7 @@ export function parseBackup(raw: string): BackupParseResult {
         (Array.isArray(parsed.favorites) ? parsed.favorites.length : 0) - favorites.length,
       skippedPricingProfiles: rawPricingProfiles.length - pricingProfiles.length,
       skippedCustomFoods: rawCustomFoods.length - customFoods.length,
-      skippedPresets: rawPresets.length - presets.length,
+      skippedRestaurants: rawRestaurants.length + rawPresets.length - restaurants.length,
     },
   };
 }
