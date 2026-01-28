@@ -5,8 +5,9 @@ import { siteUrl } from '@/lib/site';
  * The routes worth indexing.
  *
  * Listed explicitly rather than crawled from the filesystem: `/share/<token>`
- * is unbounded and private, `/offline` only exists for the service worker, and
- * neither belongs in a sitemap. Everything here is a real destination a visitor
+ * and `/menu/<token>` are unbounded and private, `/restaurants/<id>` only
+ * exists on the device that saved it, `/offline` only exists for the service
+ * worker, and none of them belongs in a sitemap. Everything here is a real destination a visitor
  * could arrive at cold.
  */
 const ROUTES: ReadonlyArray<{ path: string; priority: number }> = [
