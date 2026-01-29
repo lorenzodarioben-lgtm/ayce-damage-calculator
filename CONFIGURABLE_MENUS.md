@@ -37,9 +37,14 @@ session setup, active pricing profile and any custom foods on the tab. Version
 1 links remain readable with the original built-in Australian menu context.
 
 The JSON backup at `/history/data` includes filed history, saved orders,
-pricing profiles, custom foods and restaurant presets. Restore always previews
+pricing profiles, custom foods and saved restaurants. Restore always previews
 the file first. Merge keeps the current device's records when IDs collide;
 replace is explicit and includes every locally stored category.
+
+The same contents can be exported password-encrypted instead. The file is
+sealed on the device with Web Crypto and carries only the non-secret
+cryptographic parameters alongside the ciphertext. The password is not stored
+anywhere and cannot be recovered.
 
 ## Data boundaries
 
