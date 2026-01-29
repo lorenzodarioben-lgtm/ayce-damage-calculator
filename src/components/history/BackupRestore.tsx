@@ -2,7 +2,8 @@
 
 import { useCallback, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Download, FileSpreadsheet, Upload } from 'lucide-react';
+import { ArrowLeft, Download, FileSpreadsheet, Lock, Upload } from 'lucide-react';
+import { VaultPasswordDialog } from '@/components/history/VaultPasswordDialog';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import {
@@ -18,6 +19,14 @@ import {
   type RestoreMode,
 } from '@/lib/backup';
 import { csvFilename, historyToCsv } from '@/lib/csv';
+import {
+  MAX_VAULT_BYTES,
+  VAULT_ERROR_MESSAGES,
+  decryptBackup,
+  encryptBackup,
+  isEncryptedBackup,
+  vaultFilename,
+} from '@/lib/encryptedBackup';
 import { loadCustomFoods, saveCustomFoods } from '@/lib/customFoods';
 import { loadFavorites, saveFavorites } from '@/lib/favorites';
 import { foodCatalogue } from '@/lib/foodCatalogue';
@@ -31,6 +40,12 @@ type Stage =
   | { kind: 'error'; message: string }
   | { kind: 'preview'; contents: BackupContents; summary: BackupSummary }
   | { kind: 'done'; message: string };
+
+/** What the password dialog is currently being asked for, if anything. */
+type PasswordPrompt =
+  | { kind: 'none' }
+  | { kind: 'encrypt' }
+  | { kind: 'decrypt'; raw: string; error: string | null };
 
 const BACK_LINK =
   '-ml-2 inline-flex min-h-11 items-center gap-1.5 rounded-[10px] px-2 text-xs font-semibold ' +
@@ -67,6 +82,7 @@ export function BackupRestore() {
   const fileInput = useRef<HTMLInputElement>(null);
   const [stage, setStage] = useState<Stage>({ kind: 'idle' });
   const [pendingReplace, setPendingReplace] = useState<BackupContents | null>(null);
+  const [prompt, setPrompt] = useState<PasswordPrompt>({ kind: 'none' });
   const [busy, setBusy] = useState(false);
 
   const handleExport = useCallback(async () => {
@@ -96,6 +112,46 @@ export function BackupRestore() {
     }
   }, []);
 
+  /**
+   * Builds the same payload the plain export writes, then wraps it.
+   *
+   * Encrypting the serialised backup rather than a second structure means the
+   * two exports are provably the same file with one of them sealed.
+   */
+  const handleEncryptedExport = useCallback(async (password: string) => {
+    setBusy(true);
+    try {
+      const now = new Date();
+      const customFoods = loadCustomFoods();
+      const backup = buildBackup(
+        await listSessions(),
+        loadFavorites(foodCatalogue(customFoods)),
+        now.toISOString(),
+        {
+          pricingProfiles: loadPricingProfiles(),
+          customFoods,
+          restaurants: loadRestaurants(),
+        },
+      );
+
+      const sealed = await encryptBackup(serialiseBackup(backup), password, now.toISOString());
+      if (!sealed.ok) {
+        setPrompt({ kind: 'none' });
+        setStage({ kind: 'error', message: VAULT_ERROR_MESSAGES[sealed.error] });
+        return;
+      }
+
+      download(sealed.file, 'application/json', vaultFilename(now));
+      setPrompt({ kind: 'none' });
+      setStage({
+        kind: 'done',
+        message: `Encrypted ${backup.history.length} sessions, ${backup.favorites.length} saved orders and ${configurationCount(backup)} menu settings. Keep the password safe — it cannot be recovered.`,
+      });
+    } finally {
+      setBusy(false);
+    }
+  }, []);
+
   const handleExportCsv = useCallback(async () => {
     setBusy(true);
     try {
@@ -113,19 +169,64 @@ export function BackupRestore() {
     }
   }, []);
 
-  const handleFile = useCallback(async (file: File) => {
-    if (file.size > MAX_BACKUP_BYTES) {
-      setStage({ kind: 'error', message: BACKUP_ERROR_MESSAGES['too-large'] });
-      return;
-    }
-
-    const parsed = parseBackup(await file.text());
+  /** Runs the ordinary validation, whether the bytes arrived plain or sealed. */
+  const previewPlainBackup = useCallback((raw: string) => {
+    const parsed = parseBackup(raw);
     if (!parsed.ok) {
       setStage({ kind: 'error', message: BACKUP_ERROR_MESSAGES[parsed.error] });
       return;
     }
     setStage({ kind: 'preview', contents: parsed.contents, summary: parsed.summary });
   }, []);
+
+  const handleFile = useCallback(
+    async (file: File) => {
+      if (file.size > MAX_VAULT_BYTES) {
+        setStage({ kind: 'error', message: BACKUP_ERROR_MESSAGES['too-large'] });
+        return;
+      }
+
+      const raw = await file.text();
+
+      // An encrypted file is recognised before the user is asked for anything.
+      if (isEncryptedBackup(raw)) {
+        setStage({ kind: 'idle' });
+        setPrompt({ kind: 'decrypt', raw, error: null });
+        return;
+      }
+      if (raw.length > MAX_BACKUP_BYTES) {
+        setStage({ kind: 'error', message: BACKUP_ERROR_MESSAGES['too-large'] });
+        return;
+      }
+      previewPlainBackup(raw);
+    },
+    [previewPlainBackup],
+  );
+
+  /**
+   * Opens a sealed file, then validates the result exactly like a plain one.
+   *
+   * Nothing is written at any point here: a failure to authenticate, or a
+   * decrypted payload that turns out not to be a backup, leaves the device
+   * untouched and the preview unopened.
+   */
+  const handleDecrypt = useCallback(
+    async (raw: string, password: string) => {
+      setBusy(true);
+      try {
+        const opened = await decryptBackup(raw, password);
+        if (!opened.ok) {
+          setPrompt({ kind: 'decrypt', raw, error: VAULT_ERROR_MESSAGES[opened.error] });
+          return;
+        }
+        setPrompt({ kind: 'none' });
+        previewPlainBackup(opened.plaintext);
+      } finally {
+        setBusy(false);
+      }
+    },
+    [previewPlainBackup],
+  );
 
   const applyRestore = useCallback(async (contents: BackupContents, mode: RestoreMode) => {
     setBusy(true);
@@ -194,6 +295,17 @@ export function BackupRestore() {
             <Download size={16} aria-hidden="true" />
             Download backup
           </Button>
+          {/* The same contents, sealed. Offered beside the plain export rather
+              than replacing it: an unencrypted file is still the easiest thing
+              to read back in five years. */}
+          <Button
+            variant="secondary"
+            onClick={() => setPrompt({ kind: 'encrypt' })}
+            disabled={busy}
+          >
+            <Lock size={16} aria-hidden="true" />
+            Download encrypted backup
+          </Button>
           {/* A second format, for a different job: the JSON file restores this
               app, the CSV takes the numbers somewhere else. */}
           <Button variant="secondary" onClick={() => void handleExportCsv()} disabled={busy}>
@@ -203,7 +315,10 @@ export function BackupRestore() {
         </div>
         <p className="mt-3 text-xs leading-relaxed text-cream-700">
           The spreadsheet is history only, one row per plate, and cannot be restored from. Saved
-          orders, menu settings and the ability to restore live in the JSON backup.
+          orders, menu settings and the ability to restore live in the JSON backup. The encrypted
+          backup holds exactly the same contents, sealed with a key this browser derives from your
+          password and then forgets — the password is stored nowhere, cannot be recovered, and the
+          file cannot be opened without it.
         </p>
       </section>
 
@@ -212,8 +327,9 @@ export function BackupRestore() {
           Restore
         </h2>
         <p className="mb-4 max-w-[56ch] text-sm leading-relaxed text-cream-300">
-          Choose a backup file. Nothing is written until you have seen what it contains and chosen
-          how to apply it.
+          Choose a backup file, plain or encrypted. An encrypted one asks for its password first.
+          Either way, nothing is written until you have seen what it contains and chosen how to
+          apply it.
         </p>
 
         <label htmlFor="backup-file" className="mb-1.5 block text-sm font-semibold text-cream-300">
@@ -299,6 +415,26 @@ export function BackupRestore() {
           </div>
         )}
       </section>
+
+      <VaultPasswordDialog
+        open={prompt.kind !== 'none'}
+        mode={prompt.kind === 'decrypt' ? 'decrypt' : 'encrypt'}
+        error={prompt.kind === 'decrypt' ? prompt.error : null}
+        busy={busy}
+        onSubmit={(password) => {
+          if (prompt.kind === 'encrypt') {
+            void handleEncryptedExport(password);
+          } else if (prompt.kind === 'decrypt') {
+            void handleDecrypt(prompt.raw, password);
+          }
+        }}
+        onCancel={() => {
+          setPrompt({ kind: 'none' });
+          if (fileInput.current) {
+            fileInput.current.value = '';
+          }
+        }}
+      />
 
       <ConfirmDialog
         open={pendingReplace !== null}

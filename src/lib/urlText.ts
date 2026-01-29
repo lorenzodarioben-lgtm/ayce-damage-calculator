@@ -34,3 +34,34 @@ export function decodeUrlText(value: string): string | null {
     return null;
   }
 }
+
+/**
+ * Standard base64 for binary, used by the encrypted-backup envelope.
+ *
+ * Kept alongside the URL-safe pair because they solve the same problem in two
+ * places, and separating them would make it easy to reach for the wrong one:
+ * a file's envelope wants ordinary base64, an address wants the URL-safe form.
+ */
+export function encodeBase64(bytes: Uint8Array): string {
+  let binary = '';
+  for (const byte of bytes) {
+    binary += String.fromCharCode(byte);
+  }
+  return btoa(binary);
+}
+
+/** Returns null for anything that is not base64 this module could have written. */
+export function decodeBase64(value: unknown): Uint8Array | null {
+  if (typeof value !== 'string' || value.length === 0) {
+    return null;
+  }
+  if (!/^[A-Za-z0-9+/]+={0,2}$/.test(value) || value.length % 4 !== 0) {
+    return null;
+  }
+  try {
+    const binary = atob(value);
+    return Uint8Array.from(binary, (character) => character.charCodeAt(0));
+  } catch {
+    return null;
+  }
+}
