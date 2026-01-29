@@ -19,6 +19,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
   between 15 and 300, with start, pause, resume and finish. Elapsed time is derived from recorded
   instants rather than a counter, so it survives reloads, route changes, a backgrounded tab and
   offline use.
+- **Damage Challenge sharing** (`/challenge/<token>`) — a stateless, versioned, validated link
+  carrying two completed meals, with the head-to-head recalculated by the app's own comparison
+  engine and its own generated Open Graph preview. No backend, no challenge database, no account.
+- **A wider comparison** — commendations gained, kept and not repeated, plus food diversity, added
+  to the existing comparison engine so the history page and a shared challenge stay identical.
 - **Stateless menu sharing** (`/menu/<token>`) — a versioned, bounded, validated link that carries
   a personal menu: the pricing assumptions, the diner's own foods and, optionally, a restaurant
   setup. The recipient sees a read-only preview, imports only on request, and nothing of theirs is
@@ -72,6 +77,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Privacy
 
+- A shared challenge carries two meals and their prices and nothing else: no diner names, roster
+  attribution, notes or ledger, and opening one writes nothing on the recipient's device.
 - A shared menu carries the menu and nothing else: no history, saved orders, diner names, notes or
   backups travel with it, and opening one writes nothing.
 - Events reference diners by the same opaque local identifier the roster already uses. No display

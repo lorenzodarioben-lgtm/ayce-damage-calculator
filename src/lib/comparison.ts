@@ -1,3 +1,4 @@
+import type { Achievement } from '@/lib/achievements';
 import { CATEGORY_META } from '@/lib/constants';
 import { resolveSavedSession, type ResolvedSavedSession } from '@/lib/history';
 import type { SavedMealSession } from '@/types/history';
@@ -47,11 +48,27 @@ export interface CategoryComparison {
   readonly delta: number;
 }
 
+/**
+ * What each side earned, and what moved between them.
+ *
+ * Kept as three explicit lists rather than a diff the caller has to work out,
+ * because "gained" and "lost" are the interesting halves and computing them
+ * twice invites two answers.
+ */
+export interface AchievementComparison {
+  readonly previous: readonly Achievement[];
+  readonly current: readonly Achievement[];
+  readonly gained: readonly Achievement[];
+  readonly kept: readonly Achievement[];
+  readonly lost: readonly Achievement[];
+}
+
 export interface SessionComparison {
   readonly previous: ResolvedSavedSession;
   readonly current: ResolvedSavedSession;
   readonly metrics: readonly MetricComparison[];
   readonly categories: readonly CategoryComparison[];
+  readonly achievements: AchievementComparison;
   readonly verdictChanged: boolean;
   /** A deterministic one-line reading of the recovery difference. */
   readonly summary: string;
@@ -99,6 +116,27 @@ function metric(
     relativeChange: relativeChange(safePrevious, safeCurrent, unit, comparable),
     comparable,
     ...(money ? { previousMoney: money.previous, currentMoney: money.current } : {}),
+  };
+}
+
+/** How many distinct cuts the meal touched, whatever the volume of each. */
+function foodDiversity(resolved: ResolvedSavedSession): number {
+  return new Set(resolved.report.lines.map((line) => line.food.id)).size;
+}
+
+function compareAchievements(
+  previous: ResolvedSavedSession,
+  current: ResolvedSavedSession,
+): AchievementComparison {
+  const before = new Set(previous.achievements.map((achievement) => achievement.id));
+  const after = new Set(current.achievements.map((achievement) => achievement.id));
+
+  return {
+    previous: previous.achievements,
+    current: current.achievements,
+    gained: current.achievements.filter((achievement) => !before.has(achievement.id)),
+    kept: current.achievements.filter((achievement) => before.has(achievement.id)),
+    lost: previous.achievements.filter((achievement) => !after.has(achievement.id)),
   };
 }
 
@@ -214,6 +252,14 @@ export function compareSessions(
       'count',
       'neutral',
     ),
+    metric(
+      'diversity',
+      'Distinct cuts',
+      foodDiversity(previous),
+      foodDiversity(current),
+      'count',
+      'diner',
+    ),
   ];
 
   const previousPlates = platesByCategory(previous);
@@ -240,6 +286,7 @@ export function compareSessions(
     current,
     metrics,
     categories,
+    achievements: compareAchievements(previous, current),
     verdictChanged: previous.verdict.id !== current.verdict.id,
     summary: summariseRecoveryShift(recovery?.delta ?? 0),
   };
