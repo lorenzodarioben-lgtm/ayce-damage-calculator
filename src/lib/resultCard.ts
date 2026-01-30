@@ -60,7 +60,16 @@ export function buildResultCardModel(
     ],
     money: [
       { label: 'Retail value', value: formatMoney(report.totalRetailValue), tone: 'cream' },
-      { label: 'Entry price', value: formatMoney(report.totalAdmission), tone: 'cream' },
+      {
+        // Named for what it is: with a voucher or a surcharge on the bill, the
+        // entry price is no longer the number this compares against.
+        label:
+          report.adjustmentCharges > 0 || report.adjustmentDiscounts > 0
+            ? 'Total paid'
+            : 'Entry price',
+        value: formatMoney(report.totalAdmission),
+        tone: 'cream',
+      },
     ],
     outcome: [
       {

@@ -26,14 +26,18 @@ export function TableBreakdown({
     report.lines.map((line) => line.food),
   );
   if (diners.length === 0) return null;
+  const hasAdjustments = diners.some((diner) => diner.adjustmentNet !== 0);
   return (
     <section aria-labelledby="table-breakdown-heading" className="panel overflow-x-auto p-4 sm:p-5">
       <h2 id="table-breakdown-heading" className="micro-label">
         Table breakdown
       </h2>
-      <p className="mt-1 text-xs text-cream-700">
+      <p className="mt-1 max-w-[70ch] text-xs leading-relaxed text-cream-700">
         Explicit plates are known ownership. Shared Table plates are estimated evenly across the
         roster.
+        {hasAdjustments
+          ? ' Charges and discounts follow the same rule: one named to a diner is theirs, and anything charged to the table is split evenly.'
+          : ''}
       </p>
       <table className="mt-4 w-full min-w-[580px] text-left text-sm">
         <thead className="text-xs text-cream-500">
@@ -45,7 +49,7 @@ export function TableBreakdown({
               Plates
             </th>
             <th scope="col" className="pb-2 pr-3">
-              Admission
+              {hasAdjustments ? 'Paid' : 'Admission'}
             </th>
             <th scope="col" className="pb-2 pr-3">
               Retail value
@@ -65,7 +69,16 @@ export function TableBreakdown({
                 {diner.diner.displayName}
               </th>
               <td className="py-3 pr-3">{formatPlates(diner.effectivePlates)}</td>
-              <td className="py-3 pr-3">{formatMoney(diner.admission, pricingProfile.money)}</td>
+              <td className="py-3 pr-3">
+                {formatMoney(diner.admission, pricingProfile.money)}
+                {diner.adjustmentNet !== 0 && (
+                  <span className="block text-xs text-cream-700">
+                    {formatMoney(diner.baseAdmission, pricingProfile.money)} entry{' '}
+                    {diner.adjustmentNet > 0 ? '+' : '−'}
+                    {formatMoney(Math.abs(diner.adjustmentNet), pricingProfile.money)}
+                  </span>
+                )}
+              </td>
               <td className="py-3 pr-3 text-ember-400">
                 {formatMoney(diner.retailValue, pricingProfile.money)}
               </td>

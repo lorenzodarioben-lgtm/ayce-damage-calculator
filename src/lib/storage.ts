@@ -8,6 +8,7 @@ import {
   isPlateSize,
   isQualityTier,
 } from '@/lib/constants';
+import { parseAdjustments } from '@/lib/adjustments';
 import { mealItemId, mergeMealItems } from '@/lib/mealItems';
 import { IDLE_LIFECYCLE, parseMealEvents, parseMealLifecycle } from '@/lib/mealEvents';
 import { parseMealDuration } from '@/lib/pacing';
@@ -32,11 +33,12 @@ export const STORAGE_KEY = 'ayce-damage-calculator';
  * 4 — the timestamped meal event ledger and lifecycle metadata.
  * 5 — the optional booked meal duration.
  * 6 — the local restaurant profile the meal was started from.
+ * 7 — bill adjustments: charges and discounts alongside admission.
  */
-export const STORAGE_VERSION = 6;
+export const STORAGE_VERSION = 7;
 
 /** Versions `parseStoredSession` can read, current one included. */
-export const SUPPORTED_STORAGE_VERSIONS = [1, 2, 3, 4, 5, 6] as const;
+export const SUPPORTED_STORAGE_VERSIONS = [1, 2, 3, 4, 5, 6, 7] as const;
 
 /**
  * A tab is small; a full evening's ledger is still only tens of kilobytes.
@@ -202,6 +204,12 @@ export function parseStoredSession(
     version >= 5 ? parseMealDuration(session.plannedDurationMinutes) : undefined;
   const linkedRestaurantId =
     version >= 6 && isRestaurantId(session.restaurantId) ? session.restaurantId : undefined;
+  /*
+   * A session written before version 7 has no adjustments, and an empty list is
+   * exactly what it means: the bill was the entry price. Such a tab settles to
+   * the same total it always did.
+   */
+  const adjustments = version >= 7 ? parseAdjustments(session.adjustments, diners) : [];
 
   return {
     restaurantName: sanitiseRestaurantName(session.restaurantName),
@@ -212,6 +220,7 @@ export function parseStoredSession(
       : DEFAULT_PRICING_PROFILE_ID,
     items,
     ...(diners.length > 0 ? { diners } : {}),
+    ...(adjustments.length > 0 ? { adjustments } : {}),
     ...(events.length > 0 ? { events } : {}),
     ...(lifecycle.status === 'idle' ? {} : { lifecycle }),
     ...(plannedDurationMinutes === undefined ? {} : { plannedDurationMinutes }),

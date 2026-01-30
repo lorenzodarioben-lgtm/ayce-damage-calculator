@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { INITIAL_SESSION, sessionReducer } from '@/hooks/useMealSession';
+import { MAX_BILL_ADJUSTMENTS } from '@/lib/constants';
 import { DEFAULT_PRICING_PROFILE_ID } from '@/lib/pricing';
 import { sharedQuantity } from '@/lib/diners';
 import type { MealSession } from '@/types/meal';
@@ -373,5 +374,129 @@ describe('the link between a meal and a saved restaurant', () => {
     });
 
     expect(applied.items).toEqual(withMeal.items);
+  });
+});
+
+describe('charges and discounts on the bill', () => {
+  const base = { ...INITIAL_SESSION, pricePerDiner: 50, dinerCount: 2 };
+  const voucher = { label: 'Voucher', amount: 20, kind: 'discount' as const };
+
+  it('adds one and leaves the meal alone', () => {
+    const next = sessionReducer(base, { type: 'add-adjustment', draft: voucher, id: 'adj-1' });
+
+    expect(next.adjustments).toEqual([
+      { id: 'adj-1', label: 'Voucher', amount: 20, kind: 'discount' },
+    ]);
+    expect(next.items).toBe(base.items);
+    expect(next.pricePerDiner).toBe(50);
+  });
+
+  it('refuses a draft that does not describe anything', () => {
+    for (const draft of [
+      { label: '   ', amount: 20, kind: 'discount' as const },
+      { label: 'Voucher', amount: 0, kind: 'discount' as const },
+      { label: 'Voucher', amount: Number.NaN, kind: 'discount' as const },
+    ]) {
+      expect(sessionReducer(base, { type: 'add-adjustment', draft, id: 'adj-1' })).toBe(base);
+    }
+  });
+
+  it('refuses an id it did not issue', () => {
+    expect(sessionReducer(base, { type: 'add-adjustment', draft: voucher, id: 'bad id' })).toBe(
+      base,
+    );
+  });
+
+  it('stops at the ceiling rather than growing without bound', () => {
+    let state = base;
+    for (let index = 0; index < MAX_BILL_ADJUSTMENTS + 5; index += 1) {
+      state = sessionReducer(state, {
+        type: 'add-adjustment',
+        draft: { label: 'Drinks', amount: 1, kind: 'charge' },
+        id: `adj-${index}`,
+      });
+    }
+    expect(state.adjustments).toHaveLength(MAX_BILL_ADJUSTMENTS);
+  });
+
+  it('drops the key entirely once the last one is removed', () => {
+    const added = sessionReducer(base, { type: 'add-adjustment', draft: voucher, id: 'adj-1' });
+    const removed = sessionReducer(added, { type: 'remove-adjustment', id: 'adj-1' });
+
+    // Back to exactly the shape a tab had before adjustments existed.
+    expect(removed).not.toHaveProperty('adjustments');
+  });
+
+  it('ignores a removal that names nothing', () => {
+    const added = sessionReducer(base, { type: 'add-adjustment', draft: voucher, id: 'adj-1' });
+    expect(sessionReducer(added, { type: 'remove-adjustment', id: 'adj-9' })).toBe(added);
+  });
+
+  it('clears them all, and does nothing when there are none', () => {
+    const added = sessionReducer(base, { type: 'add-adjustment', draft: voucher, id: 'adj-1' });
+    expect(sessionReducer(added, { type: 'clear-adjustments' })).not.toHaveProperty('adjustments');
+    expect(sessionReducer(base, { type: 'clear-adjustments' })).toBe(base);
+  });
+
+  it('scopes a charge to the table when it names someone who is not here', () => {
+    const next = sessionReducer(base, {
+      type: 'add-adjustment',
+      draft: { label: 'Drinks', amount: 9, kind: 'charge', dinerId: 'diner-ghost' },
+      id: 'adj-1',
+    });
+
+    expect(next.adjustments?.[0]?.dinerId).toBeUndefined();
+    expect(next.adjustments?.[0]?.amount).toBe(9);
+  });
+
+  it('keeps a charge scoped to someone who is', () => {
+    const withDiner = sessionReducer(base, {
+      type: 'add-diner',
+      diner: { id: 'diner-a', displayName: 'Ana' },
+    });
+    const next = sessionReducer(withDiner, {
+      type: 'add-adjustment',
+      draft: { label: 'Drinks', amount: 9, kind: 'charge', dinerId: 'diner-a' },
+      id: 'adj-1',
+    });
+
+    expect(next.adjustments?.[0]?.dinerId).toBe('diner-a');
+  });
+
+  it('hands the charges of a departing diner back to the table', () => {
+    let state: MealSession = sessionReducer(base, {
+      type: 'add-diner',
+      diner: { id: 'diner-a', displayName: 'Ana' },
+    });
+    state = sessionReducer(state, {
+      type: 'add-adjustment',
+      draft: { label: 'Drinks', amount: 9, kind: 'charge', dinerId: 'diner-a' },
+      id: 'adj-1',
+    });
+    state = sessionReducer(state, { type: 'remove-diner', id: 'diner-a' });
+
+    // The money was still spent; only the person it pointed at has gone.
+    expect(state.adjustments).toHaveLength(1);
+    expect(state.adjustments?.[0]?.dinerId).toBeUndefined();
+  });
+
+  it('does the same when the whole roster is cleared', () => {
+    let state: MealSession = sessionReducer(base, {
+      type: 'add-diner',
+      diner: { id: 'diner-a', displayName: 'Ana' },
+    });
+    state = sessionReducer(state, {
+      type: 'add-adjustment',
+      draft: { label: 'Drinks', amount: 9, kind: 'charge', dinerId: 'diner-a' },
+      id: 'adj-1',
+    });
+    state = sessionReducer(state, { type: 'clear-diners' });
+
+    expect(state.adjustments?.[0]?.dinerId).toBeUndefined();
+  });
+
+  it('clears them with the rest of the session', () => {
+    const added = sessionReducer(base, { type: 'add-adjustment', draft: voucher, id: 'adj-1' });
+    expect(sessionReducer(added, { type: 'reset' })).not.toHaveProperty('adjustments');
   });
 });

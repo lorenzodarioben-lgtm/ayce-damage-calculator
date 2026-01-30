@@ -12,6 +12,7 @@ import { findFoodInCatalogue, foodCatalogue } from '@/lib/foodCatalogue';
 import { DEFAULT_PRICING_PROFILE } from '@/lib/pricing';
 import { parseCustomPricingProfile } from '@/lib/pricingProfiles';
 import { MAX_CUSTOM_FOODS, parseCustomFood } from '@/lib/customFoods';
+import { parseAdjustments } from '@/lib/adjustments';
 import {
   packShareBody,
   shareEncodeFailure,
@@ -24,7 +25,15 @@ import {
 import { decodeUrlText } from '@/lib/urlText';
 import type { CustomFood } from '@/types/customFoods';
 import type { PricingProfile } from '@/types/pricing';
-import type { Diner, FoodItem, MealItem, MealSession, PlateSize, QualityTier } from '@/types/meal';
+import type {
+  BillAdjustment,
+  Diner,
+  FoodItem,
+  MealItem,
+  MealSession,
+  PlateSize,
+  QualityTier,
+} from '@/types/meal';
 
 /**
  * Encodes a completed meal into a URL path segment.
@@ -113,6 +122,12 @@ export interface SharePayload {
   readonly customFoods: readonly CustomFood[];
   readonly items: readonly MealItem[];
   readonly diners?: readonly Diner[];
+  /**
+   * What settled the bill. Carried because a recipient who cannot see the
+   * voucher would recompute a different recovery figure from the same plates,
+   * which is exactly the misreport the link exists to avoid.
+   */
+  readonly adjustments?: readonly BillAdjustment[];
 }
 
 export interface ShareContext {
@@ -165,6 +180,10 @@ export function encodeShareResult(
       id: diner.id,
       displayName: `Diner ${index + 1}`,
     })),
+    // Labels travel, because "Voucher" is what the money was; the diner they
+    // were charged to travels only as the same opaque id the roster already
+    // anonymises.
+    adjustments: session.adjustments?.length ? session.adjustments : undefined,
     items: session.items.slice(0, MAX_SHARE_ITEMS).map((item) => ({
       foodId: item.foodId,
       quality: item.quality,
@@ -386,6 +405,8 @@ function parseShareDocument(decoded: string): SharePayload | null {
         }))
         .filter((diner) => diner.id.length > 0)
     : [];
+  const adjustments = parseAdjustments(value.adjustments, diners);
+
   return {
     restaurantName: sanitiseRestaurantName(value.restaurantName),
     pricePerDiner: clampPricePerDiner(value.pricePerDiner),
@@ -394,6 +415,7 @@ function parseShareDocument(decoded: string): SharePayload | null {
     customFoods,
     items,
     ...(diners.length ? { diners } : {}),
+    ...(adjustments.length ? { adjustments } : {}),
   };
 }
 

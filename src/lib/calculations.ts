@@ -8,6 +8,13 @@ import {
   getPlateSizeMeta,
   getQualityMeta,
 } from '@/lib/constants';
+import {
+  adjustmentsForDiner,
+  settleTotal,
+  tableWideAdjustments,
+  totalAdjustments,
+  type AdjustmentTotals,
+} from '@/lib/adjustments';
 import { DEFAULT_PRICING_PROFILE, resolveFoodPricing } from '@/lib/pricing';
 import { findFoodInCatalogue } from '@/lib/foodCatalogue';
 import { sharedQuantity } from '@/lib/diners';
@@ -48,9 +55,16 @@ export function clampDinerCount(value: number): number {
   return Math.min(MAX_DINERS, Math.max(MIN_DINERS, Math.round(value)));
 }
 
-type AdmissionConfig = Pick<SessionConfig, 'pricePerDiner' | 'dinerCount'> &
+type AdmissionConfig = Pick<SessionConfig, 'pricePerDiner' | 'dinerCount' | 'adjustments'> &
   Pick<MealSession, 'diners'>;
 
+/**
+ * Entry price alone, before anything went on or came off the bill.
+ *
+ * Kept separate from the final total on purpose: the two answer different
+ * questions, and folding a card fee into "admission" would misreport what the
+ * restaurant actually charges to walk in.
+ */
 export function calculateAdmission(config: AdmissionConfig) {
   const defaultPrice = clampPricePerDiner(config.pricePerDiner);
   const dinerCount = clampDinerCount(config.dinerCount);
@@ -221,7 +235,15 @@ export function perDinerTotals(report: DamageReport): PerDinerTotals {
   };
 }
 
-/** Calculates an estimate per active roster member while preserving table totals. */
+/**
+ * Calculates an estimate per active roster member while preserving table totals.
+ *
+ * Adjustments follow the same rule the plates do. One named to a diner is
+ * theirs; anything charged to the table is divided evenly, which is a stated
+ * assumption rather than a measurement — the bill records a card fee, not who
+ * tapped the card. Per-diner totals therefore still sum to the table's, which
+ * is the property that makes them worth showing at all.
+ */
 export function calculateDinerTotals(
   items: readonly MealItem[],
   config: AdmissionConfig,
@@ -232,6 +254,8 @@ export function calculateDinerTotals(
   if (diners.length === 0) return [];
   const defaultAdmission = clampPricePerDiner(config.pricePerDiner);
   const sharedDivisor = diners.length;
+  const tableAdjustments = totalAdjustments(tableWideAdjustments(config.adjustments));
+  const sharedAdjustmentNet = safeRatio(tableAdjustments.net, sharedDivisor);
 
   return diners.map((diner) => {
     let attributedPlates = 0;
@@ -261,14 +285,23 @@ export function calculateDinerTotals(
         carbs: nutrition.carbs + line.nutrition.carbs * fraction,
       };
     }
-    const admission =
+    const baseAdmission =
       typeof diner.admissionPrice === 'number' && diner.admissionPrice > 0
         ? clampPricePerDiner(diner.admissionPrice)
         : defaultAdmission;
+    const own: AdjustmentTotals = totalAdjustments(
+      adjustmentsForDiner(config.adjustments, diner.id),
+    );
+    const adjustmentNet = own.net + sharedAdjustmentNet;
+    // Floored at zero for the same reason the table's total is: a share bigger
+    // than the entry price means this diner paid nothing, not less than nothing.
+    const admission = Math.max(0, baseAdmission + adjustmentNet);
     const effectivePlates = attributedPlates + sharedPlates;
     return {
       diner,
       admission,
+      baseAdmission,
+      adjustmentNet,
       attributedPlates,
       sharedPlates,
       effectivePlates,
@@ -281,6 +314,19 @@ export function calculateDinerTotals(
   });
 }
 
+/**
+ * What the table paid, and how it got there.
+ *
+ * A session with no adjustments settles to exactly its base admission, which is
+ * what keeps every meal recorded before adjustments existed calculating
+ * byte-for-byte as it always did.
+ */
+export function calculateBillTotals(config: AdmissionConfig) {
+  const baseAdmission = calculateAdmission(config);
+  const adjustments = totalAdjustments(config.adjustments);
+  return { baseAdmission, adjustments, totalPaid: settleTotal(baseAdmission, adjustments) };
+}
+
 export function buildDamageReport(
   items: readonly MealItem[],
   config: AdmissionConfig,
@@ -289,7 +335,7 @@ export function buildDamageReport(
 ): DamageReport {
   const totals = calculateSessionTotals(items, pricingProfile, foods);
   const dinerCount = clampDinerCount(config.dinerCount);
-  const totalAdmission = calculateAdmission(config);
+  const { baseAdmission, adjustments, totalPaid: totalAdmission } = calculateBillTotals(config);
 
   const retailValueDifference = totals.totalRetailValue - totalAdmission;
   const retailRecoveryPercent = safeRatio(totals.totalRetailValue, totalAdmission) * 100;
@@ -304,6 +350,10 @@ export function buildDamageReport(
   return {
     ...totals,
     dinerCount,
+    baseAdmission,
+    adjustmentCharges: adjustments.charges,
+    adjustmentDiscounts: adjustments.discounts,
+    adjustmentNet: adjustments.net,
     totalAdmission,
     retailValueDifference,
     retailRecoveryPercent,

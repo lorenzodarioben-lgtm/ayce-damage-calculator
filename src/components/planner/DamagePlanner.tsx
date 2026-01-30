@@ -9,7 +9,7 @@ import { StatusToast } from '@/components/ui/StatusToast';
 import { useCustomFoods } from '@/hooks/useCustomFoods';
 import { usePricingProfiles } from '@/hooks/usePricingProfiles';
 import { useStatusMessage } from '@/hooks/useStatusMessage';
-import { clampDinerCount, clampPricePerDiner } from '@/lib/calculations';
+import { calculateBillTotals, clampDinerCount, clampPricePerDiner } from '@/lib/calculations';
 import { cn } from '@/lib/cn';
 import {
   CATEGORY_META,
@@ -45,7 +45,7 @@ import {
 import { resolvePricingProfile } from '@/lib/pricingProfiles';
 import { mealItemId } from '@/lib/mealItems';
 import { loadSession, saveSession } from '@/lib/storage';
-import type { PlateSize, QualityTier } from '@/types/meal';
+import type { BillAdjustment, PlateSize, QualityTier } from '@/types/meal';
 
 const CHIP =
   'min-h-11 cursor-pointer rounded-[10px] border px-3 text-xs font-semibold uppercase ' +
@@ -86,6 +86,15 @@ export function DamagePlanner() {
   );
   const [maxPerItem, setMaxPerItem] = useState(MAX_PLAN_QUANTITY_PER_ITEM);
   const [locked, setLocked] = useState<readonly PlanLine[]>([]);
+  /**
+   * Carried from the open tab, never edited here.
+   *
+   * A voucher or a surcharge changes the number a plan has to reach, so
+   * planning against the entry price alone would aim at the wrong target. The
+   * planner still writes nothing back, so this is a reading of the tab rather
+   * than a second place to edit it.
+   */
+  const [adjustments, setAdjustments] = useState<readonly BillAdjustment[]>([]);
   const [result, setResult] = useState<PlanResult | null>(null);
   const [applyOpen, setApplyOpen] = useState(false);
   const [status, announce] = useStatusMessage();
@@ -110,6 +119,7 @@ export function DamagePlanner() {
       setAdmissionPrice(session.pricePerDiner);
       setDinerCount(session.dinerCount);
       setProfileId(session.pricingProfileId);
+      setAdjustments(session.adjustments ?? []);
     }
   }
 
@@ -118,7 +128,12 @@ export function DamagePlanner() {
     [pricingProfiles.profiles, profileId],
   );
 
-  const admission = clampPricePerDiner(admissionPrice) * clampDinerCount(dinerCount);
+  const bill = calculateBillTotals({
+    pricePerDiner: admissionPrice,
+    dinerCount,
+    ...(adjustments.length ? { adjustments } : {}),
+  });
+  const admission = bill.totalPaid;
 
   const included = useMemo(
     () => catalogue.filter((food) => !excluded.includes(food.id)).map((food) => food.id),
@@ -198,6 +213,9 @@ export function DamagePlanner() {
       pricePerDiner: clampPricePerDiner(admissionPrice),
       dinerCount: clampDinerCount(dinerCount),
       pricingProfileId: profile.id,
+      // Carried back because they came from the tab in the first place, and
+      // the plan was measured against the total they produce.
+      ...(adjustments.length ? { adjustments } : {}),
       items: result.lines.map((line) => ({
         id: mealItemId(line),
         foodId: line.foodId,
@@ -208,7 +226,7 @@ export function DamagePlanner() {
     });
     setApplyOpen(false);
     announce('Plan loaded into the calculator as a meal.');
-  }, [admissionPrice, announce, dinerCount, profile.id, result]);
+  }, [adjustments, admissionPrice, announce, dinerCount, profile.id, result]);
 
   const lockedFor = (foodId: string) => locked.find((line) => line.foodId === foodId);
 
@@ -248,6 +266,13 @@ export function DamagePlanner() {
                 onBlur={() => setAdmissionPrice((value) => clampPricePerDiner(value))}
                 className="h-12 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-base text-cream-50 focus:border-ember-600"
               />
+              {adjustments.length > 0 && (
+                <p className="tabular mt-1.5 text-xs text-cream-700">
+                  Planning against {formatMoney(admission, profile.money)}, which is your open
+                  tab&rsquo;s {formatMoney(bill.baseAdmission, profile.money)} admission after{' '}
+                  {adjustments.length} {adjustments.length === 1 ? 'adjustment' : 'adjustments'}.
+                </p>
+              )}
             </div>
 
             <div>

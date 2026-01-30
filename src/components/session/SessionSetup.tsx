@@ -14,9 +14,11 @@ import { RestaurantPresets } from '@/components/session/RestaurantPresets';
 import { PricingProfileManager } from '@/components/session/PricingProfileManager';
 import { CustomFoodManager } from '@/components/session/CustomFoodManager';
 import { TableRoster } from '@/components/session/TableRoster';
+import { BillAdjustments } from '@/components/session/BillAdjustments';
 import { usePricingProfile } from '@/components/session/PricingContext';
 import { formatMoney } from '@/lib/formatting';
 import type { MealSession, SessionConfig } from '@/types/meal';
+import type { AdjustmentDraft } from '@/lib/adjustments';
 import type { CustomFood } from '@/types/customFoods';
 import type { PricingProfile, PricingProfileId } from '@/types/pricing';
 import type { RegularDiner } from '@/lib/regularDiners';
@@ -24,6 +26,9 @@ import type { Diner } from '@/types/meal';
 
 interface SessionSetupProps {
   session: MealSession;
+  /** Entry price alone, before charges and discounts. */
+  baseAdmission: number;
+  /** What the table pays once the bill has settled. */
   totalAdmission: number;
   onRestaurantNameChange: (value: string) => void;
   onPricePerDinerChange: (value: number) => void;
@@ -44,11 +49,15 @@ interface SessionSetupProps {
   onMoveDiner: (id: string, direction: -1 | 1) => void;
   onClearDiners: () => void;
   onSaveRegularDiner: (diner: RegularDiner) => void;
+  onAddAdjustment: (draft: AdjustmentDraft, id: string) => void;
+  onRemoveAdjustment: (id: string) => void;
+  onClearAdjustments: () => void;
   onStatus: (message: string) => void;
 }
 
 export function SessionSetup({
   session,
+  baseAdmission,
   totalAdmission,
   onRestaurantNameChange,
   onPricePerDinerChange,
@@ -69,6 +78,9 @@ export function SessionSetup({
   onMoveDiner,
   onClearDiners,
   onSaveRegularDiner,
+  onAddAdjustment,
+  onRemoveAdjustment,
+  onClearAdjustments,
   onStatus,
 }: SessionSetupProps) {
   const pricingProfile = usePricingProfile();
@@ -240,13 +252,27 @@ export function SessionSetup({
         onStatus={onStatus}
       />
 
+      <BillAdjustments
+        session={session}
+        baseAdmission={baseAdmission}
+        totalPaid={totalAdmission}
+        onAdd={onAddAdjustment}
+        onRemove={onRemoveAdjustment}
+        onClear={onClearAdjustments}
+        onStatus={onStatus}
+      />
+
       <div className="mt-4 flex flex-wrap items-end justify-between gap-2 rounded-[10px] border border-line-soft bg-ash-900 px-4 py-3">
         <div>
-          <p className="micro-label">Total entry</p>
+          <p className="micro-label">
+            {session.adjustments?.length ? 'Total paid' : 'Total entry'}
+          </p>
           <p className="tabular text-xs text-cream-500">
-            {session.diners?.some((diner) => diner.admissionPrice !== undefined)
-              ? 'Individual diner prices included.'
-              : `${formatMoney(session.pricePerDiner, pricingProfile.money)} per person × ${session.dinerCount} ${session.dinerCount === 1 ? 'diner' : 'diners'}`}
+            {session.adjustments?.length
+              ? `${formatMoney(baseAdmission, pricingProfile.money)} entry, then ${session.adjustments.length} ${session.adjustments.length === 1 ? 'adjustment' : 'adjustments'}`
+              : session.diners?.some((diner) => diner.admissionPrice !== undefined)
+                ? 'Individual diner prices included.'
+                : `${formatMoney(session.pricePerDiner, pricingProfile.money)} per person × ${session.dinerCount} ${session.dinerCount === 1 ? 'diner' : 'diners'}`}
           </p>
         </div>
         <p className="tabular display-type text-3xl text-ember-400">
