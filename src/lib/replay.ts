@@ -1,5 +1,6 @@
 import { calculateAdmission, calculateLineItem } from '@/lib/calculations';
 import { findFoodInCatalogue, foodCatalogue } from '@/lib/foodCatalogue';
+import { normaliseConsumedQuantity } from '@/lib/consumption';
 import { compareMealEvents } from '@/lib/mealEvents';
 import { mealItemId } from '@/lib/mealItems';
 import { DEFAULT_PRICING_PROFILE } from '@/lib/pricing';
@@ -91,6 +92,8 @@ function lineKey(line: MealEventLine): string {
 interface ReplayLine {
   readonly line: MealEventLine;
   quantity: number;
+  /** Undefined until someone said otherwise, meaning the line went clean. */
+  consumedQuantity: number | undefined;
   allocations: readonly DinerAllocation[];
 }
 
@@ -106,6 +109,7 @@ function applyEvent(lines: Map<string, ReplayLine>, event: MealEvent): void {
   if (
     event.type !== 'plates-added' &&
     event.type !== 'plates-reduced' &&
+    event.type !== 'consumption-changed' &&
     event.type !== 'line-removed' &&
     event.type !== 'line-restored' &&
     event.type !== 'allocation-changed'
@@ -114,7 +118,12 @@ function applyEvent(lines: Map<string, ReplayLine>, event: MealEvent): void {
   }
 
   const key = lineKey(event.line);
-  const existing = lines.get(key) ?? { line: event.line, quantity: 0, allocations: [] };
+  const existing = lines.get(key) ?? {
+    line: event.line,
+    quantity: 0,
+    consumedQuantity: undefined,
+    allocations: [],
+  };
 
   switch (event.type) {
     case 'plates-added': {
@@ -135,17 +144,29 @@ function applyEvent(lines: Map<string, ReplayLine>, event: MealEvent): void {
     case 'plates-reduced':
       existing.quantity = Math.max(0, existing.quantity - event.quantity);
       break;
+    case 'consumption-changed':
+      existing.consumedQuantity = event.consumedQuantity;
+      break;
     case 'line-removed':
       existing.quantity = 0;
+      existing.consumedQuantity = undefined;
       existing.allocations = [];
       break;
     case 'line-restored':
       existing.quantity = event.quantity;
+      existing.consumedQuantity = undefined;
       break;
     case 'allocation-changed':
       existing.allocations = event.allocations;
       break;
   }
+
+  // Nor can what was eaten exceed what is on the line — reducing an order past
+  // the recorded consumption brings the consumption down with it.
+  existing.consumedQuantity = normaliseConsumedQuantity(
+    existing.consumedQuantity,
+    existing.quantity,
+  );
 
   // Attribution can never exceed the plates that are actually on the line.
   let budget = existing.quantity;
@@ -170,6 +191,9 @@ function toMealItems(lines: Map<string, ReplayLine>): readonly MealItem[] {
         quality: entry.line.quality,
         plateSize: entry.line.plateSize,
         quantity: entry.quantity,
+        ...(entry.consumedQuantity === undefined
+          ? {}
+          : { consumedQuantity: entry.consumedQuantity }),
         ...(entry.allocations.length ? { allocations: entry.allocations } : {}),
       });
     }

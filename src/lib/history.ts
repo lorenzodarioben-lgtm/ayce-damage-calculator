@@ -15,6 +15,7 @@ import {
   isQualityTier,
 } from '@/lib/constants';
 import { parseAdjustments } from '@/lib/adjustments';
+import { consumedQuantity, normaliseConsumedQuantity } from '@/lib/consumption';
 import { sanitiseRestaurantName } from '@/lib/storage';
 import { isIsoTimestamp } from '@/lib/datetime';
 import { findFoodInCatalogue, foodCatalogue } from '@/lib/foodCatalogue';
@@ -58,11 +59,12 @@ import type { PricingProfile } from '@/types/pricing';
  * 8 — records retain the booked meal duration.
  * 9 — records retain the local restaurant profile the visit belongs to.
  * 10 — records retain the bill adjustments that settled the final total.
+ * 11 — records retain how much of each line was actually eaten.
  */
-export const SAVED_SESSION_VERSION = 10;
+export const SAVED_SESSION_VERSION = 11;
 
 /** Versions `parseSavedSession` knows how to read, current one included. */
-export const SUPPORTED_SESSION_VERSIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
+export const SUPPORTED_SESSION_VERSIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] as const;
 
 /**
  * The first schema that could carry a timeline.
@@ -109,7 +111,10 @@ function finiteOrNull(value: unknown): number | null {
  */
 export function fingerprintSession(session: MealSession): string {
   const items = [...session.items]
-    .map((item) => `${item.foodId}:${item.quality}:${item.plateSize}:${item.quantity}`)
+    .map(
+      (item) =>
+        `${item.foodId}:${item.quality}:${item.plateSize}:${item.quantity}:${consumedQuantity(item)}`,
+    )
     .sort()
     .join('|');
 
@@ -216,6 +221,7 @@ function parseItem(
   value: unknown,
   foods: readonly FoodItem[],
   diners: readonly Diner[],
+  version: number,
 ): MealItem | null {
   if (!isRecord(value)) {
     return null;
@@ -234,12 +240,17 @@ function parseItem(
   }
 
   const safeQuantity = Math.min(MAX_LINE_QUANTITY, Math.max(MIN_QUANTITY, Math.floor(rawQuantity)));
+  // A record filed before version 11 recorded no consumption, which means the
+  // plate went clean — the figures it was filed with say exactly that.
+  const consumed =
+    version >= 11 ? normaliseConsumedQuantity(value.consumedQuantity, safeQuantity) : undefined;
   const base = {
     id: mealItemId({ foodId, quality, plateSize }),
     foodId,
     quality,
     plateSize,
     quantity: safeQuantity,
+    ...(consumed === undefined ? {} : { consumedQuantity: consumed }),
   };
   // Ownership is reconciled against the record's own roster, so a filed table
   // breakdown reads exactly as it did when the meal was recorded.
@@ -375,7 +386,7 @@ export function parseSavedSession(value: unknown): SavedMealSession | null {
   const rawItems = Array.isArray(value.items) ? value.items : [];
   const items = mergeMealItems(
     rawItems
-      .map((item) => parseItem(item, foods, diners))
+      .map((item) => parseItem(item, foods, diners, version))
       .filter((item): item is MealItem => item !== null),
   ).map((item) => reconcileItemAllocations(item, diners));
 

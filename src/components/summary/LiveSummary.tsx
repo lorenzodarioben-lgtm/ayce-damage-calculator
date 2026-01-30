@@ -12,6 +12,7 @@ interface LiveSummaryProps {
   report: DamageReport;
   onIncrement: (id: string) => void;
   onDecrement: (id: string) => void;
+  onConsumptionChange: (id: string, consumed: number) => void;
   onRemove: (id: string) => void;
   onCalculate: () => void;
   onReset: () => void;
@@ -21,6 +22,7 @@ export function LiveSummary({
   report,
   onIncrement,
   onDecrement,
+  onConsumptionChange,
   onRemove,
   onCalculate,
   onReset,
@@ -71,6 +73,7 @@ export function LiveSummary({
           lines={report.lines}
           onIncrement={onIncrement}
           onDecrement={onDecrement}
+          onConsumptionChange={onConsumptionChange}
           onRemove={onRemove}
         />
       </div>

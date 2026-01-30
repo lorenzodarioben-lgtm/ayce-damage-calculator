@@ -1,6 +1,7 @@
 'use client';
 
 import { getPlateSizeMeta, getQualityMeta } from '@/lib/constants';
+import { formatPlateQuantity } from '@/lib/consumption';
 import { formatMoney, formatPlates, formatWeight } from '@/lib/formatting';
 import { usePricingProfile } from '@/components/session/PricingContext';
 import type { LineItemTotals } from '@/types/meal';
@@ -52,6 +53,7 @@ export function MealBreakdown({
               </p>
               <p className="tabular mt-0.5 text-xs text-cream-700">
                 {formatPlates(line.plates)} · {formatWeight(line.weightG)}
+                {line.uneatenPlates > 0 && <> · {formatPlateQuantity(line.uneatenPlates)} left</>}
               </p>
             </div>
             <p className="tabular shrink-0 text-sm font-bold text-ember-400">

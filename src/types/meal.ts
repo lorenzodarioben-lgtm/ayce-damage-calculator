@@ -55,7 +55,16 @@ export interface MealItem {
   readonly foodId: string;
   readonly quality: QualityTier;
   readonly plateSize: PlateSize;
+  /** Plates that reached the table. Always a whole number. */
   readonly quantity: number;
+  /**
+   * How much of this line was actually eaten, in quarter plates.
+   *
+   * Omitted means all of it, which is both the default for ordinary logging and
+   * the truth about every session recorded before consumption was tracked.
+   * Never negative and never greater than `quantity`.
+   */
+  readonly consumedQuantity?: number;
   /**
    * Known ownership within this canonical line. Omitted means the whole line
    * remains shared-table food, preserving every session recorded before Table
@@ -150,22 +159,53 @@ export interface Nutrition {
 export interface LineItemTotals {
   readonly item: MealItem;
   readonly food: FoodItem;
+  /** Plates that reached the table. */
   readonly plates: number;
+  /** Plates that were eaten. Equal to `plates` unless some was left. */
+  readonly consumedPlates: number;
+  /** Plates that were left. Zero unless some was. */
+  readonly uneatenPlates: number;
+  /** Weight eaten. */
   readonly weightG: number;
   readonly weightKg: number;
+  /** Weight that reached the table, eaten or not. */
+  readonly orderedWeightG: number;
+  /** Retail value of what was eaten. */
   readonly retailValue: number;
+  /** Retail value of everything that reached the table. */
+  readonly orderedRetailValue: number;
+  /**
+   * What the restaurant may have spent on the raw ingredient.
+   *
+   * Measured against what reached the table rather than what was eaten,
+   * because the restaurant's outlay does not shrink when a plate goes back.
+   */
   readonly restaurantCost: number;
+  /** Nutrition of what was eaten. */
   readonly nutrition: Nutrition;
 }
 
 export interface SessionTotals {
   readonly lines: readonly LineItemTotals[];
+  /** Plates that reached the table. */
   readonly totalPlates: number;
+  /** Plates that were eaten. Equal to `totalPlates` unless some was left. */
+  readonly totalConsumedPlates: number;
+  /** Plates that were left. Zero unless some were. */
+  readonly totalUneatenPlates: number;
+  /** Weight eaten. */
   readonly totalWeightG: number;
   readonly totalWeightKg: number;
   readonly totalWeightLb: number;
+  /** Weight that reached the table, eaten or not. */
+  readonly totalOrderedWeightG: number;
+  readonly totalOrderedWeightKg: number;
+  /** Retail value of what was eaten, and the figure recovery is measured on. */
   readonly totalRetailValue: number;
+  /** Retail value of everything that reached the table. */
+  readonly totalOrderedRetailValue: number;
   readonly totalRestaurantCost: number;
+  /** Nutrition of what was eaten. */
   readonly nutrition: Nutrition;
 }
 
@@ -215,6 +255,8 @@ export interface DinerDamageTotals {
   readonly attributedPlates: number;
   readonly sharedPlates: number;
   readonly effectivePlates: number;
+  /** This diner's share of what was eaten, in plates. */
+  readonly consumedPlates: number;
   readonly weightG: number;
   readonly retailValue: number;
   readonly restaurantCost: number;
