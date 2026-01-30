@@ -35,6 +35,32 @@ export function decodeUrlText(value: string): string | null {
   }
 }
 
+/** URL-safe base64 over raw bytes, for the compressed share-token bodies. */
+export function encodeUrlBytes(bytes: Uint8Array): string {
+  let binary = '';
+  for (const byte of bytes) {
+    binary += String.fromCharCode(byte);
+  }
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+/** Returns null for anything outside the URL-safe alphabet, and never throws. */
+export function decodeUrlBytes(value: string): Uint8Array | null {
+  if (value.length === 0) {
+    return new Uint8Array(0);
+  }
+  if (!/^[A-Za-z0-9\-_]+$/.test(value)) {
+    return null;
+  }
+  try {
+    const padded = value.replace(/-/g, '+').replace(/_/g, '/');
+    const binary = atob(padded.padEnd(Math.ceil(padded.length / 4) * 4, '='));
+    return Uint8Array.from(binary, (character) => character.charCodeAt(0));
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Standard base64 for binary, used by the encrypted-backup envelope.
  *

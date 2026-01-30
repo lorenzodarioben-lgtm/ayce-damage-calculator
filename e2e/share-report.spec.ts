@@ -8,6 +8,7 @@ import {
   setRestaurantName,
   tab,
 } from './helpers';
+import { SHARE_TOKEN_VERSION } from '../src/lib/shareLink';
 
 /** Copies the share link from the report and reads it back out of the clipboard. */
 async function copyShareLink(page: Page): Promise<string> {
@@ -41,7 +42,7 @@ test.describe('Sharing a report', () => {
     await calculateDamage(page);
 
     const link = await copyShareLink(page);
-    expect(link).toContain('/share/2.');
+    expect(link).toContain(`/share/${SHARE_TOKEN_VERSION}.`);
 
     const recipientPage = await openAsRecipient(browser, link);
 
