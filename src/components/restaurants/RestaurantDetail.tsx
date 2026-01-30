@@ -38,12 +38,12 @@ const BACK_LINK =
 export function RestaurantDetail({ id }: { id: string }) {
   const router = useRouter();
   const { restaurants, hydrated, remove } = useRestaurants();
-  const { records, status } = useMealHistory();
+  const { records, status, applyWritten } = useMealHistory();
   const [status_, announce] = useStatusMessage();
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [startOpen, setStartOpen] = useState(false);
   const [linkOpen, setLinkOpen] = useState(false);
-  const [linked, setLinked] = useState(0);
+  const [linking, setLinking] = useState(false);
 
   const profile = restaurants.find((entry) => entry.id === id);
 
@@ -83,20 +83,39 @@ export function RestaurantDetail({ id }: { id: string }) {
     [profile, records],
   );
 
+  /**
+   * Records the candidates as visits here, and only then says so.
+   *
+   * The dialog stays open and inert until IndexedDB has committed, because
+   * every part of this screen is a fold over the same records: announcing the
+   * link, closing the workflow or re-reading the summary before the transaction
+   * lands would report a change that a reload could still take away. On a
+   * refused write nothing local moves at all, so the candidates stay exactly
+   * where they were, still offered.
+   */
   const linkVisits = useCallback(async () => {
-    if (!profile) {
+    if (!profile || linking || linkCandidates.length === 0) {
       return;
     }
     const updated = linkCandidates.map((record) => ({ ...record, restaurantId: profile.id }));
-    setLinkOpen(false);
+    setLinking(true);
     const written = await putSessions(updated);
-    setLinked((count) => count + (written ? updated.length : 0));
+    setLinking(false);
+    setLinkOpen(false);
+
+    if (!written) {
+      announce('Those visits could not be linked — this device refused the write.');
+      return;
+    }
+
+    // Safe to fold in now: these are the rows the repository just accepted, so
+    // the summary, the recent visits and the candidate list all recompute from
+    // one set of records that genuinely exists on disk.
+    applyWritten(updated);
     announce(
-      written
-        ? `${updated.length} ${updated.length === 1 ? 'visit' : 'visits'} linked to ${profile.name}.`
-        : 'Those visits could not be linked on this device.',
+      `${updated.length} ${updated.length === 1 ? 'visit' : 'visits'} linked to ${profile.name}.`,
     );
-  }, [announce, linkCandidates, profile]);
+  }, [announce, applyWritten, linkCandidates, linking, profile]);
 
   if (!hydrated || status === 'loading') {
     return (
@@ -269,13 +288,6 @@ export function RestaurantDetail({ id }: { id: string }) {
         </section>
       )}
 
-      {linked > 0 && (
-        <p role="status" className="text-xs text-cream-700">
-          {linked} {linked === 1 ? 'visit is' : 'visits are'} now linked. Reload the page to see
-          them counted.
-        </p>
-      )}
-
       <ConfirmDialog
         open={startOpen}
         title="Replace the meal in progress?"
@@ -309,10 +321,17 @@ export function RestaurantDetail({ id }: { id: string }) {
         body={`This records ${linkCandidates.length} filed ${linkCandidates.length === 1 ? 'meal' : 'meals'} as visits to ${profile.name}. The meals themselves are unchanged — only the place they are counted under.`}
         confirmLabel="Link them"
         cancelLabel="Leave them unlinked"
+        busy={linking}
+        busyLabel="Linking…"
+        busyMessage="Writing the link to this device…"
         onConfirm={() => {
           void linkVisits();
         }}
-        onCancel={() => setLinkOpen(false)}
+        onCancel={() => {
+          if (!linking) {
+            setLinkOpen(false);
+          }
+        }}
       />
 
       <StatusToast message={status_} />

@@ -13,6 +13,7 @@ import {
   deleteSession,
   getSession,
   listSessions,
+  putSessions,
   resetHistoryConnection,
   saveSession,
 } from '@/lib/historyRepository';
@@ -158,6 +159,50 @@ describe('Duplicate handling', () => {
     await saveSession(record('second', '2026-08-16T12:05:00.000Z', { dinerCount: 4 }));
 
     expect(await listSessions()).toHaveLength(2);
+  });
+});
+
+describe('Writing records verbatim', () => {
+  it('reports success only once the transaction has committed', async () => {
+    const filed = record('a', '2026-08-16T12:00:00.000Z');
+    await saveSession(filed);
+
+    const written = await putSessions([{ ...filed, restaurantId: 'friday-kbbq' }]);
+
+    // The resolved promise is the whole contract callers rely on: by the time
+    // it is true, a reload can already read the link back.
+    expect(written).toBe(true);
+    expect((await getSession('a'))?.restaurantId).toBe('friday-kbbq');
+  });
+
+  it('applies every record in the batch or none of them', async () => {
+    await saveSession(record('a', '2026-08-16T12:00:00.000Z'));
+    await saveSession(record('b', '2026-08-16T12:30:00.000Z', { dinerCount: 2 }));
+
+    const stored = await listSessions();
+    await putSessions(stored.map((entry) => ({ ...entry, restaurantId: 'friday-kbbq' })));
+
+    expect((await listSessions()).map((entry) => entry.restaurantId)).toEqual([
+      'friday-kbbq',
+      'friday-kbbq',
+    ]);
+  });
+
+  it('skips the dedupe pass, so identical records keep their own rows', async () => {
+    const first = record('a', '2026-08-16T12:00:00.000Z');
+    const twin = { ...first, id: 'b' };
+
+    expect(await putSessions([first, twin])).toBe(true);
+    expect((await listSessions()).map((entry) => entry.id)).toEqual(['b', 'a']);
+  });
+
+  it('writes nothing and says so when storage is unavailable', async () => {
+    // @ts-expect-error deliberately removing the API the way a locked-down
+    // browser would.
+    delete globalThis.indexedDB;
+    resetHistoryConnection();
+
+    expect(await putSessions([record('a', '2026-08-16T12:00:00.000Z')])).toBe(false);
   });
 });
 
