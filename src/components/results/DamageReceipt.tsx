@@ -124,8 +124,28 @@ export function DamageReceipt({
             label="EST. RETAIL VALUE"
             value={formatMoney(report.totalRetailValue, pricingProfile.money)}
           />
+          {(report.adjustmentCharges > 0 || report.adjustmentDiscounts > 0) && (
+            <>
+              <Row
+                label="ENTRY PRICE"
+                value={formatMoney(report.baseAdmission, pricingProfile.money)}
+              />
+              {report.adjustmentCharges > 0 && (
+                <Row
+                  label="CHARGES"
+                  value={`+${formatMoney(report.adjustmentCharges, pricingProfile.money)}`}
+                />
+              )}
+              {report.adjustmentDiscounts > 0 && (
+                <Row
+                  label="DISCOUNTS"
+                  value={`-${formatMoney(report.adjustmentDiscounts, pricingProfile.money)}`}
+                />
+              )}
+            </>
+          )}
           <Row
-            label="ADMISSION PAID"
+            label="TOTAL PAID"
             value={formatMoney(report.totalAdmission, pricingProfile.money)}
           />
           <Row

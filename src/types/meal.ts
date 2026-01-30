@@ -78,10 +78,36 @@ export interface DinerAllocation {
   readonly quantity: number;
 }
 
+/** Whether a bill adjustment adds to the total or comes off it. */
+export type AdjustmentKind = 'charge' | 'discount';
+
+/**
+ * Something the bill picked up beyond admission.
+ *
+ * The amount is always positive; `kind` carries the direction, so a stored or
+ * shared figure can never be a sign away from meaning its own opposite.
+ */
+export interface BillAdjustment {
+  readonly id: string;
+  readonly label: string;
+  readonly amount: number;
+  readonly kind: AdjustmentKind;
+  /**
+   * The one diner this belongs to. Omitted means the whole table, which is the
+   * default and the only possibility when Table Mode is not in use.
+   */
+  readonly dinerId?: string;
+}
+
 export interface SessionConfig {
   readonly restaurantName: string;
   readonly pricePerDiner: number;
   readonly dinerCount: number;
+  /**
+   * What went on or came off the bill. Optional so a plain tab stays exactly
+   * what it always was — an absent list and an empty one mean the same thing.
+   */
+  readonly adjustments?: readonly BillAdjustment[];
   /**
    * The local restaurant profile this meal was started from, when it was.
    * Absent for an ad-hoc meal, and cleared the moment the name is edited by
@@ -146,16 +172,32 @@ export interface SessionTotals {
 export interface DamageReport extends SessionTotals {
   /** Diners the admission was charged for, clamped to the supported range. */
   readonly dinerCount: number;
+  /** Entry price alone, before anything went on or came off the bill. */
+  readonly baseAdmission: number;
+  /** Added to the bill, as a positive figure. Zero without adjustments. */
+  readonly adjustmentCharges: number;
+  /** Taken off the bill, as a positive figure. Zero without adjustments. */
+  readonly adjustmentDiscounts: number;
+  /** Signed: charges minus discounts. */
+  readonly adjustmentNet: number;
+  /**
+   * What the table actually paid, and the denominator of every figure below.
+   *
+   * Equal to `baseAdmission` for any meal without adjustments, which is what
+   * keeps every session recorded before they existed reading exactly as before.
+   * Never negative: a voucher larger than the bill means nothing was paid, not
+   * that the restaurant owes the table money.
+   */
   readonly totalAdmission: number;
-  /** Positive when retail value exceeds admission, negative otherwise. */
+  /** Positive when retail value exceeds what was paid, negative otherwise. */
   readonly retailValueDifference: number;
   /** totalRetailValue / totalAdmission, expressed 0–n as a percentage. */
   readonly retailRecoveryPercent: number;
   readonly hasBeatenBuffet: boolean;
-  /** Admission minus estimated ingredient cost. Not restaurant profit. */
+  /** What was paid minus estimated ingredient cost. Not restaurant profit. */
   readonly estimatedIngredientMargin: number;
   readonly estimatedFoodCostPercent: number;
-  /** Retail value still needed to reach admission. Zero once break-even is met. */
+  /** Retail value still needed to reach the paid total. Zero once met. */
   readonly remainingRetailGap: number;
   readonly averageRetailValuePerPlate: number;
   /** Estimated further plates of average value needed to break even. */
@@ -164,7 +206,12 @@ export interface DamageReport extends SessionTotals {
 
 export interface DinerDamageTotals {
   readonly diner: Diner;
+  /** This diner's share of the final paid total, adjustments included. */
   readonly admission: number;
+  /** Entry price alone for this diner, before their share of adjustments. */
+  readonly baseAdmission: number;
+  /** Signed: this diner's own adjustments plus an even share of the table's. */
+  readonly adjustmentNet: number;
   readonly attributedPlates: number;
   readonly sharedPlates: number;
   readonly effectivePlates: number;

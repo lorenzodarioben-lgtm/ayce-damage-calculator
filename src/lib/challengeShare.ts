@@ -2,6 +2,7 @@ import { evaluateAchievementIds } from '@/lib/achievements';
 import { buildDamageReport, clampDinerCount, clampPricePerDiner } from '@/lib/calculations';
 import { compareSessions, type SessionComparison } from '@/lib/comparison';
 import { MAX_CUSTOM_FOODS, parseCustomFood } from '@/lib/customFoods';
+import { parseAdjustments } from '@/lib/adjustments';
 import { isIsoTimestamp } from '@/lib/datetime';
 import { foodCatalogue, findFoodInCatalogue } from '@/lib/foodCatalogue';
 import { MAX_LINE_QUANTITY, MIN_QUANTITY, isPlateSize, isQualityTier } from '@/lib/constants';
@@ -22,7 +23,7 @@ import { decodeUrlText } from '@/lib/urlText';
 import { getVerdict } from '@/lib/verdicts';
 import type { SavedMealSession } from '@/types/history';
 import type { CustomFood } from '@/types/customFoods';
-import type { MealItem, PlateSize, QualityTier } from '@/types/meal';
+import type { BillAdjustment, MealItem, PlateSize, QualityTier } from '@/types/meal';
 import type { PricingProfile } from '@/types/pricing';
 
 /**
@@ -72,6 +73,12 @@ export interface ChallengeSide {
   readonly pricingProfile: PricingProfile;
   readonly customFoods: readonly CustomFood[];
   readonly items: readonly MealItem[];
+  /**
+   * What settled each bill. Without it the two sides would be compared at
+   * their entry prices, and a meal that was half paid for by a voucher would
+   * look like a triumph of ordering rather than of couponing.
+   */
+  readonly adjustments?: readonly BillAdjustment[];
 }
 
 export interface ChallengePayload {
@@ -104,6 +111,13 @@ export function challengeSideFromRecord(record: SavedMealSession): ChallengeSide
       plateSize: item.plateSize,
       quantity: item.quantity,
     })),
+    // Scoped to the table on the way out: which diner a charge belonged to is
+    // roster information, and a challenge deliberately carries no roster.
+    ...(record.adjustments?.length
+      ? {
+          adjustments: record.adjustments.map(({ dinerId: _dinerId, ...entry }) => ({ ...entry })),
+        }
+      : {}),
   };
 }
 
@@ -121,6 +135,7 @@ function encodeSide(side: ChallengeSide) {
       o: side.pricingProfile.overrides,
     },
     f: side.customFoods,
+    j: side.adjustments,
     x: side.items.map((item) => ({
       f: item.foodId,
       q: item.quality,
@@ -237,6 +252,7 @@ function parseSide(value: unknown): ChallengeSide | null {
 
   const customFoods = parseFoods(value.f);
   const items = parseItems(value.x, customFoods);
+  const adjustments = parseAdjustments(value.j, []);
   if (!items) {
     return null;
   }
@@ -251,6 +267,8 @@ function parseSide(value: unknown): ChallengeSide | null {
     pricingProfile: parseProfile(value.m),
     customFoods,
     items,
+    // A challenge carries no roster, so every adjustment on it is table-wide.
+    ...(adjustments.length ? { adjustments } : {}),
   };
 }
 
@@ -312,7 +330,11 @@ function recordFromSide(side: ChallengeSide, id: string): SavedMealSession {
   const foods = foodCatalogue(side.customFoods);
   const report = buildDamageReport(
     side.items,
-    { pricePerDiner: side.pricePerDiner, dinerCount: side.dinerCount },
+    {
+      pricePerDiner: side.pricePerDiner,
+      dinerCount: side.dinerCount,
+      ...(side.adjustments?.length ? { adjustments: side.adjustments } : {}),
+    },
     side.pricingProfile,
     foods,
   );
@@ -329,6 +351,7 @@ function recordFromSide(side: ChallengeSide, id: string): SavedMealSession {
     customFoods: side.customFoods,
     note: '',
     items: side.items,
+    ...(side.adjustments?.length ? { adjustments: side.adjustments } : {}),
     fingerprint: id,
     snapshot: {
       achievementIds: evaluateAchievementIds(report, side.dinerCount),

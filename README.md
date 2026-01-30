@@ -39,6 +39,9 @@ keys, and nothing you record ever leaves your device.
 - Restaurant profiles you write yourself — save a setup, apply it on the next visit, and have the
   meal linked to that place
 - Optional Table Mode: record a local diner roster and attribute plates without changing the shared table total
+- Optional bill adjustments: vouchers, group discounts, weekend surcharges, card fees and paid extras,
+  applied to the whole table or to one diner, with base admission, charges, discounts and the final
+  paid total kept plainly apart
 
 **Restaurant hub** (`/restaurants`)
 
@@ -208,6 +211,15 @@ facts, with every threshold named in one exported object. Nothing consults the c
 
 **One meal model.** Live Meal Mode, the full builder and the report all drive the same session
 reducer and the same calculation engine. There is no second meal shape and no second set of sums.
+
+**One denominator.** A bill can carry charges and discounts, so the engine settles it once and
+everything measures against the result. Base admission, what was added, what was taken off and the
+final paid total are four distinct figures and are never conflated; the total is floored at zero,
+because a voucher larger than the bill means nothing was paid rather than that the restaurant owes
+the table money. A meal with no adjustments settles to exactly its admission, which is what keeps
+every session recorded before they existed calculating precisely as it always did. Adjustments
+follow the same division rule the plates do: one named to a diner is theirs, and anything charged to
+the table is split evenly and said to be an assumption.
 
 **An aggregate tab, plus a ledger.** The tab in `MealSession.items` stays authoritative: every
 total, verdict and report is derived from it and never from an event. Alongside it, the reducer

@@ -89,6 +89,20 @@ export const MAX_RESTAURANT_NAME_LENGTH = 60;
 /** Long enough for who was there and what happened; short enough to render. */
 export const MAX_SESSION_NOTE_LENGTH = 280;
 
+/**
+ * Bounds on what a bill can have added to or taken off it.
+ *
+ * A real tab picks up a handful of these — a voucher, a card fee, a weekend
+ * surcharge, a plate of something charged separately. Twelve is more than any
+ * receipt anyone has produced and still a fixed ceiling, which is what a
+ * storage, URL and import boundary needs.
+ */
+export const MAX_BILL_ADJUSTMENTS = 12;
+export const MAX_ADJUSTMENT_LABEL_LENGTH = 40;
+/** Per adjustment, in the session's own currency context. */
+export const MAX_ADJUSTMENT_AMOUNT = 5000;
+export const MIN_ADJUSTMENT_AMOUNT = 0.01;
+
 export function getQualityMeta(tier: QualityTier): QualityMeta {
   const meta = QUALITY_TIERS.find((entry) => entry.id === tier);
   if (!meta) {
