@@ -2,6 +2,7 @@
 
 import { getPlateSizeMeta, getQualityMeta } from '@/lib/constants';
 import { usePricingProfile } from '@/components/session/PricingContext';
+import { formatPlateQuantity } from '@/lib/consumption';
 import {
   formatCalories,
   formatGrams,
@@ -120,10 +121,19 @@ export function DamageReceipt({
         <p className="mt-2 whitespace-pre overflow-hidden">{THIN_RULE}</p>
 
         <div className="mt-2">
+          {report.totalUneatenPlates > 0 && (
+            <Row
+              label="ORDERED RETAIL VALUE"
+              value={formatMoney(report.totalOrderedRetailValue, pricingProfile.money)}
+            />
+          )}
           <Row
-            label="EST. RETAIL VALUE"
+            label={report.totalUneatenPlates > 0 ? 'EATEN RETAIL VALUE' : 'EST. RETAIL VALUE'}
             value={formatMoney(report.totalRetailValue, pricingProfile.money)}
           />
+          {report.totalUneatenPlates > 0 && (
+            <Row label="PLATES LEFT" value={formatPlateQuantity(report.totalUneatenPlates)} />
+          )}
           {(report.adjustmentCharges > 0 || report.adjustmentDiscounts > 0) && (
             <>
               <Row

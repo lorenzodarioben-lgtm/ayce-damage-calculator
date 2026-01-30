@@ -3,6 +3,7 @@ import { buildDamageReport, clampDinerCount, clampPricePerDiner } from '@/lib/ca
 import { compareSessions, type SessionComparison } from '@/lib/comparison';
 import { MAX_CUSTOM_FOODS, parseCustomFood } from '@/lib/customFoods';
 import { parseAdjustments } from '@/lib/adjustments';
+import { normaliseConsumedQuantity } from '@/lib/consumption';
 import { isIsoTimestamp } from '@/lib/datetime';
 import { foodCatalogue, findFoodInCatalogue } from '@/lib/foodCatalogue';
 import { MAX_LINE_QUANTITY, MIN_QUANTITY, isPlateSize, isQualityTier } from '@/lib/constants';
@@ -110,6 +111,7 @@ export function challengeSideFromRecord(record: SavedMealSession): ChallengeSide
       quality: item.quality,
       plateSize: item.plateSize,
       quantity: item.quantity,
+      ...(item.consumedQuantity === undefined ? {} : { consumedQuantity: item.consumedQuantity }),
     })),
     // Scoped to the table on the way out: which diner a charge belonged to is
     // roster information, and a challenge deliberately carries no roster.
@@ -141,6 +143,7 @@ function encodeSide(side: ChallengeSide) {
       q: item.quality,
       s: item.plateSize,
       n: item.quantity,
+      ...(item.consumedQuantity === undefined ? {} : { e: item.consumedQuantity }),
     })),
   };
 }
@@ -228,12 +231,15 @@ function parseItems(
     }
     const quality: QualityTier = entry.q;
     const plateSize: PlateSize = entry.s;
+    const quantity = Math.min(MAX_LINE_QUANTITY, Math.max(MIN_QUANTITY, Math.floor(entry.n)));
+    const consumed = normaliseConsumedQuantity(entry.e, quantity);
     items.push({
       id: mealItemId({ foodId: entry.f, quality, plateSize }),
       foodId: entry.f,
       quality,
       plateSize,
-      quantity: Math.min(MAX_LINE_QUANTITY, Math.max(MIN_QUANTITY, Math.floor(entry.n))),
+      quantity,
+      ...(consumed === undefined ? {} : { consumedQuantity: consumed }),
     });
   }
   return items;

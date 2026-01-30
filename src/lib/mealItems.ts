@@ -1,4 +1,5 @@
 import { MAX_LINE_QUANTITY } from '@/lib/constants';
+import { consumedQuantity, withConsumedQuantity } from '@/lib/consumption';
 import type { MealItem, PlateSize, QualityTier } from '@/types/meal';
 
 /**
@@ -20,18 +21,26 @@ export function mergeMealItems(items: readonly MealItem[]): readonly MealItem[] 
   for (const item of items) {
     const id = mealItemId(item);
     const existing = byId.get(id);
-    const allocations = existing
-      ? [...(existing.allocations ?? []), ...(item.allocations ?? [])]
-      : item.allocations;
+    if (!existing) {
+      byId.set(id, { ...item, id });
+      continue;
+    }
+    const allocations = [...(existing.allocations ?? []), ...(item.allocations ?? [])];
+    const quantity = Math.min(MAX_LINE_QUANTITY, existing.quantity + item.quantity);
+    // Eaten amounts add up like the plates do, so merging two halves of the
+    // same line cannot lose or invent food. Clamping is left to the helper,
+    // which also drops the key again when the merged line went clean.
+    const consumed = consumedQuantity(existing) + consumedQuantity(item);
     byId.set(
       id,
-      existing
-        ? {
-            ...existing,
-            quantity: Math.min(MAX_LINE_QUANTITY, existing.quantity + item.quantity),
-            ...(allocations?.length ? { allocations } : {}),
-          }
-        : { ...item, id },
+      withConsumedQuantity(
+        {
+          ...existing,
+          quantity,
+          ...(allocations.length ? { allocations } : {}),
+        },
+        consumed,
+      ),
     );
   }
 

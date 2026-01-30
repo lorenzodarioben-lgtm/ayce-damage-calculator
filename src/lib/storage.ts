@@ -9,6 +9,7 @@ import {
   isQualityTier,
 } from '@/lib/constants';
 import { parseAdjustments } from '@/lib/adjustments';
+import { normaliseConsumedQuantity } from '@/lib/consumption';
 import { mealItemId, mergeMealItems } from '@/lib/mealItems';
 import { IDLE_LIFECYCLE, parseMealEvents, parseMealLifecycle } from '@/lib/mealEvents';
 import { parseMealDuration } from '@/lib/pacing';
@@ -34,11 +35,12 @@ export const STORAGE_KEY = 'ayce-damage-calculator';
  * 5 — the optional booked meal duration.
  * 6 — the local restaurant profile the meal was started from.
  * 7 — bill adjustments: charges and discounts alongside admission.
+ * 8 — how much of each line was actually eaten.
  */
-export const STORAGE_VERSION = 7;
+export const STORAGE_VERSION = 8;
 
 /** Versions `parseStoredSession` can read, current one included. */
-export const SUPPORTED_STORAGE_VERSIONS = [1, 2, 3, 4, 5, 6, 7] as const;
+export const SUPPORTED_STORAGE_VERSIONS = [1, 2, 3, 4, 5, 6, 7, 8] as const;
 
 /**
  * A tab is small; a full evening's ledger is still only tens of kilobytes.
@@ -111,6 +113,7 @@ function parseMealItem(
   value: unknown,
   foods: readonly FoodItem[],
   diners: readonly Diner[],
+  version: number,
 ): MealItem | null {
   if (!isRecord(value)) {
     return null;
@@ -130,12 +133,21 @@ function parseMealItem(
 
   const safeQuantity = Math.min(MAX_LINE_QUANTITY, Math.max(MIN_QUANTITY, Math.floor(quantity)));
 
+  /*
+   * A line written before version 8 has no consumed quantity, and that is a
+   * statement rather than a gap: it was eaten in full, which is exactly what
+   * the calculator reported for it at the time.
+   */
+  const consumed =
+    version >= 8 ? normaliseConsumedQuantity(value.consumedQuantity, safeQuantity) : undefined;
+
   const base = {
     id: mealItemId({ foodId, quality, plateSize }),
     foodId,
     quality,
     plateSize,
     quantity: safeQuantity,
+    ...(consumed === undefined ? {} : { consumedQuantity: consumed }),
   };
   const allocations = normaliseAllocations(
     Array.isArray(value.allocations)
@@ -180,7 +192,7 @@ export function parseStoredSession(
 
   const items = mergeMealItems(
     rawItems
-      .map((item) => parseMealItem(item, foods, diners))
+      .map((item) => parseMealItem(item, foods, diners, version))
       .filter((item): item is MealItem => item !== null),
   ).map((item) => reconcileItemAllocations(item, diners));
 

@@ -42,6 +42,8 @@ keys, and nothing you record ever leaves your device.
 - Optional bill adjustments: vouchers, group discounts, weekend surcharges, card fees and paid extras,
   applied to the whole table or to one diner, with base admission, charges, discounts and the final
   paid total kept plainly apart
+- Optional consumption tracking: record that some of a plate went back, in quarter plates, and see
+  ordered, eaten and left stated plainly — no scolding, no default that assumes waste
 
 **Restaurant hub** (`/restaurants`)
 
@@ -211,6 +213,15 @@ facts, with every threshold named in one exported object. Nothing consults the c
 
 **One meal model.** Live Meal Mode, the full builder and the report all drive the same session
 reducer and the same calculation engine. There is no second meal shape and no second set of sums.
+
+**Ordered is not eaten.** A line records the plates that reached the table and, optionally, how much
+of them was eaten. An absent consumed quantity means the plate went clean, which is the default for
+ordinary logging and the truth about every session recorded before this existed — so the fast journey
+and every old record are untouched. Where the two differ, eaten quantity drives retail value,
+nutrition and recovery, because value nobody ate is not value anyone extracted; the ordered figures
+are kept alongside so the tab still says what arrived. Estimated ingredient cost follows the ordered
+quantity, because the restaurant bought the plate either way. Consumption can never be negative and
+never exceeds what was ordered: reducing an order brings the eaten figure down with it.
 
 **One denominator.** A bill can carry charges and discounts, so the engine settles it once and
 everything measures against the result. Base admission, what was added, what was taken off and the

@@ -47,6 +47,7 @@ export function CalculatorApp() {
     addItem,
     incrementItem,
     decrementItem,
+    setItemConsumption,
     removeItem,
     restoreItem,
     resetSession,
@@ -213,6 +214,7 @@ export function CalculatorApp() {
                     report={report}
                     onIncrement={incrementItem}
                     onDecrement={decrementItem}
+                    onConsumptionChange={setItemConsumption}
                     onRemove={handleRemove}
                     onCalculate={handleCalculate}
                     onReset={() => setResetOpen(true)}

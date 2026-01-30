@@ -59,6 +59,7 @@ export interface UseMealSessionResult {
   addItem: (payload: AddItemPayload) => void;
   incrementItem: (id: string) => void;
   decrementItem: (id: string) => void;
+  setItemConsumption: (id: string, consumed: number) => void;
   setItemAllocations: (id: string, allocations: readonly DinerAllocation[]) => void;
   removeItem: (id: string) => void;
   /** Puts a removed line back where it was, so a removal can be undone. */
@@ -209,6 +210,13 @@ export function useMealSession(
     dispatch({ type: 'clear-adjustments' });
   }, []);
 
+  const setItemConsumption = useCallback(
+    (id: string, consumed: number) => {
+      dispatch({ type: 'set-item-consumption', id, consumed, meta: meta() });
+    },
+    [meta],
+  );
+
   const addItem = useCallback(
     (payload: AddItemPayload) => {
       dispatch({ type: 'add-item', payload, meta: meta() });
@@ -294,6 +302,7 @@ export function useMealSession(
     addItem,
     incrementItem,
     decrementItem,
+    setItemConsumption,
     setItemAllocations,
     removeItem,
     restoreItem,
