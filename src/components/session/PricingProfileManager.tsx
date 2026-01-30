@@ -4,7 +4,8 @@ import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useId, useState } from 'react';
 import { FOODS } from '@/data/foods';
 import { Dialog } from '@/components/ui/Dialog';
-import { formatPricePerKg } from '@/lib/formatting';
+import { formatUnitPrice } from '@/lib/formatting';
+import { resolveFoodPricing } from '@/lib/pricing';
 import { SUPPORTED_CURRENCIES, defaultLocaleForCurrency, type CurrencyCode } from '@/lib/money';
 import { nextPricingProfileId, createPricingProfile } from '@/lib/pricingProfiles';
 import type { FoodPricing, PricingProfile, PricingProfileId } from '@/types/pricing';
@@ -22,7 +23,10 @@ function initialPrices(profile: PricingProfile | null): DraftPrices {
   return Object.fromEntries(
     FOODS.flatMap((food) => {
       const pricing = profile?.overrides[food.id];
-      return pricing
+      // This editor only ever lists the built-in catalogue, every entry of
+      // which is priced by weight; an override in any other model belongs to a
+      // custom item and has no row here to appear in.
+      return pricing?.valuation === 'by-weight'
         ? [
             [
               food.id,
@@ -86,7 +90,7 @@ function ProfileEditor({
         setError('Enter zero or a positive number for both prices, or leave both blank.');
         return;
       }
-      overrides[foodId] = { retailPricePerKg, restaurantCostPerKg };
+      overrides[foodId] = { valuation: 'by-weight', retailPricePerKg, restaurantCostPerKg };
     }
 
     const id = profile?.id ?? nextPricingProfileId(profiles, name);
@@ -167,7 +171,7 @@ function ProfileEditor({
                     <p className="text-sm font-bold text-cream-100">{food.name}</p>
                     <p className="text-xs text-cream-700">
                       Default{' '}
-                      {formatPricePerKg(food.retailPricePerKg, {
+                      {formatUnitPrice(resolveFoodPricing(food), {
                         currency,
                         locale: defaultLocaleForCurrency(currency),
                       })}

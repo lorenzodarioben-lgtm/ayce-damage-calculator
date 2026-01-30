@@ -10,7 +10,7 @@ import { usePricingProfiles } from '@/hooks/usePricingProfiles';
 import { useRestaurants } from '@/hooks/useRestaurants';
 import { useStatusMessage } from '@/hooks/useStatusMessage';
 import { CATEGORY_META } from '@/lib/constants';
-import { formatMoney, formatPricePerKg } from '@/lib/formatting';
+import { formatMoney, formatUnitCost, formatUnitPrice } from '@/lib/formatting';
 import { planMenuImport, type MenuSharePayload } from '@/lib/menuShare';
 import { findFoodInCatalogue } from '@/lib/foodCatalogue';
 import { FOODS } from '@/data/foods';
@@ -139,10 +139,10 @@ export function MenuPreview({ payload }: { payload: MenuSharePayload }) {
                       {known?.name ?? shared?.name ?? foodId}
                     </th>
                     <td className="tabular py-2 pr-3 text-ember-400">
-                      {formatPricePerKg(pricing.retailPricePerKg, payload.pricingProfile.money)}
+                      {formatUnitPrice(pricing, payload.pricingProfile.money)}
                     </td>
                     <td className="tabular py-2">
-                      {formatPricePerKg(pricing.restaurantCostPerKg, payload.pricingProfile.money)}
+                      {formatUnitCost(pricing, payload.pricingProfile.money)}
                     </td>
                   </tr>
                 );
@@ -170,11 +170,27 @@ export function MenuPreview({ payload }: { payload: MenuSharePayload }) {
                   <span className="block text-xs text-cream-500">
                     {CATEGORY_META.find((entry) => entry.id === food.category)?.label ??
                       food.category}{' '}
-                    · {food.caloriesPer100g} kcal / 100 g
+                    ·{' '}
+                    {food.valuation === 'by-serving'
+                      ? `${food.caloriesPerServing} kcal / serving`
+                      : `${food.caloriesPer100g} kcal / 100 g`}
                   </span>
                 </span>
                 <span className="tabular shrink-0 text-sm font-bold text-ember-400">
-                  {formatPricePerKg(food.retailPricePerKg, payload.pricingProfile.money)}
+                  {formatUnitPrice(
+                    food.valuation === 'by-serving'
+                      ? {
+                          valuation: 'by-serving',
+                          retailPricePerServing: food.retailPricePerServing,
+                          restaurantCostPerServing: food.restaurantCostPerServing,
+                        }
+                      : {
+                          valuation: 'by-weight',
+                          retailPricePerKg: food.retailPricePerKg,
+                          restaurantCostPerKg: food.restaurantCostPerKg,
+                        },
+                    payload.pricingProfile.money,
+                  )}
                 </span>
               </li>
             ))}

@@ -47,7 +47,9 @@ export function QuickLogRow({
         </div>
         <div className="tabular shrink-0 text-right">
           <p className="text-sm font-bold text-ember-400">{formatMoney(line.retailValue)}</p>
-          <p className="text-xs text-cream-700">{formatWeight(line.weightG)}</p>
+          <p className="text-xs text-cream-700">
+            {line.hasWeight ? formatWeight(line.weightG) : 'Not weighed'}
+          </p>
           {left && (
             <p className="text-xs text-cream-500">{formatPlateQuantity(line.uneatenPlates)} left</p>
           )}

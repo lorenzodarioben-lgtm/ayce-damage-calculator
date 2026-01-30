@@ -245,7 +245,11 @@ describe('buildDamagePlan', () => {
         name: 'Cheap chicken',
         currency: 'AUD',
         overrides: {
-          'chicken-thigh': { retailPricePerKg: 200, restaurantCostPerKg: 10 },
+          'chicken-thigh': {
+            valuation: 'by-weight' as const,
+            retailPricePerKg: 200,
+            restaurantCostPerKg: 10,
+          },
         },
       },
       'custom-cheap-chicken',

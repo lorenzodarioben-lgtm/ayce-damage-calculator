@@ -6,7 +6,7 @@ import { Dialog } from '@/components/ui/Dialog';
 import { CATEGORY_META } from '@/lib/constants';
 import { createCustomFood, nextCustomFoodId } from '@/lib/customFoods';
 import type { CustomFood } from '@/types/customFoods';
-import type { FoodCategory } from '@/types/meal';
+import type { FoodCategory, ValuationModel } from '@/types/meal';
 
 interface CustomFoodManagerProps {
   foods: readonly CustomFood[];
@@ -15,31 +15,62 @@ interface CustomFoodManagerProps {
   onStatus: (message: string) => void;
 }
 
+/**
+ * The form holds one set of strings and interprets them by model.
+ *
+ * Keeping a single draft shape rather than two means switching between the
+ * models does not throw away what someone has already typed into the fields
+ * both share — the name, the category, the description.
+ */
 interface DraftState {
   readonly name: string;
   readonly shortName: string;
   readonly category: FoodCategory;
   readonly description: string;
-  readonly retailPricePerKg: string;
-  readonly restaurantCostPerKg: string;
-  readonly caloriesPer100g: string;
-  readonly proteinPer100g: string;
-  readonly fatPer100g: string;
-  readonly carbsPer100g: string;
+  readonly valuation: ValuationModel;
+  /** Read as a rate per kilogram or a price per serving, by model. */
+  readonly retailPrice: string;
+  readonly restaurantCost: string;
+  /** Only meaningful for a per-serving item; a plate size supplies the rest. */
+  readonly gramsPerServing: string;
+  readonly calories: string;
+  readonly protein: string;
+  readonly fat: string;
+  readonly carbs: string;
 }
 
 function draftFrom(food: CustomFood | null): DraftState {
-  return {
+  const shared = {
     name: food?.name ?? '',
     shortName: food?.shortName ?? '',
-    category: food?.category ?? 'beef',
+    category: food?.category ?? ('beef' as FoodCategory),
     description: food?.description ?? '',
-    retailPricePerKg: food ? String(food.retailPricePerKg) : '',
-    restaurantCostPerKg: food ? String(food.restaurantCostPerKg) : '',
-    caloriesPer100g: food ? String(food.caloriesPer100g) : '0',
-    proteinPer100g: food ? String(food.proteinPer100g) : '0',
-    fatPer100g: food ? String(food.fatPer100g) : '0',
-    carbsPer100g: food ? String(food.carbsPer100g) : '0',
+  };
+
+  if (food?.valuation === 'by-serving') {
+    return {
+      ...shared,
+      valuation: 'by-serving',
+      retailPrice: String(food.retailPricePerServing),
+      restaurantCost: String(food.restaurantCostPerServing),
+      gramsPerServing: String(food.gramsPerServing),
+      calories: String(food.caloriesPerServing),
+      protein: String(food.proteinPerServing),
+      fat: String(food.fatPerServing),
+      carbs: String(food.carbsPerServing),
+    };
+  }
+
+  return {
+    ...shared,
+    valuation: 'by-weight',
+    retailPrice: food ? String(food.retailPricePerKg) : '',
+    restaurantCost: food ? String(food.restaurantCostPerKg) : '',
+    gramsPerServing: '0',
+    calories: food ? String(food.caloriesPer100g) : '0',
+    protein: food ? String(food.proteinPer100g) : '0',
+    fat: food ? String(food.fatPer100g) : '0',
+    carbs: food ? String(food.carbsPer100g) : '0',
   };
 }
 
@@ -64,20 +95,38 @@ function CustomFoodEditor({
   const set = <Key extends keyof DraftState>(key: Key, value: DraftState[Key]) =>
     setDraft((current) => ({ ...current, [key]: value }));
 
+  const perServing = draft.valuation === 'by-serving';
+
   function handleSave() {
+    const shared = {
+      name: draft.name,
+      shortName: draft.shortName,
+      category: draft.category,
+      description: draft.description,
+    };
     const created = createCustomFood(
-      {
-        name: draft.name,
-        shortName: draft.shortName,
-        category: draft.category,
-        description: draft.description,
-        retailPricePerKg: numberFrom(draft.retailPricePerKg),
-        restaurantCostPerKg: numberFrom(draft.restaurantCostPerKg),
-        caloriesPer100g: numberFrom(draft.caloriesPer100g),
-        proteinPer100g: numberFrom(draft.proteinPer100g),
-        fatPer100g: numberFrom(draft.fatPer100g),
-        carbsPer100g: numberFrom(draft.carbsPer100g),
-      },
+      perServing
+        ? {
+            ...shared,
+            valuation: 'by-serving',
+            retailPricePerServing: numberFrom(draft.retailPrice),
+            restaurantCostPerServing: numberFrom(draft.restaurantCost),
+            gramsPerServing: numberFrom(draft.gramsPerServing),
+            caloriesPerServing: numberFrom(draft.calories),
+            proteinPerServing: numberFrom(draft.protein),
+            fatPerServing: numberFrom(draft.fat),
+            carbsPerServing: numberFrom(draft.carbs),
+          }
+        : {
+            ...shared,
+            valuation: 'by-weight',
+            retailPricePerKg: numberFrom(draft.retailPrice),
+            restaurantCostPerKg: numberFrom(draft.restaurantCost),
+            caloriesPer100g: numberFrom(draft.calories),
+            proteinPer100g: numberFrom(draft.protein),
+            fatPer100g: numberFrom(draft.fat),
+            carbsPer100g: numberFrom(draft.carbs),
+          },
       food?.id ?? nextCustomFoodId(foods, draft.name),
     );
     if (!created) {
@@ -149,42 +198,101 @@ function CustomFoodEditor({
           />
         </label>
 
+        <fieldset>
+          <legend className="micro-label mb-2">How it is priced</legend>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {(
+              [
+                ['by-weight', 'By weight', 'A cut you order plates of, priced per kilogram.'],
+                ['by-serving', 'By serving', 'One thing at one price — a soup, a scoop, a bottle.'],
+              ] as const
+            ).map(([model, label, hint]) => (
+              <label
+                key={model}
+                className={`block cursor-pointer rounded-[10px] border px-3 py-2 transition-colors duration-200 ${
+                  draft.valuation === model
+                    ? 'border-ember-600 bg-ash-800'
+                    : 'border-line bg-ash-900 hover:border-line-ember'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="valuation"
+                  value={model}
+                  checked={draft.valuation === model}
+                  onChange={() => set('valuation', model)}
+                  className="sr-only"
+                />
+                <span className="block text-sm font-semibold text-cream-100">{label}</span>
+                <span className="mt-0.5 block text-xs leading-snug text-cream-700">{hint}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block text-sm font-semibold text-cream-300">
-            Retail per kg
+            {perServing ? 'Retail per serving' : 'Retail per kg'}
             <input
-              aria-label="Retail price per kg"
+              aria-label={perServing ? 'Retail price per serving' : 'Retail price per kg'}
               type="number"
               min="0"
               step="0.01"
-              value={draft.retailPricePerKg}
-              onChange={(event) => set('retailPricePerKg', event.target.value)}
+              value={draft.retailPrice}
+              onChange={(event) => set('retailPrice', event.target.value)}
               className="mt-1.5 h-11 w-full rounded-[10px] border border-line bg-ash-900 px-3 font-normal text-cream-50 focus:border-ember-600"
             />
           </label>
           <label className="block text-sm font-semibold text-cream-300">
-            Restaurant cost per kg
+            {perServing ? 'Restaurant cost per serving' : 'Restaurant cost per kg'}
             <input
-              aria-label="Restaurant cost per kg"
+              aria-label={perServing ? 'Restaurant cost per serving' : 'Restaurant cost per kg'}
               type="number"
               min="0"
               step="0.01"
-              value={draft.restaurantCostPerKg}
-              onChange={(event) => set('restaurantCostPerKg', event.target.value)}
+              value={draft.restaurantCost}
+              onChange={(event) => set('restaurantCost', event.target.value)}
               className="mt-1.5 h-11 w-full rounded-[10px] border border-line bg-ash-900 px-3 font-normal text-cream-50 focus:border-ember-600"
             />
           </label>
         </div>
 
+        {/*
+          Plate size is what supplies a weight-valued cut's grams, so it is only
+          a per-serving item that has to state its own. Zero is a legitimate
+          answer — nobody weighs a bowl of soup — and the interface reports it
+          as unweighed rather than as nothing.
+        */}
+        {perServing && (
+          <label className="block text-sm font-semibold text-cream-300">
+            Grams per serving <span className="font-normal text-cream-700">(optional)</span>
+            <input
+              aria-label="Grams per serving"
+              type="number"
+              min="0"
+              step="1"
+              value={draft.gramsPerServing}
+              onChange={(event) => set('gramsPerServing', event.target.value)}
+              className="mt-1.5 h-11 w-full rounded-[10px] border border-line bg-ash-900 px-3 font-normal text-cream-50 focus:border-ember-600"
+            />
+            <span className="mt-1 block text-xs font-normal leading-snug text-cream-700">
+              Leave it at zero if you do not know. The item still counts towards value and
+              nutrition; it just will not add weight to the meal, and the report says so.
+            </span>
+          </label>
+        )}
+
         <fieldset>
-          <legend className="micro-label mb-2">Nutrition per 100 g</legend>
+          <legend className="micro-label mb-2">
+            {perServing ? 'Nutrition per serving' : 'Nutrition per 100 g'}
+          </legend>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {(
               [
-                ['caloriesPer100g', 'Calories'],
-                ['proteinPer100g', 'Protein g'],
-                ['fatPer100g', 'Fat g'],
-                ['carbsPer100g', 'Carbs g'],
+                ['calories', 'Calories'],
+                ['protein', 'Protein g'],
+                ['fat', 'Fat g'],
+                ['carbs', 'Carbs g'],
               ] as const
             ).map(([key, label]) => (
               <label key={key} className="text-xs font-semibold text-cream-500">
@@ -275,7 +383,10 @@ export function CustomFoodManager({ foods, onSave, onRemove, onStatus }: CustomF
               <div className="min-w-0">
                 <p className="truncate text-sm font-bold text-cream-100">{food.name}</p>
                 <p className="text-xs text-cream-600">
-                  {food.category} · {food.retailPricePerKg}/kg retail
+                  {food.category} ·{' '}
+                  {food.valuation === 'by-serving'
+                    ? `${food.retailPricePerServing}/serving retail`
+                    : `${food.retailPricePerKg}/kg retail`}
                 </p>
               </div>
               <div className="flex shrink-0 items-center gap-1">
