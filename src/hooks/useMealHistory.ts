@@ -11,6 +11,14 @@ export interface UseMealHistoryResult {
   records: readonly SavedMealSession[];
   remove: (id: string) => Promise<void>;
   clear: () => Promise<void>;
+  /**
+   * Folds already-persisted records back into the list this hook is holding.
+   *
+   * Called after a write the repository has confirmed, never before: the list
+   * is the screen's view of what is on disk, so moving it ahead of the
+   * transaction would show a link that might never have been written.
+   */
+  applyWritten: (records: readonly SavedMealSession[]) => void;
 }
 
 /**
@@ -50,5 +58,20 @@ export function useMealHistory(): UseMealHistoryResult {
     await clearSessions();
   }, []);
 
-  return { status, records, remove, clear };
+  const applyWritten = useCallback((written: readonly SavedMealSession[]) => {
+    if (written.length === 0) {
+      return;
+    }
+    setRecords((current) => {
+      const byId = new Map(written.map((record) => [record.id, record]));
+      // Known records are replaced where they already sit, so a link cannot
+      // reorder a list the diner is currently reading. Genuinely new records
+      // are appended; the callers that have them sort for themselves.
+      const merged = current.map((record) => byId.get(record.id) ?? record);
+      const seen = new Set(current.map((record) => record.id));
+      return [...merged, ...written.filter((record) => !seen.has(record.id))];
+    });
+  }, []);
+
+  return { status, records, remove, clear, applyWritten };
 }
