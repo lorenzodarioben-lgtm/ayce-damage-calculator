@@ -2,7 +2,7 @@ import { buildDamageReport, calculateBillTotals } from '@/lib/calculations';
 import { FOODS } from '@/data/foods';
 import { DEFAULT_PRICING_PROFILE, resolveFoodPricing } from '@/lib/pricing';
 import { getVerdict, type VerdictId } from '@/lib/verdicts';
-import type { PricingProfile } from '@/types/pricing';
+import type { FoodPricing, PricingProfile } from '@/types/pricing';
 import type { Diner, FoodItem, MealItem, SessionConfig } from '@/types/meal';
 
 /**
@@ -108,13 +108,24 @@ function scaledProfile(
   foods: readonly FoodItem[],
   multipliers: Multipliers,
 ): PricingProfile {
-  const overrides: Record<string, { retailPricePerKg: number; restaurantCostPerKg: number }> = {};
+  const overrides: Record<string, FoodPricing> = {};
   for (const food of foods) {
     const base = resolveFoodPricing(food, profile);
-    overrides[food.id] = {
-      retailPricePerKg: base.retailPricePerKg * multipliers.retail * multipliers.weight,
-      restaurantCostPerKg: base.restaurantCostPerKg * multipliers.cost * multipliers.weight,
-    };
+    overrides[food.id] =
+      base.valuation === 'by-serving'
+        ? {
+            valuation: 'by-serving',
+            // A serving is one thing at one price, so the serving-weight
+            // multiplier has nothing to act on: what is uncertain about a bowl
+            // of soup is its price, not how many grams of plate it was.
+            retailPricePerServing: base.retailPricePerServing * multipliers.retail,
+            restaurantCostPerServing: base.restaurantCostPerServing * multipliers.cost,
+          }
+        : {
+            valuation: 'by-weight',
+            retailPricePerKg: base.retailPricePerKg * multipliers.retail * multipliers.weight,
+            restaurantCostPerKg: base.restaurantCostPerKg * multipliers.cost * multipliers.weight,
+          };
   }
   return { ...profile, overrides };
 }

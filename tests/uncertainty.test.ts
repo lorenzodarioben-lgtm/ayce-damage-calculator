@@ -144,7 +144,13 @@ describe('buildUncertaintyAnalysis', () => {
       {
         name: 'Expensive ribeye',
         currency: 'AUD',
-        overrides: { 'beef-ribeye': { retailPricePerKg: 500, restaurantCostPerKg: 50 } },
+        overrides: {
+          'beef-ribeye': {
+            valuation: 'by-weight' as const,
+            retailPricePerKg: 500,
+            restaurantCostPerKg: 50,
+          },
+        },
       },
       'custom-expensive-ribeye',
     );

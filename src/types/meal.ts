@@ -28,12 +28,37 @@ export type VisualVariant =
   | 'salmon-fillet'
   | 'scallops';
 
-export interface FoodItem {
+/**
+ * How a menu item is priced and measured.
+ *
+ * Grilled meat is bought by weight, and a plate of it is a quantity of that
+ * weight — which is why every figure in this app has been per kilogram. Not
+ * everything on a Korean barbecue table works that way: a bowl of soup, a
+ * scoop of ice cream, a bottle of beer is one thing at one price, and no
+ * amount of dividing by kilograms makes that a sensible way to describe it.
+ *
+ * So an item declares which model it is priced under, and the two are kept as
+ * separate shapes rather than one shape with half its fields optional. That is
+ * the point of the discriminated union: a per-serving item cannot carry a
+ * price per kilogram, and nothing downstream has to guess which fields are
+ * meaningful for the item in front of it.
+ */
+export type ValuationModel = 'by-weight' | 'by-serving';
+
+interface FoodItemBase {
   readonly id: string;
   readonly name: string;
   readonly shortName: string;
   readonly category: FoodCategory;
   readonly description: string;
+  readonly visualVariant: VisualVariant;
+  /** Present only for diner-authored catalogue entries. */
+  readonly isCustom?: boolean;
+}
+
+/** Priced by weight: the model every built-in cut uses. */
+export interface WeightValuedFood extends FoodItemBase {
+  readonly valuation: 'by-weight';
 
   /** AUD per kilogram, supermarket-equivalent. */
   readonly retailPricePerKg: number;
@@ -44,11 +69,37 @@ export interface FoodItem {
   readonly proteinPer100g: number;
   readonly fatPer100g: number;
   readonly carbsPer100g: number;
-
-  readonly visualVariant: VisualVariant;
-  /** Present only for diner-authored catalogue entries. */
-  readonly isCustom?: boolean;
 }
+
+/**
+ * Priced by serving: one thing, at one price.
+ *
+ * Plate size does not apply — a serving is whatever the restaurant calls a
+ * serving — so the builder hides that control and the engine ignores it.
+ * Quality still does: a house dessert and a premium one are different items at
+ * different prices, and the same tier multipliers apply to a serving price
+ * exactly as they do to a per-kilogram one.
+ *
+ * A declared serving weight keeps the table's weight totals meaningful. Zero is
+ * legitimate and means the item was never weighed, which the interface says
+ * rather than reporting as nothing.
+ */
+export interface ServingValuedFood extends FoodItemBase {
+  readonly valuation: 'by-serving';
+
+  readonly retailPricePerServing: number;
+  readonly restaurantCostPerServing: number;
+
+  /** Illustrative weight of one serving. Zero means it was not weighed. */
+  readonly gramsPerServing: number;
+
+  readonly caloriesPerServing: number;
+  readonly proteinPerServing: number;
+  readonly fatPerServing: number;
+  readonly carbsPerServing: number;
+}
+
+export type FoodItem = WeightValuedFood | ServingValuedFood;
 
 export interface MealItem {
   readonly id: string;
@@ -170,6 +221,11 @@ export interface LineItemTotals {
   readonly weightKg: number;
   /** Weight that reached the table, eaten or not. */
   readonly orderedWeightG: number;
+  /**
+   * False when this item is priced by serving and nobody declared a weight, so
+   * a surface can say "not weighed" rather than report a confident zero.
+   */
+  readonly hasWeight: boolean;
   /** Retail value of what was eaten. */
   readonly retailValue: number;
   /** Retail value of everything that reached the table. */

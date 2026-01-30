@@ -59,6 +59,17 @@ export function nextCustomFoodId(foods: readonly CustomFood[], name: string): st
   return `${base}-${suffix}`;
 }
 
+function amount(value: unknown): number {
+  return nonNegative(value) ? value : 0;
+}
+
+/**
+ * Builds a custom item under whichever valuation model the draft declares.
+ *
+ * A draft with no model is priced by weight, which is what every draft written
+ * before per-serving items existed meant — and what the form still defaults to,
+ * because grilled meat is the reason this app exists.
+ */
 export function createCustomFood(draft: CustomFoodDraft, id: string): CustomFood | null {
   const name = normaliseCustomFoodName(draft.name);
   if (
@@ -68,30 +79,50 @@ export function createCustomFood(draft: CustomFoodDraft, id: string): CustomFood
   ) {
     return null;
   }
-  if (!nonNegative(draft.retailPricePerKg) || !nonNegative(draft.restaurantCostPerKg)) {
-    return null;
-  }
 
   const shortName = normaliseText(draft.shortName, MAX_CUSTOM_FOOD_NAME_LENGTH) || name;
   const description = normaliseText(draft.description, MAX_CUSTOM_FOOD_DESCRIPTION_LENGTH);
-  const nutrition = {
-    caloriesPer100g: nonNegative(draft.caloriesPer100g) ? draft.caloriesPer100g : 0,
-    proteinPer100g: nonNegative(draft.proteinPer100g) ? draft.proteinPer100g : 0,
-    fatPer100g: nonNegative(draft.fatPer100g) ? draft.fatPer100g : 0,
-    carbsPer100g: nonNegative(draft.carbsPer100g) ? draft.carbsPer100g : 0,
-  };
-
-  return {
+  const base = {
     id,
     name,
     shortName: shortName.slice(0, name.length),
     category: draft.category,
     description: description || `A custom ${draft.category} menu item.`,
-    retailPricePerKg: draft.retailPricePerKg,
-    restaurantCostPerKg: draft.restaurantCostPerKg,
-    ...nutrition,
     visualVariant: CUSTOM_FOOD_VARIANT_BY_CATEGORY[draft.category],
     isCustom: true,
+  } as const;
+
+  if (draft.valuation === 'by-serving') {
+    if (!nonNegative(draft.retailPricePerServing) || !nonNegative(draft.restaurantCostPerServing)) {
+      return null;
+    }
+    return {
+      ...base,
+      valuation: 'by-serving',
+      retailPricePerServing: draft.retailPricePerServing,
+      restaurantCostPerServing: draft.restaurantCostPerServing,
+      // Zero means nobody weighed it, which is a fact the interface reports
+      // rather than a weight it asserts.
+      gramsPerServing: amount(draft.gramsPerServing),
+      caloriesPerServing: amount(draft.caloriesPerServing),
+      proteinPerServing: amount(draft.proteinPerServing),
+      fatPerServing: amount(draft.fatPerServing),
+      carbsPerServing: amount(draft.carbsPerServing),
+    };
+  }
+
+  if (!nonNegative(draft.retailPricePerKg) || !nonNegative(draft.restaurantCostPerKg)) {
+    return null;
+  }
+  return {
+    ...base,
+    valuation: 'by-weight',
+    retailPricePerKg: draft.retailPricePerKg,
+    restaurantCostPerKg: draft.restaurantCostPerKg,
+    caloriesPer100g: amount(draft.caloriesPer100g),
+    proteinPer100g: amount(draft.proteinPer100g),
+    fatPer100g: amount(draft.fatPer100g),
+    carbsPer100g: amount(draft.carbsPer100g),
   };
 }
 
@@ -110,24 +141,66 @@ export function findCustomFood(foods: readonly CustomFood[], id: string): Custom
   return foods.find((food) => food.id === id);
 }
 
+/** Reads a numeric field only when it genuinely is one. */
+function figure(value: unknown): number | undefined {
+  return typeof value === 'number' ? value : undefined;
+}
+
+/**
+ * Validates one stored, shared or imported item.
+ *
+ * A record with no valuation key is priced by weight. That is a reading rather
+ * than a fallback: every custom food written before per-serving items existed
+ * was a per-kilogram one, and continues to calculate exactly as it did.
+ */
 export function parseCustomFood(value: unknown): CustomFood | null {
   if (!isRecord(value) || typeof value.id !== 'string') {
     return null;
   }
+
+  const shared = {
+    name: typeof value.name === 'string' ? value.name : '',
+    ...(typeof value.shortName === 'string' ? { shortName: value.shortName } : {}),
+    category: value.category as FoodCategory,
+    ...(typeof value.description === 'string' ? { description: value.description } : {}),
+  };
+
+  if (value.valuation === 'by-serving') {
+    const grams = figure(value.gramsPerServing);
+    const calories = figure(value.caloriesPerServing);
+    const protein = figure(value.proteinPerServing);
+    const fat = figure(value.fatPerServing);
+    const carbs = figure(value.carbsPerServing);
+    return createCustomFood(
+      {
+        ...shared,
+        valuation: 'by-serving',
+        retailPricePerServing: value.retailPricePerServing as number,
+        restaurantCostPerServing: value.restaurantCostPerServing as number,
+        ...(grams === undefined ? {} : { gramsPerServing: grams }),
+        ...(calories === undefined ? {} : { caloriesPerServing: calories }),
+        ...(protein === undefined ? {} : { proteinPerServing: protein }),
+        ...(fat === undefined ? {} : { fatPerServing: fat }),
+        ...(carbs === undefined ? {} : { carbsPerServing: carbs }),
+      },
+      value.id,
+    );
+  }
+
+  const calories = figure(value.caloriesPer100g);
+  const protein = figure(value.proteinPer100g);
+  const fat = figure(value.fatPer100g);
+  const carbs = figure(value.carbsPer100g);
   return createCustomFood(
     {
-      name: typeof value.name === 'string' ? value.name : '',
-      ...(typeof value.shortName === 'string' ? { shortName: value.shortName } : {}),
-      category: value.category as FoodCategory,
-      ...(typeof value.description === 'string' ? { description: value.description } : {}),
+      ...shared,
+      valuation: 'by-weight',
       retailPricePerKg: value.retailPricePerKg as number,
       restaurantCostPerKg: value.restaurantCostPerKg as number,
-      ...(typeof value.caloriesPer100g === 'number'
-        ? { caloriesPer100g: value.caloriesPer100g }
-        : {}),
-      ...(typeof value.proteinPer100g === 'number' ? { proteinPer100g: value.proteinPer100g } : {}),
-      ...(typeof value.fatPer100g === 'number' ? { fatPer100g: value.fatPer100g } : {}),
-      ...(typeof value.carbsPer100g === 'number' ? { carbsPer100g: value.carbsPer100g } : {}),
+      ...(calories === undefined ? {} : { caloriesPer100g: calories }),
+      ...(protein === undefined ? {} : { proteinPer100g: protein }),
+      ...(fat === undefined ? {} : { fatPer100g: fat }),
+      ...(carbs === undefined ? {} : { carbsPer100g: carbs }),
     },
     value.id,
   );
