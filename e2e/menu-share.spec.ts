@@ -1,5 +1,12 @@
 import { expect, test, type Browser, type Page } from '@playwright/test';
-import { horizontalOverflow, openCalculator, sessionSetup, setRestaurantName } from './helpers';
+import { MENU_TOKEN_VERSION } from '../src/lib/menuShare';
+import {
+  decodeTokenDocument,
+  horizontalOverflow,
+  openCalculator,
+  sessionSetup,
+  setRestaurantName,
+} from './helpers';
 
 /** Adds one diner-authored food, which is what makes a menu worth sharing. */
 async function addCustomFood(page: Page, name: string, retailPerKg: number) {
@@ -44,7 +51,7 @@ test.describe('Sharing a personal menu', () => {
     await addCustomFood(page, 'Cheese corn', 14);
 
     const link = await copyMenuLink(page);
-    expect(link).toContain('/menu/1.');
+    expect(link).toContain(`/menu/${MENU_TOKEN_VERSION}.`);
 
     const recipient = await openAsRecipient(browser, link);
 
@@ -141,10 +148,7 @@ test.describe('Sharing a personal menu', () => {
 
     const link = await copyMenuLink(page);
     // The roster name is nowhere in the address, in any encoding.
-    const body = Buffer.from(
-      link.split('/menu/1.')[1]!.replace(/-/g, '+').replace(/_/g, '/'),
-      'base64',
-    ).toString('utf-8');
+    const body = decodeTokenDocument(link, 'menu');
     expect(body).not.toContain('Lorenzo');
 
     const recipient = await openAsRecipient(browser, link);

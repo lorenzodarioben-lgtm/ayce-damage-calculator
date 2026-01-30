@@ -8,7 +8,16 @@ import {
 } from '@/lib/pricingProfiles';
 import { createRestaurantProfile, restaurantId, type RestaurantProfile } from '@/lib/restaurants';
 import { sanitiseRestaurantName } from '@/lib/storage';
-import { decodeUrlText, encodeUrlText } from '@/lib/urlText';
+import {
+  packShareBody,
+  shareEncodeFailure,
+  shareEncodeSuccess,
+  shareTokenOrNull,
+  unpackShareBody,
+  type PackLimits,
+  type ShareEncodeResult,
+} from '@/lib/shareCodec';
+import { decodeUrlText } from '@/lib/urlText';
 import type { CustomFood } from '@/types/customFoods';
 import type { FoodPricing, PricingProfile } from '@/types/pricing';
 
@@ -25,10 +34,29 @@ import type { FoodPricing, PricingProfile } from '@/types/pricing';
  * link carries a menu.
  */
 
-export const MENU_TOKEN_VERSION = 1;
+/**
+ * 1 — URL-safe base64 JSON.
+ * 2 — the same document, compressed.
+ *
+ * Both still decode, because a menu someone shared is an address that has to
+ * keep working.
+ */
+export const MENU_TOKEN_VERSION = 2;
+const VERBOSE_MENU_TOKEN_VERSION = 1;
 
 /** A menu is larger than a meal, and still has to fit in an address bar. */
 export const MAX_MENU_TOKEN_LENGTH = 4096;
+
+/**
+ * A full personal catalogue is the largest document any link carries, and this
+ * is still a fixed ceiling checked before a byte is allocated.
+ */
+export const MAX_MENU_DECODED_BYTES = 64 * 1024;
+
+const MENU_LIMITS: PackLimits = {
+  maxDecodedBytes: MAX_MENU_DECODED_BYTES,
+  maxEncodedLength: MAX_MENU_TOKEN_LENGTH - 2,
+};
 
 export interface SharedRestaurantSetup {
   readonly name: string;
@@ -47,17 +75,14 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-/**
- * Encodes a menu, or returns null when there is nothing worth sharing or the
- * result would be too long to be a usable address.
- */
-export function encodeMenuPayload(payload: MenuSharePayload): string | null {
+/** Encodes a menu, saying whether it was empty or simply too big to carry. */
+export function encodeMenuResult(payload: MenuSharePayload): ShareEncodeResult {
   const customFoods = payload.customFoods.slice(0, MAX_CUSTOM_FOODS);
   const overrides = Object.keys(payload.pricingProfile.overrides).length;
 
   // An empty menu is a link to nothing.
   if (customFoods.length === 0 && overrides === 0 && !payload.restaurant) {
-    return null;
+    return shareEncodeFailure('empty');
   }
 
   const body = {
@@ -79,8 +104,18 @@ export function encodeMenuPayload(payload: MenuSharePayload): string | null {
       : {}),
   };
 
-  const token = `${MENU_TOKEN_VERSION}.${encodeUrlText(JSON.stringify(body))}`;
-  return token.length <= MAX_MENU_TOKEN_LENGTH ? token : null;
+  const packed = packShareBody(JSON.stringify(body), MENU_LIMITS);
+  return packed === null
+    ? shareEncodeFailure('too-large')
+    : shareEncodeSuccess(`${MENU_TOKEN_VERSION}.${packed}`);
+}
+
+/**
+ * Encodes a menu, or returns null when there is nothing worth sharing or the
+ * result would be too long to be a usable address.
+ */
+export function encodeMenuPayload(payload: MenuSharePayload): string | null {
+  return shareTokenOrNull(encodeMenuResult(payload));
 }
 
 function parseSharedProfile(value: unknown): PricingProfile | null {
@@ -142,11 +177,20 @@ export function decodeMenuPayload(token: string | null | undefined): MenuSharePa
   }
 
   const separator = token.indexOf('.');
-  if (separator < 0 || token.slice(0, separator) !== String(MENU_TOKEN_VERSION)) {
+  if (separator < 0) {
     return null;
   }
 
-  const decoded = decodeUrlText(token.slice(separator + 1));
+  const body = token.slice(separator + 1);
+  const version = token.slice(0, separator);
+  let decoded: string | null;
+  if (version === String(VERBOSE_MENU_TOKEN_VERSION)) {
+    decoded = decodeUrlText(body);
+  } else if (version === String(MENU_TOKEN_VERSION)) {
+    decoded = unpackShareBody(body, MENU_LIMITS);
+  } else {
+    return null;
+  }
   if (decoded === null) {
     return null;
   }

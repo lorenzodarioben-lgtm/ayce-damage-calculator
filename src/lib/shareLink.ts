@@ -12,7 +12,16 @@ import { findFoodInCatalogue, foodCatalogue } from '@/lib/foodCatalogue';
 import { DEFAULT_PRICING_PROFILE } from '@/lib/pricing';
 import { parseCustomPricingProfile } from '@/lib/pricingProfiles';
 import { MAX_CUSTOM_FOODS, parseCustomFood } from '@/lib/customFoods';
-import { decodeUrlText, encodeUrlText } from '@/lib/urlText';
+import {
+  packShareBody,
+  shareEncodeFailure,
+  shareEncodeSuccess,
+  shareTokenOrNull,
+  unpackShareBody,
+  type PackLimits,
+  type ShareEncodeResult,
+} from '@/lib/shareCodec';
+import { decodeUrlText } from '@/lib/urlText';
 import type { CustomFood } from '@/types/customFoods';
 import type { PricingProfile } from '@/types/pricing';
 import type { Diner, FoodItem, MealItem, MealSession, PlateSize, QualityTier } from '@/types/meal';
@@ -27,11 +36,35 @@ import type { Diner, FoodItem, MealItem, MealSession, PlateSize, QualityTier } f
  * itself could not have produced.
  */
 
-export const SHARE_TOKEN_VERSION = 2;
+/**
+ * 1 — a compact dot-separated tuple, before menus were configurable.
+ * 2 — URL-safe base64 JSON, carrying the pricing and custom-food context.
+ * 3 — the same document, compressed.
+ *
+ * Every one of these still decodes. A link someone posted a year ago is a
+ * permanent address, and there is no server that could migrate it.
+ */
+export const SHARE_TOKEN_VERSION = 3;
 const LEGACY_SHARE_TOKEN_VERSION = 1;
+const VERBOSE_SHARE_TOKEN_VERSION = 2;
 
 /** Refuse absurd input before any parsing work is done. */
 export const MAX_SHARE_TOKEN_LENGTH = 2048;
+
+/**
+ * The largest meal document the codec will pack or accept.
+ *
+ * Comfortably above a full tab with a complete custom menu attached, and a
+ * fixed ceiling a decoder can check a token's own claim against before it
+ * allocates anything.
+ */
+export const MAX_SHARE_DECODED_BYTES = 32 * 1024;
+
+const SHARE_LIMITS: PackLimits = {
+  maxDecodedBytes: MAX_SHARE_DECODED_BYTES,
+  // The version prefix and its separator come out of the address budget.
+  maxEncodedLength: MAX_SHARE_TOKEN_LENGTH - 2,
+};
 
 /** More lines than the builder can realistically produce, but still bounded. */
 export const MAX_SHARE_ITEMS = 40;
@@ -97,21 +130,22 @@ function fromBase36(value: string): number | null {
 }
 
 /**
- * Version 1 used a compact dot-separated tuple. Version 2 keeps the address
- * URL-safe while carrying the menu context required to reproduce a custom meal.
+ * Encodes the current meal, saying why when it cannot.
  *
- *   1.<price in cents b36>.<diners b36>.<items>.<name>
- *
- * where items are `code-quality-plate-quantity` joined by `_`, and the name is
- * URL-safe base64. Compact by construction, so no compression dependency is
- * needed for payloads this size.
+ * Version 3 packs the same document version 2 carried, so nothing about what
+ * travels has changed — only how many bytes it takes. That headroom is the
+ * feature: a tab with a full custom menu attached used to overflow the address
+ * long before it reached the line limit, and now it fits.
  */
-export function encodeSharePayload(
+export function encodeShareResult(
   session: MealSession,
   context: ShareContext = {},
-): string | null {
-  if (session.items.length === 0 || session.items.length > MAX_SHARE_ITEMS) {
-    return null;
+): ShareEncodeResult {
+  if (session.items.length === 0) {
+    return shareEncodeFailure('empty');
+  }
+  if (session.items.length > MAX_SHARE_ITEMS) {
+    return shareEncodeFailure('too-large');
   }
 
   const customFoods = (context.customFoods ?? [])
@@ -119,7 +153,7 @@ export function encodeSharePayload(
     .slice(0, MAX_CUSTOM_FOODS);
   const availableFoods = foodCatalogue(customFoods);
   if (session.items.some((item) => !findFoodInCatalogue(availableFoods, item.foodId))) {
-    return null;
+    return shareEncodeFailure('empty');
   }
   const payload = {
     restaurantName: sanitiseRestaurantName(session.restaurantName),
@@ -138,8 +172,17 @@ export function encodeSharePayload(
       quantity: Math.min(MAX_LINE_QUANTITY, Math.max(MIN_QUANTITY, Math.floor(item.quantity))),
     })),
   };
-  const token = `${SHARE_TOKEN_VERSION}.${encodeUrlText(JSON.stringify(payload))}`;
-  return token.length <= MAX_SHARE_TOKEN_LENGTH ? token : null;
+  const body = packShareBody(JSON.stringify(payload), SHARE_LIMITS);
+  return body === null
+    ? shareEncodeFailure('too-large')
+    : shareEncodeSuccess(`${SHARE_TOKEN_VERSION}.${body}`);
+}
+
+export function encodeSharePayload(
+  session: MealSession,
+  context: ShareContext = {},
+): string | null {
+  return shareTokenOrNull(encodeShareResult(session, context));
 }
 
 function decodeItem(segment: string, index: number): MealItem | null {
@@ -309,15 +352,8 @@ function parseShareItems(value: unknown, foods: readonly FoodItem[]): readonly M
   return items;
 }
 
-function decodeConfigurableSharePayload(token: string): SharePayload | null {
-  const segments = token.split('.');
-  if (segments.length !== 2 || segments[0] !== String(SHARE_TOKEN_VERSION)) {
-    return null;
-  }
-  const decoded = decodeUrlText(segments[1] ?? '');
-  if (decoded === null) {
-    return null;
-  }
+/** The document body both version 2 and version 3 carry, once it is text again. */
+function parseShareDocument(decoded: string): SharePayload | null {
   let value: unknown;
   try {
     value = JSON.parse(decoded);
@@ -361,20 +397,63 @@ function decodeConfigurableSharePayload(token: string): SharePayload | null {
   };
 }
 
-/** Returns null for anything that is not a token this build can read. */
+/** Version 2: the document as URL-safe base64 JSON. */
+function decodeVerboseSharePayload(body: string): SharePayload | null {
+  const decoded = decodeUrlText(body);
+  return decoded === null ? null : parseShareDocument(decoded);
+}
+
+/** Version 3: the same document, compressed and length-prefixed. */
+function decodeCompressedSharePayload(body: string): SharePayload | null {
+  const decoded = unpackShareBody(body, SHARE_LIMITS);
+  return decoded === null ? null : parseShareDocument(decoded);
+}
+
+/**
+ * Returns null for anything that is not a token this build can read.
+ *
+ * Dispatch is on the version prefix and nothing else. A token is never tried
+ * against a second reader after the first declines it: guessing at a format
+ * would mean a corrupt version-3 body could be re-read as some other version's
+ * and produce a meal nobody shared.
+ */
 export function decodeSharePayload(token: string | null | undefined): SharePayload | null {
   if (typeof token !== 'string' || token.length === 0 || token.length > MAX_SHARE_TOKEN_LENGTH) {
     return null;
   }
-  return token.startsWith(`${LEGACY_SHARE_TOKEN_VERSION}.`)
-    ? decodeLegacySharePayload(token)
-    : decodeConfigurableSharePayload(token);
+
+  const separator = token.indexOf('.');
+  if (separator < 0) {
+    return null;
+  }
+  const body = token.slice(separator + 1);
+
+  switch (token.slice(0, separator)) {
+    case String(LEGACY_SHARE_TOKEN_VERSION):
+      return decodeLegacySharePayload(token);
+    case String(VERBOSE_SHARE_TOKEN_VERSION):
+      return decodeVerboseSharePayload(body);
+    case String(SHARE_TOKEN_VERSION):
+      return decodeCompressedSharePayload(body);
+    default:
+      return null;
+  }
 }
 
 /** Convenience for building the full path a recipient will open. */
 export function shareLinkPath(session: MealSession, context: ShareContext = {}): string | null {
   const token = encodeSharePayload(session, context);
   return token === null ? null : `/share/${token}`;
+}
+
+export type ShareLinkResult =
+  | { readonly ok: true; readonly path: string }
+  | { readonly ok: false; readonly reason: 'empty' | 'too-large' };
+
+/** The path, or the reason there is not one, for surfaces that report both. */
+export function shareLinkResult(session: MealSession, context: ShareContext = {}): ShareLinkResult {
+  const result = encodeShareResult(session, context);
+  return result.ok ? { ok: true, path: `/share/${result.token}` } : result;
 }
 
 /** Every cut in the dataset must be shareable; used by the completeness test. */

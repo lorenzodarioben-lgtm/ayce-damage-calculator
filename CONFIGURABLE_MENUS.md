@@ -32,9 +32,20 @@ record readable even if the local catalogue later changes.
 
 ## Sharing and backups
 
-Current share links are versioned and self-contained. They include the plates,
-session setup, active pricing profile and any custom foods on the tab. Version
-1 links remain readable with the original built-in Australian menu context.
+Current share links are versioned, compressed and self-contained. They include
+the plates, session setup, active pricing profile and any custom foods on the
+tab. Compression is what makes a full personal catalogue shareable at all: a
+menu link is typically a fraction of the size the same document used to need.
+
+Every superseded token version keeps its own reader. Version 1 report links
+remain readable with the original built-in Australian menu context, and version
+2 report links, version 1 menu links and version 1 challenge links all still
+decode into exactly the menu they were written with. There is no server behind
+a link, so nothing could ever reissue one that had stopped working.
+
+A link still has a size limit, because the payload lives in the address. When a
+menu genuinely will not fit, the app says so and explains why, rather than
+offering a link that is quietly missing.
 
 The JSON backup at `/history/data` includes filed history, saved orders,
 pricing profiles, custom foods and saved restaurants. Restore always previews
