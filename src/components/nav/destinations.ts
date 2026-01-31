@@ -15,6 +15,7 @@ export const DESTINATIONS: readonly Destination[] = [
   { href: '/live', label: 'Live' },
   { href: '/plan', label: 'Plan' },
   { href: '/restaurants', label: 'Places' },
+  { href: '/diners', label: 'Diners' },
   { href: '/history', label: 'History' },
   { href: '/stats', label: 'Stats' },
 ];
