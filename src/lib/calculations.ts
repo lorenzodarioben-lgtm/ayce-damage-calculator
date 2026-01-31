@@ -11,8 +11,8 @@ import {
   settleTotal,
   tableWideAdjustments,
   totalAdjustments,
-  type AdjustmentTotals,
 } from '@/lib/adjustments';
+import { distributeMoney } from '@/lib/splitMoney';
 import { DEFAULT_PRICING_PROFILE } from '@/lib/pricing';
 import { resolveValuation } from '@/lib/valuation';
 import { findFoodInCatalogue } from '@/lib/foodCatalogue';
@@ -253,87 +253,235 @@ export function perDinerTotals(report: DamageReport): PerDinerTotals {
 }
 
 /**
- * Calculates an estimate per active roster member while preserving table totals.
+ * How many people the shared food has to stretch across.
+ *
+ * The roster names whoever the diner bothered to name, and the headcount says
+ * how many people the restaurant charged for. Those are different numbers
+ * whenever somebody was not typed in, and the larger one is the truth about the
+ * table: four people ate, two of them have names on file, and the shared plates
+ * were still shared four ways.
+ *
+ * Dividing by the roster alone would hand the two unnamed seats' food to the
+ * two named ones — inflating their plates, their weight, their retail value and
+ * therefore their recovery, purely because nobody typed a name.
+ */
+export function tableSeats(config: Pick<AdmissionConfig, 'dinerCount' | 'diners'>): number {
+  return Math.max(clampDinerCount(config.dinerCount), config.diners?.length ?? 0);
+}
+
+/**
+ * The share of the table that belongs to seats nobody named.
+ *
+ * Reported rather than hidden. This food was eaten by somebody, and the only
+ * honest thing to say about them is that the roster does not name them — which
+ * is a different statement from splitting their plates among the people it does.
+ */
+export interface UnnamedSeatTotals {
+  /** Seats charged for but not on the roster. Always at least one when present. */
+  readonly seats: number;
+  readonly admission: number;
+  readonly baseAdmission: number;
+  readonly adjustmentNet: number;
+  readonly sharedPlates: number;
+  readonly consumedPlates: number;
+  readonly weightG: number;
+  readonly retailValue: number;
+  readonly restaurantCost: number;
+  readonly retailRecoveryPercent: number;
+  readonly nutrition: Nutrition;
+}
+
+/**
+ * The whole table, divided so that the parts add back up to it.
+ *
+ * Two invariants hold here by construction rather than by coincidence, and both
+ * are the reason a per-person figure is worth showing at all:
+ *
+ * Plates are exhaustive. Every diner's attributed plates, plus every seat's even
+ * share of what stayed shared, equals what reached the table — with the unnamed
+ * seats carrying their own share rather than donating it to the named ones.
+ *
+ * Money is exact. The per-seat amounts are settled in whole cents against the
+ * table's own settled total, so what each person owes adds up to what the table
+ * paid. Rounding four amounts independently and hoping is what produces a
+ * receipt that is a cent short of itself.
+ */
+export interface TableSplit {
+  readonly diners: readonly DinerDamageTotals[];
+  /** Null when the roster names everybody the table was charged for. */
+  readonly unnamed: UnnamedSeatTotals | null;
+  readonly seats: number;
+}
+
+interface SeatFood {
+  sharedPlates: number;
+  consumedPlates: number;
+  weightG: number;
+  retailValue: number;
+  restaurantCost: number;
+  nutrition: Nutrition;
+}
+
+function emptySeatFood(): SeatFood {
+  return {
+    sharedPlates: 0,
+    consumedPlates: 0,
+    weightG: 0,
+    retailValue: 0,
+    restaurantCost: 0,
+    nutrition: { ...EMPTY_NUTRITION },
+  };
+}
+
+/**
+ * Calculates an estimate per seat at the table while preserving its totals.
  *
  * Adjustments follow the same rule the plates do. One named to a diner is
- * theirs; anything charged to the table is divided evenly, which is a stated
- * assumption rather than a measurement — the bill records a card fee, not who
- * tapped the card. Per-diner totals therefore still sum to the table's, which
- * is the property that makes them worth showing at all.
+ * theirs; anything charged to the table is divided evenly across every seat,
+ * which is a stated assumption rather than a measurement — the bill records a
+ * card fee, not who tapped the card.
  */
+export function calculateTableSplit(
+  items: readonly MealItem[],
+  config: AdmissionConfig,
+  pricingProfile: PricingProfile = DEFAULT_PRICING_PROFILE,
+  foods = FOODS,
+): TableSplit {
+  const diners = config.diners ?? [];
+  const seats = tableSeats(config);
+  if (diners.length === 0) {
+    return { diners: [], unnamed: null, seats };
+  }
+
+  const defaultAdmission = clampPricePerDiner(config.pricePerDiner);
+  const unnamedSeats = Math.max(0, seats - diners.length);
+  const tableAdjustments = totalAdjustments(tableWideAdjustments(config.adjustments));
+  // One seat's share of what the table as a whole was charged.
+  const seatAdjustmentNet = safeRatio(tableAdjustments.net, seats);
+
+  const perDinerFood = diners.map(() => emptySeatFood());
+  const attributedPlates = diners.map(() => 0);
+  const unnamedFood = emptySeatFood();
+
+  for (const item of items) {
+    const food = findFoodInCatalogue(foods, item.foodId);
+    if (!food) continue;
+    const line = calculateLineItem(item, food, pricingProfile);
+    // One seat's share of whatever nobody claimed from this line.
+    const sharedPerSeat = safeRatio(sharedQuantity(item), seats);
+
+    const take = (target: SeatFood, plates: number) => {
+      const fraction = safeRatio(plates, line.plates);
+      // A line's uneaten share is a property of the line, not of one person, so
+      // each seat carries its proportion of what was eaten from it.
+      target.consumedPlates += line.consumedPlates * fraction;
+      target.weightG += line.weightG * fraction;
+      target.retailValue += line.retailValue * fraction;
+      target.restaurantCost += line.restaurantCost * fraction;
+      target.nutrition = {
+        calories: target.nutrition.calories + line.nutrition.calories * fraction,
+        protein: target.nutrition.protein + line.nutrition.protein * fraction,
+        fat: target.nutrition.fat + line.nutrition.fat * fraction,
+        carbs: target.nutrition.carbs + line.nutrition.carbs * fraction,
+      };
+    };
+
+    diners.forEach((diner, index) => {
+      const attributed = Math.max(
+        0,
+        item.allocations?.find((entry) => entry.dinerId === diner.id)?.quantity ?? 0,
+      );
+      const seat = perDinerFood[index];
+      if (!seat) return;
+      attributedPlates[index] = (attributedPlates[index] ?? 0) + attributed;
+      seat.sharedPlates += sharedPerSeat;
+      take(seat, attributed + sharedPerSeat);
+    });
+
+    if (unnamedSeats > 0) {
+      const plates = sharedPerSeat * unnamedSeats;
+      unnamedFood.sharedPlates += plates;
+      take(unnamedFood, plates);
+    }
+  }
+
+  const baseAdmissions = diners.map((diner) =>
+    typeof diner.admissionPrice === 'number' && diner.admissionPrice > 0
+      ? clampPricePerDiner(diner.admissionPrice)
+      : defaultAdmission,
+  );
+  const ownNets = diners.map(
+    (diner) => totalAdjustments(adjustmentsForDiner(config.adjustments, diner.id)).net,
+  );
+  const adjustmentNets = ownNets.map((net) => net + seatAdjustmentNet);
+  const unnamedBaseAdmission = defaultAdmission * unnamedSeats;
+  const unnamedAdjustmentNet = seatAdjustmentNet * unnamedSeats;
+
+  // What each seat would owe before the table's own total is rounded. Floored
+  // at zero for the same reason the table's total is: a discount bigger than
+  // somebody's entry price means they paid nothing, not less than nothing.
+  const claims = [
+    ...baseAdmissions.map((base, index) => Math.max(0, base + (adjustmentNets[index] ?? 0))),
+    ...(unnamedSeats > 0 ? [Math.max(0, unnamedBaseAdmission + unnamedAdjustmentNet)] : []),
+  ];
+  // Settled against the table's own paid total, so the seats reconcile with the
+  // receipt exactly rather than each rounding away from it on their own.
+  const settled = distributeMoney(calculateBillTotals(config).totalPaid, claims);
+
+  const dinerTotals = diners.map((diner, index) => {
+    const seat = perDinerFood[index] ?? emptySeatFood();
+    const attributed = attributedPlates[index] ?? 0;
+    const admission = settled[index] ?? 0;
+    const retailValue = seat.retailValue;
+    return {
+      diner,
+      admission,
+      baseAdmission: baseAdmissions[index] ?? defaultAdmission,
+      adjustmentNet: adjustmentNets[index] ?? 0,
+      attributedPlates: attributed,
+      sharedPlates: seat.sharedPlates,
+      effectivePlates: attributed + seat.sharedPlates,
+      consumedPlates: seat.consumedPlates,
+      weightG: seat.weightG,
+      retailValue,
+      restaurantCost: seat.restaurantCost,
+      retailRecoveryPercent: safeRatio(retailValue, admission) * 100,
+      nutrition: seat.nutrition,
+    };
+  });
+
+  if (unnamedSeats === 0) {
+    return { diners: dinerTotals, unnamed: null, seats };
+  }
+
+  const unnamedAdmission = settled[diners.length] ?? 0;
+  return {
+    diners: dinerTotals,
+    unnamed: {
+      seats: unnamedSeats,
+      admission: unnamedAdmission,
+      baseAdmission: unnamedBaseAdmission,
+      adjustmentNet: unnamedAdjustmentNet,
+      sharedPlates: unnamedFood.sharedPlates,
+      consumedPlates: unnamedFood.consumedPlates,
+      weightG: unnamedFood.weightG,
+      retailValue: unnamedFood.retailValue,
+      restaurantCost: unnamedFood.restaurantCost,
+      retailRecoveryPercent: safeRatio(unnamedFood.retailValue, unnamedAdmission) * 100,
+      nutrition: unnamedFood.nutrition,
+    },
+    seats,
+  };
+}
+
+/** The named roster's own figures. The unnamed seats are in `calculateTableSplit`. */
 export function calculateDinerTotals(
   items: readonly MealItem[],
   config: AdmissionConfig,
   pricingProfile: PricingProfile = DEFAULT_PRICING_PROFILE,
   foods = FOODS,
 ): readonly DinerDamageTotals[] {
-  const diners = config.diners ?? [];
-  if (diners.length === 0) return [];
-  const defaultAdmission = clampPricePerDiner(config.pricePerDiner);
-  const sharedDivisor = diners.length;
-  const tableAdjustments = totalAdjustments(tableWideAdjustments(config.adjustments));
-  const sharedAdjustmentNet = safeRatio(tableAdjustments.net, sharedDivisor);
-
-  return diners.map((diner) => {
-    let attributedPlates = 0;
-    let sharedPlates = 0;
-    let consumedPlates = 0;
-    let weightG = 0;
-    let retailValue = 0;
-    let restaurantCost = 0;
-    let nutrition: Nutrition = { ...EMPTY_NUTRITION };
-    for (const item of items) {
-      const food = findFoodInCatalogue(foods, item.foodId);
-      if (!food) continue;
-      const line = calculateLineItem(item, food, pricingProfile);
-      const attributed =
-        item.allocations?.find((entry) => entry.dinerId === diner.id)?.quantity ?? 0;
-      const shared = sharedQuantity(item) / sharedDivisor;
-      const effective = Math.max(0, attributed) + shared;
-      const fraction = safeRatio(effective, line.plates);
-      attributedPlates += Math.max(0, attributed);
-      sharedPlates += shared;
-      // A line's uneaten share is a property of the line, not of one person, so
-      // each diner carries their proportion of what was eaten from it.
-      consumedPlates += line.consumedPlates * fraction;
-      weightG += line.weightG * fraction;
-      retailValue += line.retailValue * fraction;
-      restaurantCost += line.restaurantCost * fraction;
-      nutrition = {
-        calories: nutrition.calories + line.nutrition.calories * fraction,
-        protein: nutrition.protein + line.nutrition.protein * fraction,
-        fat: nutrition.fat + line.nutrition.fat * fraction,
-        carbs: nutrition.carbs + line.nutrition.carbs * fraction,
-      };
-    }
-    const baseAdmission =
-      typeof diner.admissionPrice === 'number' && diner.admissionPrice > 0
-        ? clampPricePerDiner(diner.admissionPrice)
-        : defaultAdmission;
-    const own: AdjustmentTotals = totalAdjustments(
-      adjustmentsForDiner(config.adjustments, diner.id),
-    );
-    const adjustmentNet = own.net + sharedAdjustmentNet;
-    // Floored at zero for the same reason the table's total is: a share bigger
-    // than the entry price means this diner paid nothing, not less than nothing.
-    const admission = Math.max(0, baseAdmission + adjustmentNet);
-    const effectivePlates = attributedPlates + sharedPlates;
-    return {
-      diner,
-      admission,
-      baseAdmission,
-      adjustmentNet,
-      attributedPlates,
-      sharedPlates,
-      effectivePlates,
-      consumedPlates,
-      weightG,
-      retailValue,
-      restaurantCost,
-      retailRecoveryPercent: safeRatio(retailValue, admission) * 100,
-      nutrition,
-    };
-  });
+  return calculateTableSplit(items, config, pricingProfile, foods).diners;
 }
 
 /**
