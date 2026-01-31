@@ -168,7 +168,12 @@ export function MealBuilder({
         </div>
       ) : (
         <>
-          <CategoryTabs value={category} onChange={handleCategoryChange} panelId={panelId} />
+          <CategoryTabs
+            value={category}
+            onChange={handleCategoryChange}
+            panelId={panelId}
+            foods={catalogue}
+          />
           <div
             id={panelId}
             role="tabpanel"

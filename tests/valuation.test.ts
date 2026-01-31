@@ -81,10 +81,11 @@ describe('Every weight-valued fixture is unchanged', () => {
       10,
     );
     expect(totals.weightG).toBe(size.grams);
-    expect(totals.nutrition.calories).toBeCloseTo(per100g * food.caloriesPer100g, 10);
-    expect(totals.nutrition.protein).toBeCloseTo(per100g * food.proteinPer100g, 10);
-    expect(totals.nutrition.fat).toBeCloseTo(per100g * food.fatPer100g, 10);
-    expect(totals.nutrition.carbs).toBeCloseTo(per100g * food.carbsPer100g, 10);
+    expect(totals.nutrition.calories).toBeCloseTo(per100g * food.caloriesPer100g!, 10);
+    expect(totals.nutrition.protein).toBeCloseTo(per100g * food.proteinPer100g!, 10);
+    expect(totals.nutrition.fat).toBeCloseTo(per100g * food.fatPer100g!, 10);
+    expect(totals.nutrition.carbs).toBeCloseTo(per100g * food.carbsPer100g!, 10);
+    expect(totals.hasNutrition).toBe(true);
     expect(totals.hasWeight).toBe(true);
   });
 

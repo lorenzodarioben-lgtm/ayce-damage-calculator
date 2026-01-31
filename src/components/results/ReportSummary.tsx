@@ -263,6 +263,14 @@ export function ReportSummary({
           <ResultMetric label="Fat" value={formatGrams(report.nutrition.fat)} />
           <ResultMetric label="Carbohydrates" value={formatGrams(report.nutrition.carbs)} />
         </div>
+        {report.linesWithoutNutrition > 0 && (
+          <p className="mt-2 max-w-[62ch] text-xs leading-relaxed text-cream-700">
+            {report.linesWithoutNutrition}{' '}
+            {report.linesWithoutNutrition === 1 ? 'item on this tab has' : 'items on this tab have'}{' '}
+            no nutrition recorded, so {report.linesWithoutNutrition === 1 ? 'it is' : 'they are'}{' '}
+            not counted above. An unknown figure is left out rather than treated as zero.
+          </p>
+        )}
       </section>
 
       {/* 6 — The house side of the ledger */}

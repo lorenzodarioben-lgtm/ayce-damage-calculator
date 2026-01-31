@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { FOODS, FOOD_COUNT, findFood, foodsInCategory, searchFoods, sortFoods } from '@/data/foods';
-import { CATEGORY_META, FOOD_CATEGORIES } from '@/lib/constants';
+import { CUSTOM_ONLY_CATEGORIES, FOOD_CATEGORIES, GRILL_CATEGORIES } from '@/lib/constants';
 import { DEFAULT_PRICING_PROFILE } from '@/lib/pricing';
 import type { PricingProfile } from '@/types/pricing';
 import type { FoodItem, WeightValuedFood } from '@/types/meal';
@@ -52,9 +52,17 @@ describe('food dataset', () => {
     }
   });
 
-  it('leaves no category empty', () => {
-    for (const category of CATEGORY_META) {
-      expect(foodsInCategory(category.id).length).toBeGreaterThan(0);
+  it('leaves no grill category empty', () => {
+    for (const category of GRILL_CATEGORIES) {
+      expect(foodsInCategory(category).length).toBeGreaterThan(0);
+    }
+  });
+
+  it('bundles nothing at all in the custom-only categories', () => {
+    // These exist for a diner's own sides, stews, desserts and drinks. The app
+    // does not know what a bowl of soup costs and will not invent one.
+    for (const category of CUSTOM_ONLY_CATEGORIES) {
+      expect(foodsInCategory(category)).toEqual([]);
     }
   });
 
@@ -85,7 +93,7 @@ describe('food dataset', () => {
     }
 
     // Macros are per 100 g, so their combined mass cannot exceed the sample.
-    expect(priced.proteinPer100g + priced.fatPer100g + priced.carbsPer100g).toBeLessThanOrEqual(
+    expect(priced.proteinPer100g! + priced.fatPer100g! + priced.carbsPer100g!).toBeLessThanOrEqual(
       100,
     );
   });
