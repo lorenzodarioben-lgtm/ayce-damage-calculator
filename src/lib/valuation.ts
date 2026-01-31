@@ -30,6 +30,17 @@ export interface UnitValuation {
    * surface can say "not weighed" instead of reporting a confident zero.
    */
   readonly hasWeight: boolean;
+  /**
+   * False when the item has no macros on file. Distinguished from all-zero
+   * because "we do not know" and "it contains nothing" are different claims,
+   * and only one of them is ever true of food.
+   */
+  readonly hasNutrition: boolean;
+}
+
+/** True when any macro was actually recorded for this item. */
+function anyRecorded(values: readonly (number | undefined)[]): boolean {
+  return values.some((value) => typeof value === 'number' && Number.isFinite(value));
 }
 
 function positive(value: unknown): number {
@@ -83,6 +94,12 @@ export function resolveValuation(
         carbs: Math.max(0, nonNegative(food.carbsPerServing) ?? 0),
       },
       hasWeight: grams > 0,
+      hasNutrition: anyRecorded([
+        food.caloriesPerServing,
+        food.proteinPerServing,
+        food.fatPerServing,
+        food.carbsPerServing,
+      ]),
     };
   }
 
@@ -99,12 +116,18 @@ export function resolveValuation(
     restaurantCostPerUnit: kg * Math.max(0, costPerKg) * tier.restaurantMultiplier,
     gramsPerUnit: grams,
     nutritionPerUnit: {
-      calories: per100g * Math.max(0, food.caloriesPer100g),
-      protein: per100g * Math.max(0, food.proteinPer100g),
-      fat: per100g * Math.max(0, food.fatPer100g),
-      carbs: per100g * Math.max(0, food.carbsPer100g),
+      calories: per100g * Math.max(0, nonNegative(food.caloriesPer100g) ?? 0),
+      protein: per100g * Math.max(0, nonNegative(food.proteinPer100g) ?? 0),
+      fat: per100g * Math.max(0, nonNegative(food.fatPer100g) ?? 0),
+      carbs: per100g * Math.max(0, nonNegative(food.carbsPer100g) ?? 0),
     },
     hasWeight: true,
+    hasNutrition: anyRecorded([
+      food.caloriesPer100g,
+      food.proteinPer100g,
+      food.fatPer100g,
+      food.carbsPer100g,
+    ]),
   };
 }
 

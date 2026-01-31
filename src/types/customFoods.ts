@@ -55,9 +55,31 @@ export type CustomFoodDraft = WeightValuedDraft | ServingValuedDraft;
 
 export const VALUATION_MODELS: readonly ValuationModel[] = ['by-weight', 'by-serving'];
 
+/**
+ * Artwork for a diner-authored item, chosen by its category.
+ *
+ * The grill categories map to a cut arrangement, which the illustration then
+ * replaces with a deliberately neutral plate: a handwritten description does
+ * not tell us how somebody's brisket looks. The four custom-only categories map
+ * to artwork that is genuinely about the category rather than about a specific
+ * dish — three small bowls, a pot, a scoop, a glass — which is a truthful thing
+ * to draw for "a side" without inventing what side it is.
+ */
 export const CUSTOM_FOOD_VARIANT_BY_CATEGORY: Readonly<Record<FoodCategory, VisualVariant>> = {
   beef: 'brisket-slices',
   pork: 'pork-belly-layers',
   chicken: 'chicken-thigh-pieces',
   seafood: 'prawns',
+  sides: 'side-bowls',
+  'hot-food': 'stew-pot',
+  desserts: 'dessert-scoop',
+  drinks: 'drink-glass',
 };
+
+/** The variants that describe a category rather than a cut, so they are drawn as themselves. */
+export const CATEGORY_ARTWORK_VARIANTS: readonly VisualVariant[] = [
+  'side-bowls',
+  'stew-pot',
+  'dessert-scoop',
+  'drink-glass',
+];

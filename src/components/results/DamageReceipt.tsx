@@ -116,6 +116,9 @@ export function DamageReceipt({
           <Row label="TOTAL WEIGHT" value={formatKg(report.totalWeightKg)} />
           <Row label="CALORIES" value={formatCalories(report.nutrition.calories)} />
           <Row label="PROTEIN" value={formatGrams(report.nutrition.protein)} />
+          {report.linesWithoutNutrition > 0 && (
+            <Row label="NOT RECORDED" value={`${report.linesWithoutNutrition} ITEM(S)`} />
+          )}
         </div>
 
         <p className="mt-2 whitespace-pre overflow-hidden">{THIN_RULE}</p>

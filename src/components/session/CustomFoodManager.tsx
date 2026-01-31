@@ -54,10 +54,10 @@ function draftFrom(food: CustomFood | null): DraftState {
       retailPrice: String(food.retailPricePerServing),
       restaurantCost: String(food.restaurantCostPerServing),
       gramsPerServing: String(food.gramsPerServing),
-      calories: String(food.caloriesPerServing),
-      protein: String(food.proteinPerServing),
-      fat: String(food.fatPerServing),
-      carbs: String(food.carbsPerServing),
+      calories: optional(food.caloriesPerServing),
+      protein: optional(food.proteinPerServing),
+      fat: optional(food.fatPerServing),
+      carbs: optional(food.carbsPerServing),
     };
   }
 
@@ -67,15 +67,34 @@ function draftFrom(food: CustomFood | null): DraftState {
     retailPrice: food ? String(food.retailPricePerKg) : '',
     restaurantCost: food ? String(food.restaurantCostPerKg) : '',
     gramsPerServing: '0',
-    calories: food ? String(food.caloriesPer100g) : '0',
-    protein: food ? String(food.proteinPer100g) : '0',
-    fat: food ? String(food.fatPer100g) : '0',
-    carbs: food ? String(food.carbsPer100g) : '0',
+    // Blank rather than zero: an unstated macro is unknown, and prefilling a
+    // confident nought would put words in the diner's mouth.
+    calories: optional(food?.caloriesPer100g),
+    protein: optional(food?.proteinPer100g),
+    fat: optional(food?.fatPer100g),
+    carbs: optional(food?.carbsPer100g),
   };
+}
+
+/** Renders an optional figure as a field value, keeping unknown blank. */
+function optional(value: number | undefined): string {
+  return typeof value === 'number' ? String(value) : '';
 }
 
 function numberFrom(value: string): number {
   return Number(value);
+}
+
+/**
+ * A macro someone left blank, which means they do not know it.
+ *
+ * Returning undefined rather than zero is the whole point: "we have no figure
+ * for this side" and "this side has no calories" are different claims, and the
+ * report says which one it is holding.
+ */
+function macroFrom(value: string): number | undefined {
+  const trimmed = value.trim();
+  return trimmed === '' ? undefined : Number(trimmed);
 }
 
 function CustomFoodEditor({
@@ -112,20 +131,24 @@ function CustomFoodEditor({
             retailPricePerServing: numberFrom(draft.retailPrice),
             restaurantCostPerServing: numberFrom(draft.restaurantCost),
             gramsPerServing: numberFrom(draft.gramsPerServing),
-            caloriesPerServing: numberFrom(draft.calories),
-            proteinPerServing: numberFrom(draft.protein),
-            fatPerServing: numberFrom(draft.fat),
-            carbsPerServing: numberFrom(draft.carbs),
+            ...macroFields({
+              caloriesPerServing: macroFrom(draft.calories),
+              proteinPerServing: macroFrom(draft.protein),
+              fatPerServing: macroFrom(draft.fat),
+              carbsPerServing: macroFrom(draft.carbs),
+            }),
           }
         : {
             ...shared,
             valuation: 'by-weight',
             retailPricePerKg: numberFrom(draft.retailPrice),
             restaurantCostPerKg: numberFrom(draft.restaurantCost),
-            caloriesPer100g: numberFrom(draft.calories),
-            proteinPer100g: numberFrom(draft.protein),
-            fatPer100g: numberFrom(draft.fat),
-            carbsPer100g: numberFrom(draft.carbs),
+            ...macroFields({
+              caloriesPer100g: macroFrom(draft.calories),
+              proteinPer100g: macroFrom(draft.protein),
+              fatPer100g: macroFrom(draft.fat),
+              carbsPer100g: macroFrom(draft.carbs),
+            }),
           },
       food?.id ?? nextCustomFoodId(foods, draft.name),
     );
@@ -286,6 +309,10 @@ function CustomFoodEditor({
           <legend className="micro-label mb-2">
             {perServing ? 'Nutrition per serving' : 'Nutrition per 100 g'}
           </legend>
+          <p className="mb-2 text-xs leading-relaxed text-cream-700">
+            Leave a field blank if you do not know it. The report says the figure is not recorded
+            rather than counting it as nothing.
+          </p>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {(
               [
@@ -301,9 +328,10 @@ function CustomFoodEditor({
                   type="number"
                   min="0"
                   step="0.1"
+                  placeholder="Unknown"
                   value={draft[key]}
                   onChange={(event) => set(key, event.target.value)}
-                  className="mt-1 h-10 w-full rounded-[8px] border border-line bg-ash-900 px-2 text-sm font-normal text-cream-50 focus:border-ember-600"
+                  className="mt-1 h-10 w-full rounded-[8px] border border-line bg-ash-900 px-2 text-sm font-normal text-cream-50 placeholder:text-cream-700 focus:border-ember-600"
                 />
               </label>
             ))}
@@ -335,6 +363,19 @@ function CustomFoodEditor({
       </div>
     </Dialog>
   );
+}
+
+/** Drops the macros nobody filled in, so absence reaches the model as absence. */
+function macroFields<Keys extends string>(
+  values: Readonly<Record<Keys, number | undefined>>,
+): Partial<Record<Keys, number>> {
+  const kept: Partial<Record<Keys, number>> = {};
+  for (const [key, value] of Object.entries(values) as [Keys, number | undefined][]) {
+    if (value !== undefined) {
+      kept[key] = value;
+    }
+  }
+  return kept;
 }
 
 /** Personal menu controls, shaped like the rest of the setup rather than an admin screen. */
