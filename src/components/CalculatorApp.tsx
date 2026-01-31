@@ -185,6 +185,7 @@ export function CalculatorApp() {
                     customFoods={customFoods.foods}
                     onSaveCustomFood={customFoods.save}
                     onRemoveCustomFood={customFoods.remove}
+                    onReplaceCustomFoods={customFoods.replaceAll}
                     onDinerCountChange={adjustDinerCount}
                     onApplySetup={applySetup}
                     regularDiners={regularDiners.diners}

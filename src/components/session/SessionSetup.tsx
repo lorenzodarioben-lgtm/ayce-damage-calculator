@@ -39,6 +39,7 @@ interface SessionSetupProps {
   customFoods: readonly CustomFood[];
   onSaveCustomFood: (food: CustomFood) => void;
   onRemoveCustomFood: (id: string) => void;
+  onReplaceCustomFoods: (foods: readonly CustomFood[]) => void;
   onDinerCountChange: (delta: number) => void;
   onApplySetup: (setup: SessionConfig) => void;
   regularDiners: readonly RegularDiner[];
@@ -68,6 +69,7 @@ export function SessionSetup({
   customFoods,
   onSaveCustomFood,
   onRemoveCustomFood,
+  onReplaceCustomFoods,
   onDinerCountChange,
   onApplySetup,
   regularDiners,
@@ -313,6 +315,7 @@ export function SessionSetup({
         foods={customFoods}
         onSave={onSaveCustomFood}
         onRemove={onRemoveCustomFood}
+        onReplaceAll={onReplaceCustomFoods}
         onStatus={onStatus}
       />
 
