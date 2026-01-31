@@ -46,6 +46,8 @@ keys, and nothing you record ever leaves your device.
   ordered, eaten and left stated plainly — no scolding, no default that assumes waste
 - Personal menu items in four further categories — sides, hot food, desserts and drinks — with their
   own artwork, no invented defaults, and unknown nutrition distinguished from zero
+- CSV menu import with a downloadable template: previewed first, with row-level reasons for anything
+  rejected, deliberate choices for anything that collides, and an atomic apply
 
 **Restaurant hub** (`/restaurants`)
 
@@ -215,6 +217,19 @@ facts, with every threshold named in one exported object. Nothing consults the c
 
 **One meal model.** Live Meal Mode, the full builder and the report all drive the same session
 reducer and the same calculation engine. There is no second meal shape and no second set of sums.
+
+**Import that shows its working.** A personal menu can come in from a spreadsheet. Parsing writes
+nothing: it produces a plan naming the accepted rows, the rejected ones with the line number the
+spreadsheet shows and the exact reason, and any collision with an item already on the menu — offered
+as a choice between keeping yours, keeping both, or replacing yours, and starting on "keep mine",
+because replacing something is a decision rather than a default. The plan describes the whole
+resulting menu and is committed in one write, so there is no state in which half a file has been
+applied. The CSV reader is written into the project rather than pulled in, because the awkward parts
+— quoted commas, doubled quotes, embedded line breaks, Windows carriage returns — are exactly what a
+dependency would also have to get right, and it is bounded on rows, fields and file size. Formula
+leads are stripped from text fields so a hostile name can never be re-exported as something a
+spreadsheet would run; numeric fields are deliberately left alone, because a leading minus there is a
+negative number to reject rather than a character to remove.
 
 **Categories the app does not fill in.** Beyond the four grill categories the bundled catalogue
 occupies, a diner's own items can go in sides, hot food, desserts or drinks. Nothing is bundled for
