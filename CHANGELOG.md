@@ -112,6 +112,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
   hands the unnamed seats' plates to the diners who were typed in; those seats are reported as their
   own line instead. Per-seat money is settled in whole cents against the table's own total by
   largest remainder, so what each person owes adds up exactly to what the table paid.
+- The uncertainty panel now receives the bill and measures every scenario against what was actually
+  paid, the same figure the report beside it uses. A meal with a voucher or a surcharge could
+  previously have its scenarios, verdicts and headline sentence computed against the undiscounted
+  entry price, so the panel could contradict the report directly above it on the same screen. The
+  serving-weight band also stops scaling the weight of per-serving items, whose value that
+  assumption deliberately never moved.
 - Added `qrcode-generator`, the project's one dependency beyond the framework and its icons. A
   standards-correct QR encoder has no browser-native equivalent and is not something to hand-roll;
   the module is dependency-free and MIT, and the SVG rendering remains the app's own.

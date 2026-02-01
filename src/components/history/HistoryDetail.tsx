@@ -156,6 +156,7 @@ export function HistoryDetail({ id }: { id: string }) {
           pricePerDiner={record.pricePerDiner}
           dinerCount={record.dinerCount}
           diners={record.diners}
+          adjustments={record.adjustments}
           foods={foodCatalogue(record.customFoods)}
           headingId="saved-uncertainty-heading"
         />

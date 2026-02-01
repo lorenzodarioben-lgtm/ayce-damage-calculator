@@ -88,6 +88,7 @@ export function DamageReport({ report, session, onEditMeal, onStatus }: DamageRe
         pricePerDiner={session.pricePerDiner}
         dinerCount={session.dinerCount}
         diners={session.diners}
+        adjustments={session.adjustments}
         foods={catalogue}
         headingId="uncertainty-heading"
       />
