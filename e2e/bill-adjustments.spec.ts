@@ -103,6 +103,28 @@ test.describe('Charges quoted as a share of the bill', () => {
     await expect(bill(page).getByText('$55.00')).toBeVisible();
   });
 
+  test('does not let the uncertainty panel contradict the report', async ({ page }) => {
+    await openCalculator(page);
+    await setPricePerDiner(page, 50);
+    await addAdjustment(page, 'Discount', 'Voucher', 25);
+    await addPlate(page, 'Ribeye');
+    await addPlate(page, 'Ribeye');
+    await calculateDamage(page);
+
+    // The headline figure, and the base scenario in the panel underneath it,
+    // are the same meal measured the same way — so they read the same.
+    const headline = await page
+      .getByText('Retail value recovered', { exact: true })
+      .locator('xpath=../following-sibling::p[1]')
+      .textContent();
+
+    const panel = page.getByRole('region', { name: 'How firm is this number?' });
+    await panel.getByText('Show the range and what moves it').click();
+    await expect(
+      panel.getByRole('row', { name: new RegExp(`Base estimate.*${headline?.trim()}`) }),
+    ).toBeVisible();
+  });
+
   test('measures the report against the settled total', async ({ page }) => {
     await openCalculator(page);
     await setRestaurantName(page, 'Seoul Garden');
