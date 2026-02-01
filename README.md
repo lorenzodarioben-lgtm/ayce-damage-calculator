@@ -86,6 +86,8 @@ keys, and nothing you record ever leaves your device.
 - Currency-aware pricing profiles, starting from the built-in Australian KBBQ estimates and using
   explicit local currency and locale choices rather than exchange-rate guesses
 - Per-cut price assumptions that flow through the builder, live mode, results, history and sharing
+- Real plate weights: a cut can declare what one of its regular plates actually weighs, per item or
+  per pricing profile, instead of assuming every restaurant plates to the same nominal 155 g
 - Custom menu foods with a name, category, nutrition and price assumptions, illustrated with the
   same in-app food artwork system as the built-in catalogue
 - A quick personal-menu editor that stays optional: a diner can start calculating with the default
