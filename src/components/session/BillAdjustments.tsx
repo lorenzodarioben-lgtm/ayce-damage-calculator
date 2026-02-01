@@ -10,18 +10,23 @@ import {
   DISCOUNT_SUGGESTIONS,
   normaliseAdjustmentAmount,
   normaliseAdjustmentLabel,
+  normaliseAdjustmentPercent,
+  percentBaseOf,
   totalAdjustments,
   type AdjustmentDraft,
 } from '@/lib/adjustments';
+import { resolvedAdjustments } from '@/lib/calculations';
 import {
   MAX_ADJUSTMENT_AMOUNT,
   MAX_ADJUSTMENT_LABEL_LENGTH,
+  MAX_ADJUSTMENT_PERCENT,
   MAX_BILL_ADJUSTMENTS,
   MIN_ADJUSTMENT_AMOUNT,
+  MIN_ADJUSTMENT_PERCENT,
 } from '@/lib/constants';
-import { formatMoney } from '@/lib/formatting';
+import { formatMoney, formatPercent } from '@/lib/formatting';
 import { createId } from '@/lib/id';
-import type { AdjustmentKind, MealSession } from '@/types/meal';
+import type { AdjustmentBasis, AdjustmentKind, MealSession } from '@/types/meal';
 
 interface BillAdjustmentsProps {
   readonly session: MealSession;
@@ -60,13 +65,19 @@ export function BillAdjustments({
   const [label, setLabel] = useState('');
   const [amount, setAmount] = useState('');
   const [kind, setKind] = useState<AdjustmentKind>('charge');
+  const [basis, setBasis] = useState<AdjustmentBasis>('fixed');
   const [scope, setScope] = useState('');
   const [clearOpen, setClearOpen] = useState(false);
 
   const adjustments = session.adjustments ?? [];
   const diners = session.diners ?? [];
-  const totals = totalAdjustments(adjustments);
+  // Percentages are money by the time they are totalled, so the summary below
+  // reports what the bill actually came to rather than a share of it.
+  const settled = resolvedAdjustments(session);
+  const totals = totalAdjustments(settled);
+  const settledAmount = (id: string) => settled.find((entry) => entry.id === id)?.amount ?? 0;
   const full = adjustments.length >= MAX_BILL_ADJUSTMENTS;
+  const isPercent = basis === 'percent';
 
   function submit() {
     const cleanLabel = normaliseAdjustmentLabel(label);
@@ -74,10 +85,14 @@ export function BillAdjustments({
       onStatus('Give the charge or discount a name first.');
       return;
     }
-    const cleanAmount = normaliseAdjustmentAmount(Number(amount));
+    const cleanAmount = isPercent
+      ? normaliseAdjustmentPercent(Number(amount))
+      : normaliseAdjustmentAmount(Number(amount));
     if (cleanAmount === null) {
       onStatus(
-        `Enter an amount of at least ${formatMoney(MIN_ADJUSTMENT_AMOUNT, pricingProfile.money)}.`,
+        isPercent
+          ? `Enter a share of at least ${MIN_ADJUSTMENT_PERCENT}%.`
+          : `Enter an amount of at least ${formatMoney(MIN_ADJUSTMENT_AMOUNT, pricingProfile.money)}.`,
       );
       return;
     }
@@ -91,6 +106,7 @@ export function BillAdjustments({
         label: cleanLabel,
         amount: cleanAmount,
         kind,
+        ...(isPercent ? { basis, percentBase: 'subtotal' as const } : {}),
         // Only ever set from the roster this meal actually has, so the scope
         // cannot outlive the person it names.
         ...(scope && diners.some((diner) => diner.id === scope) ? { dinerId: scope } : {}),
@@ -98,7 +114,9 @@ export function BillAdjustments({
       `adj-${createId()}`,
     );
     onStatus(
-      `${cleanLabel} ${kind === 'charge' ? 'added to' : 'taken off'} the bill: ${formatMoney(cleanAmount, pricingProfile.money)}.`,
+      `${cleanLabel} ${kind === 'charge' ? 'added to' : 'taken off'} the bill: ${
+        isPercent ? `${cleanAmount}%` : formatMoney(cleanAmount, pricingProfile.money)
+      }.`,
     );
     setLabel('');
     setAmount('');
@@ -167,6 +185,37 @@ export function BillAdjustments({
           ))}
         </div>
 
+        <div
+          role="radiogroup"
+          aria-label="Basis"
+          className="ml-2 inline-flex rounded-[10px] border border-line bg-ash-900 p-0.5"
+        >
+          {(['fixed', 'percent'] as const).map((option) => (
+            <label
+              key={option}
+              className={[
+                'inline-flex min-h-10 cursor-pointer items-center rounded-[8px] px-3 text-xs font-semibold uppercase tracking-[0.08em]',
+                'transition-colors duration-200',
+                basis === option
+                  ? 'bg-ash-700 text-cream-50'
+                  : 'text-cream-500 hover:text-cream-200',
+              ].join(' ')}
+            >
+              <input
+                type="radio"
+                name="adjustment-basis"
+                value={option}
+                checked={basis === option}
+                onChange={() => setBasis(option)}
+                className="sr-only"
+              />
+              {/* Deliberately not "Amount" or "Percent": those name the field
+                  below, and a control must not answer to its neighbour's name. */}
+              {option === 'fixed' ? 'Fixed' : 'Share'}
+            </label>
+          ))}
+        </div>
+
         <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_9rem]">
           <div>
             <label htmlFor={labelId} className="mb-1.5 block text-xs font-semibold text-cream-300">
@@ -191,14 +240,14 @@ export function BillAdjustments({
 
           <div>
             <label htmlFor={amountId} className="mb-1.5 block text-xs font-semibold text-cream-300">
-              Amount
+              {isPercent ? 'Percent' : 'Amount'}
             </label>
             <input
               id={amountId}
               type="number"
               inputMode="decimal"
-              min={MIN_ADJUSTMENT_AMOUNT}
-              max={MAX_ADJUSTMENT_AMOUNT}
+              min={isPercent ? MIN_ADJUSTMENT_PERCENT : MIN_ADJUSTMENT_AMOUNT}
+              max={isPercent ? MAX_ADJUSTMENT_PERCENT : MAX_ADJUSTMENT_AMOUNT}
               step="0.01"
               value={amount}
               onChange={(event) => setAmount(event.target.value)}
@@ -206,6 +255,14 @@ export function BillAdjustments({
             />
           </div>
         </div>
+
+        {isPercent && (
+          <p className="mt-2 max-w-[62ch] text-xs leading-relaxed text-cream-700">
+            Worked out against the entry price plus any fixed charges already on the bill, and
+            recalculated whenever those change. Percentages never compound: each one is a share of a
+            base that contains no percentage, so the order you add them in cannot change the total.
+          </p>
+        )}
 
         {diners.length > 0 && (
           <div className="mt-2">
@@ -253,6 +310,13 @@ export function BillAdjustments({
                   <p className="text-xs text-cream-700">
                     {adjustment.kind === 'charge' ? 'Added to' : 'Taken off'} ·{' '}
                     {owner ? owner.displayName : 'The whole table'}
+                    {adjustment.basis === 'percent'
+                      ? ` · ${formatPercent(adjustment.amount)} of ${
+                          percentBaseOf(adjustment) === 'admission'
+                            ? 'the entry price'
+                            : 'the subtotal'
+                        }`
+                      : ''}
                   </p>
                 </div>
                 <p
@@ -262,7 +326,14 @@ export function BillAdjustments({
                   ].join(' ')}
                 >
                   {adjustment.kind === 'charge' ? '+' : '−'}
-                  {formatMoney(adjustment.amount, pricingProfile.money)}
+                  {formatMoney(
+                    // A percentage is shown as the money it came to, because
+                    // that is the figure the table is actually settling.
+                    adjustment.basis === 'percent'
+                      ? settledAmount(adjustment.id)
+                      : adjustment.amount,
+                    pricingProfile.money,
+                  )}
                 </p>
                 <button
                   type="button"

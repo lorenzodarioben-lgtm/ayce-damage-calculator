@@ -167,6 +167,30 @@ export interface DinerAllocation {
 export type AdjustmentKind = 'charge' | 'discount';
 
 /**
+ * Whether an adjustment is an amount of money or a share of the bill.
+ *
+ * Most of what a real tab picks up is quoted as a percentage — ten percent
+ * service, one and a half percent on the card, fifteen percent for eating on a
+ * public holiday. Storing only the cash meant working it out by hand and
+ * watching it go stale the moment the headcount changed.
+ */
+export type AdjustmentBasis = 'fixed' | 'percent';
+
+/**
+ * What a percentage is a percentage *of*.
+ *
+ * Stated rather than inferred, because the two answers differ and a bill that
+ * silently picked one would be unarguable. `admission` is the entry price
+ * alone; `subtotal` is the entry price plus the fixed charges already on the
+ * bill, which is what a service charge is normally levied on.
+ *
+ * Percentages never compound: every one of them is worked out against a base
+ * that contains no percentage, so the order they were entered in cannot change
+ * the total.
+ */
+export type AdjustmentPercentBase = 'admission' | 'subtotal';
+
+/**
  * Something the bill picked up beyond admission.
  *
  * The amount is always positive; `kind` carries the direction, so a stored or
@@ -175,8 +199,17 @@ export type AdjustmentKind = 'charge' | 'discount';
 export interface BillAdjustment {
   readonly id: string;
   readonly label: string;
+  /** Money when the basis is fixed, a percentage when it is not. */
   readonly amount: number;
   readonly kind: AdjustmentKind;
+  /**
+   * Absent means `fixed`, which is what every adjustment recorded before
+   * percentages existed is saying, and what an ordinary cash amount keeps
+   * saying without anyone choosing anything.
+   */
+  readonly basis?: AdjustmentBasis;
+  /** Meaningful only for a percentage. Absent means `subtotal`. */
+  readonly percentBase?: AdjustmentPercentBase;
   /**
    * The one diner this belongs to. Omitted means the whole table, which is the
    * default and the only possibility when Table Mode is not in use.
