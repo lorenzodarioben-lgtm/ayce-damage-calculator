@@ -51,6 +51,71 @@ async function addAdjustment(
   await expect(bill(page).getByText(label, { exact: true })).toBeVisible();
 }
 
+/** Adds a charge quoted as a share of the bill rather than an amount of it. */
+async function addPercentAdjustment(
+  page: Page,
+  kind: 'Charge' | 'Discount',
+  label: string,
+  share: number,
+) {
+  await chooseDirection(page, kind);
+  const basis = bill(page).getByRole('radio', { name: 'Share' });
+  await basis.locator('..').click();
+  await expect(basis).toBeChecked();
+  await bill(page).getByLabel('What was it').fill(label);
+  await bill(page).getByLabel('Percent').fill(String(share));
+  await bill(page).getByRole('button', { name: 'Add to the bill' }).click();
+  await expect(bill(page).getByText(label, { exact: true })).toBeVisible();
+}
+
+test.describe('Charges quoted as a share of the bill', () => {
+  test('is worked out as money rather than read as dollars', async ({ page }) => {
+    await openCalculator(page);
+    await setPricePerDiner(page, 50);
+    await addPercentAdjustment(page, 'Charge', 'Service charge', 10);
+
+    // One diner at $50, so ten percent is five dollars — not ten.
+    await expect(bill(page).getByText(/10% of the subtotal/)).toBeVisible();
+    await expect(bill(page).getByText('+$5.00').first()).toBeVisible();
+    await expect(bill(page).getByText('$55.00')).toBeVisible();
+  });
+
+  test('follows the headcount instead of going stale', async ({ page }) => {
+    await openCalculator(page);
+    await setPricePerDiner(page, 50);
+    await addPercentAdjustment(page, 'Charge', 'Service charge', 10);
+    await expect(bill(page).getByText('$55.00')).toBeVisible();
+
+    // A third person joins: the share is recalculated, a cash amount would not be.
+    await sessionSetup(page).getByRole('button', { name: 'Add a diner' }).click();
+    await sessionSetup(page).getByRole('button', { name: 'Add a diner' }).click();
+    await expect(bill(page).getByText('$165.00')).toBeVisible();
+  });
+
+  test('survives a reload as the share it was recorded as', async ({ page }) => {
+    await openCalculator(page);
+    await setPricePerDiner(page, 50);
+    await addPercentAdjustment(page, 'Charge', 'Service charge', 10);
+
+    await page.reload();
+
+    await expect(bill(page).getByText(/10% of the subtotal/)).toBeVisible();
+    await expect(bill(page).getByText('$55.00')).toBeVisible();
+  });
+
+  test('measures the report against the settled total', async ({ page }) => {
+    await openCalculator(page);
+    await setRestaurantName(page, 'Seoul Garden');
+    await setPricePerDiner(page, 50);
+    await addPercentAdjustment(page, 'Discount', 'Group discount', 20);
+    await addPlate(page, 'Ribeye');
+    await calculateDamage(page);
+
+    // $50 less twenty percent is $40, and the receipt has to say so.
+    await expect(settled(page).getByText('$40.00')).toBeVisible();
+  });
+});
+
 test.describe('Charges and discounts', () => {
   test('leaves the default meal exactly as it was', async ({ page }) => {
     await openCalculator(page);

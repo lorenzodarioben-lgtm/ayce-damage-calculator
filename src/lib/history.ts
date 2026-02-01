@@ -123,7 +123,10 @@ export function fingerprintSession(session: MealSession): string {
   // overwriting the other. Sorted for the same reason the items are.
   const adjustments = [...(session.adjustments ?? [])]
     .map(
-      (entry) => `${entry.kind}:${entry.amount.toFixed(2)}:${entry.label}:${entry.dinerId ?? ''}`,
+      (entry) =>
+        // The basis is part of the identity: ten percent and ten dollars are
+        // different lines on a bill, and one must not overwrite the other.
+        `${entry.kind}:${entry.basis ?? 'fixed'}:${entry.percentBase ?? ''}:${entry.amount.toFixed(2)}:${entry.label}:${entry.dinerId ?? ''}`,
     )
     .sort()
     .join('|');

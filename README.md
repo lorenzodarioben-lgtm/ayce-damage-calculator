@@ -42,6 +42,12 @@ keys, and nothing you record ever leaves your device.
 - Optional bill adjustments: vouchers, group discounts, weekend surcharges, card fees and paid extras,
   applied to the whole table or to one diner, with base admission, charges, discounts and the final
   paid total kept plainly apart
+- Each one can be a cash amount or the share of the bill it actually is — 10% service, 1.5% on the
+  card — stating what it is a share of, recalculated when the headcount or entry price changes, and
+  never compounding with another percentage
+- Shared food is divided across every seat the table was charged for, so seats nobody named keep
+  their own share instead of it being handed to the diners who were; per-seat amounts settle in
+  whole cents to exactly what the table paid
 - Optional consumption tracking: record that some of a plate went back, in quarter plates, and see
   ordered, eaten and left stated plainly — no scolding, no default that assumes waste
 - Personal menu items in four further categories — sides, hot food, desserts and drinks — with their

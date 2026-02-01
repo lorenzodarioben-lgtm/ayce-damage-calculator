@@ -38,6 +38,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
   visits, first and latest, average admission, average and best recovery, average plates and
   weight, most ordered foods, category mix, a recovery trend and the recent visits. A meal can be
   started from a place, and filing it records the visit there.
+- **Percentage charges and discounts** — a service charge, a card surcharge or a group discount can
+  be recorded as the share of the bill it actually is, rather than worked out by hand and left to go
+  stale. Each one states what it is a share of — the entry price alone, or the entry price plus the
+  fixed charges already on the bill — and is resolved to money once, against a base that contains no
+  percentage, so percentages never compound and the order they were entered in cannot change the
+  total. A bill of plain cash amounts is untouched, and a record filed before this existed still
+  means exactly what it meant.
 - **Explicit visit linking** — a filed record belongs to a restaurant because the meal was started
   from it, or because the diner linked it. Two places that share a name are not assumed to be the
   same place, and older records can be linked only on request.
@@ -76,6 +83,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Changed
 
+- **Exhaustive, cent-exact table splits** — shared food is now divided across every seat the table
+  was charged for rather than only the people named on the roster, so a partial roster no longer
+  hands the unnamed seats' plates to the diners who were typed in; those seats are reported as their
+  own line instead. Per-seat money is settled in whole cents against the table's own total by
+  largest remainder, so what each person owes adds up exactly to what the table paid.
 - Added `qrcode-generator`, the project's one dependency beyond the framework and its icons. A
   standards-correct QR encoder has no browser-native equivalent and is not something to hand-roll;
   the module is dependency-free and MIT, and the SVG rendering remains the app's own.
