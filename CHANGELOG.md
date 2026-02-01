@@ -45,6 +45,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
   so a place serving 250 g plates was understating its own weight, value, recovery and verdict by
   more than half. An item that declares nothing is calculated exactly as before, and the CSV
   importer now honours the grams column for plated cuts instead of reading it and throwing it away.
+- **Separately charged items** — a line can say that the buffet price did not cover it and what was
+  actually paid for it, so a beer, a premium upgrade or an à-la-carte extra stops being counted as
+  value the entry price delivered. The headline recovery figure stays an apples-to-apples buffet
+  metric: an extra's retail value never lifts the numerator and its cost never worsens the
+  denominator. What it cost is recorded, never inferred from retail value — a restaurant's price for
+  a beer says nothing about what the same beer costs at a supermarket — and an extra with no price
+  yet is reported as unpriced rather than as free. Buffet total and spent in total are shown as the
+  two different figures they are. A tab with no extras is calculated exactly as before.
 - **Percentage charges and discounts** — a service charge, a card surcharge or a group discount can
   be recorded as the share of the bill it actually is, rather than worked out by hand and left to go
   stale. Each one states what it is a share of — the entry price alone, or the entry price plus the

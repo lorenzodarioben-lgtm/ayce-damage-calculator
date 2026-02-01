@@ -13,6 +13,7 @@ interface LiveSummaryProps {
   onIncrement: (id: string) => void;
   onDecrement: (id: string) => void;
   onConsumptionChange: (id: string, consumed: number) => void;
+  onChargeChange: (id: string, separate: boolean, charge?: number) => void;
   onRemove: (id: string) => void;
   onCalculate: () => void;
   onReset: () => void;
@@ -23,6 +24,7 @@ export function LiveSummary({
   onIncrement,
   onDecrement,
   onConsumptionChange,
+  onChargeChange,
   onRemove,
   onCalculate,
   onReset,
@@ -74,6 +76,7 @@ export function LiveSummary({
           onIncrement={onIncrement}
           onDecrement={onDecrement}
           onConsumptionChange={onConsumptionChange}
+          onChargeChange={onChargeChange}
           onRemove={onRemove}
         />
       </div>

@@ -23,6 +23,7 @@ function setup(item: MealItem) {
     onIncrement: vi.fn(),
     onDecrement: vi.fn(),
     onConsumptionChange: vi.fn(),
+    onChargeChange: vi.fn(),
     onRemove: vi.fn(),
   };
   render(

@@ -14,6 +14,7 @@ import { parseCustomPricingProfile } from '@/lib/pricingProfiles';
 import { MAX_CUSTOM_FOODS, parseCustomFood } from '@/lib/customFoods';
 import { parseAdjustments } from '@/lib/adjustments';
 import { normaliseConsumedQuantity } from '@/lib/consumption';
+import { normaliseSeparateCharge } from '@/lib/separateCharges';
 import {
   packShareBody,
   shareEncodeFailure,
@@ -191,6 +192,7 @@ export function encodeShareResult(
         Math.max(MIN_QUANTITY, Math.floor(item.quantity)),
       );
       const consumed = normaliseConsumedQuantity(item.consumedQuantity, quantity);
+      const charged = normaliseSeparateCharge(item.separateCharge);
       return {
         foodId: item.foodId,
         quality: item.quality,
@@ -199,6 +201,12 @@ export function encodeShareResult(
         // Omitted for a clean plate, so a link carrying an ordinary meal is
         // exactly the document it always was.
         ...(consumed === undefined ? {} : { consumedQuantity: consumed }),
+        // Carried because the recipient's recovery figure would otherwise
+        // count food the sender paid for outside the buffet price.
+        ...(item.separatelyCharged === true ? { separatelyCharged: true } : {}),
+        ...(item.separatelyCharged === true && charged !== undefined
+          ? { separateCharge: charged }
+          : {}),
       };
     }),
   };
@@ -373,6 +381,8 @@ function parseShareItems(value: unknown, foods: readonly FoodItem[]): readonly M
     }
     const safeQuantity = Math.min(MAX_LINE_QUANTITY, Math.max(MIN_QUANTITY, Math.floor(quantity)));
     const consumed = normaliseConsumedQuantity(entry.consumedQuantity, safeQuantity);
+    const charged = normaliseSeparateCharge(entry.separateCharge);
+    const separate = entry.separatelyCharged === true;
     items.push({
       id: `shared-${index}-${entry.foodId}`,
       foodId: entry.foodId,
@@ -380,6 +390,8 @@ function parseShareItems(value: unknown, foods: readonly FoodItem[]): readonly M
       plateSize: plateSize as PlateSize,
       quantity: safeQuantity,
       ...(consumed === undefined ? {} : { consumedQuantity: consumed }),
+      ...(separate ? { separatelyCharged: true as const } : {}),
+      ...(separate && charged !== undefined ? { separateCharge: charged } : {}),
     });
   }
   return items;
