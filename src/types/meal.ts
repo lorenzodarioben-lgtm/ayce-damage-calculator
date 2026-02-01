@@ -161,6 +161,31 @@ export interface MealItem {
    * Mode existed.
    */
   readonly allocations?: readonly DinerAllocation[];
+  /**
+   * True when this line was not covered by the all-you-can-eat price.
+   *
+   * A beer, a premium upgrade, a dish the menu charges for on top: the table
+   * ate it, but not because they paid to walk in. Counting its retail value
+   * towards beating the buffet would credit the diner for food they bought
+   * separately, which makes the headline figure answer a different question
+   * than the one it asks.
+   *
+   * Omitted means the line was included in admission, which is what every meal
+   * recorded before this existed is saying and what ordinary logging keeps
+   * saying without anyone touching a control.
+   */
+  readonly separatelyCharged?: true;
+  /**
+   * What was actually paid for this line, in the session's currency.
+   *
+   * Only meaningful alongside `separatelyCharged`. Deliberately a recorded
+   * figure rather than a derived one: what a restaurant charges for a beer has
+   * nothing to do with what the same beer is worth at a supermarket, and
+   * inferring one from the other would invent a number nobody paid. Absent
+   * means the diner has not said, which is reported as unpriced rather than as
+   * free.
+   */
+  readonly separateCharge?: number;
 }
 
 /** A diner is a snapshot for this meal, never a link to device contacts. */
@@ -313,6 +338,12 @@ export interface LineItemTotals {
   readonly nutrition: Nutrition;
   /** False when this item has no nutrition on file at all. */
   readonly hasNutrition: boolean;
+  /** True when the buffet price did not cover this line. */
+  readonly separatelyCharged: boolean;
+  /** What was paid for it. Zero for anything included in admission. */
+  readonly separateCharge: number;
+  /** True when it is an extra whose price nobody has stated. */
+  readonly unpricedCharge: boolean;
 }
 
 export interface SessionTotals {
@@ -330,11 +361,27 @@ export interface SessionTotals {
   /** Weight that reached the table, eaten or not. */
   readonly totalOrderedWeightG: number;
   readonly totalOrderedWeightKg: number;
-  /** Retail value of what was eaten, and the figure recovery is measured on. */
+  /** Plates the buffet price covered. */
+  readonly includedPlates: number;
+  /** Plates that were charged for on top of it. */
+  readonly separatePlates: number;
+  /**
+   * Retail value of the buffet food that was eaten, and the figure recovery is
+   * measured on. Deliberately excludes anything charged separately: a beer the
+   * table bought is not value the entry price delivered.
+   */
   readonly totalRetailValue: number;
-  /** Retail value of everything that reached the table. */
+  /** Retail value of the buffet food that reached the table. */
   readonly totalOrderedRetailValue: number;
   readonly totalRestaurantCost: number;
+  /** Retail value of the separately charged food that was eaten. */
+  readonly separateRetailValue: number;
+  /** Estimated ingredient cost of the separately charged food. */
+  readonly separateRestaurantCost: number;
+  /** What was actually paid for the separately charged lines. */
+  readonly separateSpend: number;
+  /** Extras whose price nobody has stated, so a surface can say so. */
+  readonly unpricedSeparateLines: number;
   /** Nutrition of what was eaten, over the lines that have any on file. */
   readonly nutrition: Nutrition;
   /**
@@ -377,6 +424,18 @@ export interface DamageReport extends SessionTotals {
   readonly averageRetailValuePerPlate: number;
   /** Estimated further plates of average value needed to break even. */
   readonly platesToBreakEven: number;
+  /**
+   * Everything the table paid: the settled buffet bill plus what was spent on
+   * items the buffet price did not cover.
+   *
+   * Reported beside the recovery figure rather than inside it. Recovery answers
+   * "did the entry price pay for itself"; this answers "what did the evening
+   * cost", and folding the second into the first would quietly change what the
+   * headline number means.
+   */
+  readonly totalSpend: number;
+  /** True when anything on the tab was charged outside the buffet price. */
+  readonly hasSeparatelyChargedItems: boolean;
 }
 
 export interface DinerDamageTotals {

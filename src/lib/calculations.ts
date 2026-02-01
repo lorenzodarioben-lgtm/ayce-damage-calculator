@@ -19,6 +19,7 @@ import { resolveValuation } from '@/lib/valuation';
 import { findFoodInCatalogue } from '@/lib/foodCatalogue';
 import { sharedQuantity } from '@/lib/diners';
 import { consumedQuantity, uneatenQuantity } from '@/lib/consumption';
+import { hasUnpricedCharge, isSeparatelyCharged, separateCharge } from '@/lib/separateCharges';
 import type { PricingProfile } from '@/types/pricing';
 import type {
   BillAdjustment,
@@ -147,6 +148,9 @@ export function calculateLineItem(
       carbs: unit.nutritionPerUnit.carbs * consumedPlates,
     },
     hasNutrition: unit.hasNutrition,
+    separatelyCharged: isSeparatelyCharged(item),
+    separateCharge: separateCharge(item),
+    unpricedCharge: hasUnpricedCharge(item),
   };
 }
 
@@ -173,9 +177,21 @@ export function calculateSessionTotals(
       totalUneatenPlates: acc.totalUneatenPlates + line.uneatenPlates,
       totalWeightG: acc.totalWeightG + line.weightG,
       totalOrderedWeightG: acc.totalOrderedWeightG + line.orderedWeightG,
-      totalRetailValue: acc.totalRetailValue + line.retailValue,
-      totalOrderedRetailValue: acc.totalOrderedRetailValue + line.orderedRetailValue,
-      totalRestaurantCost: acc.totalRestaurantCost + line.restaurantCost,
+      // Value is split by who paid for it; weight and nutrition are not,
+      // because a beer somebody bought was still drunk at this table.
+      includedPlates: acc.includedPlates + (line.separatelyCharged ? 0 : line.plates),
+      separatePlates: acc.separatePlates + (line.separatelyCharged ? line.plates : 0),
+      totalRetailValue: acc.totalRetailValue + (line.separatelyCharged ? 0 : line.retailValue),
+      totalOrderedRetailValue:
+        acc.totalOrderedRetailValue + (line.separatelyCharged ? 0 : line.orderedRetailValue),
+      totalRestaurantCost:
+        acc.totalRestaurantCost + (line.separatelyCharged ? 0 : line.restaurantCost),
+      separateRetailValue:
+        acc.separateRetailValue + (line.separatelyCharged ? line.retailValue : 0),
+      separateRestaurantCost:
+        acc.separateRestaurantCost + (line.separatelyCharged ? line.restaurantCost : 0),
+      separateSpend: acc.separateSpend + line.separateCharge,
+      unpricedSeparateLines: acc.unpricedSeparateLines + (line.unpricedCharge ? 1 : 0),
       linesWithoutNutrition: acc.linesWithoutNutrition + (line.hasNutrition ? 0 : 1),
       nutrition: {
         calories: acc.nutrition.calories + line.nutrition.calories,
@@ -190,9 +206,15 @@ export function calculateSessionTotals(
       totalUneatenPlates: 0,
       totalWeightG: 0,
       totalOrderedWeightG: 0,
+      includedPlates: 0,
+      separatePlates: 0,
       totalRetailValue: 0,
       totalOrderedRetailValue: 0,
       totalRestaurantCost: 0,
+      separateRetailValue: 0,
+      separateRestaurantCost: 0,
+      separateSpend: 0,
+      unpricedSeparateLines: 0,
       linesWithoutNutrition: 0,
       nutrition: EMPTY_NUTRITION,
     },
@@ -210,9 +232,15 @@ export function calculateSessionTotals(
     totalWeightLb: totalWeightKg * KG_TO_LB,
     totalOrderedWeightG: totals.totalOrderedWeightG,
     totalOrderedWeightKg: totals.totalOrderedWeightG / 1000,
+    includedPlates: totals.includedPlates,
+    separatePlates: totals.separatePlates,
     totalRetailValue: totals.totalRetailValue,
     totalOrderedRetailValue: totals.totalOrderedRetailValue,
     totalRestaurantCost: totals.totalRestaurantCost,
+    separateRetailValue: totals.separateRetailValue,
+    separateRestaurantCost: totals.separateRestaurantCost,
+    separateSpend: totals.separateSpend,
+    unpricedSeparateLines: totals.unpricedSeparateLines,
     nutrition: totals.nutrition,
     linesWithoutNutrition: totals.linesWithoutNutrition,
   };
@@ -536,7 +564,9 @@ export function buildDamageReport(
   const retailValueDifference = totals.totalRetailValue - totalAdmission;
   const retailRecoveryPercent = safeRatio(totals.totalRetailValue, totalAdmission) * 100;
   const remainingRetailGap = Math.max(0, totalAdmission - totals.totalRetailValue);
-  const averageRetailValuePerPlate = safeRatio(totals.totalRetailValue, totals.totalPlates);
+  // Measured over the buffet plates only, so an average of buffet value is not
+  // divided by plates the entry price never bought.
+  const averageRetailValuePerPlate = safeRatio(totals.totalRetailValue, totals.includedPlates);
 
   const platesToBreakEven =
     remainingRetailGap <= 0 || averageRetailValuePerPlate <= 0
@@ -553,11 +583,15 @@ export function buildDamageReport(
     totalAdmission,
     retailValueDifference,
     retailRecoveryPercent,
-    hasBeatenBuffet: totals.totalRetailValue >= totalAdmission && totals.totalPlates > 0,
+    hasBeatenBuffet: totals.totalRetailValue >= totalAdmission && totals.includedPlates > 0,
     estimatedIngredientMargin: totalAdmission - totals.totalRestaurantCost,
     estimatedFoodCostPercent: safeRatio(totals.totalRestaurantCost, totalAdmission) * 100,
     remainingRetailGap,
     averageRetailValuePerPlate,
     platesToBreakEven,
+    // Beside the recovery figure, never inside it: recovery answers whether the
+    // entry price paid for itself, and this answers what the evening cost.
+    totalSpend: totalAdmission + totals.separateSpend,
+    hasSeparatelyChargedItems: totals.separatePlates > 0,
   };
 }

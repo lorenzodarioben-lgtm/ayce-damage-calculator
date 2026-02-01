@@ -16,6 +16,7 @@ import {
 } from '@/lib/constants';
 import { parseAdjustments } from '@/lib/adjustments';
 import { consumedQuantity, normaliseConsumedQuantity } from '@/lib/consumption';
+import { normaliseSeparateCharge, separateCharge } from '@/lib/separateCharges';
 import { sanitiseRestaurantName } from '@/lib/storage';
 import { isIsoTimestamp } from '@/lib/datetime';
 import { findFoodInCatalogue, foodCatalogue } from '@/lib/foodCatalogue';
@@ -60,11 +61,13 @@ import type { PricingProfile } from '@/types/pricing';
  * 9 — records retain the local restaurant profile the visit belongs to.
  * 10 — records retain the bill adjustments that settled the final total.
  * 11 — records retain how much of each line was actually eaten.
+ * 12 — records retain which lines the buffet price did not cover, and what was
+ *      paid for them.
  */
-export const SAVED_SESSION_VERSION = 11;
+export const SAVED_SESSION_VERSION = 12;
 
 /** Versions `parseSavedSession` knows how to read, current one included. */
-export const SUPPORTED_SESSION_VERSIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] as const;
+export const SUPPORTED_SESSION_VERSIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as const;
 
 /**
  * The first schema that could carry a timeline.
@@ -113,7 +116,11 @@ export function fingerprintSession(session: MealSession): string {
   const items = [...session.items]
     .map(
       (item) =>
-        `${item.foodId}:${item.quality}:${item.plateSize}:${item.quantity}:${consumedQuantity(item)}`,
+        // The separate charge is part of what the meal cost, so a tab whose
+        // drinks were paid for is a different record from one whose were not.
+        `${item.foodId}:${item.quality}:${item.plateSize}:${item.quantity}:${consumedQuantity(item)}:${
+          item.separatelyCharged ? `x${separateCharge(item).toFixed(2)}` : ''
+        }`,
     )
     .sort()
     .join('|');
@@ -247,13 +254,27 @@ function parseItem(
   // plate went clean — the figures it was filed with say exactly that.
   const consumed =
     version >= 11 ? normaliseConsumedQuantity(value.consumedQuantity, safeQuantity) : undefined;
+  const charged = normaliseSeparateCharge(value.separateCharge);
+  const separate = value.separatelyCharged === true;
+
   const base = {
-    id: mealItemId({ foodId, quality, plateSize }),
+    // Who paid for it is part of the line's identity, so a filed extra is not
+    // merged back into the included line of the same cut.
+    id: mealItemId({
+      foodId,
+      quality,
+      plateSize,
+      ...(separate ? { separatelyCharged: true } : {}),
+    }),
     foodId,
     quality,
     plateSize,
     quantity: safeQuantity,
     ...(consumed === undefined ? {} : { consumedQuantity: consumed }),
+    // A record filed before extras existed was paid for entirely by admission,
+    // which is a fact about it rather than a gap in it.
+    ...(separate ? { separatelyCharged: true as const } : {}),
+    ...(separate && charged !== undefined ? { separateCharge: charged } : {}),
   };
   // Ownership is reconciled against the record's own roster, so a filed table
   // breakdown reads exactly as it did when the meal was recorded.

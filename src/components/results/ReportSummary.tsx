@@ -108,7 +108,7 @@ export function ReportSummary({
         </div>
       </section>
 
-      {hasAdjustments && (
+      {(hasAdjustments || report.hasSeparatelyChargedItems) && (
         <section
           aria-labelledby="bill-breakdown-heading"
           className="rounded-[10px] border border-line-soft bg-ash-900 px-4 py-3"
@@ -134,14 +134,33 @@ export function ReportSummary({
               />
             )}
             <BillRow
-              label="Paid in total"
+              label={report.hasSeparatelyChargedItems ? 'Buffet total' : 'Paid in total'}
               value={formatMoney(report.totalAdmission, pricingProfile.money)}
               total
             />
+            {report.hasSeparatelyChargedItems && (
+              <>
+                <BillRow
+                  label="Charged separately"
+                  value={`+${formatMoney(report.separateSpend, pricingProfile.money)}`}
+                />
+                <BillRow
+                  label="Spent in total"
+                  value={formatMoney(report.totalSpend, pricingProfile.money)}
+                  total
+                />
+              </>
+            )}
           </dl>
           <p className="mt-2 max-w-[60ch] text-xs leading-relaxed text-cream-700">
             Every figure below is measured against the total paid, not the entry price — that is
             what the evening actually cost.
+            {report.hasSeparatelyChargedItems
+              ? ' Items the buffet price did not cover are kept out of it on both sides: their value does not count towards recovery, and what you paid for them does not count against it. Spent in total is the whole evening.'
+              : ''}
+            {report.unpricedSeparateLines > 0
+              ? ` ${report.unpricedSeparateLines === 1 ? 'One separately charged item has' : `${report.unpricedSeparateLines} separately charged items have`} no price recorded, so the total spent is understated by whatever they cost.`
+              : ''}
           </p>
         </section>
       )}

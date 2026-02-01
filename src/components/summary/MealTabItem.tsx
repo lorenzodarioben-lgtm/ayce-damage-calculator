@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Trash2, Utensils } from 'lucide-react';
+import { Receipt, Trash2, Utensils } from 'lucide-react';
 import { QuantityStepper } from '@/components/meal/QuantityStepper';
 import { MAX_LINE_QUANTITY, MIN_QUANTITY, getPlateSizeMeta, getQualityMeta } from '@/lib/constants';
 import { CONSUMPTION_STEP, formatPlateQuantity } from '@/lib/consumption';
@@ -14,6 +14,7 @@ interface MealTabItemProps {
   onIncrement: (id: string) => void;
   onDecrement: (id: string) => void;
   onConsumptionChange: (id: string, consumed: number) => void;
+  onChargeChange: (id: string, separate: boolean, charge?: number) => void;
   onRemove: (id: string) => void;
 }
 
@@ -30,6 +31,7 @@ export function MealTabItem({
   onIncrement,
   onDecrement,
   onConsumptionChange,
+  onChargeChange,
   onRemove,
 }: MealTabItemProps) {
   const pricingProfile = usePricingProfile();
@@ -38,6 +40,7 @@ export function MealTabItem({
   const left = line.uneatenPlates > 0;
   const [open, setOpen] = useState(false);
   const expanded = open || left;
+  const extra = line.separatelyCharged;
 
   return (
     <li className="border-b border-line-soft py-3 last:border-b-0">
@@ -60,9 +63,23 @@ export function MealTabItem({
           )}
         </div>
         <div className="shrink-0 text-right">
-          <p className="tabular text-sm font-bold text-ember-400">
+          <p
+            className={[
+              'tabular text-sm font-bold',
+              // An extra's retail value is not buffet value, so it is not
+              // coloured as though it counted towards beating the buffet.
+              extra ? 'text-cream-500' : 'text-ember-400',
+            ].join(' ')}
+          >
             {formatMoney(line.retailValue, pricingProfile.money)}
           </p>
+          {extra && (
+            <p className="tabular text-xs text-cream-700">
+              {line.unpricedCharge
+                ? 'paid separately'
+                : `${formatMoney(line.separateCharge, pricingProfile.money)} paid`}
+            </p>
+          )}
           {left && (
             <p className="tabular text-xs text-cream-700">
               of {formatMoney(line.orderedRetailValue, pricingProfile.money)} ordered
@@ -83,6 +100,20 @@ export function MealTabItem({
             <Utensils size={15} aria-hidden="true" />
           </button>
         )}
+        <button
+          type="button"
+          onClick={() => onChargeChange(item.id, !extra)}
+          aria-pressed={extra}
+          aria-label={`Charge ${descriptor} separately from the buffet price`}
+          className={[
+            'flex size-9 cursor-pointer items-center justify-center rounded-[10px] border transition-colors duration-200',
+            extra
+              ? 'border-line-ember bg-ash-800 text-ember-400'
+              : 'border-transparent text-cream-700 hover:border-line hover:bg-ash-800 hover:text-cream-300',
+          ].join(' ')}
+        >
+          <Receipt size={15} aria-hidden="true" />
+        </button>
         <QuantityStepper
           size="sm"
           label={`plates of ${descriptor}`}
@@ -103,6 +134,35 @@ export function MealTabItem({
           <Trash2 size={15} aria-hidden="true" />
         </button>
       </div>
+
+      {extra && (
+        <div className="mt-2 rounded-[10px] border border-line-soft bg-ash-900 px-3 py-2">
+          <label className="tabular flex items-baseline justify-between gap-2 text-xs text-cream-300">
+            What was paid for it
+            <input
+              type="number"
+              inputMode="decimal"
+              min="0"
+              step="0.01"
+              aria-label={`Amount paid for ${descriptor}`}
+              value={line.unpricedCharge ? '' : line.separateCharge}
+              onChange={(event) =>
+                onChargeChange(
+                  item.id,
+                  true,
+                  event.target.value === '' ? undefined : Number(event.target.value),
+                )
+              }
+              className="tabular h-9 w-28 rounded-[8px] border border-line bg-ash-950 px-2 text-right text-sm font-normal text-cream-50 focus:border-ember-600"
+            />
+          </label>
+          <p className="mt-1.5 text-xs leading-relaxed text-cream-700">
+            The buffet price did not cover this, so its value is kept out of the recovery figure and
+            what you paid is counted as spending instead. Leave the amount blank if you do not know
+            it.
+          </p>
+        </div>
+      )}
 
       {expanded && (
         <div className="mt-2 rounded-[10px] border border-line-soft bg-ash-900 px-3 py-2">

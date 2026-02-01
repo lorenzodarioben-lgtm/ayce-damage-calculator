@@ -8,6 +8,7 @@ interface MealTabProps {
   onIncrement: (id: string) => void;
   onDecrement: (id: string) => void;
   onConsumptionChange: (id: string, consumed: number) => void;
+  onChargeChange: (id: string, separate: boolean, charge?: number) => void;
   onRemove: (id: string) => void;
 }
 
@@ -16,6 +17,7 @@ export function MealTab({
   onIncrement,
   onDecrement,
   onConsumptionChange,
+  onChargeChange,
   onRemove,
 }: MealTabProps) {
   if (lines.length === 0) {
@@ -38,6 +40,7 @@ export function MealTab({
           onIncrement={onIncrement}
           onDecrement={onDecrement}
           onConsumptionChange={onConsumptionChange}
+          onChargeChange={onChargeChange}
           onRemove={onRemove}
         />
       ))}
