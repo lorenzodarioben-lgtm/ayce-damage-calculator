@@ -100,6 +100,25 @@ export const PLATE_SIZES: readonly PlateSizeMeta[] = [
   { id: 'large', label: 'Large', grams: 220, ounces: '7.8 oz' },
 ];
 
+/**
+ * The nominal regular plate every figure has always been built on.
+ *
+ * A declared plate weight replaces this one and the other two sizes scale from
+ * it in the same proportion, so "small" stays meaningfully smaller than
+ * "regular" whatever the restaurant actually serves.
+ */
+export const REGULAR_PLATE_GRAMS = 155;
+
+/**
+ * What a plate can plausibly weigh, in grams.
+ *
+ * Bounded because the figure arrives from storage, a share token and a CSV a
+ * stranger may have written, and because weight multiplies straight into retail
+ * value: an unbounded plate weight is an unbounded claim about the meal.
+ */
+export const MIN_PLATE_GRAMS = 1;
+export const MAX_PLATE_GRAMS = 2000;
+
 export const DEFAULT_QUALITY: QualityTier = 'standard';
 export const DEFAULT_PLATE_SIZE: PlateSize = 'regular';
 

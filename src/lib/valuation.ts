@@ -1,4 +1,10 @@
-import { getPlateSizeMeta, getQualityMeta } from '@/lib/constants';
+import {
+  MAX_PLATE_GRAMS,
+  MIN_PLATE_GRAMS,
+  REGULAR_PLATE_GRAMS,
+  getPlateSizeMeta,
+  getQualityMeta,
+} from '@/lib/constants';
 import { DEFAULT_PRICING_PROFILE } from '@/lib/pricing';
 import type { PricingProfile } from '@/types/pricing';
 import type { FoodItem, Nutrition, PlateSize, QualityTier, ValuationModel } from '@/types/meal';
@@ -58,6 +64,39 @@ export function isServingValued(
 }
 
 /**
+ * A declared regular-plate weight, or undefined for the nominal one.
+ *
+ * The trust boundary for a figure that arrives from storage, a share token and
+ * a CSV somebody else wrote. Anything outside the plausible range is not
+ * clamped into it but ignored: a plate weight of a million grams is not a
+ * two-kilogram plate, it is a mistake, and falling back to the stated nominal
+ * weight says something true instead of something merely bounded.
+ */
+export function normalisePlateGrams(value: unknown): number | undefined {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    return undefined;
+  }
+  const rounded = Math.round(value);
+  return rounded >= MIN_PLATE_GRAMS && rounded <= MAX_PLATE_GRAMS ? rounded : undefined;
+}
+
+/**
+ * What one plate of this size weighs.
+ *
+ * The other two sizes keep their proportion to the regular one, so a place that
+ * serves 250 g regular plates serves a small at the same fraction of it that a
+ * small has always been. Rounded to the gram, because a plate is not measured
+ * to the milligram and the figure is displayed as a whole number anyway.
+ */
+export function plateGrams(plateSize: PlateSize, declaredRegularGrams?: number): number {
+  const nominal = getPlateSizeMeta(plateSize).grams;
+  if (declaredRegularGrams === undefined) {
+    return nominal;
+  }
+  return Math.max(1, Math.round(declaredRegularGrams * (nominal / REGULAR_PLATE_GRAMS)));
+}
+
+/**
  * Applies a profile's per-item assumptions without ever mutating the catalogue.
  *
  * An override written for the wrong valuation model is ignored rather than
@@ -106,7 +145,13 @@ export function resolveValuation(
   const priced = override?.valuation === 'by-weight' ? override : undefined;
   const retailPerKg = nonNegative(priced?.retailPricePerKg) ?? food.retailPricePerKg;
   const costPerKg = nonNegative(priced?.restaurantCostPerKg) ?? food.restaurantCostPerKg;
-  const grams = getPlateSizeMeta(plateSize).grams;
+  // A profile's declared plate wins over the item's own, which wins over the
+  // app's nominal one. Every figure below is weight times a price, so this is
+  // the number a restaurant's real portions have to be able to correct.
+  const grams = plateGrams(
+    plateSize,
+    normalisePlateGrams(priced?.gramsPerPlate) ?? normalisePlateGrams(food.gramsPerPlate),
+  );
   const kg = grams / 1000;
   const per100g = grams / 100;
 

@@ -3,7 +3,7 @@
 import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useId, useState } from 'react';
 import { Dialog } from '@/components/ui/Dialog';
-import { CATEGORY_META } from '@/lib/constants';
+import { CATEGORY_META, REGULAR_PLATE_GRAMS } from '@/lib/constants';
 import { MenuImport } from '@/components/session/MenuImport';
 import { createCustomFood, nextCustomFoodId } from '@/lib/customFoods';
 import type { CustomFood } from '@/types/customFoods';
@@ -68,7 +68,9 @@ function draftFrom(food: CustomFood | null): DraftState {
     valuation: 'by-weight',
     retailPrice: food ? String(food.retailPricePerKg) : '',
     restaurantCost: food ? String(food.restaurantCostPerKg) : '',
-    gramsPerServing: '0',
+    // Blank means the nominal plate, which is what an item that never declared
+    // a weight has always been calculated as.
+    gramsPerServing: optional(food?.gramsPerPlate),
     // Blank rather than zero: an unstated macro is unknown, and prefilling a
     // confident nought would put words in the diner's mouth.
     calories: optional(food?.caloriesPer100g),
@@ -145,6 +147,9 @@ function CustomFoodEditor({
             valuation: 'by-weight',
             retailPricePerKg: numberFrom(draft.retailPrice),
             restaurantCostPerKg: numberFrom(draft.restaurantCost),
+            ...(macroFrom(draft.gramsPerServing) === undefined
+              ? {}
+              : { gramsPerPlate: numberFrom(draft.gramsPerServing) }),
             ...macroFields({
               caloriesPer100g: macroFrom(draft.calories),
               proteinPer100g: macroFrom(draft.protein),
@@ -283,29 +288,30 @@ function CustomFoodEditor({
         </div>
 
         {/*
-          Plate size is what supplies a weight-valued cut's grams, so it is only
-          a per-serving item that has to state its own. Zero is a legitimate
-          answer — nobody weighs a bowl of soup — and the interface reports it
-          as unweighed rather than as nothing.
+          Both models get to state a weight, for different reasons. A serving
+          has no other source for one — nobody weighs a bowl of soup, and zero
+          is reported as unweighed rather than as nothing. A plated cut has the
+          nominal 155 g, which is an assumption about somebody else's portions
+          and the single number every figure in the report is multiplied by.
         */}
-        {perServing && (
-          <label className="block text-sm font-semibold text-cream-300">
-            Grams per serving <span className="font-normal text-cream-700">(optional)</span>
-            <input
-              aria-label="Grams per serving"
-              type="number"
-              min="0"
-              step="1"
-              value={draft.gramsPerServing}
-              onChange={(event) => set('gramsPerServing', event.target.value)}
-              className="mt-1.5 h-11 w-full rounded-[10px] border border-line bg-ash-900 px-3 font-normal text-cream-50 focus:border-ember-600"
-            />
-            <span className="mt-1 block text-xs font-normal leading-snug text-cream-700">
-              Leave it at zero if you do not know. The item still counts towards value and
-              nutrition; it just will not add weight to the meal, and the report says so.
-            </span>
-          </label>
-        )}
+        <label className="block text-sm font-semibold text-cream-300">
+          {perServing ? 'Grams per serving' : 'Grams per regular plate'}{' '}
+          <span className="font-normal text-cream-700">(optional)</span>
+          <input
+            aria-label={perServing ? 'Grams per serving' : 'Grams per regular plate'}
+            type="number"
+            min="0"
+            step="1"
+            value={draft.gramsPerServing}
+            onChange={(event) => set('gramsPerServing', event.target.value)}
+            className="mt-1.5 h-11 w-full rounded-[10px] border border-line bg-ash-900 px-3 font-normal text-cream-50 focus:border-ember-600"
+          />
+          <span className="mt-1 block text-xs font-normal leading-snug text-cream-700">
+            {perServing
+              ? 'Leave it at zero if you do not know. The item still counts towards value and nutrition; it just will not add weight to the meal, and the report says so.'
+              : `Leave it blank to keep the app's nominal ${REGULAR_PLATE_GRAMS} g. Weigh a plate once and put the real figure here: retail value is weight times price per kilogram, so this moves every number in the report. Small and large plates scale from it.`}
+          </span>
+        </label>
 
         <fieldset>
           <legend className="micro-label mb-2">

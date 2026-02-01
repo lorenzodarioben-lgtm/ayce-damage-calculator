@@ -14,6 +14,11 @@ export type FoodPricing =
       readonly valuation: 'by-weight';
       readonly retailPricePerKg: number;
       readonly restaurantCostPerKg: number;
+      /**
+       * What a regular plate weighs at this place. Absent keeps the nominal
+       * 155 g, so a profile that says nothing about weight changes nothing.
+       */
+      readonly gramsPerPlate?: number;
     }
   | {
       readonly valuation: 'by-serving';

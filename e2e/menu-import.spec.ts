@@ -69,6 +69,22 @@ test.describe('Importing a menu from CSV', () => {
     await expect(sessionSetup(page).getByRole('button', { name: 'Edit Kimchi' })).toBeVisible();
   });
 
+  test('carries a plated cut’s real weight through to the report', async ({ page }) => {
+    await openCalculator(page);
+    // 310 g is twice the nominal plate, so every figure should double.
+    await choose(page, 'House brisket,beef,by-weight,,,40,20,310,,,,');
+    await importRegion(page).getByRole('button', { name: 'Import this menu' }).click();
+
+    await addPlate(page, 'House brisket');
+    await page.getByRole('button', { name: 'Calculate the damage' }).click();
+    await expect(page.getByRole('heading', { name: 'AYCE Damage Report' })).toBeVisible();
+
+    // The declared plate, not the nominal 155 g, is what the report weighs.
+    await expect(page.getByText('310 g').first()).toBeVisible();
+    // 310 g at $40/kg is $12.40, where a nominal plate would have said $6.20.
+    await expect(page.getByText('$12.40').first()).toBeVisible();
+  });
+
   test('puts the imported item on the menu, ready to order', async ({ page }) => {
     await openCalculator(page);
     await choose(page, 'Kimchi,sides,by-weight,,,18,6,,30,2,0.5,4');

@@ -70,7 +70,9 @@ export function importTemplateCsv(): string {
       'Example row — replace it with your own prices',
       '14',
       '6',
-      '',
+      // For a by-weight row this is what one regular plate weighs; leave it
+      // blank to keep the app's nominal 155 g.
+      '200',
       '180',
       '4',
       '9',
@@ -379,6 +381,10 @@ export function planCsvImport(text: string, existing: readonly CustomFood[]): Im
             valuation: 'by-weight',
             retailPricePerKg: retail,
             restaurantCostPerKg: cost,
+            // The same column, meaning the same thing: how much one of these
+            // weighs. For a plated cut that is the weight of a regular plate,
+            // which used to be read from the file and then thrown away.
+            ...(grams === undefined || grams === null ? {} : { gramsPerPlate: grams }),
             ...(calories === undefined || calories === null ? {} : { caloriesPer100g: calories }),
             ...(protein === undefined || protein === null ? {} : { proteinPer100g: protein }),
             ...(fat === undefined || fat === null ? {} : { fatPer100g: fat }),

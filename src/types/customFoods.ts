@@ -26,6 +26,12 @@ export interface WeightValuedDraft extends CustomFoodDraftBase {
   readonly valuation?: 'by-weight';
   readonly retailPricePerKg: number;
   readonly restaurantCostPerKg: number;
+  /**
+   * What a regular plate of it weighs. Optional because a diner may genuinely
+   * not know, and the nominal weight is a stated assumption rather than a
+   * missing one.
+   */
+  readonly gramsPerPlate?: number;
   readonly caloriesPer100g?: number;
   readonly proteinPer100g?: number;
   readonly fatPer100g?: number;
