@@ -26,6 +26,8 @@ function setup(item: MealItem) {
     onDecrement: vi.fn(),
     onConsumptionChange: vi.fn(),
     onChargeChange: vi.fn<(id: string, separate: boolean, charge?: number) => void>(),
+    onSharedAmongChange: vi.fn(),
+    diners: [],
     onRemove: vi.fn(),
   };
   render(

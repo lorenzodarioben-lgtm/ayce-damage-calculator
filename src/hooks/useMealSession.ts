@@ -60,7 +60,11 @@ export interface UseMealSessionResult {
   incrementItem: (id: string) => void;
   decrementItem: (id: string) => void;
   setItemConsumption: (id: string, consumed: number) => void;
-  setItemAllocations: (id: string, allocations: readonly DinerAllocation[]) => void;
+  setItemAllocations: (
+    id: string,
+    allocations: readonly DinerAllocation[],
+    sharedAmong?: readonly string[],
+  ) => void;
   removeItem: (id: string) => void;
   /** Puts a removed line back where it was, so a removal can be undone. */
   restoreItem: (item: MealItem, index: number) => void;
@@ -241,8 +245,14 @@ export function useMealSession(
   );
 
   const setItemAllocations = useCallback(
-    (id: string, allocations: readonly DinerAllocation[]) => {
-      dispatch({ type: 'set-item-allocations', id, allocations, meta: meta() });
+    (id: string, allocations: readonly DinerAllocation[], sharedAmong?: readonly string[]) => {
+      dispatch({
+        type: 'set-item-allocations',
+        id,
+        allocations,
+        ...(sharedAmong === undefined ? {} : { sharedAmong }),
+        meta: meta(),
+      });
     },
     [meta],
   );

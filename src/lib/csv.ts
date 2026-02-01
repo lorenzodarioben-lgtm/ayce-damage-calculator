@@ -2,6 +2,7 @@ import { getPlateSizeMeta, getQualityMeta } from '@/lib/constants';
 import { formatPlateQuantity } from '@/lib/consumption';
 import { resolveSavedSession } from '@/lib/history';
 import type { SavedMealSession } from '@/types/history';
+import type { Diner, MealItem } from '@/types/meal';
 
 /**
  * History as a spreadsheet.
@@ -50,6 +51,25 @@ const FORMULA_LEAD = /^[=+\-@\t\r]/;
  * a formula to every spreadsheet that opens the file. Neutralising it here
  * costs one character and removes the whole class of surprise.
  */
+/**
+ * Who this line belonged to, in one cell.
+ *
+ * Explicit attributions are named with their amounts; a line shared by only
+ * some of the table names them rather than saying "Table", because the export
+ * has to be able to say the same thing the report does.
+ */
+function attributionOf(item: MealItem, diners: readonly Diner[] | undefined): string {
+  const nameOf = (id: string) => diners?.find((diner) => diner.id === id)?.displayName ?? 'Unknown';
+  const explicit = (item.allocations ?? []).map(
+    (allocation) => `${nameOf(allocation.dinerId)}: ${formatPlateQuantity(allocation.quantity)}`,
+  );
+  const subset = item.sharedAmong?.length
+    ? [`Shared by ${item.sharedAmong.map(nameOf).join(' & ')}`]
+    : [];
+  const parts = [...explicit, ...subset];
+  return parts.length > 0 ? parts.join('; ') : 'Table';
+}
+
 export function escapeCsvField(value: string): string {
   const guarded = FORMULA_LEAD.test(value) ? `'${value}` : value;
   return `"${guarded.replace(/"/g, '""')}"`;
@@ -99,16 +119,7 @@ export function historyToCsv(records: readonly SavedMealSession[]): string {
           whole(line.orderedWeightG),
           money(line.retailValue),
           money(line.orderedRetailValue),
-          line.item.allocations?.length
-            ? line.item.allocations
-                .map((allocation) => {
-                  const name = record.diners?.find(
-                    (diner) => diner.id === allocation.dinerId,
-                  )?.displayName;
-                  return `${name ?? 'Table'}: ${allocation.quantity}`;
-                })
-                .join('; ')
-            : 'Table',
+          attributionOf(line.item, record.diners),
         ]
           .map(escapeCsvField)
           .join(','),
