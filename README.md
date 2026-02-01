@@ -39,6 +39,8 @@ keys, and nothing you record ever leaves your device.
 - Restaurant profiles you write yourself — save a setup, apply it on the next visit, and have the
   meal linked to that place
 - Optional Table Mode: record a local diner roster and attribute plates without changing the shared table total
+- Name the few people who actually shared a plate, so it is split between them and nobody else, with
+  attribution recordable in fractions of a plate rather than whole ones
 - Optional bill adjustments: vouchers, group discounts, weekend surcharges, card fees and paid extras,
   applied to the whole table or to one diner, with base admission, charges, discounts and the final
   paid total kept plainly apart

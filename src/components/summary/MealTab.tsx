@@ -1,6 +1,7 @@
 'use client';
 
 import { MealTabItem } from '@/components/summary/MealTabItem';
+import type { Diner } from '@/types/meal';
 import type { LineItemTotals } from '@/types/meal';
 
 interface MealTabProps {
@@ -9,6 +10,8 @@ interface MealTabProps {
   onDecrement: (id: string) => void;
   onConsumptionChange: (id: string, consumed: number) => void;
   onChargeChange: (id: string, separate: boolean, charge?: number) => void;
+  onSharedAmongChange: (id: string, sharedAmong: readonly string[]) => void;
+  diners: readonly Diner[];
   onRemove: (id: string) => void;
 }
 
@@ -18,6 +21,8 @@ export function MealTab({
   onDecrement,
   onConsumptionChange,
   onChargeChange,
+  onSharedAmongChange,
+  diners,
   onRemove,
 }: MealTabProps) {
   if (lines.length === 0) {
@@ -41,6 +46,8 @@ export function MealTab({
           onDecrement={onDecrement}
           onConsumptionChange={onConsumptionChange}
           onChargeChange={onChargeChange}
+          onSharedAmongChange={onSharedAmongChange}
+          diners={diners}
           onRemove={onRemove}
         />
       ))}

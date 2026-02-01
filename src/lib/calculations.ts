@@ -17,7 +17,7 @@ import { distributeMoney } from '@/lib/splitMoney';
 import { DEFAULT_PRICING_PROFILE } from '@/lib/pricing';
 import { resolveValuation } from '@/lib/valuation';
 import { findFoodInCatalogue } from '@/lib/foodCatalogue';
-import { sharedQuantity } from '@/lib/diners';
+import { sharedShareFor, unclaimedSharedQuantity } from '@/lib/diners';
 import { consumedQuantity, uneatenQuantity } from '@/lib/consumption';
 import { hasUnpricedCharge, isSeparatelyCharged, separateCharge } from '@/lib/separateCharges';
 import type { PricingProfile } from '@/types/pricing';
@@ -427,8 +427,6 @@ export function calculateTableSplit(
     const food = findFoodInCatalogue(foods, item.foodId);
     if (!food) continue;
     const line = calculateLineItem(item, food, pricingProfile);
-    // One seat's share of whatever nobody claimed from this line.
-    const sharedPerSeat = safeRatio(sharedQuantity(item), seats);
 
     const take = (target: SeatFood, plates: number) => {
       const fraction = safeRatio(plates, line.plates);
@@ -453,15 +451,22 @@ export function calculateTableSplit(
       );
       const seat = perDinerFood[index];
       if (!seat) return;
+      // Their share of what nobody claimed: an even slice of the whole table's
+      // remainder, or of just this line's named subset when there is one.
+      const shared = sharedShareFor(item, diner.id, diners, seats);
       attributedPlates[index] = (attributedPlates[index] ?? 0) + attributed;
-      seat.sharedPlates += sharedPerSeat;
-      take(seat, attributed + sharedPerSeat);
+      seat.sharedPlates += shared;
+      take(seat, attributed + shared);
     });
 
     if (unnamedSeats > 0) {
-      const plates = sharedPerSeat * unnamedSeats;
-      unnamedFood.sharedPlates += plates;
-      take(unnamedFood, plates);
+      // Nothing, when a named subset shared the line: nobody said the unnamed
+      // seats were part of it, and assuming they were would invent a diner.
+      const plates = unclaimedSharedQuantity(item, diners, seats, unnamedSeats);
+      if (plates > 0) {
+        unnamedFood.sharedPlates += plates;
+        take(unnamedFood, plates);
+      }
     }
   }
 

@@ -49,6 +49,7 @@ export function CalculatorApp() {
     decrementItem,
     setItemConsumption,
     setItemCharge,
+    setItemAllocations,
     removeItem,
     restoreItem,
     resetSession,
@@ -218,6 +219,14 @@ export function CalculatorApp() {
                     onDecrement={decrementItem}
                     onConsumptionChange={setItemConsumption}
                     onChargeChange={setItemCharge}
+                    onSharedAmongChange={(id, sharedAmong) =>
+                      setItemAllocations(
+                        id,
+                        session.items.find((entry) => entry.id === id)?.allocations ?? [],
+                        sharedAmong,
+                      )
+                    }
+                    diners={session.diners ?? []}
                     onRemove={handleRemove}
                     onCalculate={handleCalculate}
                     onReset={() => setResetOpen(true)}

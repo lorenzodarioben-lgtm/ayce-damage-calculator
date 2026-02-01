@@ -45,6 +45,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
   so a place serving 250 g plates was understating its own weight, value, recovery and verdict by
   more than half. An item that declares nothing is calculated exactly as before, and the CSV
   importer now honours the grams column for plated cuts instead of reading it and throwing it away.
+- **Precise diner sharing** — a line can name the few people who actually shared it, so one plate of
+  wagyu split by two of the five at the table is not divided five ways and credited to three people
+  who never touched it. Nobody outside the named subset is given any of it, and neither are the
+  seats nobody named. The division is kept as a division rather than stored as a fraction — one
+  plate between three is a third each, and a third does not survive being written down — so the
+  shares always add back up to the plate. Attribution also became fractional to a hundredth of a
+  plate, so "I had half of that" is recordable where it used to be floored to nothing. Recorded
+  through the allocation path that already existed, and a line nobody says anything about is still
+  shared by the whole table.
 - **Separately charged items** — a line can say that the buffet price did not cover it and what was
   actually paid for it, so a beer, a premium upgrade or an à-la-carte extra stops being counted as
   value the entry price delivered. The headline recovery figure stays an apples-to-apples buffet

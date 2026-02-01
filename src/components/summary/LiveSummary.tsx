@@ -6,6 +6,7 @@ import { MealTab } from '@/components/summary/MealTab';
 import { Button } from '@/components/ui/Button';
 import { formatCount, formatKg, formatMoney, formatPlates } from '@/lib/formatting';
 import { usePricingProfile } from '@/components/session/PricingContext';
+import type { Diner } from '@/types/meal';
 import type { DamageReport } from '@/types/meal';
 
 interface LiveSummaryProps {
@@ -14,6 +15,8 @@ interface LiveSummaryProps {
   onDecrement: (id: string) => void;
   onConsumptionChange: (id: string, consumed: number) => void;
   onChargeChange: (id: string, separate: boolean, charge?: number) => void;
+  onSharedAmongChange: (id: string, sharedAmong: readonly string[]) => void;
+  diners: readonly Diner[];
   onRemove: (id: string) => void;
   onCalculate: () => void;
   onReset: () => void;
@@ -25,6 +28,8 @@ export function LiveSummary({
   onDecrement,
   onConsumptionChange,
   onChargeChange,
+  onSharedAmongChange,
+  diners,
   onRemove,
   onCalculate,
   onReset,
@@ -77,6 +82,8 @@ export function LiveSummary({
           onDecrement={onDecrement}
           onConsumptionChange={onConsumptionChange}
           onChargeChange={onChargeChange}
+          onSharedAmongChange={onSharedAmongChange}
+          diners={diners}
           onRemove={onRemove}
         />
       </div>

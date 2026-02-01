@@ -162,6 +162,26 @@ export interface MealItem {
    */
   readonly allocations?: readonly DinerAllocation[];
   /**
+   * Who split whatever nobody claimed outright.
+   *
+   * The common case a roster alone cannot express: one plate of wagyu that two
+   * of the five people at the table actually shared. Without this the plate
+   * falls into the table's pool and is divided five ways, crediting three
+   * people who never touched it.
+   *
+   * The remainder is divided evenly among exactly these diners and nobody else
+   * — not the rest of the roster, and not the seats nobody named. Absent means
+   * the whole table shared it, which is what every meal recorded before this
+   * existed is saying.
+   *
+   * Deliberately a list of who rather than a stored fraction of how much. One
+   * plate between three is a third each, and a third is not a number that can
+   * be written down and added back to one. Keeping the division and performing
+   * it at the point of use is what makes the shares reconcile with the plate
+   * exactly instead of nearly.
+   */
+  readonly sharedAmong?: readonly string[];
+  /**
    * True when this line was not covered by the all-you-can-eat price.
    *
    * A beer, a premium upgrade, a dish the menu charges for on top: the table
@@ -196,7 +216,14 @@ export interface Diner {
   readonly admissionPrice?: number;
 }
 
-/** A positive, whole number of plates explicitly attributed to one diner. */
+/**
+ * Plates explicitly attributed to one diner.
+ *
+ * Fractional, because a plate is a thing people halve. "I had half of that" is
+ * an ordinary sentence at a table and used to be unsayable: the figure was
+ * floored to whole plates, so half a plate of wagyu was recorded as none of it.
+ * Never negative, and the attributions on a line can never exceed the line.
+ */
 export interface DinerAllocation {
   readonly dinerId: string;
   readonly quantity: number;
