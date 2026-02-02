@@ -7,6 +7,7 @@ import {
   loadSession,
   normaliseRestaurantNameInput,
   parseStoredSession,
+  parseStoredSessionState,
   sanitiseRestaurantName,
   saveSession,
 } from '@/lib/storage';
@@ -30,7 +31,11 @@ const validSession: MealSession = {
 };
 
 function envelope(session: unknown, version: number = STORAGE_VERSION) {
-  return JSON.stringify({ version, session });
+  return JSON.stringify(
+    version === STORAGE_VERSION
+      ? { version, revision: 1, writerId: 'test-tab', kind: 'session', session }
+      : { version, session },
+  );
 }
 
 describe('parseStoredSession', () => {
@@ -63,6 +68,42 @@ describe('parseStoredSession', () => {
     const restored = parseStoredSession(envelope(legacy, 1));
 
     expect(restored?.pricingProfileId).toBe(DEFAULT_PRICING_PROFILE_ID);
+  });
+
+  it('migrates version 6 sessions without concurrent-tab metadata', () => {
+    const restored = parseStoredSessionState(envelope(validSession, 6));
+
+    expect(restored).toMatchObject({
+      kind: 'session',
+      revision: 0,
+      writerId: null,
+      session: validSession,
+    });
+  });
+
+  it('requires a valid revision and writer id on the current envelope', () => {
+    expect(
+      parseStoredSessionState(
+        JSON.stringify({
+          version: STORAGE_VERSION,
+          revision: 0,
+          writerId: 'tab',
+          kind: 'session',
+          session: validSession,
+        }),
+      ),
+    ).toBeNull();
+    expect(
+      parseStoredSessionState(
+        JSON.stringify({
+          version: STORAGE_VERSION,
+          revision: 1,
+          writerId: '',
+          kind: 'session',
+          session: validSession,
+        }),
+      ),
+    ).toBeNull();
   });
 
   it('continues to load version 2 sessions as a shared table', () => {
@@ -280,6 +321,18 @@ describe('browser storage round trip', () => {
   it('saves and reloads a session', () => {
     saveSession(validSession);
     expect(loadSession()).toEqual(validSession);
+  });
+
+  it('writes monotonically increasing revisions without replacing a newer tab', () => {
+    const first = saveSession(validSession, { writerId: 'tab-a', knownRevision: 0 });
+    const second = saveSession(
+      { ...validSession, restaurantName: 'Changed elsewhere' },
+      { writerId: 'tab-b', knownRevision: 0 },
+    );
+
+    expect(first?.revision).toBe(1);
+    expect(second?.revision).toBe(2);
+    expect(loadSession()).toMatchObject({ restaurantName: 'Changed elsewhere' });
   });
 
   it('returns null after clearing', () => {
