@@ -173,20 +173,39 @@ export function encodeShareResult(
   if (session.items.some((item) => !findFoodInCatalogue(availableFoods, item.foodId))) {
     return shareEncodeFailure('empty');
   }
+  // Every diner reference in the document is rewritten through this map. A
+  // display name was already replaced with a position, but the id was not —
+  // and a person saved from the diner hub has an id derived from their name,
+  // so "Lorenzo" travelled inside the token as `diner-lorenzo`. A position is
+  // the only thing the recipient needs to read a table breakdown, and it is
+  // the only thing they get.
+  const alias = new Map<string, string>();
+  session.diners?.forEach((diner, index) => alias.set(diner.id, `d${index + 1}`));
+  const aliasFor = (id: string | undefined): string | undefined =>
+    id === undefined ? undefined : alias.get(id);
+  const aliasList = (ids: readonly string[] | undefined): readonly string[] =>
+    (ids ?? []).map(aliasFor).filter((id): id is string => id !== undefined);
+
   const payload = {
     restaurantName: sanitiseRestaurantName(session.restaurantName),
     pricePerDiner: clampPricePerDiner(session.pricePerDiner),
     dinerCount: clampDinerCount(session.dinerCount),
     pricingProfile: context.pricingProfile ?? DEFAULT_PRICING_PROFILE,
     customFoods,
-    diners: session.diners?.map((diner, index) => ({
-      id: diner.id,
+    diners: session.diners?.map((_diner, index) => ({
+      id: `d${index + 1}`,
       displayName: `Diner ${index + 1}`,
     })),
-    // Labels travel, because "Voucher" is what the money was; the diner they
-    // were charged to travels only as the same opaque id the roster already
-    // anonymises.
-    adjustments: session.adjustments?.length ? session.adjustments : undefined,
+    // Labels travel, because "Voucher" is what the money was. Who it was
+    // charged to travels only as a position; a charge naming somebody who is
+    // not on the roster becomes the table's, exactly as the parser would.
+    adjustments: session.adjustments?.length
+      ? session.adjustments.map((adjustment) => {
+          const dinerId = aliasFor(adjustment.dinerId);
+          const { dinerId: _dinerId, ...rest } = adjustment;
+          return { ...rest, ...(dinerId === undefined ? {} : { dinerId }) };
+        })
+      : undefined,
     items: session.items.slice(0, MAX_SHARE_ITEMS).map((item) => {
       const quantity = Math.min(
         MAX_LINE_QUANTITY,
@@ -194,6 +213,13 @@ export function encodeShareResult(
       );
       const consumed = normaliseConsumedQuantity(item.consumedQuantity, quantity);
       const charged = normaliseSeparateCharge(item.separateCharge);
+      // Attribution travels, under the same aliases. Without it a shared table
+      // breakdown would divide every plate evenly and be confidently wrong.
+      const allocations = (item.allocations ?? []).flatMap((allocation) => {
+        const dinerId = aliasFor(allocation.dinerId);
+        return dinerId === undefined ? [] : [{ dinerId, quantity: allocation.quantity }];
+      });
+      const sharedAmong = aliasList(item.sharedAmong);
       return {
         foodId: item.foodId,
         quality: item.quality,
@@ -202,9 +228,10 @@ export function encodeShareResult(
         // Omitted for a clean plate, so a link carrying an ordinary meal is
         // exactly the document it always was.
         ...(consumed === undefined ? {} : { consumedQuantity: consumed }),
+        ...(allocations.length ? { allocations } : {}),
+        ...(sharedAmong.length ? { sharedAmong } : {}),
         // Carried because the recipient's recovery figure would otherwise
         // count food the sender paid for outside the buffet price.
-        ...(item.sharedAmong?.length ? { sharedAmong: item.sharedAmong } : {}),
         ...(item.separatelyCharged === true ? { separatelyCharged: true } : {}),
         ...(item.separatelyCharged === true && charged !== undefined
           ? { separateCharge: charged }
@@ -392,6 +419,19 @@ function parseShareItems(value: unknown, foods: readonly FoodItem[]): readonly M
       plateSize: plateSize as PlateSize,
       quantity: safeQuantity,
       ...(consumed === undefined ? {} : { consumedQuantity: consumed }),
+      ...(Array.isArray(entry.allocations) && entry.allocations.length
+        ? {
+            allocations: (entry.allocations as readonly unknown[]).flatMap((allocation) => {
+              if (typeof allocation !== 'object' || allocation === null) {
+                return [];
+              }
+              const { dinerId, quantity } = allocation as Record<string, unknown>;
+              return isDinerId(dinerId) && typeof quantity === 'number' && Number.isFinite(quantity)
+                ? [{ dinerId, quantity }]
+                : [];
+            }),
+          }
+        : {}),
       ...(Array.isArray(entry.sharedAmong) && entry.sharedAmong.length
         ? { sharedAmong: (entry.sharedAmong as readonly unknown[]).filter(isDinerId) }
         : {}),
