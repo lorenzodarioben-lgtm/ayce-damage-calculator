@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { buildDamageReport } from '@/lib/calculations';
 import { createId } from '@/lib/id';
 import { sessionLifecycle } from '@/lib/mealEvents';
@@ -11,7 +11,14 @@ import {
   type MealEventMeta,
   type SessionAction,
 } from '@/lib/sessionReducer';
-import { clearSession, loadSession, saveSession } from '@/lib/storage';
+import {
+  clearSession,
+  loadSessionState,
+  parseStoredSessionState,
+  saveSession,
+  STORAGE_KEY,
+  type StoredSessionState,
+} from '@/lib/storage';
 import { resolvePricingProfile } from '@/lib/pricingProfiles';
 import { foodCatalogue } from '@/lib/foodCatalogue';
 import type {
@@ -65,6 +72,16 @@ export interface UseMealSessionResult {
   resumeMeal: () => void;
   completeMeal: () => void;
   resetSession: () => void;
+  /** Present only when another browser tab changed a meal this tab has edited. */
+  sessionConflict: SessionConflict | null;
+  loadExternalSession: () => void;
+  keepCurrentSession: () => void;
+}
+
+export interface SessionConflict {
+  readonly kind: 'update' | 'reset';
+  readonly revision: number;
+  readonly session: MealSession | null;
 }
 
 interface HydrationState {
@@ -103,6 +120,12 @@ export function useMealSession(
   const [{ session, hydrated }, dispatch] = useReducer(hydrationReducer, INITIAL_STATE);
   const foods = useMemo(() => foodCatalogue(customFoods), [customFoods]);
   const loaded = useRef(false);
+  const writerId = useRef<string | null>(null);
+  const revision = useRef(0);
+  const hasLocalChanges = useRef(false);
+  const skipNextPersist = useRef(false);
+  const sessionRef = useRef(session);
+  const [sessionConflict, setSessionConflict] = useState<SessionConflict | null>(null);
 
   const source = options.source ?? 'builder';
   // The reducer is pure, so the moment an action happened has to be handed to
@@ -112,16 +135,44 @@ export function useMealSession(
     [source],
   );
 
+  const getWriterId = useCallback(() => {
+    if (!writerId.current) {
+      writerId.current = createId();
+    }
+    return writerId.current;
+  }, []);
+
+  const markLocalChange = useCallback((action: SessionAction) => {
+    hasLocalChanges.current = true;
+    dispatch(action);
+  }, []);
+
+  useEffect(() => {
+    sessionRef.current = session;
+  }, [session]);
+
   useEffect(() => {
     if (loaded.current) {
       return;
     }
     loaded.current = true;
-    dispatch({ type: 'hydrate', session: loadSession(foods) ?? INITIAL_SESSION });
+    const stored = loadSessionState(foods);
+    revision.current = stored?.revision ?? 0;
+    // The first hydrated commit is already represented in storage. Rewriting
+    // it would turn a passive reload into a competing tab edit.
+    skipNextPersist.current = true;
+    dispatch({
+      type: 'hydrate',
+      session: stored?.session ?? INITIAL_SESSION,
+    });
   }, [foods]);
 
   useEffect(() => {
     if (!hydrated) {
+      return;
+    }
+    if (skipNextPersist.current) {
+      skipNextPersist.current = false;
       return;
     }
     // A reset returns the shared INITIAL_SESSION object, so an identity check
@@ -131,8 +182,108 @@ export function useMealSession(
       clearSession();
       return;
     }
-    saveSession(session);
-  }, [session, hydrated]);
+    const stored = saveSession(session, {
+      writerId: getWriterId(),
+      knownRevision: revision.current,
+    });
+    if (stored) {
+      revision.current = stored.revision;
+    }
+  }, [session, hydrated, getWriterId]);
+
+  useEffect(() => {
+    if (!hydrated) {
+      return;
+    }
+
+    function receiveExternalState(event: StorageEvent) {
+      if (
+        event.key !== STORAGE_KEY ||
+        (event.storageArea && event.storageArea !== window.localStorage)
+      ) {
+        return;
+      }
+
+      if (event.newValue === null) {
+        const reset: SessionConflict = {
+          kind: 'reset',
+          revision: revision.current + 1,
+          session: null,
+        };
+        if (hasLocalChanges.current) {
+          setSessionConflict(reset);
+          return;
+        }
+        revision.current = reset.revision;
+        skipNextPersist.current = true;
+        dispatch({ type: 'hydrate', session: INITIAL_SESSION });
+        return;
+      }
+
+      const stored: StoredSessionState | null = parseStoredSessionState(event.newValue, foods);
+      if (!stored || stored.writerId === writerId.current) {
+        return;
+      }
+      // Current envelopes are written against the latest localStorage value,
+      // so an older delayed event can never be the newer state. Legacy writers
+      // carry no revision and are treated as a real change for compatibility.
+      if (stored.writerId !== null && stored.revision < revision.current) {
+        return;
+      }
+
+      const conflict: SessionConflict = {
+        kind: 'update',
+        revision: stored.revision,
+        session: stored.session,
+      };
+
+      if (hasLocalChanges.current) {
+        setSessionConflict(conflict);
+        return;
+      }
+
+      revision.current = stored.revision;
+      skipNextPersist.current = true;
+      dispatch({ type: 'hydrate', session: stored.session });
+    }
+
+    window.addEventListener('storage', receiveExternalState);
+    return () => window.removeEventListener('storage', receiveExternalState);
+  }, [foods, hydrated]);
+
+  const loadExternalSession = useCallback(() => {
+    if (!sessionConflict) {
+      return;
+    }
+    revision.current = sessionConflict.revision;
+    hasLocalChanges.current = false;
+    skipNextPersist.current = true;
+    dispatch({ type: 'hydrate', session: sessionConflict.session ?? INITIAL_SESSION });
+    setSessionConflict(null);
+  }, [sessionConflict]);
+
+  const keepCurrentSession = useCallback(() => {
+    if (!sessionConflict) {
+      return;
+    }
+    const context = {
+      writerId: getWriterId(),
+      knownRevision: Math.max(revision.current, sessionConflict.revision),
+    };
+    let stored: StoredSessionState | null = null;
+    if (sessionRef.current === INITIAL_SESSION) {
+      clearSession();
+    } else {
+      stored = saveSession(sessionRef.current, context);
+    }
+    if (stored) {
+      revision.current = stored.revision;
+    } else {
+      revision.current = context.knownRevision;
+    }
+    hasLocalChanges.current = true;
+    setSessionConflict(null);
+  }, [getWriterId, sessionConflict]);
 
   const pricingProfile = useMemo(
     () => resolvePricingProfile(pricingProfiles, session.pricingProfileId),
@@ -143,116 +294,143 @@ export function useMealSession(
     [session, pricingProfile, foods],
   );
 
-  const setRestaurantName = useCallback((value: string) => {
-    dispatch({ type: 'set-restaurant-name', value });
-  }, []);
+  const setRestaurantName = useCallback(
+    (value: string) => {
+      markLocalChange({ type: 'set-restaurant-name', value });
+    },
+    [markLocalChange],
+  );
 
-  const setPricePerDiner = useCallback((value: number) => {
-    dispatch({ type: 'set-price-per-diner', value });
-  }, []);
+  const setPricePerDiner = useCallback(
+    (value: number) => {
+      markLocalChange({ type: 'set-price-per-diner', value });
+    },
+    [markLocalChange],
+  );
 
-  const setPricingProfile = useCallback((id: string) => {
-    dispatch({ type: 'set-pricing-profile', id });
-  }, []);
+  const setPricingProfile = useCallback(
+    (id: string) => {
+      markLocalChange({ type: 'set-pricing-profile', id });
+    },
+    [markLocalChange],
+  );
 
-  const adjustDinerCount = useCallback((delta: number) => {
-    dispatch({ type: 'adjust-diner-count', delta });
-  }, []);
+  const adjustDinerCount = useCallback(
+    (delta: number) => {
+      markLocalChange({ type: 'adjust-diner-count', delta });
+    },
+    [markLocalChange],
+  );
 
-  const applySetup = useCallback((setup: SessionConfig) => {
-    dispatch({ type: 'apply-setup', setup });
-  }, []);
+  const applySetup = useCallback(
+    (setup: SessionConfig) => {
+      markLocalChange({ type: 'apply-setup', setup });
+    },
+    [markLocalChange],
+  );
 
   const addDiner = useCallback(
     (diner: Diner) => {
-      dispatch({ type: 'add-diner', diner, meta: meta() });
+      markLocalChange({ type: 'add-diner', diner, meta: meta() });
     },
-    [meta],
+    [markLocalChange, meta],
   );
 
-  const renameDiner = useCallback((id: string, displayName: string) => {
-    dispatch({ type: 'rename-diner', id, displayName });
-  }, []);
+  const renameDiner = useCallback(
+    (id: string, displayName: string) => {
+      markLocalChange({ type: 'rename-diner', id, displayName });
+    },
+    [markLocalChange],
+  );
 
-  const setDinerAdmissionPrice = useCallback((id: string, value: number | undefined) => {
-    dispatch({ type: 'set-diner-admission-price', id, value });
-  }, []);
+  const setDinerAdmissionPrice = useCallback(
+    (id: string, value: number | undefined) => {
+      markLocalChange({ type: 'set-diner-admission-price', id, value });
+    },
+    [markLocalChange],
+  );
 
   const removeDiner = useCallback(
     (id: string) => {
-      dispatch({ type: 'remove-diner', id, meta: meta() });
+      markLocalChange({ type: 'remove-diner', id, meta: meta() });
     },
-    [meta],
+    [markLocalChange, meta],
   );
 
-  const moveDiner = useCallback((id: string, direction: -1 | 1) => {
-    dispatch({ type: 'move-diner', id, direction });
-  }, []);
+  const moveDiner = useCallback(
+    (id: string, direction: -1 | 1) => {
+      markLocalChange({ type: 'move-diner', id, direction });
+    },
+    [markLocalChange],
+  );
 
   const clearDiners = useCallback(() => {
-    dispatch({ type: 'clear-diners', meta: meta() });
-  }, [meta]);
+    markLocalChange({ type: 'clear-diners', meta: meta() });
+  }, [markLocalChange, meta]);
 
   const addItem = useCallback(
     (payload: AddItemPayload) => {
-      dispatch({ type: 'add-item', payload, meta: meta() });
+      markLocalChange({ type: 'add-item', payload, meta: meta() });
     },
-    [meta],
+    [markLocalChange, meta],
   );
 
   const incrementItem = useCallback(
     (id: string) => {
-      dispatch({ type: 'increment-item', id, meta: meta() });
+      markLocalChange({ type: 'increment-item', id, meta: meta() });
     },
-    [meta],
+    [markLocalChange, meta],
   );
 
   const decrementItem = useCallback(
     (id: string) => {
-      dispatch({ type: 'decrement-item', id, meta: meta() });
+      markLocalChange({ type: 'decrement-item', id, meta: meta() });
     },
-    [meta],
+    [markLocalChange, meta],
   );
 
   const setItemAllocations = useCallback(
     (id: string, allocations: readonly DinerAllocation[]) => {
-      dispatch({ type: 'set-item-allocations', id, allocations, meta: meta() });
+      markLocalChange({ type: 'set-item-allocations', id, allocations, meta: meta() });
     },
-    [meta],
+    [markLocalChange, meta],
   );
 
   const removeItem = useCallback(
     (id: string) => {
-      dispatch({ type: 'remove-item', id, meta: meta() });
+      markLocalChange({ type: 'remove-item', id, meta: meta() });
     },
-    [meta],
+    [markLocalChange, meta],
   );
 
   const restoreItem = useCallback(
     (item: MealItem, index: number) => {
-      dispatch({ type: 'restore-item', item, index, meta: meta() });
+      markLocalChange({ type: 'restore-item', item, index, meta: meta() });
     },
-    [meta],
+    [markLocalChange, meta],
   );
 
-  const setMealDuration = useCallback((minutes: number | undefined) => {
-    dispatch({ type: 'set-meal-duration', minutes });
-  }, []);
+  const setMealDuration = useCallback(
+    (minutes: number | undefined) => {
+      markLocalChange({ type: 'set-meal-duration', minutes });
+    },
+    [markLocalChange],
+  );
 
   const pauseMeal = useCallback(() => {
-    dispatch({ type: 'pause-meal', meta: meta() });
-  }, [meta]);
+    markLocalChange({ type: 'pause-meal', meta: meta() });
+  }, [markLocalChange, meta]);
 
   const resumeMeal = useCallback(() => {
-    dispatch({ type: 'resume-meal', meta: meta() });
-  }, [meta]);
+    markLocalChange({ type: 'resume-meal', meta: meta() });
+  }, [markLocalChange, meta]);
 
   const completeMeal = useCallback(() => {
-    dispatch({ type: 'complete-meal', meta: meta() });
-  }, [meta]);
+    markLocalChange({ type: 'complete-meal', meta: meta() });
+  }, [markLocalChange, meta]);
 
   const resetSession = useCallback(() => {
-    clearSession();
+    hasLocalChanges.current = true;
     dispatch({ type: 'reset' });
   }, []);
 
@@ -283,6 +461,9 @@ export function useMealSession(
     resumeMeal,
     completeMeal,
     resetSession,
+    sessionConflict,
+    loadExternalSession,
+    keepCurrentSession,
     pricingProfile,
   };
 }
