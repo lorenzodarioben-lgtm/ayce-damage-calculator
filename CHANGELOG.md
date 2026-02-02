@@ -112,6 +112,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
   hands the unnamed seats' plates to the diners who were typed in; those seats are reported as their
   own line instead. Per-seat money is settled in whole cents against the table's own total by
   largest remainder, so what each person owes adds up exactly to what the table paid.
+- Shared report links no longer carry a diner's identity. Display names were already replaced with
+  positions, but the underlying id was not — and a person saved from the diner hub has an id derived
+  from their name, so "Lorenzo" travelled inside the token as `diner-lorenzo`. Every diner reference
+  in a shared document is now rewritten to a position (`d1`, `d2`), which keeps the attribution the
+  recipient needs — who shared which plate, whose charge was whose — while carrying no identity at
+  all. Per-item attribution now travels too, so a shared table breakdown stops dividing every plate
+  evenly and being confidently wrong. Older tokens still decode. Challenge links, which deliberately
+  carry no roster or attribution, are unchanged.
 - The uncertainty panel now receives the bill and measures every scenario against what was actually
   paid, the same figure the report beside it uses. A meal with a voucher or a surcharge could
   previously have its scenarios, verdicts and headline sentence computed against the undiscounted

@@ -449,7 +449,7 @@ Everything is local by default and stays that way.
 - An encrypted backup is sealed on the device with a key derived from your password. The password
   is never stored, never logged and cannot be recovered — which is also why the file cannot be
   opened without it
-- Diner names stay local. Shared links anonymise roster names by default, while an exported backup may include names because it is a deliberate local export.
+- Diner names stay local. A shared report rewrites every diner reference to a position (`d1`, `d2`) — carrying no name and no name-derived id, while keeping who shared which plate — and an exported backup may include names because it is a deliberate local export.
 - Shared challenge links carry two meals and their entry prices. Diner names, roster attribution,
   private notes and the meal ledger stay on the device; opening a challenge writes nothing.
 - Shared menu links carry only the price assumptions, custom foods and (optionally) a restaurant
