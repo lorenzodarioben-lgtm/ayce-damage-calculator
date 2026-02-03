@@ -4,6 +4,7 @@ import { useCallback, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Download, FileSpreadsheet, Lock, Upload } from 'lucide-react';
 import { VaultPasswordDialog } from '@/components/history/VaultPasswordDialog';
+import { RestoreImpactSummary } from '@/components/history/RestoreImpactSummary';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import {
@@ -11,11 +12,14 @@ import {
   MAX_BACKUP_BYTES,
   backupFilename,
   buildBackup,
+  calculateRestoreImpact,
   mergeById,
   parseBackup,
   serialiseBackup,
   type BackupContents,
   type BackupSummary,
+  type RestoreImpact,
+  type RestoreImpactContents,
   type RestoreMode,
 } from '@/lib/backup';
 import { csvFilename, historyToCsv } from '@/lib/csv';
@@ -38,7 +42,7 @@ import { loadPricingProfiles, savePricingProfiles } from '@/lib/pricingProfiles'
 type Stage =
   | { kind: 'idle' }
   | { kind: 'error'; message: string }
-  | { kind: 'preview'; contents: BackupContents; summary: BackupSummary }
+  | { kind: 'preview'; contents: BackupContents; summary: BackupSummary; impact: RestoreImpact }
   | { kind: 'done'; message: string };
 
 /** What the password dialog is currently being asked for, if anything. */
@@ -46,6 +50,11 @@ type PasswordPrompt =
   | { kind: 'none' }
   | { kind: 'encrypt' }
   | { kind: 'decrypt'; raw: string; error: string | null };
+
+interface PendingReplace {
+  readonly contents: BackupContents;
+  readonly impact: RestoreImpact;
+}
 
 const BACK_LINK =
   '-ml-2 inline-flex min-h-11 items-center gap-1.5 rounded-[10px] px-2 text-xs font-semibold ' +
@@ -72,6 +81,21 @@ function configurationCount(contents: BackupContents): number {
   );
 }
 
+/** Reads the current device only, so the restore preview cannot make a change. */
+async function readCurrentRestoreContents(): Promise<RestoreImpactContents> {
+  const customFoods = loadCustomFoods();
+
+  return {
+    history: await listSessions(),
+    favorites: loadFavorites(foodCatalogue(customFoods)),
+    configuration: {
+      pricingProfiles: loadPricingProfiles(),
+      customFoods,
+      restaurants: loadRestaurants(),
+    },
+  };
+}
+
 /**
  * Export and restore, with the file previewed before anything is written.
  *
@@ -81,7 +105,7 @@ function configurationCount(contents: BackupContents): number {
 export function BackupRestore() {
   const fileInput = useRef<HTMLInputElement>(null);
   const [stage, setStage] = useState<Stage>({ kind: 'idle' });
-  const [pendingReplace, setPendingReplace] = useState<BackupContents | null>(null);
+  const [pendingReplace, setPendingReplace] = useState<PendingReplace | null>(null);
   const [prompt, setPrompt] = useState<PasswordPrompt>({ kind: 'none' });
   const [busy, setBusy] = useState(false);
 
@@ -170,13 +194,19 @@ export function BackupRestore() {
   }, []);
 
   /** Runs the ordinary validation, whether the bytes arrived plain or sealed. */
-  const previewPlainBackup = useCallback((raw: string) => {
+  const previewPlainBackup = useCallback(async (raw: string) => {
     const parsed = parseBackup(raw);
     if (!parsed.ok) {
       setStage({ kind: 'error', message: BACKUP_ERROR_MESSAGES[parsed.error] });
       return;
     }
-    setStage({ kind: 'preview', contents: parsed.contents, summary: parsed.summary });
+    const current = await readCurrentRestoreContents();
+    setStage({
+      kind: 'preview',
+      contents: parsed.contents,
+      summary: parsed.summary,
+      impact: calculateRestoreImpact(parsed.contents, current),
+    });
   }, []);
 
   const handleFile = useCallback(
@@ -198,7 +228,7 @@ export function BackupRestore() {
         setStage({ kind: 'error', message: BACKUP_ERROR_MESSAGES['too-large'] });
         return;
       }
-      previewPlainBackup(raw);
+      await previewPlainBackup(raw);
     },
     [previewPlainBackup],
   );
@@ -220,7 +250,7 @@ export function BackupRestore() {
           return;
         }
         setPrompt({ kind: 'none' });
-        previewPlainBackup(opened.plaintext);
+        await previewPlainBackup(opened.plaintext);
       } finally {
         setBusy(false);
       }
@@ -390,6 +420,8 @@ export function BackupRestore() {
               </p>
             )}
 
+            <RestoreImpactSummary impact={stage.impact} />
+
             <div className="mt-4 grid gap-2 sm:grid-cols-2">
               <Button
                 variant="secondary"
@@ -401,7 +433,9 @@ export function BackupRestore() {
               </Button>
               <Button
                 variant="danger"
-                onClick={() => setPendingReplace(stage.contents)}
+                onClick={() =>
+                  setPendingReplace({ contents: stage.contents, impact: stage.impact })
+                }
                 disabled={busy}
               >
                 Replace everything
@@ -439,14 +473,18 @@ export function BackupRestore() {
       <ConfirmDialog
         open={pendingReplace !== null}
         title="Replace everything on this device?"
-        body="Every filed session, saved order and menu setting currently on this device will be permanently discarded and replaced with the contents of the backup. It cannot be undone."
+        body={
+          pendingReplace
+            ? `${pendingReplace.impact.replace.sessions.discarded} filed sessions, ${pendingReplace.impact.replace.savedOrders.discarded} saved orders, ${pendingReplace.impact.replace.pricingProfiles.discarded} pricing profiles, ${pendingReplace.impact.replace.customFoods.discarded} custom foods and ${pendingReplace.impact.replace.restaurants.discarded} saved restaurants currently on this device will be permanently discarded and replaced with the contents of the backup. It cannot be undone.`
+            : ''
+        }
         confirmLabel="Replace everything"
         cancelLabel="Keep what I have"
         onConfirm={() => {
-          const contents = pendingReplace;
+          const pending = pendingReplace;
           setPendingReplace(null);
-          if (contents) {
-            void applyRestore(contents, 'replace');
+          if (pending) {
+            void applyRestore(pending.contents, 'replace');
           }
         }}
         onCancel={() => setPendingReplace(null)}
