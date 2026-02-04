@@ -9,6 +9,7 @@ import { useMealHistory } from '@/hooks/useMealHistory';
 import { cn } from '@/lib/cn';
 import { formatRecordedAt } from '@/lib/formatting';
 import { filterSessions, sortResolvedSessions } from '@/lib/history';
+import { VERDICTS } from '@/lib/verdicts';
 import type { HistorySortKey, SavedMealSession } from '@/types/history';
 
 const SORTS: ReadonlyArray<{ key: HistorySortKey; label: string }> = [
@@ -23,13 +24,46 @@ export function HistoryList() {
   const { status, records, remove, clear } = useMealHistory();
   const [sort, setSort] = useState<HistorySortKey>('newest');
   const [query, setQuery] = useState('');
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
+  const [restaurant, setRestaurant] = useState('');
+  const [verdict, setVerdict] = useState('');
+  const [tag, setTag] = useState('');
   const [pending, setPending] = useState<PendingDeletion>(null);
   const searchId = useId();
 
-  const ordered = useMemo(
-    () => sortResolvedSessions(filterSessions(records, query), sort),
-    [records, query, sort],
+  const filtered = useMemo(() => {
+    const start = fromDate ? Date.parse(`${fromDate}T00:00:00.000`) : Number.NEGATIVE_INFINITY;
+    const end = toDate ? Date.parse(`${toDate}T23:59:59.999`) : Number.POSITIVE_INFINITY;
+    return filterSessions(records, query).filter((record) => {
+      const timestamp = Date.parse(record.createdAt);
+      return (
+        timestamp >= start &&
+        timestamp <= end &&
+        (!restaurant || record.restaurantName === restaurant) &&
+        (!verdict || record.snapshot.verdictId === verdict) &&
+        (!tag || record.tags.includes(tag))
+      );
+    });
+  }, [fromDate, query, records, restaurant, tag, toDate, verdict]);
+  const ordered = useMemo(() => sortResolvedSessions(filtered, sort), [filtered, sort]);
+  const restaurants = useMemo(
+    () => [...new Set(records.map((record) => record.restaurantName).filter(Boolean))].sort(),
+    [records],
   );
+  const tags = useMemo(
+    () => [...new Set(records.flatMap((record) => record.tags))].sort(),
+    [records],
+  );
+  const hasFilters = Boolean(fromDate || toDate || restaurant || verdict || tag);
+
+  function clearFilters() {
+    setFromDate('');
+    setToDate('');
+    setRestaurant('');
+    setVerdict('');
+    setTag('');
+  }
 
   async function confirmPending() {
     if (pending?.kind === 'one') {
@@ -110,12 +144,97 @@ export function HistoryList() {
             )}
           </div>
           <p role="status" className="tabular mt-1.5 min-h-4 text-xs text-cream-700">
-            {query.trim().length === 0
+            {query.trim().length === 0 && !hasFilters
               ? ''
               : `${ordered.length} of ${records.length} sessions match`}
           </p>
         </div>
       )}
+
+      <details className="panel mb-4 px-4 py-3">
+        <summary className="cursor-pointer text-sm font-semibold text-cream-300">
+          Filter history
+        </summary>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <label className="text-sm text-cream-300">
+            From date
+            <input
+              aria-label="From date"
+              type="date"
+              value={fromDate}
+              onChange={(event) => setFromDate(event.target.value)}
+              className="mt-1 min-h-11 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-cream-100"
+            />
+          </label>
+          <label className="text-sm text-cream-300">
+            To date
+            <input
+              aria-label="To date"
+              type="date"
+              value={toDate}
+              onChange={(event) => setToDate(event.target.value)}
+              className="mt-1 min-h-11 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-cream-100"
+            />
+          </label>
+          <label className="text-sm text-cream-300">
+            Restaurant
+            <select
+              aria-label="Restaurant filter"
+              value={restaurant}
+              onChange={(event) => setRestaurant(event.target.value)}
+              className="mt-1 min-h-11 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-cream-100"
+            >
+              <option value="">All restaurants</option>
+              {restaurants.map((name) => (
+                <option key={name} value={name}>
+                  {name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="text-sm text-cream-300">
+            Outcome
+            <select
+              aria-label="Outcome filter"
+              value={verdict}
+              onChange={(event) => setVerdict(event.target.value)}
+              className="mt-1 min-h-11 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-cream-100"
+            >
+              <option value="">All outcomes</option>
+              {VERDICTS.map((option) => (
+                <option key={option.id} value={option.id}>
+                  {option.title}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="text-sm text-cream-300">
+            Tag
+            <select
+              aria-label="Tag filter"
+              value={tag}
+              onChange={(event) => setTag(event.target.value)}
+              className="mt-1 min-h-11 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-cream-100"
+            >
+              <option value="">All tags</option>
+              {tags.map((value) => (
+                <option key={value} value={value}>
+                  {value}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+        {hasFilters && (
+          <button
+            type="button"
+            onClick={clearFilters}
+            className="mt-4 text-sm font-semibold text-ember-400 hover:text-ember-300"
+          >
+            Clear all filters
+          </button>
+        )}
+      </details>
 
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
@@ -178,8 +297,8 @@ export function HistoryList() {
 
       {ordered.length === 0 ? (
         <p className="panel border-dashed px-6 py-12 text-center text-sm text-cream-700">
-          No session on file matches that. The records are still there — only the search is
-          narrowing them.
+          No session on file matches that. The records are still there — only the current filters
+          are narrowing them.
         </p>
       ) : (
         <ul className="space-y-3">
