@@ -81,6 +81,7 @@ export type SessionAction =
   | { type: 'add-item'; payload: AddItemPayload; meta?: MealEventMeta }
   | { type: 'increment-item'; id: string; meta?: MealEventMeta }
   | { type: 'decrement-item'; id: string; meta?: MealEventMeta }
+  | { type: 'set-item-quantity'; id: string; quantity: number; meta?: MealEventMeta }
   | {
       type: 'set-item-allocations';
       id: string;
@@ -328,6 +329,19 @@ function applySessionAction(state: MealSession, action: SessionAction): MealSess
         ),
       };
 
+    case 'set-item-quantity':
+      return {
+        ...state,
+        items: state.items.map((item) =>
+          item.id === action.id
+            ? reconcileItemAllocations(
+                { ...item, quantity: clampQuantity(action.quantity) },
+                state.diners,
+              )
+            : item,
+        ),
+      };
+
     case 'set-item-allocations':
       return {
         ...state,
@@ -442,6 +456,20 @@ function draftsForAction(
       return removed > 0 && line
         ? [{ type: 'plates-reduced', line: mealEventLine(line), quantity: removed }]
         : [];
+    }
+
+    case 'set-item-quantity': {
+      const previous = before.items.find((item) => item.id === action.id);
+      const line = after.items.find((item) => item.id === action.id);
+      if (!previous || !line) {
+        return [];
+      }
+      const difference = line.quantity - previous.quantity;
+      return difference > 0
+        ? [{ type: 'plates-added', line: mealEventLine(line), quantity: difference }]
+        : difference < 0
+          ? [{ type: 'plates-reduced', line: mealEventLine(previous), quantity: -difference }]
+          : [];
     }
 
     case 'remove-item': {

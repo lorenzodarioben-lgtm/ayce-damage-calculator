@@ -21,6 +21,15 @@ import {
 } from '@/lib/storage';
 import { resolvePricingProfile } from '@/lib/pricingProfiles';
 import { foodCatalogue } from '@/lib/foodCatalogue';
+import {
+  EMPTY_SESSION_COMMAND_HISTORY,
+  createSessionCommand,
+  recordSessionCommand,
+  takeRedo,
+  takeUndo,
+  type SessionCommand,
+  type SessionCommandHistory,
+} from '@/lib/sessionCommands';
 import type {
   DamageReport,
   Diner,
@@ -71,6 +80,12 @@ export interface UseMealSessionResult {
   pauseMeal: () => void;
   resumeMeal: () => void;
   completeMeal: () => void;
+  /** Whether a reversible local meal edit is available to undo. */
+  canUndo: boolean;
+  /** Whether a previously undone edit is available to redo. */
+  canRedo: boolean;
+  undo: () => void;
+  redo: () => void;
   resetSession: () => void;
   /** Present only when another browser tab changed a meal this tab has edited. */
   sessionConflict: SessionConflict | null;
@@ -112,6 +127,31 @@ export interface UseMealSessionOptions {
   readonly source?: MealEventSource;
 }
 
+function actionWithFreshMeta(action: SessionAction, meta: MealEventMeta): SessionAction {
+  switch (action.type) {
+    case 'add-diner':
+    case 'remove-diner':
+    case 'clear-diners':
+    case 'add-item':
+    case 'increment-item':
+    case 'decrement-item':
+    case 'set-item-quantity':
+    case 'set-item-allocations':
+    case 'remove-item':
+    case 'restore-item':
+      return { ...action, meta };
+    default:
+      return action;
+  }
+}
+
+function targetsEditableControl(target: EventTarget | null): boolean {
+  if (!(target instanceof Element)) {
+    return false;
+  }
+  return target.matches('input, textarea, select, [contenteditable="true"], [contenteditable=""]');
+}
+
 export function useMealSession(
   pricingProfiles: readonly PricingProfile[] = [],
   customFoods: readonly CustomFood[] = [],
@@ -125,6 +165,10 @@ export function useMealSession(
   const hasLocalChanges = useRef(false);
   const skipNextPersist = useRef(false);
   const sessionRef = useRef(session);
+  const commandHistory = useRef<SessionCommandHistory>(EMPTY_SESSION_COMMAND_HISTORY);
+  const [visibleCommandHistory, setVisibleCommandHistory] = useState<SessionCommandHistory>(
+    EMPTY_SESSION_COMMAND_HISTORY,
+  );
   const [sessionConflict, setSessionConflict] = useState<SessionConflict | null>(null);
 
   const source = options.source ?? 'builder';
@@ -142,10 +186,67 @@ export function useMealSession(
     return writerId.current;
   }, []);
 
-  const markLocalChange = useCallback((action: SessionAction) => {
-    hasLocalChanges.current = true;
-    dispatch(action);
+  const setCommandHistory = useCallback((next: SessionCommandHistory) => {
+    commandHistory.current = next;
+    setVisibleCommandHistory(next);
   }, []);
+
+  const clearCommandHistory = useCallback(() => {
+    setCommandHistory(EMPTY_SESSION_COMMAND_HISTORY);
+  }, [setCommandHistory]);
+
+  const markLocalChange = useCallback(
+    (action: SessionAction) => {
+      const before = sessionRef.current;
+      const after = sessionReducer(before, action);
+      const command = createSessionCommand(before, after, action);
+
+      if (command) {
+        setCommandHistory(recordSessionCommand(commandHistory.current, command));
+      } else if (before !== after) {
+        // A new non-reversible edit still invalidates redo. The previous undo
+        // stack remains useful because its domain inverses still apply to this tab.
+        setCommandHistory({ ...commandHistory.current, redo: [] });
+      }
+      sessionRef.current = after;
+      hasLocalChanges.current = true;
+      dispatch(action);
+    },
+    [setCommandHistory],
+  );
+
+  const replayCommand = useCallback(
+    (command: SessionCommand, direction: 'undo' | 'redo') => {
+      const actions = direction === 'undo' ? command.inverse : command.forward;
+      let next = sessionRef.current;
+      for (const action of actions) {
+        const replayed = actionWithFreshMeta(action, meta());
+        next = sessionReducer(next, replayed);
+        dispatch(replayed);
+      }
+      sessionRef.current = next;
+      hasLocalChanges.current = true;
+    },
+    [meta],
+  );
+
+  const undo = useCallback(() => {
+    const next = takeUndo(commandHistory.current);
+    if (!next.command) {
+      return;
+    }
+    setCommandHistory(next.history);
+    replayCommand(next.command, 'undo');
+  }, [replayCommand, setCommandHistory]);
+
+  const redo = useCallback(() => {
+    const next = takeRedo(commandHistory.current);
+    if (!next.command) {
+      return;
+    }
+    setCommandHistory(next.history);
+    replayCommand(next.command, 'redo');
+  }, [replayCommand, setCommandHistory]);
 
   useEffect(() => {
     sessionRef.current = session;
@@ -158,6 +259,8 @@ export function useMealSession(
     loaded.current = true;
     const stored = loadSessionState(foods);
     revision.current = stored?.revision ?? 0;
+    clearCommandHistory();
+    sessionRef.current = stored?.session ?? INITIAL_SESSION;
     // The first hydrated commit is already represented in storage. Rewriting
     // it would turn a passive reload into a competing tab edit.
     skipNextPersist.current = true;
@@ -165,7 +268,7 @@ export function useMealSession(
       type: 'hydrate',
       session: stored?.session ?? INITIAL_SESSION,
     });
-  }, [foods]);
+  }, [clearCommandHistory, foods]);
 
   useEffect(() => {
     if (!hydrated) {
@@ -216,6 +319,8 @@ export function useMealSession(
         }
         revision.current = reset.revision;
         skipNextPersist.current = true;
+        clearCommandHistory();
+        sessionRef.current = INITIAL_SESSION;
         dispatch({ type: 'hydrate', session: INITIAL_SESSION });
         return;
       }
@@ -244,12 +349,14 @@ export function useMealSession(
 
       revision.current = stored.revision;
       skipNextPersist.current = true;
+      clearCommandHistory();
+      sessionRef.current = stored.session;
       dispatch({ type: 'hydrate', session: stored.session });
     }
 
     window.addEventListener('storage', receiveExternalState);
     return () => window.removeEventListener('storage', receiveExternalState);
-  }, [foods, hydrated]);
+  }, [clearCommandHistory, foods, hydrated]);
 
   const loadExternalSession = useCallback(() => {
     if (!sessionConflict) {
@@ -258,9 +365,12 @@ export function useMealSession(
     revision.current = sessionConflict.revision;
     hasLocalChanges.current = false;
     skipNextPersist.current = true;
-    dispatch({ type: 'hydrate', session: sessionConflict.session ?? INITIAL_SESSION });
+    const next = sessionConflict.session ?? INITIAL_SESSION;
+    clearCommandHistory();
+    sessionRef.current = next;
+    dispatch({ type: 'hydrate', session: next });
     setSessionConflict(null);
-  }, [sessionConflict]);
+  }, [clearCommandHistory, sessionConflict]);
 
   const keepCurrentSession = useCallback(() => {
     if (!sessionConflict) {
@@ -431,8 +541,37 @@ export function useMealSession(
 
   const resetSession = useCallback(() => {
     hasLocalChanges.current = true;
+    clearCommandHistory();
+    sessionRef.current = INITIAL_SESSION;
     dispatch({ type: 'reset' });
-  }, []);
+  }, [clearCommandHistory]);
+
+  useEffect(() => {
+    function handleUndoShortcut(event: KeyboardEvent) {
+      if (
+        (!event.ctrlKey && !event.metaKey) ||
+        event.altKey ||
+        targetsEditableControl(event.target)
+      ) {
+        return;
+      }
+      const key = event.key.toLowerCase();
+      const wantsUndo = key === 'z' && !event.shiftKey;
+      const wantsRedo = key === 'y' || (key === 'z' && event.shiftKey);
+      if (!wantsUndo && !wantsRedo) {
+        return;
+      }
+      event.preventDefault();
+      if (wantsRedo) {
+        redo();
+      } else {
+        undo();
+      }
+    }
+
+    window.addEventListener('keydown', handleUndoShortcut);
+    return () => window.removeEventListener('keydown', handleUndoShortcut);
+  }, [redo, undo]);
 
   return {
     session,
@@ -460,6 +599,10 @@ export function useMealSession(
     pauseMeal,
     resumeMeal,
     completeMeal,
+    canUndo: visibleCommandHistory.undo.length > 0,
+    canRedo: visibleCommandHistory.redo.length > 0,
+    undo,
+    redo,
     resetSession,
     sessionConflict,
     loadExternalSession,
