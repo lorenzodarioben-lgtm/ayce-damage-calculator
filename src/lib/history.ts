@@ -31,6 +31,7 @@ import { DEFAULT_PRICING_PROFILE, DEFAULT_PRICING_PROFILE_ID } from '@/lib/prici
 import { parseCustomPricingProfile } from '@/lib/pricingProfiles';
 import { MAX_CUSTOM_FOODS, parseCustomFood } from '@/lib/customFoods';
 import { getVerdict, isVerdictId, type Verdict } from '@/lib/verdicts';
+import { parseSessionTags } from '@/lib/sessionTags';
 import type { SavedMealSession, SavedSessionSnapshot } from '@/types/history';
 import type {
   DamageReport,
@@ -56,11 +57,12 @@ import type { PricingProfile } from '@/types/pricing';
  * 7 — records retain plate attribution and the timestamped meal ledger.
  * 8 — records retain the booked meal duration.
  * 9 — records retain the local restaurant profile the visit belongs to.
+ * 10 — records retain diner-authored local tags.
  */
-export const SAVED_SESSION_VERSION = 9;
+export const SAVED_SESSION_VERSION = 10;
 
 /** Versions `parseSavedSession` knows how to read, current one included. */
-export const SUPPORTED_SESSION_VERSIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9] as const;
+export const SUPPORTED_SESSION_VERSIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
 
 /**
  * The first schema that could carry a timeline.
@@ -159,6 +161,8 @@ export interface CreateSavedSessionOptions {
   readonly pricingProfile?: PricingProfile;
   /** The custom catalogue at filing time; only entries used by this meal are stored. */
   readonly customFoods?: readonly CustomFood[];
+  /** Optional local labels. They are never derived from meal data. */
+  readonly tags?: readonly string[];
 }
 
 export function createSavedSession(
@@ -180,6 +184,7 @@ export function createSavedSession(
       .filter((food) => session.items.some((item) => item.foodId === food.id))
       .map((food) => ({ ...food })),
     note: sanitiseSessionNote(options.note),
+    tags: parseSessionTags(options.tags),
     items: session.items.map((item) => ({ ...item })),
     ...(session.diners ? { diners: session.diners.map((diner) => ({ ...diner })) } : {}),
     // Copied rather than referenced, for the same reason the pricing snapshot
@@ -400,6 +405,7 @@ export function parseSavedSession(value: unknown): SavedMealSession | null {
     version >= 8 ? parseMealDuration(value.plannedDurationMinutes) : undefined;
   const linkedRestaurantId =
     version >= 9 && isRestaurantId(value.restaurantId) ? value.restaurantId : undefined;
+  const tags = version >= 10 ? parseSessionTags(value.tags) : [];
 
   return {
     id: value.id,
@@ -413,6 +419,7 @@ export function parseSavedSession(value: unknown): SavedMealSession | null {
     customFoods,
     // Records written before version 3 simply have nothing to say.
     note: sanitiseSessionNote(value.note),
+    tags,
     items,
     ...(diners.length ? { diners } : {}),
     ...(events.length ? { events } : {}),
@@ -505,7 +512,7 @@ export function resolveSavedSession(record: SavedMealSession): ResolvedSavedSess
 /**
  * Narrows the file to records that answer a query.
  *
- * Only what the diner wrote is searched — the restaurant name and the note.
+ * Only what the diner wrote is searched — the restaurant name, note and tags.
  * Matching on derived figures would mean "60" quietly selecting every session
  * whose recovery happened to round there, which is not what anyone typing a
  * number into a search box means.
@@ -520,7 +527,8 @@ export function filterSessions(
   }
 
   return records.filter((record) => {
-    const searchable = `${record.restaurantName} ${record.note}`.toLowerCase();
+    const searchable =
+      `${record.restaurantName} ${record.note} ${record.tags.join(' ')}`.toLowerCase();
     return terms.every((term) => searchable.includes(term));
   });
 }

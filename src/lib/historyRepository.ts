@@ -1,5 +1,6 @@
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb';
 import { HISTORY_DEDUPE_WINDOW_MS, MAX_HISTORY_RECORDS, parseSavedSession } from '@/lib/history';
+import { parseSessionTags } from '@/lib/sessionTags';
 import type { SavedMealSession } from '@/types/history';
 
 export const HISTORY_DB_NAME = 'ayce-damage';
@@ -175,6 +176,22 @@ export async function deleteSession(id: string): Promise<boolean> {
     await db.delete(HISTORY_STORE, id);
     return true;
   }, false);
+}
+
+/** Updates only local labels after applying the same validation as import/read paths. */
+export async function updateSessionTags(
+  id: string,
+  tags: readonly string[],
+): Promise<SavedMealSession | null> {
+  return withDb(async (db) => {
+    const current = parseSavedSession(await db.get(HISTORY_STORE, id));
+    if (!current) {
+      return null;
+    }
+    const updated = { ...current, tags: parseSessionTags(tags) };
+    await db.put(HISTORY_STORE, updated);
+    return updated;
+  }, null);
 }
 
 export async function clearSessions(): Promise<boolean> {
