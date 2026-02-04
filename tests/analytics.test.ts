@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { TOP_FOOD_LENGTH, TREND_LENGTH, buildHistoryAnalytics } from '@/lib/analytics';
+import {
+  TOP_FOOD_LENGTH,
+  TREND_LENGTH,
+  buildHistoryAnalytics,
+  recordsInAnalyticsRange,
+} from '@/lib/analytics';
 import { buildDamageReport } from '@/lib/calculations';
 import { createSavedSession } from '@/lib/history';
 import { getVerdict } from '@/lib/verdicts';
@@ -59,6 +64,29 @@ describe('Empty history', () => {
     expect(analytics.mostPlates).toBeNull();
     expect(analytics.topFoods).toEqual([]);
     expect(analytics.trend).toEqual([]);
+  });
+});
+
+describe('Analytics periods', () => {
+  const now = new Date('2026-08-30T00:00:00.000Z');
+
+  it('uses an inclusive, deterministic lower boundary and excludes future meals', () => {
+    const records = [
+      filed('on-boundary', '2026-07-31T00:00:00.000Z', [line('beef-ribeye', 1)]),
+      filed('inside', '2026-08-01T00:00:00.000Z', [line('beef-ribeye', 1)]),
+      filed('outside', '2026-07-30T23:59:59.999Z', [line('beef-ribeye', 1)]),
+      filed('future', '2026-08-30T00:00:00.001Z', [line('beef-ribeye', 1)]),
+    ];
+
+    expect(recordsInAnalyticsRange(records, '30', now).map((record) => record.id)).toEqual([
+      'on-boundary',
+      'inside',
+    ]);
+  });
+
+  it('keeps all records for all time and returns an empty set for an empty period', () => {
+    expect(recordsInAnalyticsRange([SMALL, BIG], 'all', now)).toEqual([SMALL, BIG]);
+    expect(recordsInAnalyticsRange([SMALL, BIG], '30', now)).toEqual([]);
   });
 });
 
