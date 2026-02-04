@@ -183,6 +183,16 @@ describe('Round trip', () => {
     expect(parsed.contents.favorites).toEqual([customFavorite]);
   });
 
+  it('retains validated local session tags through export and restore parsing', () => {
+    const tagged = { ...record('tagged'), tags: ['friends', 'birthday'] };
+
+    const parsed = parseBackup(exported([tagged], []));
+
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+    expect(parsed.contents.history[0]?.tags).toEqual(['friends', 'birthday']);
+  });
+
   it('continues to restore version 1 files without a configuration section', () => {
     const parsed = parseBackup(
       JSON.stringify({

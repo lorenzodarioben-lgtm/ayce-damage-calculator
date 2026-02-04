@@ -15,6 +15,7 @@ import {
   sessionFromSaved,
   sortResolvedSessions,
 } from '@/lib/history';
+import { MAX_SESSION_TAGS } from '@/lib/sessionTags';
 import { MAX_SESSION_NOTE_LENGTH } from '@/lib/constants';
 import { DEFAULT_PRICING_PROFILE } from '@/lib/pricing';
 import { getVerdict } from '@/lib/verdicts';
@@ -389,9 +390,40 @@ describe('session notes', () => {
   });
 });
 
+describe('session tags', () => {
+  it('normalises, de-duplicates and bounds local tags when filing a record', () => {
+    const meal = session();
+    const report = buildDamageReport(meal.items, meal);
+    const record = createSavedSession(meal, report, getVerdict(report.totalRetailValue, 59.9), {
+      id: 'tagged',
+      createdAt: '2026-08-16T12:00:00.000Z',
+      tags: ['  Birthday  ', 'birthday', 'Friends', 42 as never, 'x'.repeat(33)],
+    });
+
+    expect(record.tags).toEqual(['birthday', 'friends']);
+  });
+
+  it('drops malformed tags and migrates older records with an empty tag list', () => {
+    const record = saved();
+    expect(
+      parseSavedSession({
+        ...record,
+        tags: [' Lunch ', 'lunch', null, 'friends', 'premium', 'family', 'late'],
+      })?.tags,
+    ).toEqual(['lunch', 'friends', 'premium', 'family', 'late'].slice(0, MAX_SESSION_TAGS));
+
+    const { tags: _dropped, ...versionNine } = record;
+    expect(parseSavedSession({ ...versionNine, version: 9 })?.tags).toEqual([]);
+  });
+});
+
 describe('filterSessions', () => {
   const records: SavedMealSession[] = [
-    { ...saved({ restaurantName: 'Seoul Garden' }, 'a'), note: 'Birthday, four of us' },
+    {
+      ...saved({ restaurantName: 'Seoul Garden' }, 'a'),
+      note: 'Birthday, four of us',
+      tags: ['friends'],
+    },
     { ...saved({ restaurantName: 'Wagyu House' }, 'b'), note: '' },
     { ...saved({ restaurantName: 'Little Seoul' }, 'c'), note: 'Quiet Tuesday' },
   ];
@@ -412,6 +444,10 @@ describe('filterSessions', () => {
   it('matches inside a note', () => {
     expect(ids('birthday')).toEqual(['a']);
     expect(ids('tuesday')).toEqual(['c']);
+  });
+
+  it('matches a local tag', () => {
+    expect(ids('friends')).toEqual(['a']);
   });
 
   it('narrows as words are added', () => {

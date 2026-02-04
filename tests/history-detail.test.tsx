@@ -1,7 +1,7 @@
 import 'fake-indexeddb/auto';
 import { IDBFactory } from 'fake-indexeddb';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { HistoryDetail } from '@/components/history/HistoryDetail';
 import { buildDamageReport } from '@/lib/calculations';
@@ -34,7 +34,7 @@ function line(foodId: string, quantity: number): MealItem {
   };
 }
 
-async function fileSession(note = '') {
+async function fileSession(note = '', tags: readonly string[] = []) {
   const session: MealSession = {
     restaurantName: 'Seoul Garden',
     pricePerDiner: 72,
@@ -51,6 +51,7 @@ async function fileSession(note = '') {
         id: RECORD_ID,
         createdAt: '2026-08-16T12:00:00.000Z',
         note,
+        tags,
       },
     ),
   );
@@ -77,6 +78,22 @@ describe('HistoryDetail', () => {
 
     await screen.findByRole('heading', { name: /filed damage report/i });
     expect(screen.queryByRole('heading', { name: /note on file/i })).not.toBeInTheDocument();
+  });
+
+  it('edits local tags on the filed record', async () => {
+    const user = userEvent.setup();
+    await fileSession('', ['Friends']);
+    render(<HistoryDetail id={RECORD_ID} />);
+
+    expect(await screen.findByText('friends')).toBeInTheDocument();
+    await user.type(screen.getByLabelText('New tag'), ' Birthday ');
+    await user.click(screen.getByRole('button', { name: /add tag/i }));
+
+    expect(await screen.findByText('birthday')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Remove tag friends' }));
+    await waitFor(() => {
+      expect(screen.queryByText('friends')).not.toBeInTheDocument();
+    });
   });
 
   it('loads a filed meal straight into an empty calculator', async () => {
