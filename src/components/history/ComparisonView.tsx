@@ -2,6 +2,7 @@
 
 import { useId, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { ChallengeShareActions } from '@/components/history/ChallengeShareActions';
 import { ComparisonReport } from '@/components/history/ComparisonReport';
@@ -25,6 +26,7 @@ function describe(record: SavedMealSession): string {
 
 export function ComparisonView() {
   const { status, records } = useMealHistory();
+  const searchParams = useSearchParams();
   const previousId = useId();
   const currentId = useId();
 
@@ -36,8 +38,8 @@ export function ComparisonView() {
   const [defaultsApplied, setDefaultsApplied] = useState(false);
   if (!defaultsApplied && status === 'ready' && records.length >= 2) {
     setDefaultsApplied(true);
-    setLeftId(records[1]?.id ?? null);
-    setRightId(records[0]?.id ?? null);
+    setLeftId(searchParams.get('left') ?? records[1]?.id ?? null);
+    setRightId(searchParams.get('right') ?? records[0]?.id ?? null);
   }
 
   const comparison = useMemo(() => {
