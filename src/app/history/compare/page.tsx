@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import { ComparisonView } from '@/components/history/ComparisonView';
 import { SiteFooter } from '@/components/nav/SiteFooter';
 import { SiteHeader } from '@/components/nav/SiteHeader';
@@ -25,7 +26,15 @@ export default function ComparePage() {
         </p>
 
         <div className="mt-8">
-          <ComparisonView />
+          <Suspense
+            fallback={
+              <p role="status" className="text-sm text-cream-700">
+                Retrieving comparison…
+              </p>
+            }
+          >
+            <ComparisonView />
+          </Suspense>
         </div>
       </main>
 
