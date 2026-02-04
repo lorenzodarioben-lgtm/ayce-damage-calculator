@@ -17,8 +17,18 @@ import {
   vaultFilename,
   type VaultEnvelope,
 } from '@/lib/encryptedBackup';
-import { BACKUP_FORMAT, BACKUP_VERSION, parseBackup } from '@/lib/backup';
+import {
+  BACKUP_FORMAT,
+  BACKUP_VERSION,
+  buildBackup,
+  parseBackup,
+  serialiseBackup,
+} from '@/lib/backup';
+import { buildDamageReport } from '@/lib/calculations';
+import { createSavedSession } from '@/lib/history';
 import { decodeBase64, encodeBase64 } from '@/lib/urlText';
+import { getVerdict } from '@/lib/verdicts';
+import type { MealSession } from '@/types/meal';
 
 const AT = '2026-08-16T12:00:00.000Z';
 const PASSWORD = 'a-perfectly-ordinary-passphrase';
@@ -243,6 +253,40 @@ describe('encrypt and decrypt', () => {
     expect(parsed.ok).toBe(true);
     if (!parsed.ok) return;
     expect(parsed.contents.configuration.restaurants[0]?.name).toBe('Friday KBBQ');
+  });
+
+  it('retains local session tags through encrypted backup and restore parsing', async () => {
+    const session: MealSession = {
+      restaurantName: 'Friday KBBQ',
+      pricePerDiner: 42,
+      dinerCount: 1,
+      items: [
+        {
+          id: 'beef-ribeye__standard__regular',
+          foodId: 'beef-ribeye',
+          quality: 'standard',
+          plateSize: 'regular',
+          quantity: 1,
+        },
+      ],
+    };
+    const report = buildDamageReport(session.items, session);
+    const record = createSavedSession(
+      session,
+      report,
+      getVerdict(report.totalRetailValue, report.totalAdmission),
+      { id: 'encrypted-tags', createdAt: AT, tags: ['Friends', 'Birthday'] },
+    );
+    const plaintext = serialiseBackup(buildBackup([record], [], AT));
+
+    const opened = await decryptBackup(await sealed(plaintext), PASSWORD);
+    expect(opened.ok).toBe(true);
+    if (!opened.ok) return;
+
+    const parsed = parseBackup(opened.plaintext);
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+    expect(parsed.contents.history[0]?.tags).toEqual(['friends', 'birthday']);
   });
 
   it('refuses to seal a file behind a password too short to be one', async () => {
