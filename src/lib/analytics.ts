@@ -56,6 +56,20 @@ export interface HistoryAnalytics {
   readonly trend: readonly TrendPoint[];
 }
 
+export interface MealTrendGroup {
+  readonly count: number;
+  readonly averageRecoveryPercent: number;
+  readonly averageAdmission: number;
+  readonly averagePlates: number;
+  readonly averageDiversity: number;
+  readonly breakEvenFrequency: number;
+}
+
+export interface RecentMealTrends {
+  readonly recent: MealTrendGroup;
+  readonly previous: MealTrendGroup;
+}
+
 /** How many recent sessions the trend chart shows. */
 export const TREND_LENGTH = 10;
 
@@ -83,6 +97,45 @@ export function recordsInAnalyticsRange(
     const recordedAt = Date.parse(record.createdAt);
     return Number.isFinite(recordedAt) && recordedAt >= cutoff && recordedAt <= nowTime;
   });
+}
+
+/** Compares the latest five filed meals with the five immediately before them. */
+export function compareRecentMealTrends(records: readonly SavedMealSession[]): RecentMealTrends {
+  const newestFirst = [...records].sort(
+    (a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt) || b.id.localeCompare(a.id),
+  );
+  const summarise = (group: readonly SavedMealSession[]): MealTrendGroup => {
+    if (group.length === 0) {
+      return {
+        count: 0,
+        averageRecoveryPercent: 0,
+        averageAdmission: 0,
+        averagePlates: 0,
+        averageDiversity: 0,
+        breakEvenFrequency: 0,
+      };
+    }
+    const resolved = group.map(resolveSavedSession);
+    const sum = <T>(value: (entry: (typeof resolved)[number]) => T) =>
+      resolved.reduce((total, entry) => total + Number(value(entry)), 0);
+    return {
+      count: group.length,
+      averageRecoveryPercent: sum((entry) => entry.report.retailRecoveryPercent) / group.length,
+      averageAdmission: sum((entry) => entry.report.totalAdmission) / group.length,
+      averagePlates: sum((entry) => entry.report.totalPlates) / group.length,
+      averageDiversity:
+        sum((entry) => new Set(entry.report.lines.map((line) => line.food.id)).size) / group.length,
+      breakEvenFrequency:
+        (resolved.filter((entry) => entry.report.retailRecoveryPercent >= 100).length /
+          group.length) *
+        100,
+    };
+  };
+
+  return {
+    recent: summarise(newestFirst.slice(0, 5)),
+    previous: summarise(newestFirst.slice(5, 10)),
+  };
 }
 
 export const EMPTY_ANALYTICS: HistoryAnalytics = {
