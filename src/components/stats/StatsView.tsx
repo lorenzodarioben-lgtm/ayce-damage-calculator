@@ -7,6 +7,7 @@ import { ShareBars } from '@/components/stats/ShareBars';
 import { useMealHistory } from '@/hooks/useMealHistory';
 import {
   buildHistoryAnalytics,
+  compareRecentMealTrends,
   recordsInAnalyticsRange,
   type AnalyticsRange,
 } from '@/lib/analytics';
@@ -14,6 +15,7 @@ import {
   formatCount,
   formatGrams,
   formatKg,
+  formatMoney,
   formatPercent,
   formatPlates,
   formatRecordedAt,
@@ -36,6 +38,7 @@ export function StatsView() {
     return recordsInAnalyticsRange(records, range);
   }, [range, records]);
   const analytics = useMemo(() => buildHistoryAnalytics(rangedRecords), [rangedRecords]);
+  const mealTrends = useMemo(() => compareRecentMealTrends(rangedRecords), [rangedRecords]);
 
   if (status === 'loading') {
     return (
@@ -193,8 +196,96 @@ export function StatsView() {
               </p>
             </section>
           )}
+          {mealTrends.recent.count > 0 && (
+            <section aria-labelledby="meal-trends-heading" className="panel p-4 sm:p-5">
+              <h2 id="meal-trends-heading" className="micro-label mb-2">
+                Recent meal trends
+              </h2>
+              <p className="mb-4 text-sm text-cream-700">
+                Latest {mealTrends.recent.count} filed meal
+                {mealTrends.recent.count === 1 ? '' : 's'}
+                {mealTrends.previous.count > 0
+                  ? ` compared with the immediately previous ${mealTrends.previous.count}.`
+                  : '. File at least six meals to compare periods.'}
+              </p>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <TrendFigure
+                  label="Average recovery"
+                  current={formatPercent(mealTrends.recent.averageRecoveryPercent)}
+                  previous={mealTrends.previous.averageRecoveryPercent}
+                  currentValue={mealTrends.recent.averageRecoveryPercent}
+                  unit="pp"
+                />
+                <TrendFigure
+                  label="Break-even frequency"
+                  current={formatPercent(mealTrends.recent.breakEvenFrequency)}
+                  previous={mealTrends.previous.breakEvenFrequency}
+                  currentValue={mealTrends.recent.breakEvenFrequency}
+                  unit="pp"
+                />
+                <TrendFigure
+                  label="Average admission"
+                  current={formatMoney(mealTrends.recent.averageAdmission)}
+                  previous={mealTrends.previous.averageAdmission}
+                  currentValue={mealTrends.recent.averageAdmission}
+                  unit="%"
+                />
+                <TrendFigure
+                  label="Average plates"
+                  current={formatCount(mealTrends.recent.averagePlates)}
+                  previous={mealTrends.previous.averagePlates}
+                  currentValue={mealTrends.recent.averagePlates}
+                  unit="%"
+                />
+                <TrendFigure
+                  label="Average food diversity"
+                  current={formatCount(mealTrends.recent.averageDiversity)}
+                  previous={mealTrends.previous.averageDiversity}
+                  currentValue={mealTrends.recent.averageDiversity}
+                  unit="%"
+                />
+              </div>
+              <p className="mt-4 text-xs text-cream-700">
+                Changes describe recorded behaviour only; more consumption is not inherently better.
+                Recovery and break-even changes are percentage points; the other changes are
+                percentages relative to the previous period.
+              </p>
+            </section>
+          )}
         </>
       )}
     </div>
+  );
+}
+
+function TrendFigure({
+  label,
+  current,
+  previous,
+  currentValue,
+  unit,
+}: {
+  label: string;
+  current: string;
+  previous: number;
+  currentValue: number;
+  unit: 'pp' | '%';
+}) {
+  const change =
+    unit === 'pp'
+      ? currentValue - previous
+      : previous === 0
+        ? null
+        : ((currentValue - previous) / previous) * 100;
+  return (
+    <Figure
+      label={label}
+      value={current}
+      detail={
+        change === null
+          ? 'No previous baseline'
+          : `${change >= 0 ? '+' : ''}${change.toFixed(1)}${unit} vs previous 5`
+      }
+    />
   );
 }
