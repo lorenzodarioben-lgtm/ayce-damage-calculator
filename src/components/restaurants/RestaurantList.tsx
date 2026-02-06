@@ -18,6 +18,24 @@ export function RestaurantList() {
   const { restaurants, hydrated } = useRestaurants();
   const { records, status } = useMealHistory();
   const [selected, setSelected] = useState<readonly string[]>([]);
+  const summaries = summariseRestaurants(restaurants, records);
+  const comparison = useMemo(() => {
+    if (selected.length !== 2) return null;
+    const [left, right] = selected.map((id) =>
+      restaurants.find((restaurant) => restaurant.id === id),
+    );
+    return left && right ? compareRestaurants(left, right, records) : null;
+  }, [records, restaurants, selected]);
+
+  const toggle = (id: string) => {
+    setSelected((current) =>
+      current.includes(id)
+        ? current.filter((entry) => entry !== id)
+        : current.length === 2
+          ? [current[1]!, id]
+          : [...current, id],
+    );
+  };
 
   if (!hydrated || status === 'loading') {
     return (
@@ -44,25 +62,6 @@ export function RestaurantList() {
       </div>
     );
   }
-
-  const summaries = summariseRestaurants(restaurants, records);
-  const comparison = useMemo(() => {
-    if (selected.length !== 2) return null;
-    const [left, right] = selected.map((id) =>
-      restaurants.find((restaurant) => restaurant.id === id),
-    );
-    return left && right ? compareRestaurants(left, right, records) : null;
-  }, [records, restaurants, selected]);
-
-  const toggle = (id: string) => {
-    setSelected((current) =>
-      current.includes(id)
-        ? current.filter((entry) => entry !== id)
-        : current.length === 2
-          ? [current[1]!, id]
-          : [...current, id],
-    );
-  };
 
   return (
     <div className="space-y-5">
