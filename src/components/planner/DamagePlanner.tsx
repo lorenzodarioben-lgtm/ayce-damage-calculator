@@ -37,6 +37,7 @@ import {
   PLAN_FAILURE_MESSAGES,
   PLAN_STRATEGY_META,
   buildDamagePlan,
+  calculatePlanProgress,
   clampTargetRecovery,
   type PlanLine,
   type PlanResult,
@@ -116,6 +117,11 @@ export function DamagePlanner() {
   const profile = useMemo(
     () => resolvePricingProfile(pricingProfiles.profiles, profileId),
     [pricingProfiles.profiles, profileId],
+  );
+  const mealInProgress = useMemo(() => loadSession(catalogue)?.items ?? [], [catalogue]);
+  const progress = useMemo(
+    () => (result?.feasible ? calculatePlanProgress(result.lines, mealInProgress) : null),
+    [mealInProgress, result],
   );
 
   const admission = clampPricePerDiner(admissionPrice) * clampDinerCount(dinerCount);
@@ -485,7 +491,12 @@ export function DamagePlanner() {
         </Button>
 
         {result && (
-          <PlanOutcome result={result} onCopy={copyPlan} onApply={() => setApplyOpen(true)} />
+          <PlanOutcome
+            result={result}
+            progress={progress}
+            onCopy={copyPlan}
+            onApply={() => setApplyOpen(true)}
+          />
         )}
 
         <ConfirmDialog
@@ -506,10 +517,12 @@ export function DamagePlanner() {
 
 function PlanOutcome({
   result,
+  progress,
   onCopy,
   onApply,
 }: {
   result: PlanResult;
+  progress: ReturnType<typeof calculatePlanProgress> | null;
   onCopy: () => void;
   onApply: () => void;
 }) {
@@ -550,6 +563,14 @@ function PlanOutcome({
         {formatGrams(result.totals.nutrition.fat)} fat ·{' '}
         {formatGrams(result.totals.nutrition.carbs)} carbs
       </p>
+
+      {progress && (
+        <p role="status" className="mt-3 text-sm text-cream-300">
+          Meal progress: {formatPlates(progress.matchedPlates)} matched from the actual ledger ·{' '}
+          {formatPlates(progress.remainingPlates)} planned remaining. This guidance never changes
+          your meal, quantities, damage totals or report.
+        </p>
+      )}
 
       <table className="mt-4 w-full text-left text-sm">
         <caption className="sr-only">The plates this simulation proposes.</caption>
