@@ -18,6 +18,7 @@ import { SessionUndoControls } from '@/components/session/SessionUndoControls';
 import { Button } from '@/components/ui/Button';
 import { StatusToast } from '@/components/ui/StatusToast';
 import { useFavorites } from '@/hooks/useFavorites';
+import { useMealHistory } from '@/hooks/useMealHistory';
 import { useMealSession, type AddItemPayload } from '@/hooks/useMealSession';
 import { usePricingProfiles } from '@/hooks/usePricingProfiles';
 import { useCustomFoods } from '@/hooks/useCustomFoods';
@@ -63,6 +64,7 @@ export function LiveMealMode() {
     keepCurrentSession,
   } = useMealSession(pricingProfiles.profiles, customFoods.foods, { source: 'live' });
   const { favorites, remove: removeFavorite } = useFavorites(catalogue);
+  const { records: history } = useMealHistory();
 
   const [addOpen, setAddOpen] = useState(false);
   const [activeDinerId, setActiveDinerId] = useState<string | null>(null);
@@ -94,6 +96,20 @@ export function LiveMealMode() {
   );
 
   const hasItems = report.lines.length > 0;
+  const quickPicks = useMemo(() => {
+    const counts = new Map<string, { payload: AddItemPayload; count: number }>();
+    for (const record of history)
+      for (const item of record.items) {
+        const existing = counts.get(item.id);
+        counts.set(item.id, {
+          payload: { foodId: item.foodId, quality: item.quality, plateSize: item.plateSize },
+          count: (existing?.count ?? 0) + item.quantity,
+        });
+      }
+    return [...counts.values()]
+      .sort((a, b) => b.count - a.count || a.payload.foodId.localeCompare(b.payload.foodId))
+      .slice(0, 4);
+  }, [history]);
 
   return (
     <PricingProfileProvider profile={pricingProfile}>
@@ -197,6 +213,31 @@ export function LiveMealMode() {
                 onRemove={removeFavorite}
                 size="large"
               />
+            </section>
+          )}
+
+          {quickPicks.length > 0 && (
+            <section aria-labelledby="live-history-picks-heading" className="mt-4">
+              <h2 id="live-history-picks-heading" className="micro-label mb-1">
+                Frequently logged on this device
+              </h2>
+              <p className="mb-2 text-xs text-cream-700">Based only on your filed local history.</p>
+              <div className="flex flex-wrap gap-2">
+                {quickPicks.map(({ payload, count }) => {
+                  const food = findFoodInCatalogue(catalogue, payload.foodId);
+                  return (
+                    <button
+                      key={`${payload.foodId}-${payload.quality}-${payload.plateSize}`}
+                      type="button"
+                      onClick={() => handleAdd(payload)}
+                      className="rounded-[10px] border border-line px-3 py-2 text-sm text-cream-100 hover:border-ember-700"
+                    >
+                      {food?.name ?? 'Saved cut'}{' '}
+                      <span className="text-xs text-cream-700">· {count} plates</span>
+                    </button>
+                  );
+                })}
+              </div>
             </section>
           )}
 
