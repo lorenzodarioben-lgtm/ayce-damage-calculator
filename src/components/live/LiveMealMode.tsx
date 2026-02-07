@@ -102,7 +102,12 @@ export function LiveMealMode() {
       for (const item of record.items) {
         const existing = counts.get(item.id);
         counts.set(item.id, {
-          payload: { foodId: item.foodId, quality: item.quality, plateSize: item.plateSize },
+          payload: {
+            foodId: item.foodId,
+            quality: item.quality,
+            plateSize: item.plateSize,
+            quantity: 1,
+          },
           count: (existing?.count ?? 0) + item.quantity,
         });
       }
