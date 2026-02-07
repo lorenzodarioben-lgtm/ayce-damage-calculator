@@ -54,6 +54,7 @@ function ProfileEditor({
   const [name, setName] = useState(profile?.name ?? '');
   const [currency, setCurrency] = useState<CurrencyCode>(profile?.money.currency ?? 'AUD');
   const [prices, setPrices] = useState<DraftPrices>(() => initialPrices(profile));
+  const [adjustment, setAdjustment] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   function updatePrice(foodId: string, field: 'retail' | 'cost', value: string) {
@@ -99,6 +100,31 @@ function ProfileEditor({
       return;
     }
     onSave(next);
+  }
+
+  function previewAdjustment() {
+    const percent = Number(adjustment);
+    if (!Number.isFinite(percent)) {
+      setError('Enter a percentage adjustment.');
+      return;
+    }
+    setPrices(
+      Object.fromEntries(
+        FOODS.map((food) => {
+          const current = prices[food.id];
+          const retail = Number(current?.retail || food.retailPricePerKg);
+          const cost = Number(current?.cost || food.restaurantCostPerKg);
+          return [
+            food.id,
+            {
+              retail: String(Math.max(0, retail * (1 + percent / 100))),
+              cost: String(Math.max(0, cost * (1 + percent / 100))),
+            },
+          ];
+        }),
+      ),
+    );
+    setError(null);
   }
 
   return (
@@ -151,6 +177,31 @@ function ProfileEditor({
         </div>
 
         <div>
+          <div className="mb-3 rounded-[10px] border border-line-soft p-3">
+            <p className="text-sm font-semibold text-cream-100">Bulk price adjustment</p>
+            <p className="mt-1 text-xs text-cream-700">
+              Preview an increase or decrease across this profile before saving. Historical meal
+              snapshots are never changed.
+            </p>
+            <div className="mt-2 flex gap-2">
+              <input
+                aria-label="Bulk price adjustment percentage"
+                value={adjustment}
+                onChange={(event) => setAdjustment(event.target.value)}
+                type="number"
+                step="0.1"
+                placeholder="e.g. 10"
+                className="h-10 w-28 rounded-[8px] border border-line bg-ash-850 px-2 text-sm text-cream-50"
+              />
+              <button
+                type="button"
+                onClick={previewAdjustment}
+                className="rounded-[8px] border border-line px-3 text-xs font-semibold text-ember-400"
+              >
+                Preview all cuts
+              </button>
+            </div>
+          </div>
           <div className="mb-2 flex items-baseline justify-between gap-3">
             <h3 className="micro-label">Cut assumptions</h3>
             <p className="text-xs text-cream-700">Per kg · leave a row blank to inherit</p>
