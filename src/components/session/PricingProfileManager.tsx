@@ -23,16 +23,21 @@ function initialPrices(profile: PricingProfile | null): DraftPrices {
   return Object.fromEntries(
     FOODS.flatMap((food) => {
       const pricing = profile?.overrides[food.id];
-      // This editor only ever lists the built-in catalogue, every entry of
-      // which is priced by weight; an override in any other model belongs to a
-      // custom item and has no row here to appear in.
-      return pricing?.valuation === 'by-weight'
+      return pricing && pricing.valuation === food.valuation
         ? [
             [
               food.id,
               {
-                retail: String(pricing.retailPricePerKg),
-                cost: String(pricing.restaurantCostPerKg),
+                retail: String(
+                  pricing.valuation === 'by-weight'
+                    ? pricing.retailPricePerKg
+                    : pricing.retailPricePerServing,
+                ),
+                cost: String(
+                  pricing.valuation === 'by-weight'
+                    ? pricing.restaurantCostPerKg
+                    : pricing.restaurantCostPerServing,
+                ),
               },
             ],
           ]
@@ -58,6 +63,7 @@ function ProfileEditor({
   const [name, setName] = useState(profile?.name ?? '');
   const [currency, setCurrency] = useState<CurrencyCode>(profile?.money.currency ?? 'AUD');
   const [prices, setPrices] = useState<DraftPrices>(() => initialPrices(profile));
+  const [adjustment, setAdjustment] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   function updatePrice(foodId: string, field: 'retail' | 'cost', value: string) {
@@ -74,23 +80,38 @@ function ProfileEditor({
   function handleSave() {
     const overrides: Record<string, FoodPricing> = {};
     for (const [foodId, fields] of Object.entries(prices)) {
+      const food = FOODS.find((entry) => entry.id === foodId);
+      if (!food) {
+        continue;
+      }
       const retail = fields.retail.trim();
       const cost = fields.cost.trim();
       if (!retail && !cost) {
         continue;
       }
-      const retailPricePerKg = Number(retail);
-      const restaurantCostPerKg = Number(cost);
+      const retailPrice = Number(retail);
+      const restaurantCost = Number(cost);
       if (
-        !Number.isFinite(retailPricePerKg) ||
-        !Number.isFinite(restaurantCostPerKg) ||
-        retailPricePerKg < 0 ||
-        restaurantCostPerKg < 0
+        !Number.isFinite(retailPrice) ||
+        !Number.isFinite(restaurantCost) ||
+        retailPrice < 0 ||
+        restaurantCost < 0
       ) {
         setError('Enter zero or a positive number for both prices, or leave both blank.');
         return;
       }
-      overrides[foodId] = { valuation: 'by-weight', retailPricePerKg, restaurantCostPerKg };
+      overrides[foodId] =
+        food.valuation === 'by-weight'
+          ? {
+              valuation: 'by-weight',
+              retailPricePerKg: retailPrice,
+              restaurantCostPerKg: restaurantCost,
+            }
+          : {
+              valuation: 'by-serving',
+              retailPricePerServing: retailPrice,
+              restaurantCostPerServing: restaurantCost,
+            };
     }
 
     const id = profile?.id ?? nextPricingProfileId(profiles, name);
@@ -103,6 +124,42 @@ function ProfileEditor({
       return;
     }
     onSave(next);
+  }
+
+  function previewAdjustment() {
+    const percent = Number(adjustment);
+    if (!Number.isFinite(percent)) {
+      setError('Enter a percentage adjustment.');
+      return;
+    }
+    setPrices(
+      Object.fromEntries(
+        FOODS.map((food) => {
+          const current = prices[food.id];
+          const defaults = resolveFoodPricing(food);
+          const retail = Number(
+            current?.retail ||
+              (defaults.valuation === 'by-weight'
+                ? defaults.retailPricePerKg
+                : defaults.retailPricePerServing),
+          );
+          const cost = Number(
+            current?.cost ||
+              (defaults.valuation === 'by-weight'
+                ? defaults.restaurantCostPerKg
+                : defaults.restaurantCostPerServing),
+          );
+          return [
+            food.id,
+            {
+              retail: String(Math.max(0, retail * (1 + percent / 100))),
+              cost: String(Math.max(0, cost * (1 + percent / 100))),
+            },
+          ];
+        }),
+      ),
+    );
+    setError(null);
   }
 
   return (
@@ -155,9 +212,34 @@ function ProfileEditor({
         </div>
 
         <div>
+          <div className="mb-3 rounded-[10px] border border-line-soft p-3">
+            <p className="text-sm font-semibold text-cream-100">Bulk price adjustment</p>
+            <p className="mt-1 text-xs text-cream-700">
+              Preview an increase or decrease across this profile before saving. Historical meal
+              snapshots are never changed.
+            </p>
+            <div className="mt-2 flex gap-2">
+              <input
+                aria-label="Bulk price adjustment percentage"
+                value={adjustment}
+                onChange={(event) => setAdjustment(event.target.value)}
+                type="number"
+                step="0.1"
+                placeholder="e.g. 10"
+                className="h-10 w-28 rounded-[8px] border border-line bg-ash-850 px-2 text-sm text-cream-50"
+              />
+              <button
+                type="button"
+                onClick={previewAdjustment}
+                className="rounded-[8px] border border-line px-3 text-xs font-semibold text-ember-400"
+              >
+                Preview all cuts
+              </button>
+            </div>
+          </div>
           <div className="mb-2 flex items-baseline justify-between gap-3">
             <h3 className="micro-label">Cut assumptions</h3>
-            <p className="text-xs text-cream-700">Per kg · leave a row blank to inherit</p>
+            <p className="text-xs text-cream-700">Per item · leave a row blank to inherit</p>
           </div>
           <div className="max-h-[40dvh] overflow-y-auto rounded-[10px] border border-line-soft bg-ash-900/50">
             {FOODS.map((food) => {
@@ -178,9 +260,9 @@ function ProfileEditor({
                     </p>
                   </div>
                   <label className="text-xs text-cream-500 sm:text-[0px]">
-                    Retail price per kg
+                    Retail price per {food.valuation === 'by-weight' ? 'kg' : 'serving'}
                     <input
-                      aria-label={`${food.name} retail price per kg`}
+                      aria-label={`${food.name} retail price per ${food.valuation === 'by-weight' ? 'kg' : 'serving'}`}
                       type="number"
                       min="0"
                       step="0.01"
@@ -191,9 +273,9 @@ function ProfileEditor({
                     />
                   </label>
                   <label className="text-xs text-cream-500 sm:text-[0px]">
-                    Restaurant cost per kg
+                    Restaurant cost per {food.valuation === 'by-weight' ? 'kg' : 'serving'}
                     <input
-                      aria-label={`${food.name} restaurant cost per kg`}
+                      aria-label={`${food.name} restaurant cost per ${food.valuation === 'by-weight' ? 'kg' : 'serving'}`}
                       type="number"
                       min="0"
                       step="0.01"

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, RotateCcw } from 'lucide-react';
+import { ArrowLeft, Plus, RotateCcw, X } from 'lucide-react';
 import { MealReplay, UntimedMealNotice } from '@/components/history/MealReplay';
 import { UncertaintyPanel } from '@/components/methodology/UncertaintyPanel';
 import { AchievementList } from '@/components/results/AchievementList';
@@ -22,6 +22,8 @@ import {
 import { foodCatalogue } from '@/lib/foodCatalogue';
 import { buildMealReplay } from '@/lib/replay';
 import { getSession } from '@/lib/historyRepository';
+import { updateSessionTags } from '@/lib/historyRepository';
+import { MAX_SESSION_TAGS, normaliseSessionTag, parseSessionTags } from '@/lib/sessionTags';
 import { loadSession, saveSession as saveActiveSession } from '@/lib/storage';
 import type { SavedMealSession } from '@/types/history';
 
@@ -44,6 +46,9 @@ export function HistoryDetail({ id }: { id: string }) {
   const router = useRouter();
   const [state, setState] = useState<LoadState>({ status: 'loading' });
   const [pendingRerun, setPendingRerun] = useState<SavedMealSession | null>(null);
+  const [tagDraft, setTagDraft] = useState('');
+  const [tagStatus, setTagStatus] = useState('');
+  const [savingTags, setSavingTags] = useState(false);
 
   /**
    * Loads the filed meal into the calculator and hands the diner over to it.
@@ -119,6 +124,40 @@ export function HistoryDetail({ id }: { id: string }) {
 
   const { record, report, verdict, achievements } = state.resolved;
 
+  const saveTags = async (tags: readonly string[]) => {
+    setSavingTags(true);
+    const updated = await updateSessionTags(record.id, tags);
+    setSavingTags(false);
+    if (!updated) {
+      setTagStatus('Tags could not be saved on this device.');
+      return;
+    }
+    setState((current) =>
+      current.status === 'found'
+        ? { ...current, resolved: { ...current.resolved, record: updated } }
+        : current,
+    );
+    setTagStatus('Tags saved locally.');
+  };
+
+  const addTag = () => {
+    const tag = normaliseSessionTag(tagDraft);
+    if (!tag) {
+      setTagStatus('Enter a tag of up to 32 characters.');
+      return;
+    }
+    if (record.tags.includes(tag)) {
+      setTagStatus('That tag is already on this record.');
+      return;
+    }
+    if (record.tags.length >= MAX_SESSION_TAGS) {
+      setTagStatus(`A record can have up to ${MAX_SESSION_TAGS} tags.`);
+      return;
+    }
+    setTagDraft('');
+    void saveTags(parseSessionTags([...record.tags, tag]));
+  };
+
   return (
     <PricingProfileProvider profile={record.pricingProfile}>
       <div className="animate-fade-up space-y-6">
@@ -145,6 +184,67 @@ export function HistoryDetail({ id }: { id: string }) {
             <p className="break-words text-sm leading-relaxed text-cream-300">{record.note}</p>
           </section>
         )}
+
+        <section aria-labelledby="saved-tags-heading" className="panel p-4 sm:p-5">
+          <h3 id="saved-tags-heading" className="micro-label mb-2">
+            Tags
+          </h3>
+          <p className="mb-3 text-sm leading-relaxed text-cream-500">
+            Add a few labels to make this local record easier to find later.
+          </p>
+          {record.tags.length > 0 && (
+            <ul aria-label="Current tags" className="mb-3 flex flex-wrap gap-2">
+              {record.tags.map((tag) => (
+                <li
+                  key={tag}
+                  className="inline-flex items-center gap-1 rounded-full border border-line-ember bg-ash-900 py-1 pl-3 pr-1 text-sm text-ember-400"
+                >
+                  {tag}
+                  <button
+                    type="button"
+                    disabled={savingTags}
+                    onClick={() => void saveTags(record.tags.filter((current) => current !== tag))}
+                    aria-label={`Remove tag ${tag}`}
+                    className="flex size-7 cursor-pointer items-center justify-center rounded-full text-cream-500 hover:bg-ash-800 hover:text-cream-100 disabled:cursor-not-allowed"
+                  >
+                    <X size={14} aria-hidden="true" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <label htmlFor="session-tag" className="sr-only">
+              New tag
+            </label>
+            <input
+              id="session-tag"
+              value={tagDraft}
+              maxLength={32}
+              disabled={savingTags || record.tags.length >= MAX_SESSION_TAGS}
+              onChange={(event) => setTagDraft(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  event.preventDefault();
+                  addTag();
+                }
+              }}
+              placeholder="Birthday, friends, lunch…"
+              className="min-h-11 min-w-0 flex-1 rounded-[10px] border border-line bg-ash-900 px-3 text-sm text-cream-100 placeholder:text-cream-700 focus:border-ember-600 focus:outline-none"
+            />
+            <Button
+              variant="secondary"
+              onClick={addTag}
+              disabled={savingTags || record.tags.length >= MAX_SESSION_TAGS}
+            >
+              <Plus size={16} aria-hidden="true" />
+              Add tag
+            </Button>
+          </div>
+          <p role="status" className="mt-2 min-h-5 text-xs text-cream-700">
+            {tagStatus}
+          </p>
+        </section>
 
         {/* Read from the record, so a session shows what it earned at the time. */}
         <AchievementList achievements={achievements} headingId="saved-achievements-heading" />

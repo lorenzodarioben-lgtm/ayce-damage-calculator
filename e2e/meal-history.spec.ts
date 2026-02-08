@@ -136,6 +136,25 @@ test.describe('The history page', () => {
     expect(await horizontalOverflow(page)).toBeLessThanOrEqual(1);
   });
 
+  test('adds a local tag from record detail and shows it in the file', async ({ page }) => {
+    await openCalculator(page);
+    await setRestaurantName(page, 'Seoul Garden');
+    await addPlate(page, 'Ribeye');
+    await calculateDamage(page);
+    await page.getByRole('button', { name: 'Save to history' }).click();
+
+    await goToHistory(page);
+    await page.getByRole('link', { name: 'Seoul Garden' }).click();
+    await page.getByLabel('New tag').fill('  Friends  ');
+    await page.getByRole('button', { name: 'Add tag' }).click();
+    await expect(
+      page.getByRole('list', { name: 'Current tags' }).getByText('friends'),
+    ).toBeVisible();
+
+    await page.getByRole('link', { name: 'Back to the file' }).first().click();
+    await expect(page.getByRole('listitem').getByText('friends')).toBeVisible();
+  });
+
   test('deletes a record after confirmation', async ({ page }) => {
     await openCalculator(page);
     await setRestaurantName(page, 'Seoul Garden');

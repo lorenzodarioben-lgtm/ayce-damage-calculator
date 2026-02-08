@@ -356,6 +356,7 @@ function recordFromSide(side: ChallengeSide, id: string): SavedMealSession {
     pricingProfile: side.pricingProfile,
     customFoods: side.customFoods,
     note: '',
+    tags: [],
     items: side.items,
     ...(side.adjustments?.length ? { adjustments: side.adjustments } : {}),
     fingerprint: id,

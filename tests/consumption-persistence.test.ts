@@ -52,7 +52,11 @@ function session(items: readonly MealItem[]): MealSession {
 }
 
 function envelope(value: MealSession, version = STORAGE_VERSION): string {
-  return JSON.stringify({ version, session: value });
+  return JSON.stringify(
+    version === STORAGE_VERSION
+      ? { version, revision: 1, writerId: 'consumption-test', kind: 'session', session: value }
+      : { version, session: value },
+  );
 }
 
 function file(value: MealSession): SavedMealSession {
@@ -99,9 +103,9 @@ describe('The in-progress tab', () => {
   });
 
   it('ignores a stored value that is not a number', () => {
-    const hostile = JSON.stringify({
-      version: STORAGE_VERSION,
-      session: { ...session([]), items: [{ ...line(4), consumedQuantity: 'most of it' }] },
+    const hostile = envelope({
+      ...session([]),
+      items: [{ ...line(4), consumedQuantity: 'most of it' } as unknown as MealItem],
     });
     expect(consumedQuantity(parseStoredSession(hostile)!.items[0]!)).toBe(4);
   });
