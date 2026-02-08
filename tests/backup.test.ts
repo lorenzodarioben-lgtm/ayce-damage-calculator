@@ -5,6 +5,7 @@ import {
   MAX_BACKUP_BYTES,
   backupFilename,
   buildBackup,
+  calculateRestoreImpact,
   mergeById,
   parseBackup,
   serialiseBackup,
@@ -186,6 +187,16 @@ describe('Round trip', () => {
     if (!parsed.ok) return;
     expect(parsed.contents.configuration).toEqual(CONFIGURATION);
     expect(parsed.contents.favorites).toEqual([customFavorite]);
+  });
+
+  it('retains validated local session tags through export and restore parsing', () => {
+    const tagged = { ...record('tagged'), tags: ['friends', 'birthday'] };
+
+    const parsed = parseBackup(exported([tagged], []));
+
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+    expect(parsed.contents.history[0]?.tags).toEqual(['friends', 'birthday']);
   });
 
   it('continues to restore version 1 files without a configuration section', () => {
@@ -413,6 +424,38 @@ describe('mergeById', () => {
 
     expect(outcome.result).toHaveLength(2);
     expect(outcome.added).toBe(1);
+  });
+});
+
+describe('calculateRestoreImpact', () => {
+  it('forecasts merge additions and replace discards without changing either collection', () => {
+    const incoming = {
+      history: [record('a'), record('b')],
+      favorites: [RIBEYE_FAVORITE, PORK_FAVORITE],
+      configuration: CONFIGURATION,
+    };
+    const current = {
+      history: [record('a')],
+      favorites: [RIBEYE_FAVORITE],
+      configuration: CONFIGURATION,
+    };
+    const incomingBefore = structuredClone(incoming);
+    const currentBefore = structuredClone(current);
+
+    const impact = calculateRestoreImpact(incoming, current);
+
+    expect(impact.merge.sessions).toEqual({ incoming: 2, new: 1, alreadyOnDevice: 1 });
+    expect(impact.merge.savedOrders).toEqual({ incoming: 2, new: 1, alreadyOnDevice: 1 });
+    expect(impact.merge.pricingProfiles).toEqual({ incoming: 1, new: 0, alreadyOnDevice: 1 });
+    expect(impact.merge.customFoods).toEqual({ incoming: 1, new: 0, alreadyOnDevice: 1 });
+    expect(impact.merge.restaurants).toEqual({ incoming: 1, new: 0, alreadyOnDevice: 1 });
+    expect(impact.replace.sessions).toEqual({ incoming: 2, discarded: 1 });
+    expect(impact.replace.savedOrders).toEqual({ incoming: 2, discarded: 1 });
+    expect(impact.replace.pricingProfiles).toEqual({ incoming: 1, discarded: 1 });
+    expect(impact.replace.customFoods).toEqual({ incoming: 1, discarded: 1 });
+    expect(impact.replace.restaurants).toEqual({ incoming: 1, discarded: 1 });
+    expect(incoming).toEqual(incomingBefore);
+    expect(current).toEqual(currentBefore);
   });
 });
 

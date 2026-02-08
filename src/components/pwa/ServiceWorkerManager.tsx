@@ -13,6 +13,10 @@ const SKIP_WAITING_MESSAGE = 'ayce:skip-waiting';
  */
 export function ServiceWorkerManager() {
   const [waiting, setWaiting] = useState<ServiceWorker | null>(null);
+  const [deferredInstall, setDeferredInstall] = useState<{ prompt: () => Promise<void> } | null>(
+    null,
+  );
+  const [online, setOnline] = useState(() => typeof navigator === 'undefined' || navigator.onLine);
 
   useEffect(() => {
     if (process.env.NODE_ENV !== 'production' || !('serviceWorker' in navigator)) {
@@ -62,6 +66,26 @@ export function ServiceWorkerManager() {
     };
   }, []);
 
+  useEffect(() => {
+    const update = () => setOnline(navigator.onLine);
+    const capture = (event: Event) => {
+      event.preventDefault();
+      if (
+        !window.matchMedia('(display-mode: standalone)').matches &&
+        !localStorage.getItem('ayce-install-dismissed')
+      )
+        setDeferredInstall(event as Event & { prompt: () => Promise<void> });
+    };
+    window.addEventListener('online', update);
+    window.addEventListener('offline', update);
+    window.addEventListener('beforeinstallprompt', capture);
+    return () => {
+      window.removeEventListener('online', update);
+      window.removeEventListener('offline', update);
+      window.removeEventListener('beforeinstallprompt', capture);
+    };
+  }, []);
+
   const applyUpdate = useCallback(() => {
     if (!waiting) {
       return;
@@ -74,7 +98,7 @@ export function ServiceWorkerManager() {
     setWaiting(null);
   }, [waiting]);
 
-  if (!waiting) {
+  if (!waiting && !deferredInstall && online) {
     return null;
   }
 
@@ -84,6 +108,20 @@ export function ServiceWorkerManager() {
       className="relative z-40 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 border-b border-line-ember bg-ash-850 px-4 py-2 text-center"
     >
       <p className="text-xs text-cream-300">A newer version of the calculator is available.</p>
+      {!online && (
+        <p className="text-xs text-cream-300">
+          You are offline. Previously visited pages may remain available.
+        </p>
+      )}
+      {deferredInstall && (
+        <button
+          type="button"
+          onClick={() => void deferredInstall.prompt()}
+          className="min-h-8 rounded-[8px] px-2 text-xs font-semibold text-ember-400"
+        >
+          Install app
+        </button>
+      )}
       <button
         type="button"
         onClick={applyUpdate}

@@ -17,6 +17,8 @@ interface HistoryEntryProps {
   /** Already resolved by the list, which had to compute it to sort anyway. */
   session: ResolvedSavedSession;
   onDelete: (record: SavedMealSession) => void;
+  selected?: boolean;
+  onSelect?: (id: string, selected: boolean) => void;
 }
 
 const TONE = {
@@ -25,7 +27,7 @@ const TONE = {
   house: 'text-cream-100',
 } as const;
 
-export function HistoryEntry({ session, onDelete }: HistoryEntryProps) {
+export function HistoryEntry({ session, onDelete, selected = false, onSelect }: HistoryEntryProps) {
   const { record, report, verdict } = session;
 
   const label = record.restaurantName || 'Unnamed restaurant';
@@ -33,6 +35,15 @@ export function HistoryEntry({ session, onDelete }: HistoryEntryProps) {
   return (
     <li className="panel relative p-4 transition-colors duration-200 hover:border-line-ember">
       <div className="flex items-start justify-between gap-3">
+        {onSelect && (
+          <input
+            type="checkbox"
+            aria-label={`Select ${label}`}
+            checked={selected}
+            onChange={(event) => onSelect(record.id, event.target.checked)}
+            className="relative z-10 mt-1 size-5 accent-ember-500"
+          />
+        )}
         <div className="min-w-0">
           <p className="micro-label">{formatRecordedAt(record.createdAt)}</p>
           {/* The whole card is the link target; the delete button sits above it. */}
@@ -48,6 +59,18 @@ export function HistoryEntry({ session, onDelete }: HistoryEntryProps) {
             <p className="mt-1.5 line-clamp-2 break-words text-xs leading-snug text-cream-500">
               {record.note}
             </p>
+          )}
+          {record.tags.length > 0 && (
+            <ul aria-label="Session tags" className="mt-2 flex flex-wrap gap-1.5">
+              {record.tags.map((tag) => (
+                <li
+                  key={tag}
+                  className="rounded-full border border-line-ember bg-ash-900 px-2 py-0.5 text-xs font-semibold text-ember-400"
+                >
+                  {tag}
+                </li>
+              ))}
+            </ul>
           )}
         </div>
 

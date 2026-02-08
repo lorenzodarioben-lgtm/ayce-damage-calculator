@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { TOP_FOOD_LENGTH, TREND_LENGTH, buildHistoryAnalytics } from '@/lib/analytics';
+import {
+  TOP_FOOD_LENGTH,
+  TREND_LENGTH,
+  buildHistoryAnalytics,
+  compareRecentMealTrends,
+  recordsInAnalyticsRange,
+} from '@/lib/analytics';
 import { buildDamageReport } from '@/lib/calculations';
 import { createSavedSession } from '@/lib/history';
 import { getVerdict } from '@/lib/verdicts';
@@ -59,6 +65,52 @@ describe('Empty history', () => {
     expect(analytics.mostPlates).toBeNull();
     expect(analytics.topFoods).toEqual([]);
     expect(analytics.trend).toEqual([]);
+  });
+});
+
+describe('Analytics periods', () => {
+  const now = new Date('2026-08-30T00:00:00.000Z');
+
+  it('uses an inclusive, deterministic lower boundary and excludes future meals', () => {
+    const records = [
+      filed('on-boundary', '2026-07-31T00:00:00.000Z', [line('beef-ribeye', 1)]),
+      filed('inside', '2026-08-01T00:00:00.000Z', [line('beef-ribeye', 1)]),
+      filed('outside', '2026-07-30T23:59:59.999Z', [line('beef-ribeye', 1)]),
+      filed('future', '2026-08-30T00:00:00.001Z', [line('beef-ribeye', 1)]),
+    ];
+
+    expect(recordsInAnalyticsRange(records, '30', now).map((record) => record.id)).toEqual([
+      'on-boundary',
+      'inside',
+    ]);
+  });
+
+  it('keeps all records for all time and returns an empty set for an empty period', () => {
+    expect(recordsInAnalyticsRange([SMALL, BIG], 'all', now)).toEqual([SMALL, BIG]);
+    expect(
+      recordsInAnalyticsRange([SMALL, BIG], '30', new Date('2026-09-30T00:00:00.000Z')),
+    ).toEqual([]);
+  });
+});
+
+describe('Recent meal trends', () => {
+  it('uses the latest five and the immediately preceding five only', () => {
+    const records = Array.from({ length: 11 }, (_, index) =>
+      filed(`trend-${index}`, `2026-08-${String(index + 1).padStart(2, '0')}T12:00:00.000Z`, [
+        line(index < 5 ? 'chicken-thigh' : 'beef-ribeye', index + 1),
+      ]),
+    );
+    const trends = compareRecentMealTrends(records);
+
+    expect(trends.recent.count).toBe(5);
+    expect(trends.previous.count).toBe(5);
+    expect(trends.recent.averagePlates).toBe(9);
+    expect(trends.previous.averagePlates).toBe(4);
+  });
+
+  it('returns safe zero metrics when no comparison baseline exists', () => {
+    const trends = compareRecentMealTrends([SMALL]);
+    expect(trends.previous).toMatchObject({ count: 0, breakEvenFrequency: 0 });
   });
 });
 

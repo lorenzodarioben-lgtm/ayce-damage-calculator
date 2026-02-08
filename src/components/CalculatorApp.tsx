@@ -8,6 +8,8 @@ import { SiteHeader } from '@/components/nav/SiteHeader';
 import { MAIN_CONTENT_ID } from '@/components/nav/destinations';
 import { DamageReport } from '@/components/results/DamageReport';
 import { SessionSetup } from '@/components/session/SessionSetup';
+import { SessionConflictNotice } from '@/components/session/SessionConflictNotice';
+import { SessionUndoControls } from '@/components/session/SessionUndoControls';
 import { PricingProfileProvider } from '@/components/session/PricingContext';
 import { LiveSummary } from '@/components/summary/LiveSummary';
 import { StickySummaryBar } from '@/components/summary/StickySummaryBar';
@@ -19,7 +21,6 @@ import { usePricingProfiles } from '@/hooks/usePricingProfiles';
 import { useRegularDiners } from '@/hooks/useRegularDiners';
 import { useStageHistory } from '@/hooks/useStageHistory';
 import { useStatusMessage } from '@/hooks/useStatusMessage';
-import { useUndoableRemove } from '@/hooks/useUndoableRemove';
 import { DEFAULT_PRICING_PROFILE_ID } from '@/lib/pricing';
 
 export function CalculatorApp() {
@@ -51,8 +52,14 @@ export function CalculatorApp() {
     setItemCharge,
     setItemAllocations,
     removeItem,
-    restoreItem,
+    canUndo,
+    canRedo,
+    undo,
+    redo,
     resetSession,
+    sessionConflict,
+    loadExternalSession,
+    keepCurrentSession,
     pricingProfile,
   } = useMealSession(pricingProfiles.profiles, customFoods.foods);
 
@@ -75,14 +82,6 @@ export function CalculatorApp() {
     },
     [addItem, announce],
   );
-
-  const handleRemove = useUndoableRemove({
-    items: session.items,
-    removeItem,
-    restoreItem,
-    announce,
-    location: 'your tab',
-  });
 
   // Moves the viewport and focus to whichever stage was just revealed. Running
   // as an effect guarantees the target is mounted, and skips the first render
@@ -159,6 +158,15 @@ export function CalculatorApp() {
           {stage === 'builder' && <Hero />}
 
           <div className="mx-auto max-w-[1280px] px-4 pb-32 pt-6 sm:px-6 lg:pb-16">
+            {sessionConflict && (
+              <div className="mb-4">
+                <SessionConflictNotice
+                  conflict={sessionConflict}
+                  onLoadExternal={loadExternalSession}
+                  onKeepCurrent={keepCurrentSession}
+                />
+              </div>
+            )}
             {stage === 'report' ? (
               <div ref={reportRef} tabIndex={-1} className="outline-none">
                 <DamageReport
@@ -174,6 +182,12 @@ export function CalculatorApp() {
                 className="grid items-start gap-4 lg:grid-cols-[1fr_380px] lg:gap-6"
               >
                 <div className="space-y-4 lg:space-y-6">
+                  <SessionUndoControls
+                    canUndo={canUndo}
+                    canRedo={canRedo}
+                    onUndo={undo}
+                    onRedo={redo}
+                  />
                   <SessionSetup
                     session={session}
                     baseAdmission={report.baseAdmission}
@@ -227,7 +241,7 @@ export function CalculatorApp() {
                       )
                     }
                     diners={session.diners ?? []}
-                    onRemove={handleRemove}
+                    onRemove={removeItem}
                     onCalculate={handleCalculate}
                     onReset={() => setResetOpen(true)}
                   />

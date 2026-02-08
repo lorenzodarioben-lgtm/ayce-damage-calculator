@@ -9,6 +9,7 @@ import {
   MIN_TARGET_RECOVERY,
   PLAN_STRATEGIES,
   buildDamagePlan,
+  calculatePlanProgress,
   clampPlanQuantity,
   clampTargetRecovery,
   type PlanConstraints,
@@ -37,6 +38,27 @@ function plan(overrides: Partial<PlanConstraints> = {}) {
 function platesIn(result: ReturnType<typeof plan>): number {
   return result.lines.reduce((sum, line) => sum + line.quantity, 0);
 }
+
+describe('plan progress', () => {
+  it('reads matching actual plates without changing the meal ledger', () => {
+    const eaten = [
+      {
+        id: 'beef-ribeye__standard__regular',
+        foodId: 'beef-ribeye',
+        quality: 'standard' as const,
+        plateSize: 'regular' as const,
+        quantity: 2,
+      },
+    ];
+    const original = structuredClone(eaten);
+    const progress = calculatePlanProgress(
+      [{ foodId: 'beef-ribeye', quality: 'standard', plateSize: 'regular', quantity: 3 }],
+      eaten,
+    );
+    expect(progress).toEqual({ plannedPlates: 3, matchedPlates: 2, remainingPlates: 1 });
+    expect(eaten).toEqual(original);
+  });
+});
 
 describe('clamping', () => {
   it('holds a target inside the range the simulation supports', () => {

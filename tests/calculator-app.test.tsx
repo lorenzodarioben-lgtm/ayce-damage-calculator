@@ -71,7 +71,7 @@ describe('CalculatorApp', () => {
     expect(screen.getByText(/no damage yet/i)).toBeInTheDocument();
   });
 
-  it('offers an undo that puts a removed line back as it was', async () => {
+  it('undoes and redoes a removed line through the persistent meal controls', async () => {
     const user = userEvent.setup();
     render(<CalculatorApp />);
     await addPlates(user, 'Ribeye');
@@ -80,15 +80,32 @@ describe('CalculatorApp', () => {
     await user.click(within(tab).getByRole('button', { name: /add one plate of Ribeye/i }));
     await user.click(within(tab).getByRole('button', { name: /remove ribeye.*from your tab/i }));
 
-    const updates = screen.getByRole('status', { name: /session updates/i });
-    expect(updates).toHaveTextContent(/Ribeye removed from your tab/i);
-
-    await user.click(within(updates).getByRole('button', { name: /undo/i }));
+    const controls = screen.getByRole('group', { name: /meal edit history/i });
+    await user.click(within(controls).getByRole('button', { name: /undo meal edit/i }));
 
     // Two plates went in, so two plates must come back.
     const restored = screen.getByRole('region', { name: /your tab/i });
     expect(within(restored).getByText('2 plates · 310 g')).toBeInTheDocument();
-    expect(updates).toHaveTextContent(/Ribeye put back/i);
+    expect(within(controls).getByRole('button', { name: /redo meal edit/i })).toBeEnabled();
+
+    await user.click(within(controls).getByRole('button', { name: /redo meal edit/i }));
+    expect(screen.getByText(/no damage yet/i)).toBeInTheDocument();
+  });
+
+  it('supports keyboard recovery without hijacking text input undo', async () => {
+    const user = userEvent.setup();
+    render(<CalculatorApp />);
+    await addPlates(user, 'Ribeye');
+
+    await user.keyboard('{Control>}z{/Control}');
+    expect(screen.getByText(/no damage yet/i)).toBeInTheDocument();
+
+    await user.keyboard('{Control>}{Shift>}z{/Shift}{/Control}');
+    expect(screen.getByRole('region', { name: /your tab/i })).toBeInTheDocument();
+
+    await user.click(screen.getByLabelText(/price per diner/i));
+    await user.keyboard('{Control>}z{/Control}');
+    expect(screen.getByRole('region', { name: /your tab/i })).toBeInTheDocument();
   });
 
   it('reflects session configuration in total admission', async () => {
