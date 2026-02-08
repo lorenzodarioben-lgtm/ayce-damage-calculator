@@ -1,7 +1,8 @@
 'use client';
 
 import { getPlateSizeMeta, getQualityMeta } from '@/lib/constants';
-import { formatMoney, formatPlates, formatWeight } from '@/lib/formatting';
+import { formatPlateQuantity } from '@/lib/consumption';
+import { formatMoney, formatUnits, formatWeight } from '@/lib/formatting';
 import { usePricingProfile } from '@/components/session/PricingContext';
 import type { LineItemTotals } from '@/types/meal';
 
@@ -51,7 +52,9 @@ export function MealBreakdown({
                 {getPlateSizeMeta(line.item.plateSize).label}
               </p>
               <p className="tabular mt-0.5 text-xs text-cream-700">
-                {formatPlates(line.plates)} · {formatWeight(line.weightG)}
+                {formatUnits(line)}
+                {line.hasWeight ? ` · ${formatWeight(line.weightG)}` : ' · not weighed'}
+                {line.uneatenPlates > 0 && <> · {formatPlateQuantity(line.uneatenPlates)} left</>}
               </p>
             </div>
             <p className="tabular shrink-0 text-sm font-bold text-ember-400">

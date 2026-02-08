@@ -8,6 +8,8 @@ import {
   isPlateSize,
   isQualityTier,
 } from '@/lib/constants';
+import { parseAdjustments } from '@/lib/adjustments';
+import { normaliseConsumedQuantity } from '@/lib/consumption';
 import { mealItemId, mergeMealItems } from '@/lib/mealItems';
 import { IDLE_LIFECYCLE, parseMealEvents, parseMealLifecycle } from '@/lib/mealEvents';
 import { parseMealDuration } from '@/lib/pacing';
@@ -16,11 +18,13 @@ import { findFoodInCatalogue } from '@/lib/foodCatalogue';
 import {
   isDinerId,
   normaliseAllocations,
+  normaliseSharedAmong,
   normaliseDinerName,
   reconcileItemAllocations,
 } from '@/lib/diners';
 import type { Diner, DinerAllocation, FoodItem } from '@/types/meal';
 import { DEFAULT_PRICING_PROFILE_ID, isPricingProfileId } from '@/lib/pricing';
+import { normaliseSeparateCharge } from '@/lib/separateCharges';
 import type { MealItem, MealSession } from '@/types/meal';
 
 export const STORAGE_KEY = 'ayce-damage-calculator';
@@ -32,12 +36,15 @@ export const STORAGE_KEY = 'ayce-damage-calculator';
  * 4 — the timestamped meal event ledger and lifecycle metadata.
  * 5 — the optional booked meal duration.
  * 6 — the local restaurant profile the meal was started from.
- * 7 — a monotonic revision and writer id for safe tab sync.
+ * 7 — bill adjustments: charges and discounts alongside admission.
+ * 8 — how much of each line was actually eaten.
+ * 9 — which lines the buffet price did not cover, and what was paid for them.
+ * 10 — a monotonic revision and writer id for safe tab sync.
  */
-export const STORAGE_VERSION = 7;
+export const STORAGE_VERSION = 10;
 
 /** Versions `parseStoredSession` can read, current one included. */
-export const SUPPORTED_STORAGE_VERSIONS = [1, 2, 3, 4, 5, 6, 7] as const;
+export const SUPPORTED_STORAGE_VERSIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
 
 /**
  * A tab is small; a full evening's ledger is still only tens of kilobytes.
@@ -137,6 +144,7 @@ function parseMealItem(
   value: unknown,
   foods: readonly FoodItem[],
   diners: readonly Diner[],
+  version: number,
 ): MealItem | null {
   if (!isRecord(value)) {
     return null;
@@ -156,12 +164,33 @@ function parseMealItem(
 
   const safeQuantity = Math.min(MAX_LINE_QUANTITY, Math.max(MIN_QUANTITY, Math.floor(quantity)));
 
+  /*
+   * A line written before version 8 has no consumed quantity, and that is a
+   * statement rather than a gap: it was eaten in full, which is exactly what
+   * the calculator reported for it at the time.
+   */
+  const consumed =
+    version >= 8 ? normaliseConsumedQuantity(value.consumedQuantity, safeQuantity) : undefined;
+
+  // A line written before version 9 was paid for by admission, which is again
+  // a statement about it rather than a gap in it.
+  const separate = value.separatelyCharged === true;
+  const charged = normaliseSeparateCharge(value.separateCharge);
+
   const base = {
-    id: mealItemId({ foodId, quality, plateSize }),
+    id: mealItemId({
+      foodId,
+      quality,
+      plateSize,
+      ...(separate ? { separatelyCharged: true } : {}),
+    }),
     foodId,
     quality,
     plateSize,
     quantity: safeQuantity,
+    ...(consumed === undefined ? {} : { consumedQuantity: consumed }),
+    ...(separate ? { separatelyCharged: true as const } : {}),
+    ...(separate && charged !== undefined ? { separateCharge: charged } : {}),
   };
   const allocations = normaliseAllocations(
     Array.isArray(value.allocations)
@@ -170,7 +199,15 @@ function parseMealItem(
     safeQuantity,
     diners,
   );
-  return allocations.length > 0 ? { ...base, allocations } : base;
+  const sharedAmong = normaliseSharedAmong(
+    Array.isArray(value.sharedAmong) ? (value.sharedAmong as readonly string[]) : undefined,
+    diners,
+  );
+  return {
+    ...base,
+    ...(allocations.length > 0 ? { allocations } : {}),
+    ...(sharedAmong.length > 0 ? { sharedAmong } : {}),
+  };
 }
 
 /** Returns null whenever stored data is absent, stale or untrustworthy. */
@@ -185,7 +222,7 @@ function parseSession(
 
   const items = mergeMealItems(
     rawItems
-      .map((item) => parseMealItem(item, foods, diners))
+      .map((item) => parseMealItem(item, foods, diners, version))
       .filter((item): item is MealItem => item !== null),
   ).map((item) => reconcileItemAllocations(item, diners));
 
@@ -209,6 +246,12 @@ function parseSession(
     version >= 5 ? parseMealDuration(session.plannedDurationMinutes) : undefined;
   const linkedRestaurantId =
     version >= 6 && isRestaurantId(session.restaurantId) ? session.restaurantId : undefined;
+  /*
+   * A session written before version 7 has no adjustments, and an empty list is
+   * exactly what it means: the bill was the entry price. Such a tab settles to
+   * the same total it always did.
+   */
+  const adjustments = version >= 7 ? parseAdjustments(session.adjustments, diners) : [];
 
   return {
     restaurantName: sanitiseRestaurantName(session.restaurantName),
@@ -219,6 +262,7 @@ function parseSession(
       : DEFAULT_PRICING_PROFILE_ID,
     items,
     ...(diners.length > 0 ? { diners } : {}),
+    ...(adjustments.length > 0 ? { adjustments } : {}),
     ...(events.length > 0 ? { events } : {}),
     ...(lifecycle.status === 'idle' ? {} : { lifecycle }),
     ...(plannedDurationMinutes === undefined ? {} : { plannedDurationMinutes }),
@@ -256,7 +300,11 @@ export function parseStoredSessionState(
   }
 
   const version = parsed.version;
-  if (version === STORAGE_VERSION) {
+  // Main previously wrote the concurrent-tab envelope as version 7, while the
+  // feature branch used version 7 for bill adjustments. Its distinctive
+  // metadata lets both published shapes remain readable on the unified path.
+  const hasRevisionMetadata = isRevision(parsed.revision) && isWriterId(parsed.writerId);
+  if (version === STORAGE_VERSION || (version === 7 && hasRevisionMetadata)) {
     if (!isRevision(parsed.revision) || !isWriterId(parsed.writerId)) {
       return null;
     }

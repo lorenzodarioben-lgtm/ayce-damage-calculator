@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import { SkipLink } from '@/components/nav/SkipLink';
 import { ServiceWorkerManager } from '@/components/pwa/ServiceWorkerManager';
 import { THEME_COLOUR } from '@/lib/constants';
 import { siteUrl } from '@/lib/site';
@@ -33,6 +34,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en-AU">
       <body>
+        {/* Ahead of everything, including the service worker's status bar, so a
+            keyboard always reaches it first. */}
+        <SkipLink />
         <ServiceWorkerManager />
         {children}
       </body>

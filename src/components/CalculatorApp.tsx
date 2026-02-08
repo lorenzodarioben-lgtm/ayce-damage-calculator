@@ -42,9 +42,15 @@ export function CalculatorApp() {
     removeDiner,
     moveDiner,
     clearDiners,
+    addAdjustment,
+    removeAdjustment,
+    clearAdjustments,
     addItem,
     incrementItem,
     decrementItem,
+    setItemConsumption,
+    setItemCharge,
+    setItemAllocations,
     removeItem,
     canUndo,
     canRedo,
@@ -184,6 +190,7 @@ export function CalculatorApp() {
                   />
                   <SessionSetup
                     session={session}
+                    baseAdmission={report.baseAdmission}
                     totalAdmission={report.totalAdmission}
                     onRestaurantNameChange={setRestaurantName}
                     onPricePerDinerChange={setPricePerDiner}
@@ -194,6 +201,7 @@ export function CalculatorApp() {
                     customFoods={customFoods.foods}
                     onSaveCustomFood={customFoods.save}
                     onRemoveCustomFood={customFoods.remove}
+                    onReplaceCustomFoods={customFoods.replaceAll}
                     onDinerCountChange={adjustDinerCount}
                     onApplySetup={applySetup}
                     regularDiners={regularDiners.diners}
@@ -204,6 +212,9 @@ export function CalculatorApp() {
                     onMoveDiner={moveDiner}
                     onClearDiners={clearDiners}
                     onSaveRegularDiner={regularDiners.save}
+                    onAddAdjustment={addAdjustment}
+                    onRemoveAdjustment={removeAdjustment}
+                    onClearAdjustments={clearAdjustments}
                     onStatus={announce}
                   />
                   <MealBuilder
@@ -220,6 +231,16 @@ export function CalculatorApp() {
                     report={report}
                     onIncrement={incrementItem}
                     onDecrement={decrementItem}
+                    onConsumptionChange={setItemConsumption}
+                    onChargeChange={setItemCharge}
+                    onSharedAmongChange={(id, sharedAmong) =>
+                      setItemAllocations(
+                        id,
+                        session.items.find((entry) => entry.id === id)?.allocations ?? [],
+                        sharedAmong,
+                      )
+                    }
+                    diners={session.diners ?? []}
                     onRemove={removeItem}
                     onCalculate={handleCalculate}
                     onReset={() => setResetOpen(true)}

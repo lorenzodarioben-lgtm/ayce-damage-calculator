@@ -4,7 +4,7 @@ import { Check } from 'lucide-react';
 import { FoodIllustration } from '@/components/meal/FoodIllustration';
 import { usePricingProfile } from '@/components/session/PricingContext';
 import { cn } from '@/lib/cn';
-import { formatPricePerKg } from '@/lib/formatting';
+import { formatUnitPrice } from '@/lib/formatting';
 import { resolveFoodPricing } from '@/lib/pricing';
 import type { FoodItem } from '@/types/meal';
 
@@ -55,7 +55,7 @@ export function FoodCard({ food, selected, onSelect }: FoodCardProps) {
       </span>
 
       <span className="tabular mt-auto pt-1 text-[0.72rem] font-semibold tracking-wide text-ember-400">
-        ~{formatPricePerKg(pricing.retailPricePerKg, pricingProfile.money)} retail
+        ~{formatUnitPrice(pricing, pricingProfile.money)} retail
       </span>
     </button>
   );

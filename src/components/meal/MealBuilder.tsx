@@ -9,6 +9,7 @@ import { DinerAttribution } from '@/components/meal/DinerAttribution';
 import { FoodSearch } from '@/components/meal/FoodSearch';
 import { FoodSort } from '@/components/meal/FoodSort';
 import { PlateSizeSelector } from '@/components/meal/PlateSizeSelector';
+import { unitNoun, usesPlateSize } from '@/lib/valuation';
 import { QualitySelector } from '@/components/meal/QualitySelector';
 import { QuantityStepper } from '@/components/meal/QuantityStepper';
 import { Button } from '@/components/ui/Button';
@@ -20,7 +21,6 @@ import {
   DEFAULT_QUALITY,
   MAX_QUANTITY_PER_ADD,
   MIN_QUANTITY,
-  getPlateSizeMeta,
 } from '@/lib/constants';
 import {
   findFoodInCatalogue,
@@ -168,7 +168,12 @@ export function MealBuilder({
         </div>
       ) : (
         <>
-          <CategoryTabs value={category} onChange={handleCategoryChange} panelId={panelId} />
+          <CategoryTabs
+            value={category}
+            onChange={handleCategoryChange}
+            panelId={panelId}
+            foods={catalogue}
+          />
           <div
             id={panelId}
             role="tabpanel"
@@ -196,20 +201,29 @@ export function MealBuilder({
             </div>
 
             <QualitySelector value={quality} onChange={setQuality} />
-            <PlateSizeSelector value={plateSize} onChange={setPlateSize} />
+            {/*
+              A serving is whatever the restaurant serves, so the plate-size
+              control has nothing to say about one. Hidden rather than disabled:
+              a greyed-out control invites the question of how to enable it.
+            */}
+            {usesPlateSize(selectedFood) && (
+              <PlateSizeSelector value={plateSize} onChange={setPlateSize} />
+            )}
 
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
-                <span className="micro-label mb-2 block">Plates</span>
+                <span className="micro-label mb-2 block">
+                  {unitNoun(selectedFood, true).replace(/^./, (first) => first.toUpperCase())}
+                </span>
                 <QuantityStepper
-                  label="plates to add"
+                  label={`${unitNoun(selectedFood, true)} to add`}
                   value={quantity}
                   min={MIN_QUANTITY}
                   max={MAX_QUANTITY_PER_ADD}
                   onIncrement={() => setQuantity((q) => Math.min(MAX_QUANTITY_PER_ADD, q + 1))}
                   onDecrement={() => setQuantity((q) => Math.max(MIN_QUANTITY, q - 1))}
-                  decrementLabel="Remove a plate from this order"
-                  incrementLabel="Add a plate to this order"
+                  decrementLabel={`Remove a ${unitNoun(selectedFood)} from this order`}
+                  incrementLabel={`Add a ${unitNoun(selectedFood)} to this order`}
                 />
               </div>
 
@@ -218,7 +232,7 @@ export function MealBuilder({
                   <div className="flex items-baseline justify-end gap-2">
                     <dt className="text-cream-700">Weight</dt>
                     <dd className="font-semibold text-cream-100">
-                      {formatGrams(getPlateSizeMeta(plateSize).grams * quantity)}
+                      {preview.hasWeight ? formatGrams(preview.orderedWeightG) : 'Not weighed'}
                     </dd>
                   </div>
                   <div className="flex items-baseline justify-end gap-2">

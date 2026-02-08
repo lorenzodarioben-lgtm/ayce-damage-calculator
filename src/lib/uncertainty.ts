@@ -1,9 +1,9 @@
-import { buildDamageReport, calculateAdmission } from '@/lib/calculations';
+import { buildDamageReport, calculateBillTotals } from '@/lib/calculations';
 import { FOODS } from '@/data/foods';
 import { DEFAULT_PRICING_PROFILE, resolveFoodPricing } from '@/lib/pricing';
 import { getVerdict, type VerdictId } from '@/lib/verdicts';
-import type { PricingProfile } from '@/types/pricing';
-import type { Diner, FoodItem, MealItem, SessionConfig } from '@/types/meal';
+import type { FoodPricing, PricingProfile } from '@/types/pricing';
+import type { DamageReport, Diner, FoodItem, MealItem, SessionConfig } from '@/types/meal';
 
 /**
  * How much the headline figure depends on assumptions nobody measured.
@@ -108,15 +108,41 @@ function scaledProfile(
   foods: readonly FoodItem[],
   multipliers: Multipliers,
 ): PricingProfile {
-  const overrides: Record<string, { retailPricePerKg: number; restaurantCostPerKg: number }> = {};
+  const overrides: Record<string, FoodPricing> = {};
   for (const food of foods) {
     const base = resolveFoodPricing(food, profile);
-    overrides[food.id] = {
-      retailPricePerKg: base.retailPricePerKg * multipliers.retail * multipliers.weight,
-      restaurantCostPerKg: base.restaurantCostPerKg * multipliers.cost * multipliers.weight,
-    };
+    overrides[food.id] =
+      base.valuation === 'by-serving'
+        ? {
+            valuation: 'by-serving',
+            // A serving is one thing at one price, so the serving-weight
+            // multiplier has nothing to act on: what is uncertain about a bowl
+            // of soup is its price, not how many grams of plate it was.
+            retailPricePerServing: base.retailPricePerServing * multipliers.retail,
+            restaurantCostPerServing: base.restaurantCostPerServing * multipliers.cost,
+          }
+        : {
+            valuation: 'by-weight',
+            retailPricePerKg: base.retailPricePerKg * multipliers.retail * multipliers.weight,
+            restaurantCostPerKg: base.restaurantCostPerKg * multipliers.cost * multipliers.weight,
+          };
   }
   return { ...profile, overrides };
+}
+
+/**
+ * The meal's weight under a scenario's serving-weight assumption.
+ *
+ * Applied to what a plate of meat weighs, which is the thing the assumption is
+ * about. A bowl of soup weighs whatever the restaurant served, and no scenario
+ * here claims otherwise.
+ */
+function scaledWeightG(report: DamageReport, weightMultiplier: number): number {
+  return report.lines.reduce(
+    (total, line) =>
+      total + line.weightG * (line.food.valuation === 'by-weight' ? weightMultiplier : 1),
+    0,
+  );
 }
 
 export interface ScenarioOutcome {
@@ -163,7 +189,16 @@ export interface UncertaintyAnalysis {
   readonly headline: string;
 }
 
-type AnalysisConfig = Pick<SessionConfig, 'pricePerDiner' | 'dinerCount'> & {
+/**
+ * What the scenarios are measured against.
+ *
+ * The bill belongs here for the same reason the entry price does. Every figure
+ * below is a recovery percentage, and a recovery percentage is retail value
+ * over what was actually paid — so a range built against the undiscounted entry
+ * price is precise about a question nobody asked, and contradicts the report it
+ * sits underneath.
+ */
+type AnalysisConfig = Pick<SessionConfig, 'pricePerDiner' | 'dinerCount' | 'adjustments'> & {
   readonly diners?: readonly Diner[];
 };
 
@@ -196,7 +231,12 @@ function scenario(
     restaurantCost: report.totalRestaurantCost,
     // The engine's weight is the nominal one; the scenario's own assumption is
     // applied here rather than pretending the plate sizes themselves changed.
-    weightG: report.totalWeightG * multipliers.weight,
+    //
+    // Only to the plated cuts. A serving is one thing at one price, so the
+    // serving-weight assumption is deliberately not applied to its value above
+    // — and scaling its weight here anyway would put a band around a figure the
+    // scenario did not actually move.
+    weightG: scaledWeightG(report, multipliers.weight),
     recoveryPercent: report.retailRecoveryPercent,
     beatsAdmission: report.hasBeatenBuffet,
     verdictId: verdict.id,
@@ -316,7 +356,10 @@ export function buildUncertaintyAnalysis(
   const hasMeal = items.length > 0 && base.retailValue > 0;
 
   return {
-    admission: calculateAdmission(config),
+    // The final paid total, because that is what every scenario below is
+    // measured against — an uncertainty band around the wrong denominator
+    // would be precise about the wrong question.
+    admission: calculateBillTotals(config).totalPaid,
     base,
     conservative,
     optimistic,

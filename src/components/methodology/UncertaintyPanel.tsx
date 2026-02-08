@@ -10,7 +10,7 @@ import {
   scenarioSpreadPercent,
   type ScenarioOutcome,
 } from '@/lib/uncertainty';
-import type { Diner, MealItem } from '@/types/meal';
+import type { BillAdjustment, Diner, MealItem } from '@/types/meal';
 import type { FoodItem } from '@/types/meal';
 
 interface UncertaintyPanelProps {
@@ -18,6 +18,12 @@ interface UncertaintyPanelProps {
   pricePerDiner: number;
   dinerCount: number;
   diners?: readonly Diner[] | undefined;
+  /**
+   * What went on and came off the bill. Without it every scenario below would
+   * be measured against the entry price while the report above is measured
+   * against what was paid, and the two would disagree on the same screen.
+   */
+  adjustments?: readonly BillAdjustment[] | undefined;
   foods: readonly FoodItem[];
   headingId: string;
 }
@@ -35,6 +41,7 @@ export function UncertaintyPanel({
   pricePerDiner,
   dinerCount,
   diners,
+  adjustments,
   foods,
   headingId,
 }: UncertaintyPanelProps) {
@@ -44,11 +51,16 @@ export function UncertaintyPanel({
     () =>
       buildUncertaintyAnalysis(
         items,
-        { pricePerDiner, dinerCount, ...(diners ? { diners } : {}) },
+        {
+          pricePerDiner,
+          dinerCount,
+          ...(diners ? { diners } : {}),
+          ...(adjustments?.length ? { adjustments } : {}),
+        },
         profile,
         foods,
       ),
-    [items, pricePerDiner, dinerCount, diners, profile, foods],
+    [items, pricePerDiner, dinerCount, diners, adjustments, profile, foods],
   );
 
   if (items.length === 0) {

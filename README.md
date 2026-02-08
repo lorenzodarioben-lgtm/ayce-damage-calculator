@@ -39,6 +39,26 @@ keys, and nothing you record ever leaves your device.
 - Restaurant profiles you write yourself — save a setup, apply it on the next visit, and have the
   meal linked to that place
 - Optional Table Mode: record a local diner roster and attribute plates without changing the shared table total
+- Name the few people who actually shared a plate, so it is split between them and nobody else, with
+  attribution recordable in fractions of a plate rather than whole ones
+- Optional bill adjustments: vouchers, group discounts, weekend surcharges, card fees and paid extras,
+  applied to the whole table or to one diner, with base admission, charges, discounts and the final
+  paid total kept plainly apart
+- Each one can be a cash amount or the share of the bill it actually is — 10% service, 1.5% on the
+  card — stating what it is a share of, recalculated when the headcount or entry price changes, and
+  never compounding with another percentage
+- Shared food is divided across every seat the table was charged for, so seats nobody named keep
+  their own share instead of it being handed to the diners who were; per-seat amounts settle in
+  whole cents to exactly what the table paid
+- Separately charged items: mark a line the buffet price did not cover and record what you actually
+  paid for it, keeping its value out of the recovery figure and its cost out of the denominator,
+  with buffet total and total spend reported as different numbers
+- Optional consumption tracking: record that some of a plate went back, in quarter plates, and see
+  ordered, eaten and left stated plainly — no scolding, no default that assumes waste
+- Personal menu items in four further categories — sides, hot food, desserts and drinks — with their
+  own artwork, no invented defaults, and unknown nutrition distinguished from zero
+- CSV menu import with a downloadable template: previewed first, with row-level reasons for anything
+  rejected, deliberate choices for anything that collides, and an atomic apply
 
 **Restaurant hub** (`/restaurants`)
 
@@ -52,11 +72,27 @@ keys, and nothing you record ever leaves your device.
   context they were recorded with
 - Still no bundled restaurant directory, no address, no rating, and no network call of any kind
 
+**Diner hub** (`/diners`)
+
+- A local list of the people you have saved from a table roster, with a detail page per person:
+  meals, first and latest, their plates, estimated retail value, recovery, food weight, what they
+  paid, most ordered foods, category mix and the recent meals themselves
+- Plates somebody explicitly attributed are kept apart from an even share of what the table shared,
+  everywhere and on purpose: the first is a record, the second is a stated assumption
+- A meal filed without a roster is not assigned to anybody — nobody said who was there
+- People are matched by the opaque local id saved with them, never by display name
+- Add someone to the meal in progress, behind a confirmation
+- Removing a person removes their saved profile only; filed meals keep the roster they were
+  recorded with, and no plate is ever reassigned
+- A name that appears on a filed roster without being saved here is reported, not re-created
+
 **Personal menus**
 
 - Currency-aware pricing profiles, starting from the built-in Australian KBBQ estimates and using
   explicit local currency and locale choices rather than exchange-rate guesses
 - Per-cut price assumptions that flow through the builder, live mode, results, history and sharing
+- Real plate weights: a cut can declare what one of its regular plates actually weighs, per item or
+  per pricing profile, instead of assuming every restaurant plates to the same nominal 155 g
 - Custom menu foods with a name, category, nutrition and price assumptions, illustrated with the
   same in-app food artwork system as the built-in catalogue
 - A quick personal-menu editor that stays optional: a diner can start calculating with the default
@@ -146,6 +182,9 @@ keys, and nothing you record ever leaves your device.
 - Shareable challenge links carrying two completed meals, with the comparison recalculated by the
   app's own engine rather than trusted from the sender
 - Dynamic Open Graph images generated per report, so a posted link previews the actual verdict
+- Compressed tokens, so a bigger meal or a full personal menu still fits in an address — and every
+  link handed out under an older token format still opens
+- A plain reason when something genuinely will not fit, rather than a link that silently is not there
 
 **Everything else**
 
@@ -206,6 +245,57 @@ facts, with every threshold named in one exported object. Nothing consults the c
 **One meal model.** Live Meal Mode, the full builder and the report all drive the same session
 reducer and the same calculation engine. There is no second meal shape and no second set of sums.
 
+**Import that shows its working.** A personal menu can come in from a spreadsheet. Parsing writes
+nothing: it produces a plan naming the accepted rows, the rejected ones with the line number the
+spreadsheet shows and the exact reason, and any collision with an item already on the menu — offered
+as a choice between keeping yours, keeping both, or replacing yours, and starting on "keep mine",
+because replacing something is a decision rather than a default. The plan describes the whole
+resulting menu and is committed in one write, so there is no state in which half a file has been
+applied. The CSV reader is written into the project rather than pulled in, because the awkward parts
+— quoted commas, doubled quotes, embedded line breaks, Windows carriage returns — are exactly what a
+dependency would also have to get right, and it is bounded on rows, fields and file size. Formula
+leads are stripped from text fields so a hostile name can never be re-exported as something a
+spreadsheet would run; numeric fields are deliberately left alone, because a leading minus there is a
+negative number to reject rather than a character to remove.
+
+**Categories the app does not fill in.** Beyond the four grill categories the bundled catalogue
+occupies, a diner's own items can go in sides, hot food, desserts or drinks. Nothing is bundled for
+them: there is no invented price for a bowl of soup and no assumed calorie count for a beer, so they
+start empty and stay hidden from the tabs until somebody puts something in one. Each has its own SVG
+artwork drawn in the same visual language as the grill, describing the category rather than a
+specific dish. Macros on a custom item are optional, and blank means unknown rather than zero — an
+unknown figure is left out of the totals and the report says how many items it could not count,
+instead of adding nothing and presenting the result as the whole meal.
+
+**Two valuation models, one engine.** Grilled meat is bought by weight; a bowl of soup is one thing
+at one price. An item declares which model prices it, as a discriminated union rather than one shape
+with half its fields optional — so a per-serving item cannot carry a price per kilogram, and nothing
+downstream guesses which fields are meaningful. Both models resolve to the same four per-unit figures
+before any arithmetic happens, which is what keeps the calculation engine on one code path instead of
+a branch it would have to keep in step forever. Plate size applies only to a weight-valued cut, and
+the builder hides the control for anything else rather than greying it out. An override written for
+the wrong model is ignored rather than coerced: a price per kilogram says nothing usable about a
+soup, and treating one as the other would produce a confident wrong number. Every existing custom
+food and pricing profile is read as per-kilogram, which is what it was.
+
+**Ordered is not eaten.** A line records the plates that reached the table and, optionally, how much
+of them was eaten. An absent consumed quantity means the plate went clean, which is the default for
+ordinary logging and the truth about every session recorded before this existed — so the fast journey
+and every old record are untouched. Where the two differ, eaten quantity drives retail value,
+nutrition and recovery, because value nobody ate is not value anyone extracted; the ordered figures
+are kept alongside so the tab still says what arrived. Estimated ingredient cost follows the ordered
+quantity, because the restaurant bought the plate either way. Consumption can never be negative and
+never exceeds what was ordered: reducing an order brings the eaten figure down with it.
+
+**One denominator.** A bill can carry charges and discounts, so the engine settles it once and
+everything measures against the result. Base admission, what was added, what was taken off and the
+final paid total are four distinct figures and are never conflated; the total is floored at zero,
+because a voucher larger than the bill means nothing was paid rather than that the restaurant owes
+the table money. A meal with no adjustments settles to exactly its admission, which is what keeps
+every session recorded before they existed calculating precisely as it always did. Adjustments
+follow the same division rule the plates do: one named to a diner is theirs, and anything charged to
+the table is split evenly and said to be an assumption.
+
 **An aggregate tab, plus a ledger.** The tab in `MealSession.items` stays authoritative: every
 total, verdict and report is derived from it and never from an event. Alongside it, the reducer
 writes a bounded, timestamped ledger of what actually happened — plates added and taken back, lines
@@ -248,6 +338,26 @@ their original decoder, while current links carry the active pricing profile and
 foods used on that tab. Shared menus use the same architecture and the same URL-safe codec: a
 versioned, bounded, validated token, previewed read-only, and imported only on an explicit action
 that never replaces anything local — a colliding name comes in as a separate entry instead.
+
+**A compressor, because a link has a budget.** Reports, menus and Damage Challenges all carry their
+whole payload in the address, and a JSON document full of repeated keys spends most of that budget
+saying `"plateSize"` over and over. Current tokens are compressed with a small LZSS codec written
+into the project — typically two thirds smaller for a meal and rather more for a menu, which is the
+difference between a full personal catalogue being shareable and not. The obvious route,
+`CompressionStream`, was not taken: it is asynchronous, absent from some engines this project
+supports, and gives no guarantee that two builds of zlib agree byte for byte. Tokens have to be
+reproducible — the same canonical meal must produce the same address on a phone, on a laptop and
+inside a server-rendered Open Graph route — so the arithmetic lives here, where the output depends
+on nothing but the input.
+
+Decoding is treated as the trust boundary it is. A body declares its decoded size in its header, so
+a decoder compares that claim against a fixed ceiling and refuses the token _before_ allocating
+anything; back-references are validated against what has actually been produced so far; and the
+output buffer is sized once and never grown. A hostile token cannot make the decoder allocate, loop
+or read out of bounds. Every superseded token version keeps its own reader and is still decoded
+exactly as it was — there is no server that could ever reissue a link somebody already posted, so an
+address handed out today has to keep working. Dispatch is on the version prefix alone, and a token
+is never retried against a second reader after the first declines it.
 
 **Encryption without invention.** The optional encrypted backup is the ordinary design and nothing
 clever: a random salt, a key derived from the password with PBKDF2-HMAC-SHA-256 at OWASP's current
@@ -331,14 +441,15 @@ comparison page and inside a shared challenge alike, because both render from th
 
 Everything is local by default and stays that way.
 
-- Your in-progress meal, filed history, saved orders, saved restaurants, pricing profiles and
+- Your in-progress meal, filed history, saved orders, saved restaurants, saved diners, pricing
+  profiles and
   custom foods live in this browser
 - Analytics are derived on the device from your own records; no usage is tracked or transmitted
 - There is no account system, no backend and no third-party service of any kind
 - An encrypted backup is sealed on the device with a key derived from your password. The password
   is never stored, never logged and cannot be recovered — which is also why the file cannot be
   opened without it
-- Diner names stay local. Shared links anonymise roster names by default, while an exported backup may include names because it is a deliberate local export.
+- Diner names stay local. A shared report rewrites every diner reference to a position (`d1`, `d2`) — carrying no name and no name-derived id, while keeping who shared which plate — and an exported backup may include names because it is a deliberate local export.
 - Shared challenge links carry two meals and their entry prices. Diner names, roster attribution,
   private notes and the meal ledger stay on the device; opening a challenge writes nothing.
 - Shared menu links carry only the price assumptions, custom foods and (optionally) a restaurant
@@ -347,6 +458,8 @@ Everything is local by default and stays that way.
 - Shared report links carry the meal snapshot **inside the URL itself** — the plates, entry price,
   pricing context and any custom foods used. Nothing is uploaded, and nothing else travels with the
   link. Shared pages are marked `noindex`, and opening one never touches the recipient's own session.
+- Compression changes how many bytes a link spends, not what it carries. The same fields travel as
+  before, and the privacy boundary for reports, menus and challenges is unchanged.
 
 ## Testing
 
@@ -360,7 +473,8 @@ dataset's own integrity, cut search and ordering, verdict boundaries tested on b
 threshold, number and currency formatting, pricing profiles, custom foods, the session reducer
 including undo, storage recovery from corrupt or stale data, the IndexedDB repository against
 `fake-indexeddb`, saved-session migration, meal event validation, ordering and bounds, the pacing
-forecast on both sides of every boundary, replay reconstruction and its named moments, the planner's determinism and bounds, uncertainty scenarios and sensitivity ordering, restaurant profiles and their preset migration, menu-token boundaries and import conflict planning, challenge tokens and their privacy boundary, encrypted-backup envelope validation and cryptographic
+forecast on both sides of every boundary, replay reconstruction and its named moments, the planner's determinism and bounds, uncertainty scenarios and sensitivity ordering, restaurant profiles and their preset migration,
+the diner hub's attribution boundary between explicit plates and an estimated share, menu-token boundaries and import conflict planning, challenge tokens and their privacy boundary, encrypted-backup envelope validation and cryptographic
 round trips, session comparison, the achievement engine, favourites,
 restaurant presets, share-token encoding and decoding, backup import and export, CSV escaping, local
 analytics, browser-stage history, the sitemap and crawling rules, and the service worker's caching
@@ -371,7 +485,7 @@ policy.
 persistence across reloads, Live Meal Mode, history and comparison, favourites, presets, the share
 link round trip through a genuinely separate browser context, Open Graph metadata, the printable
 receipt under print media, PWA registration and cache contents, page structure and heading outlines,
-the skip link, and horizontal overflow on every route.
+the skip link, the restaurant and diner hubs, and horizontal overflow on every route.
 
 `npm run test` runs Vitest in watch mode; `npm run test:e2e:ui` opens the Playwright UI.
 
@@ -411,24 +525,24 @@ npm run verify       # format check, lint, typecheck, tests and build in sequenc
 
 ```text
 src/
-├── app/          routes: calculator, live, plan, restaurants, history, compare, backup, stats,
+├── app/          routes: calculator, live, plan, restaurants, diners, history, compare, backup,
 │                 challenge/[token] with its generated OG image,
 │                 share/[token] with its generated OG image, offline, manifest,
 │                 sitemap, robots
-├── components/   meal builder, live mode, planner, restaurants, session setup, summary, results,
+├── components/   meal builder, live mode, planner, restaurants, diners, session setup, summary,
 │                 history, stats, favourites, custom menus, navigation, methodology, PWA, UI
 ├── data/         the 18-item food dataset, with search and ordering
 ├── hooks/        session reducer, meal clock, stage history, meal history, favourites,
 │                 presets, pricing profiles, custom foods, status messaging, undoable removal
 ├── lib/          calculations, session reducer, meal events, replay, pacing, verdicts,
-│                 achievements, planner, uncertainty, restaurants, comparison, analytics,
+│                 achievements, planner, uncertainty, restaurants, diner hub, comparison, analytics,
 │                 history and its repository, favourites, presets, pricing profiles, custom foods,
 │                 report, menu and challenge share tokens, QR encoding, encrypted backups,
 │                 social cards, backup, CSV, formatting, storage, card rendering
 └── types/        domain types
 
-e2e/              24 Playwright specs plus shared journey helpers
-tests/            50 Vitest suites
+e2e/              30 Playwright specs plus shared journey helpers
+tests/            68 Vitest suites
 public/           service worker and PWA icons
 .github/          CI workflow, Dependabot, issue and pull request templates
 ```

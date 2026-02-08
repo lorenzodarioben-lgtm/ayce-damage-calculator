@@ -32,8 +32,9 @@ export const BACKUP_FORMAT = 'ayce-damage-backup';
  * 2 — personal menus: pricing profiles, custom foods and restaurant presets.
  * 3 — filed records may carry a meal ledger and lifecycle metadata.
  * 4 — restaurant profiles replace the old preset list.
+ * 5 — filed records may carry the bill adjustments that settled their total.
  */
-export const BACKUP_VERSION = 4;
+export const BACKUP_VERSION = 5;
 
 /** Roughly 8 MB of JSON; far beyond any real backup, but bounded. */
 export const MAX_BACKUP_BYTES = 8 * 1024 * 1024;

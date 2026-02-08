@@ -4,6 +4,7 @@ import { useId, useMemo, useState } from 'react';
 import { CategoryTabs } from '@/components/meal/CategoryTabs';
 import { FoodCard } from '@/components/meal/FoodCard';
 import { PlateSizeSelector } from '@/components/meal/PlateSizeSelector';
+import { usesPlateSize } from '@/lib/valuation';
 import { QualitySelector } from '@/components/meal/QualitySelector';
 import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
@@ -35,6 +36,7 @@ export function AddCutDialog({ open, onClose, onAdd, foods: catalogue }: AddCutD
   const [plateSize, setPlateSize] = useState<PlateSize>(DEFAULT_PLATE_SIZE);
 
   const foods = useMemo(() => foodsInCatalogueCategory(catalogue, category), [catalogue, category]);
+  const selected = foods.find((food) => food.id === selectedFoodId);
 
   function handleAdd() {
     if (!selectedFoodId) {
@@ -54,6 +56,7 @@ export function AddCutDialog({ open, onClose, onAdd, foods: catalogue }: AddCutD
           setSelectedFoodId(null);
         }}
         panelId={panelId}
+        foods={catalogue}
       />
 
       <div
@@ -75,7 +78,10 @@ export function AddCutDialog({ open, onClose, onAdd, foods: catalogue }: AddCutD
 
       <div className="mt-5 space-y-4 border-t border-line-soft pt-5">
         <QualitySelector value={quality} onChange={setQuality} />
-        <PlateSizeSelector value={plateSize} onChange={setPlateSize} />
+        {/* A serving is whatever the restaurant serves; plate size says nothing. */}
+        {(!selected || usesPlateSize(selected)) && (
+          <PlateSizeSelector value={plateSize} onChange={setPlateSize} />
+        )}
         <Button size="lg" fullWidth onClick={handleAdd} disabled={!selectedFoodId}>
           {selectedFoodId ? 'Add to quick log' : 'Choose a cut first'}
         </Button>

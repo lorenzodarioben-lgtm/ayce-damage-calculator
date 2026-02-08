@@ -106,7 +106,13 @@ describe('createSavedSession', () => {
       id: 'custom-lunch',
       name: 'Lunch menu',
       money: { currency: 'USD' as const, locale: 'en-US' },
-      overrides: { 'beef-ribeye': { retailPricePerKg: 80, restaurantCostPerKg: 45 } },
+      overrides: {
+        'beef-ribeye': {
+          valuation: 'by-weight' as const,
+          retailPricePerKg: 80,
+          restaurantCostPerKg: 45,
+        },
+      },
       builtIn: false,
     };
     const meal = session({ pricingProfileId: pricingProfile.id });

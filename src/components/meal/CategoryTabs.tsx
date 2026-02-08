@@ -1,30 +1,48 @@
 'use client';
 
 import { useRef } from 'react';
-import { CATEGORY_META } from '@/lib/constants';
+import { CATEGORY_META, GRILL_CATEGORIES, type CategoryMeta } from '@/lib/constants';
 import { cn } from '@/lib/cn';
-import type { FoodCategory } from '@/types/meal';
+import type { FoodCategory, FoodItem } from '@/types/meal';
 
 interface CategoryTabsProps {
   value: FoodCategory;
   onChange: (category: FoodCategory) => void;
   panelId: string;
+  /** The menu in play, so empty categories are not offered. */
+  foods: readonly FoodItem[];
 }
 
-export function CategoryTabs({ value, onChange, panelId }: CategoryTabsProps) {
+/**
+ * The categories worth showing.
+ *
+ * The four grill categories are always there — they are the bundled menu and
+ * the reason someone opened the app. The four custom-only ones appear only once
+ * the diner has actually put something in them, so nobody using the default
+ * menu is shown four empty tabs to wonder about.
+ */
+export function visibleCategories(foods: readonly FoodItem[]): readonly CategoryMeta[] {
+  return CATEGORY_META.filter(
+    (category) =>
+      GRILL_CATEGORIES.includes(category.id) || foods.some((food) => food.category === category.id),
+  );
+}
+
+export function CategoryTabs({ value, onChange, panelId, foods }: CategoryTabsProps) {
   const listRef = useRef<HTMLDivElement>(null);
+  const categories = visibleCategories(foods);
 
   function handleKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
-    const last = CATEGORY_META.length - 1;
-    const currentIndex = CATEGORY_META.findIndex((category) => category.id === value);
+    const last = categories.length - 1;
+    const currentIndex = categories.findIndex((category) => category.id === value);
 
     let nextIndex: number;
     switch (event.key) {
       case 'ArrowRight':
-        nextIndex = (currentIndex + 1) % CATEGORY_META.length;
+        nextIndex = (currentIndex + 1) % categories.length;
         break;
       case 'ArrowLeft':
-        nextIndex = (currentIndex - 1 + CATEGORY_META.length) % CATEGORY_META.length;
+        nextIndex = (currentIndex - 1 + categories.length) % categories.length;
         break;
       case 'Home':
         nextIndex = 0;
@@ -37,7 +55,7 @@ export function CategoryTabs({ value, onChange, panelId }: CategoryTabsProps) {
     }
 
     event.preventDefault();
-    const next = CATEGORY_META[nextIndex];
+    const next = categories[nextIndex];
     if (!next) {
       return;
     }
@@ -53,7 +71,7 @@ export function CategoryTabs({ value, onChange, panelId }: CategoryTabsProps) {
       onKeyDown={handleKeyDown}
       className="grid grid-cols-4 gap-1 rounded-[12px] border border-line bg-ash-900 p-1"
     >
-      {CATEGORY_META.map((category) => {
+      {categories.map((category) => {
         const selected = category.id === value;
         return (
           <button

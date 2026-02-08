@@ -1,3 +1,4 @@
+import { formatPlateQuantity } from '@/lib/consumption';
 import { formatPercent } from '@/lib/formatting';
 import type { Tally } from '@/lib/analytics';
 
@@ -21,7 +22,8 @@ export function ShareBars({ tallies, unitLabel }: ShareBarsProps) {
           <div className="flex items-baseline justify-between gap-3">
             <span className="text-sm font-semibold text-cream-100">{tally.label}</span>
             <span className="tabular text-xs text-cream-500">
-              {tally.plates} {unitLabel} · {formatPercent(tally.share)}
+              {/* Formatted, because a share of a shared table is rarely whole. */}
+              {formatPlateQuantity(tally.plates)} {unitLabel} · {formatPercent(tally.share)}
             </span>
           </div>
           <div aria-hidden="true" className="mt-1.5 h-2 overflow-hidden rounded-full bg-ash-900">

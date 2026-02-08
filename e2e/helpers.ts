@@ -1,4 +1,5 @@
 import { expect, type Page } from '@playwright/test';
+import { unpackShareBody } from '../src/lib/shareCodec';
 
 /**
  * Shared journey steps. Everything here addresses the page through roles and
@@ -95,4 +96,29 @@ export async function horizontalOverflow(page: Page): Promise<number> {
   return page.evaluate(
     () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
   );
+}
+
+/**
+ * The decoded document behind a share, menu or challenge token.
+ *
+ * Reads the token with the application's own codec rather than by hand. That
+ * matters for the privacy assertions built on it: once tokens are compressed,
+ * grepping the raw address for a diner's name would pass no matter what the
+ * link carried, because the bytes are no longer text. Unpacking first is what
+ * keeps the check honest — it asserts against the document that actually
+ * travels.
+ */
+export function decodeTokenDocument(link: string, route: string): string {
+  const token = link.split(`/${route}/`)[1];
+  expect(token, `expected a ${route} token in ${link}`).toBeTruthy();
+
+  const separator = token!.indexOf('.');
+  expect(separator).toBeGreaterThan(0);
+
+  const body = unpackShareBody(token!.slice(separator + 1), {
+    maxDecodedBytes: 64 * 1024,
+    maxEncodedLength: 8192,
+  });
+  expect(body, 'the token should decode with the application codec').not.toBeNull();
+  return body as string;
 }

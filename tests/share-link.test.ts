@@ -9,7 +9,9 @@ import {
   FOOD_SHARE_CODES,
   MAX_SHARE_ITEMS,
   MAX_SHARE_TOKEN_LENGTH,
+  SHARE_TOKEN_VERSION,
   decodeSharePayload,
+  encodeShareResult,
   encodeSharePayload,
   foodsMissingShareCodes,
   shareLinkPath,
@@ -30,7 +32,13 @@ const US_PROFILE: PricingProfile = {
   id: 'custom-weekend-market',
   name: 'Weekend Market',
   money: { currency: 'USD', locale: 'en-US' },
-  overrides: { 'beef-ribeye': { retailPricePerKg: 75, restaurantCostPerKg: 42 } },
+  overrides: {
+    'beef-ribeye': {
+      valuation: 'by-weight' as const,
+      retailPricePerKg: 75,
+      restaurantCostPerKg: 42,
+    },
+  },
   builtIn: false,
 };
 
@@ -166,8 +174,45 @@ describe('Round trip', () => {
     expect(token).not.toContain('Seoul');
   });
 
+  it('distinguishes an empty tab from one too large to carry', () => {
+    const empty = encodeShareResult({ ...session(), items: [] });
+    expect(empty.ok).toBe(false);
+    expect(empty.ok ? null : empty.reason).toBe('empty');
+
+    const overflowing = encodeShareResult({
+      ...session(),
+      items: Array.from({ length: MAX_SHARE_ITEMS + 1 }, (_unused, index) => ({
+        id: `line-${index}`,
+        foodId: FOODS[index % FOODS.length]!.id,
+        quality: 'standard' as const,
+        plateSize: 'regular' as const,
+        quantity: 1,
+      })),
+    });
+    expect(overflowing.ok).toBe(false);
+    expect(overflowing.ok ? null : overflowing.reason).toBe('too-large');
+  });
+
+  it('keeps a full tab inside the address limit', () => {
+    const full = encodeShareResult({
+      ...session(),
+      items: Array.from({ length: MAX_SHARE_ITEMS }, (_unused, index) => ({
+        id: `line-${index}`,
+        foodId: FOODS[index % FOODS.length]!.id,
+        quality: 'standard' as const,
+        plateSize: 'regular' as const,
+        quantity: 3,
+      })),
+    });
+
+    expect(full.ok).toBe(true);
+    expect(full.ok ? full.token.length : Infinity).toBeLessThanOrEqual(MAX_SHARE_TOKEN_LENGTH);
+    // Merged by food, so the decoded meal is shorter than the encoded list.
+    expect(decodeSharePayload(full.ok ? full.token : null)).not.toBeNull();
+  });
+
   it('builds a path a recipient can open', () => {
-    expect(shareLinkPath(session())).toMatch(/^\/share\/2\./);
+    expect(shareLinkPath(session())).toMatch(new RegExp(`^/share/${SHARE_TOKEN_VERSION}\.`));
   });
 
   it('carries the pricing and custom menu context needed to reproduce a meal', () => {
