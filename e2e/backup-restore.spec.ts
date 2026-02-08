@@ -103,7 +103,9 @@ test.describe('Restore', () => {
     await expect(freshPage.getByText(/Added 1 sessions/)).toBeVisible();
 
     await freshPage.goto('/history');
-    await expect(freshPage.getByText('Seoul Garden')).toBeVisible();
+    // By role: the name also appears in the restaurant filter's options, and it
+    // is the restored record itself — a link into its detail page — under test.
+    await expect(freshPage.getByRole('link', { name: 'Seoul Garden' })).toBeVisible();
     await fresh.close();
   });
 
