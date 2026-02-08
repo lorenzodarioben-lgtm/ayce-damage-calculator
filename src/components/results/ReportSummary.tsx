@@ -4,6 +4,7 @@ import { ResultMetric } from '@/components/results/ResultMetric';
 import { usePricingProfile } from '@/components/session/PricingContext';
 import { perDinerTotals } from '@/lib/calculations';
 import { cn } from '@/lib/cn';
+import { formatPlateQuantity } from '@/lib/consumption';
 import {
   formatCalories,
   formatCount,
@@ -68,6 +69,8 @@ export function ReportSummary({
   const pricingProfile = usePricingProfile();
   const houseStatus = getHouseStatus(report.totalRestaurantCost, report.totalAdmission);
   const extracted = report.retailValueDifference >= 0;
+  const hasAdjustments = report.adjustmentCharges > 0 || report.adjustmentDiscounts > 0;
+  const hasUneaten = report.totalUneatenPlates > 0;
 
   // A table of one is already reading per-diner figures, so the split is only
   // shown when there is something to split.
@@ -105,7 +108,64 @@ export function ReportSummary({
         </div>
       </section>
 
-      {/* 2 — Retail value against admission */}
+      {(hasAdjustments || report.hasSeparatelyChargedItems) && (
+        <section
+          aria-labelledby="bill-breakdown-heading"
+          className="rounded-[10px] border border-line-soft bg-ash-900 px-4 py-3"
+        >
+          <h3 id="bill-breakdown-heading" className="micro-label mb-2">
+            How the bill settled
+          </h3>
+          <dl className="space-y-1">
+            <BillRow
+              label="Entry price"
+              value={formatMoney(report.baseAdmission, pricingProfile.money)}
+            />
+            {report.adjustmentCharges > 0 && (
+              <BillRow
+                label="Charges"
+                value={`+${formatMoney(report.adjustmentCharges, pricingProfile.money)}`}
+              />
+            )}
+            {report.adjustmentDiscounts > 0 && (
+              <BillRow
+                label="Discounts"
+                value={`−${formatMoney(report.adjustmentDiscounts, pricingProfile.money)}`}
+              />
+            )}
+            <BillRow
+              label={report.hasSeparatelyChargedItems ? 'Buffet total' : 'Paid in total'}
+              value={formatMoney(report.totalAdmission, pricingProfile.money)}
+              total
+            />
+            {report.hasSeparatelyChargedItems && (
+              <>
+                <BillRow
+                  label="Charged separately"
+                  value={`+${formatMoney(report.separateSpend, pricingProfile.money)}`}
+                />
+                <BillRow
+                  label="Spent in total"
+                  value={formatMoney(report.totalSpend, pricingProfile.money)}
+                  total
+                />
+              </>
+            )}
+          </dl>
+          <p className="mt-2 max-w-[60ch] text-xs leading-relaxed text-cream-700">
+            Every figure below is measured against the total paid, not the entry price — that is
+            what the evening actually cost.
+            {report.hasSeparatelyChargedItems
+              ? ' Items the buffet price did not cover are kept out of it on both sides: their value does not count towards recovery, and what you paid for them does not count against it. Spent in total is the whole evening.'
+              : ''}
+            {report.unpricedSeparateLines > 0
+              ? ` ${report.unpricedSeparateLines === 1 ? 'One separately charged item has' : `${report.unpricedSeparateLines} separately charged items have`} no price recorded, so the total spent is understated by whatever they cost.`
+              : ''}
+          </p>
+        </section>
+      )}
+
+      {/* 2 — Retail value against what was paid */}
       <div className="grid gap-3 sm:grid-cols-2">
         <ResultMetric
           label="Est. retail value"
@@ -115,15 +175,19 @@ export function ReportSummary({
           tone="accent"
         />
         <ResultMetric
-          label="Admission"
+          label={hasAdjustments ? 'Total paid' : 'Admission'}
           value={formatMoney(report.totalAdmission, pricingProfile.money)}
-          detail="What the table paid to walk in."
+          detail={
+            hasAdjustments
+              ? 'Entry price, plus what went on the bill and minus what came off.'
+              : 'What the table paid to walk in.'
+          }
           emphasis="major"
         />
         <ResultMetric
           label={extracted ? 'Value extracted' : 'Value gap'}
           value={formatSignedMoney(report.retailValueDifference, pricingProfile.money)}
-          detail="Estimated retail value minus admission."
+          detail={`Estimated retail value minus ${hasAdjustments ? 'the total paid' : 'admission'}.`}
           tone={extracted ? 'positive' : 'negative'}
         />
         <ResultMetric
@@ -136,13 +200,47 @@ export function ReportSummary({
 
       {/* 3 — Volume */}
       <div className="grid gap-3 sm:grid-cols-2">
-        <ResultMetric label="Total plates" value={formatPlates(report.totalPlates)} />
         <ResultMetric
-          label="Food consumed"
+          label="Plates ordered"
+          value={formatPlates(report.totalPlates)}
+          {...(hasUneaten
+            ? { detail: `${formatPlateQuantity(report.totalConsumedPlates)} eaten` }
+            : {})}
+        />
+        <ResultMetric
+          label="Food eaten"
           value={formatKg(report.totalWeightKg)}
           detail={formatLb(report.totalWeightLb)}
         />
       </div>
+
+      {hasUneaten && (
+        <section
+          aria-labelledby="uneaten-heading"
+          className="rounded-[10px] border border-line-soft bg-ash-900 px-4 py-3"
+        >
+          <SubHeading id="uneaten-heading" className="micro-label mb-2">
+            What reached the table
+          </SubHeading>
+          <dl className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            <Figure
+              label="Ordered"
+              value={formatMoney(report.totalOrderedRetailValue, pricingProfile.money)}
+            />
+            <Figure
+              label="Eaten"
+              value={formatMoney(report.totalRetailValue, pricingProfile.money)}
+            />
+            <Figure label="Left" value={formatPlateQuantity(report.totalUneatenPlates)} />
+          </dl>
+          <p className="mt-2 max-w-[62ch] text-xs leading-relaxed text-cream-700">
+            Recovery is measured on what was eaten, because value you did not eat is not value you
+            extracted. What reached the table is kept alongside it, so the tab still says what
+            arrived. Estimated ingredient cost follows the ordered figure — the restaurant bought
+            the plate either way.
+          </p>
+        </section>
+      )}
 
       {/* 4 — The even split */}
       {perDiner && (
@@ -184,6 +282,14 @@ export function ReportSummary({
           <ResultMetric label="Fat" value={formatGrams(report.nutrition.fat)} />
           <ResultMetric label="Carbohydrates" value={formatGrams(report.nutrition.carbs)} />
         </div>
+        {report.linesWithoutNutrition > 0 && (
+          <p className="mt-2 max-w-[62ch] text-xs leading-relaxed text-cream-700">
+            {report.linesWithoutNutrition}{' '}
+            {report.linesWithoutNutrition === 1 ? 'item on this tab has' : 'items on this tab have'}{' '}
+            no nutrition recorded, so {report.linesWithoutNutrition === 1 ? 'it is' : 'they are'}{' '}
+            not counted above. An unknown figure is left out rather than treated as zero.
+          </p>
+        )}
       </section>
 
       {/* 6 — The house side of the ledger */}
@@ -212,10 +318,47 @@ export function ReportSummary({
           </div>
           <p className="tabular display-type text-3xl text-cream-100">
             {formatPercent(report.estimatedFoodCostPercent)}{' '}
-            <span className="text-sm text-cream-700">of admission</span>
+            <span className="text-sm text-cream-700">
+              of {hasAdjustments ? 'the total paid' : 'admission'}
+            </span>
           </p>
         </div>
       </section>
+    </div>
+  );
+}
+
+function BillRow({
+  label,
+  value,
+  total = false,
+}: {
+  label: string;
+  value: string;
+  total?: boolean;
+}) {
+  return (
+    <div className="flex items-baseline justify-between gap-3">
+      <dt className={total ? 'text-sm font-semibold text-cream-200' : 'text-xs text-cream-700'}>
+        {label}
+      </dt>
+      <dd
+        className={cn(
+          'tabular',
+          total ? 'text-sm font-semibold text-ember-400' : 'text-xs text-cream-500',
+        )}
+      >
+        {value}
+      </dd>
+    </div>
+  );
+}
+
+function Figure({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <dt className="micro-label">{label}</dt>
+      <dd className="tabular mt-0.5 text-sm font-semibold text-cream-50">{value}</dd>
     </div>
   );
 }

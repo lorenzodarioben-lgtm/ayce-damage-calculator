@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { buildDamageReport } from '@/lib/calculations';
+import type { AdjustmentDraft } from '@/lib/adjustments';
 import { createId } from '@/lib/id';
 import { sessionLifecycle } from '@/lib/mealEvents';
 import {
@@ -68,15 +69,25 @@ export interface UseMealSessionResult {
   removeDiner: (id: string) => void;
   moveDiner: (id: string, direction: -1 | 1) => void;
   clearDiners: () => void;
+  addAdjustment: (draft: AdjustmentDraft, id: string) => void;
+  removeAdjustment: (id: string) => void;
+  clearAdjustments: () => void;
   addItem: (payload: AddItemPayload) => void;
   incrementItem: (id: string) => void;
   decrementItem: (id: string) => void;
-  setItemAllocations: (id: string, allocations: readonly DinerAllocation[]) => void;
+  setItemConsumption: (id: string, consumed: number) => void;
+  setItemAllocations: (
+    id: string,
+    allocations: readonly DinerAllocation[],
+    sharedAmong?: readonly string[],
+  ) => void;
   removeItem: (id: string) => void;
   /** Puts a removed line back where it was, so a removal can be undone. */
   restoreItem: (item: MealItem, index: number) => void;
   /** Books a meal window, or clears it with `undefined`. Never starts the meal. */
   setMealDuration: (minutes: number | undefined) => void;
+  /** Marks a line as bought outside the buffet price, at a stated amount. */
+  setItemCharge: (id: string, separate: boolean, charge?: number) => void;
   pauseMeal: () => void;
   resumeMeal: () => void;
   completeMeal: () => void;
@@ -137,6 +148,7 @@ function actionWithFreshMeta(action: SessionAction, meta: MealEventMeta): Sessio
     case 'decrement-item':
     case 'set-item-quantity':
     case 'set-item-allocations':
+    case 'set-item-consumption':
     case 'remove-item':
     case 'restore-item':
       return { ...action, meta };
@@ -478,6 +490,25 @@ export function useMealSession(
     markLocalChange({ type: 'clear-diners', meta: meta() });
   }, [markLocalChange, meta]);
 
+  const addAdjustment = useCallback((draft: AdjustmentDraft, id: string) => {
+    dispatch({ type: 'add-adjustment', draft, id });
+  }, []);
+
+  const removeAdjustment = useCallback((id: string) => {
+    dispatch({ type: 'remove-adjustment', id });
+  }, []);
+
+  const clearAdjustments = useCallback(() => {
+    dispatch({ type: 'clear-adjustments' });
+  }, []);
+
+  const setItemConsumption = useCallback(
+    (id: string, consumed: number) => {
+      markLocalChange({ type: 'set-item-consumption', id, consumed, meta: meta() });
+    },
+    [markLocalChange, meta],
+  );
+
   const addItem = useCallback(
     (payload: AddItemPayload) => {
       markLocalChange({ type: 'add-item', payload, meta: meta() });
@@ -500,8 +531,14 @@ export function useMealSession(
   );
 
   const setItemAllocations = useCallback(
-    (id: string, allocations: readonly DinerAllocation[]) => {
-      markLocalChange({ type: 'set-item-allocations', id, allocations, meta: meta() });
+    (id: string, allocations: readonly DinerAllocation[], sharedAmong?: readonly string[]) => {
+      markLocalChange({
+        type: 'set-item-allocations',
+        id,
+        allocations,
+        ...(sharedAmong === undefined ? {} : { sharedAmong }),
+        meta: meta(),
+      });
     },
     [markLocalChange, meta],
   );
@@ -538,6 +575,18 @@ export function useMealSession(
   const completeMeal = useCallback(() => {
     markLocalChange({ type: 'complete-meal', meta: meta() });
   }, [markLocalChange, meta]);
+
+  const setItemCharge = useCallback(
+    (id: string, separate: boolean, charge?: number) => {
+      markLocalChange({
+        type: 'set-item-charge',
+        id,
+        separate,
+        ...(charge === undefined ? {} : { charge }),
+      });
+    },
+    [markLocalChange],
+  );
 
   const resetSession = useCallback(() => {
     hasLocalChanges.current = true;
@@ -589,9 +638,13 @@ export function useMealSession(
     removeDiner,
     moveDiner,
     clearDiners,
+    addAdjustment,
+    removeAdjustment,
+    clearAdjustments,
     addItem,
     incrementItem,
     decrementItem,
+    setItemConsumption,
     setItemAllocations,
     removeItem,
     restoreItem,
@@ -599,6 +652,7 @@ export function useMealSession(
     pauseMeal,
     resumeMeal,
     completeMeal,
+    setItemCharge,
     canUndo: visibleCommandHistory.undo.length > 0,
     canRedo: visibleCommandHistory.redo.length > 0,
     undo,

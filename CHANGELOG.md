@@ -38,9 +38,51 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
   visits, first and latest, average admission, average and best recovery, average plates and
   weight, most ordered foods, category mix, a recovery trend and the recent visits. A meal can be
   started from a place, and filing it records the visit there.
+- **Real plate weights** — a by-weight cut can declare what one of its regular plates actually
+  weighs, per item or per pricing profile, instead of every restaurant's plates being assumed to be
+  the app's nominal 155 g. Small and large scale from it in the proportion they always had. This is
+  the number every other figure is multiplied by: retail value is weight times price per kilogram,
+  so a place serving 250 g plates was understating its own weight, value, recovery and verdict by
+  more than half. An item that declares nothing is calculated exactly as before, and the CSV
+  importer now honours the grams column for plated cuts instead of reading it and throwing it away.
+- **Precise diner sharing** — a line can name the few people who actually shared it, so one plate of
+  wagyu split by two of the five at the table is not divided five ways and credited to three people
+  who never touched it. Nobody outside the named subset is given any of it, and neither are the
+  seats nobody named. The division is kept as a division rather than stored as a fraction — one
+  plate between three is a third each, and a third does not survive being written down — so the
+  shares always add back up to the plate. Attribution also became fractional to a hundredth of a
+  plate, so "I had half of that" is recordable where it used to be floored to nothing. Recorded
+  through the allocation path that already existed, and a line nobody says anything about is still
+  shared by the whole table.
+- **Separately charged items** — a line can say that the buffet price did not cover it and what was
+  actually paid for it, so a beer, a premium upgrade or an à-la-carte extra stops being counted as
+  value the entry price delivered. The headline recovery figure stays an apples-to-apples buffet
+  metric: an extra's retail value never lifts the numerator and its cost never worsens the
+  denominator. What it cost is recorded, never inferred from retail value — a restaurant's price for
+  a beer says nothing about what the same beer costs at a supermarket — and an extra with no price
+  yet is reported as unpriced rather than as free. Buffet total and spent in total are shown as the
+  two different figures they are. A tab with no extras is calculated exactly as before.
+- **Percentage charges and discounts** — a service charge, a card surcharge or a group discount can
+  be recorded as the share of the bill it actually is, rather than worked out by hand and left to go
+  stale. Each one states what it is a share of — the entry price alone, or the entry price plus the
+  fixed charges already on the bill — and is resolved to money once, against a base that contains no
+  percentage, so percentages never compound and the order they were entered in cannot change the
+  total. A bill of plain cash amounts is untouched, and a record filed before this existed still
+  means exactly what it meant.
 - **Explicit visit linking** — a filed record belongs to a restaurant because the meal was started
   from it, or because the diner linked it. Two places that share a name are not assumed to be the
   same place, and older records can be linked only on request.
+- **Diner hub** (`/diners`) — a local list of the people saved from a table roster, with a detail
+  page for each: meals, first and latest, their plates, estimated retail value, recovery, food
+  weight, what they paid, most ordered foods, category mix and the recent meals. Someone can be
+  added to the meal in progress behind a confirmation, and every figure is recomputed from the
+  filed meals rather than kept in a second store.
+- **Stated attribution in the diner hub** — plates somebody explicitly attributed are kept apart
+  from an even share of what the table shared, and the page says which is a record and which is an
+  assumption. People are matched by their opaque local id rather than by display name, a meal filed
+  without a roster is assigned to nobody, and removing a profile leaves every filed roster exactly
+  as it was recorded. A name on a filed roster that is not saved locally is reported, not
+  re-created.
 - **Uncertainty and sensitivity analysis** — every report and filed record now carries a
   conservative, base and upper scenario built by moving the serving-weight, retail-price and
   ingredient-cost assumptions to the ends of a stated band, plus a ranking of which assumption
@@ -65,6 +107,25 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Changed
 
+- **Exhaustive, cent-exact table splits** — shared food is now divided across every seat the table
+  was charged for rather than only the people named on the roster, so a partial roster no longer
+  hands the unnamed seats' plates to the diners who were typed in; those seats are reported as their
+  own line instead. Per-seat money is settled in whole cents against the table's own total by
+  largest remainder, so what each person owes adds up exactly to what the table paid.
+- Shared report links no longer carry a diner's identity. Display names were already replaced with
+  positions, but the underlying id was not — and a person saved from the diner hub has an id derived
+  from their name, so "Lorenzo" travelled inside the token as `diner-lorenzo`. Every diner reference
+  in a shared document is now rewritten to a position (`d1`, `d2`), which keeps the attribution the
+  recipient needs — who shared which plate, whose charge was whose — while carrying no identity at
+  all. Per-item attribution now travels too, so a shared table breakdown stops dividing every plate
+  evenly and being confidently wrong. Older tokens still decode. Challenge links, which deliberately
+  carry no roster or attribution, are unchanged.
+- The uncertainty panel now receives the bill and measures every scenario against what was actually
+  paid, the same figure the report beside it uses. A meal with a voucher or a surcharge could
+  previously have its scenarios, verdicts and headline sentence computed against the undiscounted
+  entry price, so the panel could contradict the report directly above it on the same screen. The
+  serving-weight band also stops scaling the weight of per-serving items, whose value that
+  assumption deliberately never moved.
 - Added `qrcode-generator`, the project's one dependency beyond the framework and its icons. A
   standards-correct QR encoder has no browser-native equivalent and is not something to hand-roll;
   the module is dependency-free and MIT, and the SVG rendering remains the app's own.

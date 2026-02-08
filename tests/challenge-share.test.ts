@@ -52,6 +52,23 @@ function record(
   });
 }
 
+/**
+ * Text a compressor cannot help with, generated the same way every run.
+ *
+ * The address limit did not go away when the tokens started compressing; it
+ * moved. Proving it still bites needs input that genuinely cannot be shrunk.
+ */
+function incompressible(length: number, seed: number): string {
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let state = seed;
+  let text = '';
+  for (let index = 0; index < length; index += 1) {
+    state = (state * 1103515245 + 12345) % 2147483648;
+    text += alphabet[state % alphabet.length];
+  }
+  return text;
+}
+
 const EARLIER = record('a', { items: [item({ quantity: 6 })] }, '2026-07-01T12:00:00.000Z');
 const LATER = record(
   'b',
@@ -114,7 +131,7 @@ describe('encodeChallengePayload', () => {
           {
             name: `A very long diner-authored food name ${index}`,
             category: 'beef',
-            description: 'x'.repeat(140),
+            description: incompressible(140, index + 1),
             retailPricePerKg: 40,
             restaurantCostPerKg: 20,
           },
@@ -133,7 +150,9 @@ describe('encodeChallengePayload', () => {
   });
 
   it('builds the path a recipient opens', () => {
-    expect(challengeLinkPath(challenge())?.startsWith('/challenge/1.')).toBe(true);
+    expect(
+      challengeLinkPath(challenge())?.startsWith(`/challenge/${CHALLENGE_TOKEN_VERSION}.`),
+    ).toBe(true);
   });
 });
 

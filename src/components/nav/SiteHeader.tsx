@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { Menu, X } from 'lucide-react';
 import { BRAND_NAME, BrandMark } from '@/components/BrandMark';
 import { MethodologyTrigger } from '@/components/methodology/MethodologyTrigger';
-import { DESTINATIONS, MAIN_CONTENT_ID, isCurrentDestination } from '@/components/nav/destinations';
+import { DESTINATIONS, isCurrentDestination } from '@/components/nav/destinations';
 import { cn } from '@/lib/cn';
 
 interface SiteHeaderProps {
@@ -40,15 +40,6 @@ export function SiteHeader({ onBrandClick, brandActionLabel }: SiteHeaderProps) 
 
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-ash-950/85 backdrop-blur-md">
-      {/* The first focusable thing on every page. Without it, reaching the
-          content by keyboard means tabbing past the whole navigation each time. */}
-      <a
-        href={`#${MAIN_CONTENT_ID}`}
-        className="absolute left-4 top-2 z-50 -translate-y-[150%] rounded-[10px] border border-line-ember bg-ash-850 px-4 py-2 text-xs font-semibold uppercase tracking-[0.1em] text-ember-400 transition-transform duration-150 focus-visible:translate-y-0"
-      >
-        Skip to content
-      </a>
-
       <div className="mx-auto flex h-14 max-w-[1280px] items-center justify-between gap-3 px-4 sm:px-6">
         {/* An explicit label rather than one derived from the child text: it keeps
             the name identical across engines, and still opens with the visible
