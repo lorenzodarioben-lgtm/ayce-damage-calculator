@@ -1,5 +1,7 @@
 import type { FoodCategory, FoodItem } from '@/types/meal';
-import { DEFAULT_PRICING_PROFILE, resolveFoodPricing } from '@/lib/pricing';
+import { DEFAULT_PLATE_SIZE, DEFAULT_QUALITY } from '@/lib/constants';
+import { DEFAULT_PRICING_PROFILE } from '@/lib/pricing';
+import { resolveValuation } from '@/lib/valuation';
 import type { PricingProfile } from '@/types/pricing';
 
 /**
@@ -14,6 +16,7 @@ export const FOODS: readonly FoodItem[] = [
     shortName: 'Brisket',
     category: 'beef',
     description: 'Thin-sliced, rich and built for the grill.',
+    valuation: 'by-weight',
     retailPricePerKg: 28.0,
     restaurantCostPerKg: 15.0,
     caloriesPer100g: 300,
@@ -28,6 +31,7 @@ export const FOODS: readonly FoodItem[] = [
     shortName: 'Short Rib',
     category: 'beef',
     description: 'Marbled short rib with premium damage potential.',
+    valuation: 'by-weight',
     retailPricePerKg: 42.0,
     restaurantCostPerKg: 23.0,
     caloriesPer100g: 340,
@@ -42,6 +46,7 @@ export const FOODS: readonly FoodItem[] = [
     shortName: 'Ribeye',
     category: 'beef',
     description: 'High-value marbling for serious buffet economics.',
+    valuation: 'by-weight',
     retailPricePerKg: 52.0,
     restaurantCostPerKg: 29.0,
     caloriesPer100g: 291,
@@ -56,6 +61,7 @@ export const FOODS: readonly FoodItem[] = [
     shortName: 'Bulgogi',
     category: 'beef',
     description: 'Sweet-marinated beef with a little carbohydrate collateral.',
+    valuation: 'by-weight',
     retailPricePerKg: 30.0,
     restaurantCostPerKg: 16.0,
     caloriesPer100g: 220,
@@ -70,6 +76,7 @@ export const FOODS: readonly FoodItem[] = [
     shortName: 'Beef Belly',
     category: 'beef',
     description: 'Fatty, rich and financially respectable.',
+    valuation: 'by-weight',
     retailPricePerKg: 32.0,
     restaurantCostPerKg: 17.0,
     caloriesPer100g: 430,
@@ -84,6 +91,7 @@ export const FOODS: readonly FoodItem[] = [
     shortName: 'Tongue',
     category: 'beef',
     description: 'Tender slices for the advanced damage portfolio.',
+    valuation: 'by-weight',
     retailPricePerKg: 36.0,
     restaurantCostPerKg: 20.0,
     caloriesPer100g: 224,
@@ -98,6 +106,7 @@ export const FOODS: readonly FoodItem[] = [
     shortName: 'Wagyu Rib',
     category: 'beef',
     description: 'The fastest legal route to retail-value extraction.',
+    valuation: 'by-weight',
     retailPricePerKg: 82.0,
     restaurantCostPerKg: 44.0,
     caloriesPer100g: 360,
@@ -114,6 +123,7 @@ export const FOODS: readonly FoodItem[] = [
     shortName: 'Pork Belly',
     category: 'pork',
     description: 'The AYCE heavyweight. Delicious and calorically efficient.',
+    valuation: 'by-weight',
     retailPricePerKg: 24.0,
     restaurantCostPerKg: 12.0,
     caloriesPer100g: 450,
@@ -128,6 +138,7 @@ export const FOODS: readonly FoodItem[] = [
     shortName: 'Spicy Pork',
     category: 'pork',
     description: 'Sweet heat, marinade and dependable plate volume.',
+    valuation: 'by-weight',
     retailPricePerKg: 23.0,
     restaurantCostPerKg: 12.0,
     caloriesPer100g: 250,
@@ -142,6 +153,7 @@ export const FOODS: readonly FoodItem[] = [
     shortName: 'Pork Jowl',
     category: 'pork',
     description: 'Rich, chewy and unapologetically high impact.',
+    valuation: 'by-weight',
     retailPricePerKg: 27.0,
     restaurantCostPerKg: 14.0,
     caloriesPer100g: 420,
@@ -156,6 +168,7 @@ export const FOODS: readonly FoodItem[] = [
     shortName: 'Pork Shoulder',
     category: 'pork',
     description: 'Reliable volume without premium-cut pricing.',
+    valuation: 'by-weight',
     retailPricePerKg: 18.0,
     restaurantCostPerKg: 9.5,
     caloriesPer100g: 270,
@@ -172,6 +185,7 @@ export const FOODS: readonly FoodItem[] = [
     shortName: 'Thigh',
     category: 'chicken',
     description: 'Protein-efficient, but the buffet may still be winning.',
+    valuation: 'by-weight',
     retailPricePerKg: 16.0,
     restaurantCostPerKg: 8.0,
     caloriesPer100g: 209,
@@ -186,6 +200,7 @@ export const FOODS: readonly FoodItem[] = [
     shortName: 'Spicy Chicken',
     category: 'chicken',
     description: 'A little heat for an otherwise conservative investment.',
+    valuation: 'by-weight',
     retailPricePerKg: 18.0,
     restaurantCostPerKg: 9.0,
     caloriesPer100g: 190,
@@ -200,6 +215,7 @@ export const FOODS: readonly FoodItem[] = [
     shortName: 'Garlic Chicken',
     category: 'chicken',
     description: 'Lean, savoury and suspiciously responsible.',
+    valuation: 'by-weight',
     retailPricePerKg: 18.0,
     restaurantCostPerKg: 9.0,
     caloriesPer100g: 185,
@@ -216,6 +232,7 @@ export const FOODS: readonly FoodItem[] = [
     shortName: 'Prawns',
     category: 'seafood',
     description: 'Lean protein with respectable market value.',
+    valuation: 'by-weight',
     retailPricePerKg: 30.0,
     restaurantCostPerKg: 17.0,
     caloriesPer100g: 99,
@@ -230,6 +247,7 @@ export const FOODS: readonly FoodItem[] = [
     shortName: 'Squid',
     category: 'seafood',
     description: 'Low-calorie damage with excellent grill theatrics.',
+    valuation: 'by-weight',
     retailPricePerKg: 20.0,
     restaurantCostPerKg: 11.0,
     caloriesPer100g: 92,
@@ -244,6 +262,7 @@ export const FOODS: readonly FoodItem[] = [
     shortName: 'Salmon',
     category: 'seafood',
     description: 'Premium seafood value with respectable macros.',
+    valuation: 'by-weight',
     retailPricePerKg: 34.0,
     restaurantCostPerKg: 20.0,
     caloriesPer100g: 208,
@@ -258,6 +277,7 @@ export const FOODS: readonly FoodItem[] = [
     shortName: 'Scallops',
     category: 'seafood',
     description: 'Small portions, premium pricing, excellent damage density.',
+    valuation: 'by-weight',
     retailPricePerKg: 42.0,
     restaurantCostPerKg: 24.0,
     caloriesPer100g: 111,
@@ -306,9 +326,19 @@ export function sortFoods(
   // Ties break on name so the order cannot shuffle between renders.
   return [...foods].sort(
     (a, b) =>
-      resolveFoodPricing(b, pricingProfile).retailPricePerKg -
-        resolveFoodPricing(a, pricingProfile).retailPricePerKg || a.name.localeCompare(b.name),
+      sortValue(b, pricingProfile) - sortValue(a, pricingProfile) || a.name.localeCompare(b.name),
   );
+}
+
+/**
+ * The figure "most valuable first" sorts on.
+ *
+ * A regular plate's worth for a weight-valued cut, and a serving's price for a
+ * serving-valued one — the two are comparable because both are what one unit of
+ * the item costs, which is what the sort is actually about.
+ */
+function sortValue(food: FoodItem, profile: PricingProfile): number {
+  return resolveValuation(food, DEFAULT_QUALITY, DEFAULT_PLATE_SIZE, profile).retailPerUnit;
 }
 
 /** Everything about a cut that a diner might reasonably type. */

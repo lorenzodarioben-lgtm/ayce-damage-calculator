@@ -22,9 +22,15 @@ function validPrice(value: unknown): number | undefined {
 }
 
 /**
- * Applies a profile's per-cut assumptions without ever mutating the food
- * catalogue. Missing or malformed overrides deliberately fall back to the
- * catalogue estimate, so an old or hand-edited profile cannot corrupt a meal.
+ * Applies a profile's per-item assumptions without ever mutating the catalogue.
+ *
+ * Missing or malformed overrides deliberately fall back to the catalogue
+ * estimate, so an old or hand-edited profile cannot corrupt a meal — and an
+ * override written for the other valuation model is treated as missing, because
+ * a price per kilogram says nothing usable about a bowl of soup.
+ *
+ * Returned in the item's own model. Callers doing arithmetic want
+ * `resolveValuation` instead, which turns either model into one unit price.
  */
 export function resolveFoodPricing(
   food: FoodItem,
@@ -32,8 +38,21 @@ export function resolveFoodPricing(
 ): FoodPricing {
   const override = profile.overrides[food.id];
 
+  if (food.valuation === 'by-serving') {
+    const priced = override?.valuation === 'by-serving' ? override : undefined;
+    return {
+      valuation: 'by-serving',
+      retailPricePerServing:
+        validPrice(priced?.retailPricePerServing) ?? food.retailPricePerServing,
+      restaurantCostPerServing:
+        validPrice(priced?.restaurantCostPerServing) ?? food.restaurantCostPerServing,
+    };
+  }
+
+  const priced = override?.valuation === 'by-weight' ? override : undefined;
   return {
-    retailPricePerKg: validPrice(override?.retailPricePerKg) ?? food.retailPricePerKg,
-    restaurantCostPerKg: validPrice(override?.restaurantCostPerKg) ?? food.restaurantCostPerKg,
+    valuation: 'by-weight',
+    retailPricePerKg: validPrice(priced?.retailPricePerKg) ?? food.retailPricePerKg,
+    restaurantCostPerKg: validPrice(priced?.restaurantCostPerKg) ?? food.restaurantCostPerKg,
   };
 }

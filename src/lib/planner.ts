@@ -1,4 +1,5 @@
-import { adjustedRetailPricePerKg, calculateSessionTotals } from '@/lib/calculations';
+import { calculateSessionTotals } from '@/lib/calculations';
+import { resolveValuation } from '@/lib/valuation';
 import {
   PLATE_SIZES,
   QUALITY_TIERS,
@@ -182,8 +183,10 @@ function retailValueOf(
   plateSize: PlateSize,
   profile: PricingProfile,
 ): number {
-  const weightKg = getPlateSizeMeta(plateSize).grams / 1000;
-  const value = weightKg * adjustedRetailPricePerKg(food, quality, profile);
+  // Valued per unit through the shared resolver, so a serving-priced item can
+  // be planned alongside a per-kilogram cut without the optimiser knowing which
+  // is which.
+  const value = resolveValuation(food, quality, plateSize, profile).retailPerUnit;
   return Number.isFinite(value) ? value : 0;
 }
 

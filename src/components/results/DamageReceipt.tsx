@@ -2,6 +2,7 @@
 
 import { getPlateSizeMeta, getQualityMeta } from '@/lib/constants';
 import { usePricingProfile } from '@/components/session/PricingContext';
+import { formatPlateQuantity } from '@/lib/consumption';
 import {
   formatCalories,
   formatGrams,
@@ -115,17 +116,49 @@ export function DamageReceipt({
           <Row label="TOTAL WEIGHT" value={formatKg(report.totalWeightKg)} />
           <Row label="CALORIES" value={formatCalories(report.nutrition.calories)} />
           <Row label="PROTEIN" value={formatGrams(report.nutrition.protein)} />
+          {report.linesWithoutNutrition > 0 && (
+            <Row label="NOT RECORDED" value={`${report.linesWithoutNutrition} ITEM(S)`} />
+          )}
         </div>
 
         <p className="mt-2 whitespace-pre overflow-hidden">{THIN_RULE}</p>
 
         <div className="mt-2">
+          {report.totalUneatenPlates > 0 && (
+            <Row
+              label="ORDERED RETAIL VALUE"
+              value={formatMoney(report.totalOrderedRetailValue, pricingProfile.money)}
+            />
+          )}
           <Row
-            label="EST. RETAIL VALUE"
+            label={report.totalUneatenPlates > 0 ? 'EATEN RETAIL VALUE' : 'EST. RETAIL VALUE'}
             value={formatMoney(report.totalRetailValue, pricingProfile.money)}
           />
+          {report.totalUneatenPlates > 0 && (
+            <Row label="PLATES LEFT" value={formatPlateQuantity(report.totalUneatenPlates)} />
+          )}
+          {(report.adjustmentCharges > 0 || report.adjustmentDiscounts > 0) && (
+            <>
+              <Row
+                label="ENTRY PRICE"
+                value={formatMoney(report.baseAdmission, pricingProfile.money)}
+              />
+              {report.adjustmentCharges > 0 && (
+                <Row
+                  label="CHARGES"
+                  value={`+${formatMoney(report.adjustmentCharges, pricingProfile.money)}`}
+                />
+              )}
+              {report.adjustmentDiscounts > 0 && (
+                <Row
+                  label="DISCOUNTS"
+                  value={`-${formatMoney(report.adjustmentDiscounts, pricingProfile.money)}`}
+                />
+              )}
+            </>
+          )}
           <Row
-            label="ADMISSION PAID"
+            label="TOTAL PAID"
             value={formatMoney(report.totalAdmission, pricingProfile.money)}
           />
           <Row

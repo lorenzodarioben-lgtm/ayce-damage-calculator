@@ -3,48 +3,102 @@
 import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useId, useState } from 'react';
 import { Dialog } from '@/components/ui/Dialog';
-import { CATEGORY_META } from '@/lib/constants';
+import { CATEGORY_META, REGULAR_PLATE_GRAMS } from '@/lib/constants';
+import { MenuImport } from '@/components/session/MenuImport';
 import { createCustomFood, nextCustomFoodId } from '@/lib/customFoods';
 import type { CustomFood } from '@/types/customFoods';
-import type { FoodCategory } from '@/types/meal';
+import type { FoodCategory, ValuationModel } from '@/types/meal';
 
 interface CustomFoodManagerProps {
   foods: readonly CustomFood[];
   onSave: (food: CustomFood) => void;
   onRemove: (id: string) => void;
+  onReplaceAll: (foods: readonly CustomFood[]) => void;
   onStatus: (message: string) => void;
 }
 
+/**
+ * The form holds one set of strings and interprets them by model.
+ *
+ * Keeping a single draft shape rather than two means switching between the
+ * models does not throw away what someone has already typed into the fields
+ * both share — the name, the category, the description.
+ */
 interface DraftState {
   readonly name: string;
   readonly shortName: string;
   readonly category: FoodCategory;
   readonly description: string;
-  readonly retailPricePerKg: string;
-  readonly restaurantCostPerKg: string;
-  readonly caloriesPer100g: string;
-  readonly proteinPer100g: string;
-  readonly fatPer100g: string;
-  readonly carbsPer100g: string;
+  readonly valuation: ValuationModel;
+  /** Read as a rate per kilogram or a price per serving, by model. */
+  readonly retailPrice: string;
+  readonly restaurantCost: string;
+  /** Only meaningful for a per-serving item; a plate size supplies the rest. */
+  readonly gramsPerServing: string;
+  readonly calories: string;
+  readonly protein: string;
+  readonly fat: string;
+  readonly carbs: string;
 }
 
 function draftFrom(food: CustomFood | null): DraftState {
-  return {
+  const shared = {
     name: food?.name ?? '',
     shortName: food?.shortName ?? '',
-    category: food?.category ?? 'beef',
+    category: food?.category ?? ('beef' as FoodCategory),
     description: food?.description ?? '',
-    retailPricePerKg: food ? String(food.retailPricePerKg) : '',
-    restaurantCostPerKg: food ? String(food.restaurantCostPerKg) : '',
-    caloriesPer100g: food ? String(food.caloriesPer100g) : '0',
-    proteinPer100g: food ? String(food.proteinPer100g) : '0',
-    fatPer100g: food ? String(food.fatPer100g) : '0',
-    carbsPer100g: food ? String(food.carbsPer100g) : '0',
   };
+
+  if (food?.valuation === 'by-serving') {
+    return {
+      ...shared,
+      valuation: 'by-serving',
+      retailPrice: String(food.retailPricePerServing),
+      restaurantCost: String(food.restaurantCostPerServing),
+      gramsPerServing: String(food.gramsPerServing),
+      calories: optional(food.caloriesPerServing),
+      protein: optional(food.proteinPerServing),
+      fat: optional(food.fatPerServing),
+      carbs: optional(food.carbsPerServing),
+    };
+  }
+
+  return {
+    ...shared,
+    valuation: 'by-weight',
+    retailPrice: food ? String(food.retailPricePerKg) : '',
+    restaurantCost: food ? String(food.restaurantCostPerKg) : '',
+    // Blank means the nominal plate, which is what an item that never declared
+    // a weight has always been calculated as.
+    gramsPerServing: optional(food?.gramsPerPlate),
+    // Blank rather than zero: an unstated macro is unknown, and prefilling a
+    // confident nought would put words in the diner's mouth.
+    calories: optional(food?.caloriesPer100g),
+    protein: optional(food?.proteinPer100g),
+    fat: optional(food?.fatPer100g),
+    carbs: optional(food?.carbsPer100g),
+  };
+}
+
+/** Renders an optional figure as a field value, keeping unknown blank. */
+function optional(value: number | undefined): string {
+  return typeof value === 'number' ? String(value) : '';
 }
 
 function numberFrom(value: string): number {
   return Number(value);
+}
+
+/**
+ * A macro someone left blank, which means they do not know it.
+ *
+ * Returning undefined rather than zero is the whole point: "we have no figure
+ * for this side" and "this side has no calories" are different claims, and the
+ * report says which one it is holding.
+ */
+function macroFrom(value: string): number | undefined {
+  const trimmed = value.trim();
+  return trimmed === '' ? undefined : Number(trimmed);
 }
 
 function CustomFoodEditor({
@@ -64,20 +118,45 @@ function CustomFoodEditor({
   const set = <Key extends keyof DraftState>(key: Key, value: DraftState[Key]) =>
     setDraft((current) => ({ ...current, [key]: value }));
 
+  const perServing = draft.valuation === 'by-serving';
+
   function handleSave() {
+    const shared = {
+      name: draft.name,
+      shortName: draft.shortName,
+      category: draft.category,
+      description: draft.description,
+    };
     const created = createCustomFood(
-      {
-        name: draft.name,
-        shortName: draft.shortName,
-        category: draft.category,
-        description: draft.description,
-        retailPricePerKg: numberFrom(draft.retailPricePerKg),
-        restaurantCostPerKg: numberFrom(draft.restaurantCostPerKg),
-        caloriesPer100g: numberFrom(draft.caloriesPer100g),
-        proteinPer100g: numberFrom(draft.proteinPer100g),
-        fatPer100g: numberFrom(draft.fatPer100g),
-        carbsPer100g: numberFrom(draft.carbsPer100g),
-      },
+      perServing
+        ? {
+            ...shared,
+            valuation: 'by-serving',
+            retailPricePerServing: numberFrom(draft.retailPrice),
+            restaurantCostPerServing: numberFrom(draft.restaurantCost),
+            gramsPerServing: numberFrom(draft.gramsPerServing),
+            ...macroFields({
+              caloriesPerServing: macroFrom(draft.calories),
+              proteinPerServing: macroFrom(draft.protein),
+              fatPerServing: macroFrom(draft.fat),
+              carbsPerServing: macroFrom(draft.carbs),
+            }),
+          }
+        : {
+            ...shared,
+            valuation: 'by-weight',
+            retailPricePerKg: numberFrom(draft.retailPrice),
+            restaurantCostPerKg: numberFrom(draft.restaurantCost),
+            ...(macroFrom(draft.gramsPerServing) === undefined
+              ? {}
+              : { gramsPerPlate: numberFrom(draft.gramsPerServing) }),
+            ...macroFields({
+              caloriesPer100g: macroFrom(draft.calories),
+              proteinPer100g: macroFrom(draft.protein),
+              fatPer100g: macroFrom(draft.fat),
+              carbsPer100g: macroFrom(draft.carbs),
+            }),
+          },
       food?.id ?? nextCustomFoodId(foods, draft.name),
     );
     if (!created) {
@@ -149,42 +228,106 @@ function CustomFoodEditor({
           />
         </label>
 
+        <fieldset>
+          <legend className="micro-label mb-2">How it is priced</legend>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {(
+              [
+                ['by-weight', 'By weight', 'A cut you order plates of, priced per kilogram.'],
+                ['by-serving', 'By serving', 'One thing at one price — a soup, a scoop, a bottle.'],
+              ] as const
+            ).map(([model, label, hint]) => (
+              <label
+                key={model}
+                className={`block cursor-pointer rounded-[10px] border px-3 py-2 transition-colors duration-200 ${
+                  draft.valuation === model
+                    ? 'border-ember-600 bg-ash-800'
+                    : 'border-line bg-ash-900 hover:border-line-ember'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="valuation"
+                  value={model}
+                  checked={draft.valuation === model}
+                  onChange={() => set('valuation', model)}
+                  className="sr-only"
+                />
+                <span className="block text-sm font-semibold text-cream-100">{label}</span>
+                <span className="mt-0.5 block text-xs leading-snug text-cream-700">{hint}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block text-sm font-semibold text-cream-300">
-            Retail per kg
+            {perServing ? 'Retail per serving' : 'Retail per kg'}
             <input
-              aria-label="Retail price per kg"
+              aria-label={perServing ? 'Retail price per serving' : 'Retail price per kg'}
               type="number"
               min="0"
               step="0.01"
-              value={draft.retailPricePerKg}
-              onChange={(event) => set('retailPricePerKg', event.target.value)}
+              value={draft.retailPrice}
+              onChange={(event) => set('retailPrice', event.target.value)}
               className="mt-1.5 h-11 w-full rounded-[10px] border border-line bg-ash-900 px-3 font-normal text-cream-50 focus:border-ember-600"
             />
           </label>
           <label className="block text-sm font-semibold text-cream-300">
-            Restaurant cost per kg
+            {perServing ? 'Restaurant cost per serving' : 'Restaurant cost per kg'}
             <input
-              aria-label="Restaurant cost per kg"
+              aria-label={perServing ? 'Restaurant cost per serving' : 'Restaurant cost per kg'}
               type="number"
               min="0"
               step="0.01"
-              value={draft.restaurantCostPerKg}
-              onChange={(event) => set('restaurantCostPerKg', event.target.value)}
+              value={draft.restaurantCost}
+              onChange={(event) => set('restaurantCost', event.target.value)}
               className="mt-1.5 h-11 w-full rounded-[10px] border border-line bg-ash-900 px-3 font-normal text-cream-50 focus:border-ember-600"
             />
           </label>
         </div>
 
+        {/*
+          Both models get to state a weight, for different reasons. A serving
+          has no other source for one — nobody weighs a bowl of soup, and zero
+          is reported as unweighed rather than as nothing. A plated cut has the
+          nominal 155 g, which is an assumption about somebody else's portions
+          and the single number every figure in the report is multiplied by.
+        */}
+        <label className="block text-sm font-semibold text-cream-300">
+          {perServing ? 'Grams per serving' : 'Grams per regular plate'}{' '}
+          <span className="font-normal text-cream-700">(optional)</span>
+          <input
+            aria-label={perServing ? 'Grams per serving' : 'Grams per regular plate'}
+            type="number"
+            min="0"
+            step="1"
+            value={draft.gramsPerServing}
+            onChange={(event) => set('gramsPerServing', event.target.value)}
+            className="mt-1.5 h-11 w-full rounded-[10px] border border-line bg-ash-900 px-3 font-normal text-cream-50 focus:border-ember-600"
+          />
+          <span className="mt-1 block text-xs font-normal leading-snug text-cream-700">
+            {perServing
+              ? 'Leave it at zero if you do not know. The item still counts towards value and nutrition; it just will not add weight to the meal, and the report says so.'
+              : `Leave it blank to keep the app's nominal ${REGULAR_PLATE_GRAMS} g. Weigh a plate once and put the real figure here: retail value is weight times price per kilogram, so this moves every number in the report. Small and large plates scale from it.`}
+          </span>
+        </label>
+
         <fieldset>
-          <legend className="micro-label mb-2">Nutrition per 100 g</legend>
+          <legend className="micro-label mb-2">
+            {perServing ? 'Nutrition per serving' : 'Nutrition per 100 g'}
+          </legend>
+          <p className="mb-2 text-xs leading-relaxed text-cream-700">
+            Leave a field blank if you do not know it. The report says the figure is not recorded
+            rather than counting it as nothing.
+          </p>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {(
               [
-                ['caloriesPer100g', 'Calories'],
-                ['proteinPer100g', 'Protein g'],
-                ['fatPer100g', 'Fat g'],
-                ['carbsPer100g', 'Carbs g'],
+                ['calories', 'Calories'],
+                ['protein', 'Protein g'],
+                ['fat', 'Fat g'],
+                ['carbs', 'Carbs g'],
               ] as const
             ).map(([key, label]) => (
               <label key={key} className="text-xs font-semibold text-cream-500">
@@ -193,9 +336,10 @@ function CustomFoodEditor({
                   type="number"
                   min="0"
                   step="0.1"
+                  placeholder="Unknown"
                   value={draft[key]}
                   onChange={(event) => set(key, event.target.value)}
-                  className="mt-1 h-10 w-full rounded-[8px] border border-line bg-ash-900 px-2 text-sm font-normal text-cream-50 focus:border-ember-600"
+                  className="mt-1 h-10 w-full rounded-[8px] border border-line bg-ash-900 px-2 text-sm font-normal text-cream-50 placeholder:text-cream-700 focus:border-ember-600"
                 />
               </label>
             ))}
@@ -229,8 +373,27 @@ function CustomFoodEditor({
   );
 }
 
+/** Drops the macros nobody filled in, so absence reaches the model as absence. */
+function macroFields<Keys extends string>(
+  values: Readonly<Record<Keys, number | undefined>>,
+): Partial<Record<Keys, number>> {
+  const kept: Partial<Record<Keys, number>> = {};
+  for (const [key, value] of Object.entries(values) as [Keys, number | undefined][]) {
+    if (value !== undefined) {
+      kept[key] = value;
+    }
+  }
+  return kept;
+}
+
 /** Personal menu controls, shaped like the rest of the setup rather than an admin screen. */
-export function CustomFoodManager({ foods, onSave, onRemove, onStatus }: CustomFoodManagerProps) {
+export function CustomFoodManager({
+  foods,
+  onSave,
+  onRemove,
+  onReplaceAll,
+  onStatus,
+}: CustomFoodManagerProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const editing = foods.find((food) => food.id === editingId) ?? null;
@@ -275,7 +438,10 @@ export function CustomFoodManager({ foods, onSave, onRemove, onStatus }: CustomF
               <div className="min-w-0">
                 <p className="truncate text-sm font-bold text-cream-100">{food.name}</p>
                 <p className="text-xs text-cream-600">
-                  {food.category} · {food.retailPricePerKg}/kg retail
+                  {food.category} ·{' '}
+                  {food.valuation === 'by-serving'
+                    ? `${food.retailPricePerServing}/serving retail`
+                    : `${food.retailPricePerKg}/kg retail`}
                 </p>
               </div>
               <div className="flex shrink-0 items-center gap-1">
@@ -303,6 +469,8 @@ export function CustomFoodManager({ foods, onSave, onRemove, onStatus }: CustomF
           ))}
         </ul>
       )}
+
+      <MenuImport foods={foods} onApply={onReplaceAll} onStatus={onStatus} />
 
       {(creating || editing) && (
         <CustomFoodEditor
