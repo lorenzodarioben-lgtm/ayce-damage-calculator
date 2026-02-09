@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, X } from 'lucide-react';
@@ -25,11 +25,98 @@ const LINK_BASE =
 const LINK_IDLE = 'text-cream-300 hover:bg-ash-800 hover:text-cream-50';
 const LINK_CURRENT = 'bg-ash-800 text-ember-400';
 
+/**
+ * Tailwind's own small breakpoint, in pixels. The menu and its toggle are
+ * hidden above it, so the state has to be told what the stylesheet knows.
+ */
+const SM_BREAKPOINT = 640;
+
 export function SiteHeader({ onBrandClick, brandActionLabel }: SiteHeaderProps) {
   const pathname = usePathname();
   const menuId = useId();
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuPathname, setMenuPathname] = useState(pathname);
+  const menuToggleRef = useRef<HTMLButtonElement>(null);
+
+  /*
+   * Escape dismisses the menu, and focus goes back to the control that opened
+   * it rather than to the top of the document.
+   *
+   * A native modal dialog handles its own Escape through the cancel event, and
+   * the methodology dialog can be opened from inside this very menu. When one
+   * is on screen it owns the key: the menu neither closes behind it nor calls
+   * preventDefault, which would stop the dialog closing at all.
+   */
+  useEffect(() => {
+    if (!menuOpen) {
+      return;
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key !== 'Escape' || event.defaultPrevented) {
+        return;
+      }
+      if (document.querySelector('dialog[open]')) {
+        return;
+      }
+
+      event.preventDefault();
+      setMenuOpen(false);
+      menuToggleRef.current?.focus();
+    }
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [menuOpen]);
+
+  /*
+   * The panel covers the page on a narrow screen, so the page behind it should
+   * not scroll away underneath. The previous values are restored rather than
+   * cleared, because something else may have set them.
+   */
+  useEffect(() => {
+    if (!menuOpen) {
+      return;
+    }
+
+    const { style } = document.body;
+    const previousOverflow = style.overflow;
+    const previousPaddingRight = style.paddingRight;
+    // Hold the width the scrollbar occupied, so locking does not shift the
+    // page sideways underneath the menu.
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+
+    style.overflow = 'hidden';
+    if (scrollbarWidth > 0) {
+      style.paddingRight = `${scrollbarWidth}px`;
+    }
+
+    return () => {
+      style.overflow = previousOverflow;
+      style.paddingRight = previousPaddingRight;
+    };
+  }, [menuOpen]);
+
+  /*
+   * Above the small breakpoint the stylesheet hides both the panel and its
+   * toggle. Left alone, a widened window would strand a locked page with no
+   * visible way to unlock it, so the state follows the stylesheet: the menu
+   * closes, and the lock is released by the effect above.
+   */
+  useEffect(() => {
+    if (!menuOpen) {
+      return;
+    }
+
+    function handleResize() {
+      if (window.innerWidth >= SM_BREAKPOINT) {
+        setMenuOpen(false);
+      }
+    }
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [menuOpen]);
 
   // Arriving somewhere new means the menu has done its job. Resolved during
   // render so the panel is never painted over the page it just navigated to.
@@ -83,6 +170,7 @@ export function SiteHeader({ onBrandClick, brandActionLabel }: SiteHeaderProps) 
         </nav>
 
         <button
+          ref={menuToggleRef}
           type="button"
           onClick={() => setMenuOpen((open) => !open)}
           aria-expanded={menuOpen}
