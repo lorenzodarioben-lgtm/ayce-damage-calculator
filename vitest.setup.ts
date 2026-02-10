@@ -33,7 +33,8 @@ afterEach(() => {
   window.localStorage.clear();
 });
 
-// jsdom does not implement matchMedia, which the reduced-motion hook depends on.
+// jsdom does not implement matchMedia. The service-worker manager queries it for
+// display-mode, and it is stood up here so no suite has to know that.
 if (isDomEnvironment) {
   Object.defineProperty(window, 'matchMedia', {
     writable: true,
