@@ -5,7 +5,9 @@ tell in five minutes whether a change is likely to be merged.
 
 ## Getting set up
 
-Requires Node.js 20.9 or newer.
+Requires Node.js 20.9 or newer. CI runs Node 22 and `.nvmrc` pins the same version, so `nvm use`
+lines local work up with the pipeline. Older supported versions are not blocked, just not what the
+build is checked against.
 
 ```bash
 npm install

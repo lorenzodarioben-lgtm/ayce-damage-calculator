@@ -62,6 +62,7 @@ describe('sitemap', () => {
     const paths = sitemap().map((entry) => new URL(entry.url).pathname);
 
     expect(paths).not.toContain('/offline');
+    expect(paths).not.toContain('/history/data');
     expect(paths.some((path) => path.startsWith('/share'))).toBe(false);
   });
 
