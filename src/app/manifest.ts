@@ -20,6 +20,13 @@ export default function manifest(): MetadataRoute.Manifest {
       // Cropped to the platform's own shape, so it carries its own safe area.
       { src: '/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
     ],
+    /*
+     * The meal, from before it to across all of them. Four is what a launcher
+     * will realistically show, so the list stops at the moments worth starting
+     * cold: the calculator itself is already the start URL, and the restaurant
+     * and diner hubs are reached while setting a meal up rather than instead of
+     * doing so.
+     */
     shortcuts: [
       {
         name: 'Live meal mode',
@@ -28,10 +35,22 @@ export default function manifest(): MetadataRoute.Manifest {
         url: '/live',
       },
       {
+        name: 'Damage planner',
+        short_name: 'Plan',
+        description: 'Work out what a meal needs to be worth before you sit down.',
+        url: '/plan',
+      },
+      {
         name: 'Meal history',
         short_name: 'History',
         description: 'Review previously recorded sessions.',
         url: '/history',
+      },
+      {
+        name: 'Damage analytics',
+        short_name: 'Stats',
+        description: 'See the patterns across every session on this device.',
+        url: '/stats',
       },
     ],
   };
