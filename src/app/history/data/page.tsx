@@ -8,6 +8,9 @@ import { MAIN_CONTENT_ID } from '@/components/nav/destinations';
 export const metadata: Metadata = {
   title: 'Backup and restore — AYCE Damage Calculator',
   description: 'Export the sessions and saved orders held on this device, or restore them.',
+  // A tool for data this device already holds. It has nothing to show a visitor
+  // arriving cold, so it stays out of the index like every other local surface.
+  robots: { index: false, follow: false },
 };
 
 export default function BackupPage() {
