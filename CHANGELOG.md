@@ -104,6 +104,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
   recovery and the pace break-even would take before the window closes. Projections are withheld
   until a few minutes of meal have happened, and are labelled as extrapolations rather than
   promises.
+- **A security policy** — where to report a vulnerability privately, what the local-first
+  architecture does and does not claim, and which boundaries are treated as untrusted input.
+- **A global error boundary** — a failure that prevents the root layout from rendering now gets the
+  app's own recovery surface, which says plainly that stored meals were not cleared by it.
+- **Default social metadata** — a link to the app itself now carries a title, description and image.
+  Shared reports and challenges keep their own generated previews.
+- **Source and licence links in the footer**, so the claim that nothing leaves the device can be
+  checked against the code that makes it.
+- **Keyboard controls for the cut search** — `/` jumps to it from anywhere on the page, Escape
+  clears the query without leaving the field. Neither fires from another text field or from behind
+  an open dialog.
 
 ### Changed
 
@@ -140,6 +151,21 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
   profiles existed has its presets migrated forward on import rather than dropped.
 - Restaurant presets became restaurant profiles, migrated on first read. The old preset list is
   left in storage untouched, so an older build still finds it.
+- The installed app's launcher shortcuts now cover the meal from before it to across all of them:
+  Live, Plan, History and Stats.
+- The offline fallback and the local backup tools are no longer offered to search engines. Neither
+  has anything to show a visitor arriving cold, and `/history/data` has left the sitemap to match.
+
+### Accessibility
+
+- The mobile menu closes on Escape and hands focus back to the control that opened it. A native
+  dialog opened from inside the menu keeps Escape for itself, so dismissing the dialog no longer
+  dismisses the menu behind it.
+- The page behind the open mobile menu no longer scrolls, and the lock is released on close, on
+  unmount, and when the viewport grows past the width that hides the menu.
+- Moving between the builder and the report respects `prefers-reduced-motion`; the scroll is
+  instant when motion has been asked to stop.
+- The restaurant comparison table names its own rows and columns.
 
 ### Privacy
 
