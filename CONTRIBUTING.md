@@ -91,3 +91,7 @@ not `feat(presets): add`. One coherent change per commit.
 Open an issue with what you did, what happened, what you expected, and the browser you saw it in. If
 it involves stored data, say whether a reload or a fresh profile changes anything — a lot of this app
 is persistence, and that detail usually locates the problem immediately.
+
+A security vulnerability is the exception: report it privately through the route in
+[SECURITY.md](SECURITY.md) rather than opening an issue, so a reproduction that could affect other
+people is not published before there is a fix.
