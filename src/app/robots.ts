@@ -4,10 +4,14 @@ import { siteUrl } from '@/lib/site';
 /**
  * Crawling rules.
  *
- * Everything the app itself renders is welcome in an index. Shared reports, shared menus
- * and shared challenges are not: they carry someone's own data inside the URL, and both
- * pages already set `noindex` for themselves — this states the same thing to
- * crawlers that read the rules before the page.
+ * Shared reports, shared menus and shared challenges are kept out: they carry
+ * someone's own data inside the URL. All three set `noindex` for themselves, and
+ * this states the same thing to crawlers that read the rules before the page.
+ *
+ * The rest of the app is welcome, apart from two routes that are excluded by
+ * their own metadata rather than here — `/offline` and `/history/data` have to
+ * be fetched for that `noindex` to be read at all, so disallowing them would
+ * defeat it.
  */
 export default function robots(): MetadataRoute.Robots {
   return {
