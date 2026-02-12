@@ -32,6 +32,12 @@ export function buildShareText(
   ].join('\n');
 }
 
+/**
+ * Said the same way wherever a copy can fail, because the reason is always the
+ * same: this browser will not let the page write to the clipboard.
+ */
+export const COPY_UNAVAILABLE = 'Copying is unavailable in this browser.';
+
 export async function copyToClipboard(text: string): Promise<boolean> {
   if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
     try {
