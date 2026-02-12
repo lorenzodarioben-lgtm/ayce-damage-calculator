@@ -21,6 +21,7 @@ import {
   QUALITY_TIERS,
 } from '@/lib/constants';
 import { foodCatalogue } from '@/lib/foodCatalogue';
+import { COPY_UNAVAILABLE, copyToClipboard } from '@/lib/share';
 import {
   formatCalories,
   formatGrams,
@@ -195,12 +196,8 @@ export function DamagePlanner() {
       'A menu simulation using illustrative estimates, not a recommendation.',
     ].join('\n');
 
-    try {
-      await navigator.clipboard.writeText(text);
-      announce('Plan copied.');
-    } catch {
-      announce('Copying is unavailable in this browser.');
-    }
+    const copied = await copyToClipboard(text);
+    announce(copied ? 'Plan copied.' : COPY_UNAVAILABLE);
   }, [admission, announce, catalogue, profile.money, result, target]);
 
   /**

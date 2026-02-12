@@ -5,6 +5,7 @@ import { ClipboardCopy, QrCode as QrCodeIcon, Share2 } from 'lucide-react';
 import { QrCode } from '@/components/share/QrCode';
 import { Button } from '@/components/ui/Button';
 import { encodeMenuResult } from '@/lib/menuShare';
+import { COPY_UNAVAILABLE, copyToClipboard } from '@/lib/share';
 import type { CustomFood } from '@/types/customFoods';
 import type { PricingProfile } from '@/types/pricing';
 
@@ -54,12 +55,8 @@ export function MenuShare({ pricingProfile, customFoods, restaurant, onStatus }:
     if (!url) {
       return;
     }
-    try {
-      await navigator.clipboard.writeText(url);
-      onStatus('Menu link copied.');
-    } catch {
-      onStatus('Copying is unavailable in this browser.');
-    }
+    const copied = await copyToClipboard(url);
+    onStatus(copied ? 'Menu link copied.' : COPY_UNAVAILABLE);
   }
 
   return (
