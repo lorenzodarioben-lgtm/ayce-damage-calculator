@@ -5,6 +5,7 @@ import { ClipboardCopy, QrCode as QrCodeIcon, Swords } from 'lucide-react';
 import { QrCode } from '@/components/share/QrCode';
 import { Button } from '@/components/ui/Button';
 import { challengeSideFromRecord, encodeChallengePayload } from '@/lib/challengeShare';
+import { COPY_UNAVAILABLE, copyToClipboard } from '@/lib/share';
 import type { SavedMealSession } from '@/types/history';
 
 interface ChallengeShareActionsProps {
@@ -39,12 +40,8 @@ export function ChallengeShareActions({ previous, current, onStatus }: Challenge
     if (!url) {
       return;
     }
-    try {
-      await navigator.clipboard.writeText(url);
-      onStatus('Challenge link copied.');
-    } catch {
-      onStatus('Copying is unavailable in this browser.');
-    }
+    const copied = await copyToClipboard(url);
+    onStatus(copied ? 'Challenge link copied.' : COPY_UNAVAILABLE);
   }
 
   return (
