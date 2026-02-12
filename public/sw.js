@@ -14,7 +14,7 @@
  * Bump CACHE_VERSION to retire every previously cached response.
  */
 
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v2';
 const CACHE_NAME = `ayce-shell-${CACHE_VERSION}`;
 
 const APP_SHELL_URL = '/';
@@ -22,6 +22,18 @@ const OFFLINE_URL = '/offline';
 
 /** Requests we are willing to answer from cache when the network is gone. */
 const PRECACHE_URLS = [APP_SHELL_URL, OFFLINE_URL];
+
+/*
+ * Routes whose documents carry someone's own meal inside the URL. They are
+ * rendered on demand and were never available offline, so keeping one would buy
+ * nothing and would leave a report, menu or challenge someone shared on this
+ * device long after the visit that opened it.
+ */
+const PRIVATE_PATH_PREFIXES = ['/share/', '/menu/', '/challenge/'];
+
+function carriesSharedData(pathname) {
+  return PRIVATE_PATH_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+}
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -83,7 +95,7 @@ async function handleNavigation(request) {
 
   try {
     const response = await fetch(request);
-    if (isCacheableResponse(response)) {
+    if (!carriesSharedData(url.pathname) && isCacheableResponse(response)) {
       cache.put(pathKey, response.clone());
     }
     return response;

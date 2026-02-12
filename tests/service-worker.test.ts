@@ -15,7 +15,7 @@ import { describe, expect, it, vi } from 'vitest';
 const ORIGIN = 'http://localhost:3100';
 const SW_SOURCE = readFileSync(join(process.cwd(), 'public', 'sw.js'), 'utf8');
 
-const CURRENT_CACHE = 'ayce-shell-v1';
+const CURRENT_CACHE = 'ayce-shell-v2';
 
 /**
  * A stand-in for `Request`. The real constructor rejects `mode: 'navigate'` and
@@ -267,6 +267,33 @@ describe('Navigation requests', () => {
     const response = await sw.navigate('/history');
 
     expect(await response?.text()).toBe('offline page');
+  });
+
+  it("does not keep a document that carries someone else's meal in its URL", async () => {
+    const shared = '/share/1.gj4.1.bg-2-2-6.U2VvdWwgR2FyZGVu';
+    const sw = loadServiceWorker(networkServing({ ...SHELL, [shared]: 'a shared report' }));
+
+    const response = await sw.navigate(shared);
+
+    // Served, but not kept: a shared report is rendered on demand and was never
+    // available offline, so caching one would only leave it on this device.
+    expect(await response?.text()).toBe('a shared report');
+    const cache = await sw.caches.open(CURRENT_CACHE);
+    expect(await cache.keys()).toEqual([]);
+  });
+
+  it('keeps no shared menu or challenge either', async () => {
+    const paths = ['/menu/abc', '/challenge/abc'];
+    const sw = loadServiceWorker(
+      networkServing({ ...SHELL, '/menu/abc': 'a menu', '/challenge/abc': 'a challenge' }),
+    );
+
+    for (const path of paths) {
+      await sw.navigate(path);
+    }
+
+    const cache = await sw.caches.open(CURRENT_CACHE);
+    expect(await cache.keys()).toEqual([]);
   });
 
   it('never caches a non-200 document', async () => {
