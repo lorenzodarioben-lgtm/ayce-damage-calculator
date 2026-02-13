@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { ChallengeShareActions } from '@/components/history/ChallengeShareActions';
 import { ComparisonReport } from '@/components/history/ComparisonReport';
+import { EMPTY_STATE_LINK } from '@/components/ui/Button';
 import { StatusToast } from '@/components/ui/StatusToast';
 import { useStatusMessage } from '@/hooks/useStatusMessage';
 import { useMealHistory } from '@/hooks/useMealHistory';
@@ -68,10 +69,7 @@ export function ComparisonView() {
           Two filed sessions are needed before a comparison means anything. Currently on file:{' '}
           {records.length}.
         </p>
-        <Link
-          href="/history"
-          className="mt-6 inline-flex min-h-12 items-center justify-center rounded-[10px] border border-line-ember bg-ash-850 px-5 text-sm font-semibold uppercase tracking-[0.1em] text-ember-400 transition-colors duration-200 hover:bg-ash-800"
-        >
+        <Link href="/history" className={EMPTY_STATE_LINK}>
           Back to the file
         </Link>
       </div>

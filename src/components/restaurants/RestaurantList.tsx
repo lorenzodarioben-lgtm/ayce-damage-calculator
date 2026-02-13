@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
+import { EMPTY_STATE_LINK } from '@/components/ui/Button';
 import { useMealHistory } from '@/hooks/useMealHistory';
 import { useRestaurants } from '@/hooks/useRestaurants';
 import { formatMoney, formatPercent, formatRecordedAt } from '@/lib/formatting';
@@ -53,10 +54,7 @@ export function RestaurantList() {
           Name a restaurant in the calculator, set its entry price, and save the setup. It appears
           here with every visit you file against it afterwards.
         </p>
-        <Link
-          href="/"
-          className="mt-6 inline-flex min-h-12 items-center justify-center rounded-[10px] border border-line-ember bg-ash-850 px-5 text-sm font-semibold uppercase tracking-[0.1em] text-ember-400 transition-colors duration-200 hover:bg-ash-800"
-        >
+        <Link href="/" className={EMPTY_STATE_LINK}>
           Back to the calculator
         </Link>
       </div>

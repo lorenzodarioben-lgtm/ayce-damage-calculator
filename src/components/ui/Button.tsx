@@ -25,6 +25,16 @@ const SIZES: Record<Size, string> = {
   lg: 'min-h-14 px-6 text-base tracking-[0.1em]',
 };
 
+/**
+ * The way out of an empty state, which is always a link rather than a button:
+ * every one of these navigates. Shaped like a secondary button and named once,
+ * because seven copies of the same class list could not stay in step.
+ */
+export const EMPTY_STATE_LINK =
+  'mt-6 inline-flex min-h-12 items-center justify-center rounded-[10px] border border-line-ember ' +
+  'bg-ash-850 px-5 text-sm font-semibold uppercase tracking-[0.1em] text-ember-400 ' +
+  'transition-colors duration-200 hover:bg-ash-800';
+
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant;
   size?: Size;
