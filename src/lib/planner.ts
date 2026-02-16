@@ -8,6 +8,7 @@ import {
   isPlateSize,
   isQualityTier,
 } from '@/lib/constants';
+import { clampToRange } from '@/lib/range';
 import { findFoodInCatalogue } from '@/lib/foodCatalogue';
 import { mealItemId } from '@/lib/mealItems';
 import { DEFAULT_PRICING_PROFILE } from '@/lib/pricing';
@@ -164,17 +165,16 @@ const QUALITY_ORDER: readonly QualityTier[] = QUALITY_TIERS.map((tier) => tier.i
 const PLATE_ORDER: readonly PlateSize[] = PLATE_SIZES.map((size) => size.id);
 
 export function clampTargetRecovery(value: number): number {
-  if (!Number.isFinite(value)) {
-    return DEFAULT_TARGET_RECOVERY;
-  }
-  return Math.min(MAX_TARGET_RECOVERY, Math.max(MIN_TARGET_RECOVERY, Math.round(value)));
+  return clampToRange(
+    Math.round(value),
+    MIN_TARGET_RECOVERY,
+    MAX_TARGET_RECOVERY,
+    DEFAULT_TARGET_RECOVERY,
+  );
 }
 
 export function clampPlanQuantity(value: number): number {
-  if (!Number.isFinite(value)) {
-    return 1;
-  }
-  return Math.min(MAX_PLAN_QUANTITY_PER_ITEM, Math.max(1, Math.floor(value)));
+  return clampToRange(Math.floor(value), 1, MAX_PLAN_QUANTITY_PER_ITEM, 1);
 }
 
 function retailValueOf(

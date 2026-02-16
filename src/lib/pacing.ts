@@ -1,3 +1,4 @@
+import { clampToRange } from '@/lib/range';
 import { sessionLifecycle } from '@/lib/mealEvents';
 import type { MealLifecycle, MealLifecycleStatus } from '@/types/mealEvents';
 
@@ -30,12 +31,11 @@ const MS_PER_MINUTE = 60_000;
 const MS_PER_HOUR = 3_600_000;
 
 export function clampMealDuration(value: number): number {
-  if (!Number.isFinite(value)) {
-    return MIN_MEAL_DURATION_MINUTES;
-  }
-  return Math.min(
+  return clampToRange(
+    Math.round(value),
+    MIN_MEAL_DURATION_MINUTES,
     MAX_MEAL_DURATION_MINUTES,
-    Math.max(MIN_MEAL_DURATION_MINUTES, Math.round(value)),
+    MIN_MEAL_DURATION_MINUTES,
   );
 }
 
