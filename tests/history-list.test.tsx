@@ -178,6 +178,19 @@ describe('HistoryList', () => {
     expect(screen.getByText(/0 of 3 sessions match/i)).toBeInTheDocument();
   });
 
+  it('names every filter with the words printed beside it', async () => {
+    const user = userEvent.setup();
+    await seed();
+    render(<HistoryList />);
+    await screen.findAllByRole('listitem');
+
+    await user.click(screen.getByText('Filter history'));
+
+    for (const name of ['From date', 'To date', 'Restaurant', 'Outcome', 'Tag']) {
+      expect(screen.getByLabelText(name)).toBeInTheDocument();
+    }
+  });
+
   it('filters by a saved restaurant without changing records', async () => {
     const user = userEvent.setup();
     await seed();
@@ -185,7 +198,9 @@ describe('HistoryList', () => {
     await screen.findAllByRole('listitem');
 
     await user.click(screen.getByText('Filter history'));
-    await user.selectOptions(screen.getByLabelText('Restaurant filter'), 'Wagyu House');
+    // Queried by the label the diner can see, which is also the name the control
+    // answers to for speech input.
+    await user.selectOptions(screen.getByLabelText('Restaurant'), 'Wagyu House');
     expect(screen.getAllByRole('listitem')).toHaveLength(1);
     expect(screen.getByRole('link', { name: 'Wagyu House' })).toBeInTheDocument();
     expect(screen.getByText(/1 of 3 sessions match/i)).toBeInTheDocument();
