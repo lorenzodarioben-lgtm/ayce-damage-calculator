@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { BrandMark } from '@/components/BrandMark';
+import { MAIN_CONTENT_ID } from '@/components/nav/destinations';
 
 export const metadata: Metadata = {
   title: 'Offline — AYCE Damage Calculator',
@@ -16,7 +17,10 @@ export const metadata: Metadata = {
  */
 export default function OfflinePage() {
   return (
-    <main className="relative z-10 mx-auto flex min-h-dvh max-w-[560px] flex-col justify-center px-6 py-16">
+    <main
+      id={MAIN_CONTENT_ID}
+      className="relative z-10 mx-auto flex min-h-dvh max-w-[560px] flex-col justify-center px-6 py-16"
+    >
       <BrandMark />
 
       <h1 className="display-type mt-8 text-4xl text-cream-50 sm:text-5xl">Service interrupted</h1>
