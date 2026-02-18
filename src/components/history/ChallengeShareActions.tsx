@@ -33,8 +33,12 @@ export function ChallengeShareActions({ previous, current, onStatus }: Challenge
     [previous, current],
   );
 
+  // Resolved against the live origin by the URL parser rather than pasted
+  // together, which is how the report's own share link is built.
   const url =
-    token && typeof window !== 'undefined' ? `${window.location.origin}/challenge/${token}` : '';
+    token && typeof window !== 'undefined'
+      ? new URL(`/challenge/${token}`, window.location.origin).toString()
+      : '';
 
   async function copyLink() {
     if (!url) {
