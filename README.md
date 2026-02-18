@@ -532,8 +532,9 @@ src/
 ├── components/   meal builder, live mode, planner, restaurants, diners, session setup, summary,
 │                 history, stats, favourites, custom menus, navigation, methodology, PWA, UI
 ├── data/         the 18-item food dataset, with search and ordering
-├── hooks/        session reducer, meal clock, stage history, meal history, favourites,
-│                 presets, pricing profiles, custom foods, status messaging, undoable removal
+├── hooks/        meal session, meal clock, stage history, meal history, saving to history,
+│                 favourites, restaurants, regular diners, pricing profiles, custom foods,
+│                 status messaging, undoable removal
 ├── lib/          calculations, session reducer, meal events, replay, pacing, verdicts,
 │                 achievements, planner, uncertainty, restaurants, diner hub, comparison, analytics,
 │                 history and its repository, favourites, presets, pricing profiles, custom foods,
