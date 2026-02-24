@@ -543,7 +543,7 @@ src/
 └── types/        domain types
 
 e2e/              36 Playwright specs plus shared journey helpers
-tests/            90 Vitest suites
+tests/            123 Vitest suites
 public/           service worker and PWA icons
 .github/          CI workflow, issue and pull request templates
 ```
