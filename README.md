@@ -38,7 +38,8 @@ keys, and nothing you record ever leaves your device.
 - Configurable AYCE price per diner and diner count, validated and clamped
 - Restaurant profiles you write yourself — save a setup, apply it on the next visit, and have the
   meal linked to that place
-- Optional Table Mode: record a local diner roster and attribute plates without changing the shared table total
+- Optional Table Mode: record a local diner roster and attribute plates without changing the shared
+  table total
 - Name the few people who actually shared a plate, so it is split between them and nobody else, with
   attribution recordable in fractions of a plate rather than whole ones
 - Optional bill adjustments: vouchers, group discounts, weekend surcharges, card fees and paid extras,
@@ -136,7 +137,8 @@ keys, and nothing you record ever leaves your device.
   stated band, with a sensitivity ranking of which assumption moves the result most
 - An even split across the table, stated as the assumption it is, whenever there is more than one
   diner
-- Table Mode preserves explicit plate ownership; remaining shared plates are estimated evenly across the active roster
+- Table Mode preserves explicit plate ownership; remaining shared plates are estimated evenly
+  across the active roster
 
 **The payoff**
 
@@ -310,11 +312,12 @@ action. Hydration from storage is tracked as committed state rather than a ref, 
 the persistence effect from overwriting a saved session on first mount.
 
 **Versioned local persistence, twice over.** The in-progress session is a versioned localStorage
-envelope, now at version 4 with the ledger inside it. Completed sessions go to IndexedDB behind a repository that never rejects: a missing
-database, a blocked one, a corrupt row or a record from an older schema all degrade to something
-sensible rather than taking the page down. Saved records carry a schema version, and older
-records are migrated forward on read rather than discarded — a record filed before the ledger
-existed is reported as having no timeline rather than being given fabricated timestamps.
+envelope, now at version 4 with the ledger inside it. Completed sessions go to IndexedDB behind a
+repository that never rejects: a missing database, a blocked one, a corrupt row or a record from an
+older schema all degrade to something sensible rather than taking the page down. Saved records carry
+a schema version, and older records are migrated forward on read rather than discarded — a record
+filed before the ledger existed is reported as having no timeline rather than being given fabricated
+timestamps.
 
 **Replay over interpolation.** A filed meal's timeline is rebuilt by replaying its ledger through
 the same calculation engine the report uses, so a point on the chart and the filed total agree by
@@ -449,7 +452,9 @@ Everything is local by default and stays that way.
 - An encrypted backup is sealed on the device with a key derived from your password. The password
   is never stored, never logged and cannot be recovered — which is also why the file cannot be
   opened without it
-- Diner names stay local. A shared report rewrites every diner reference to a position (`d1`, `d2`) — carrying no name and no name-derived id, while keeping who shared which plate — and an exported backup may include names because it is a deliberate local export.
+- Diner names stay local. A shared report rewrites every diner reference to a position (`d1`, `d2`)
+  — carrying no name and no name-derived id, while keeping who shared which plate — and an
+  exported backup may include names because it is a deliberate local export.
 - Shared challenge links carry two meals and their entry prices. Diner names, roster attribution,
   private notes and the meal ledger stay on the device; opening a challenge writes nothing.
 - Shared menu links carry only the price assumptions, custom foods and (optionally) a restaurant
@@ -473,12 +478,14 @@ dataset's own integrity, cut search and ordering, verdict boundaries tested on b
 threshold, number and currency formatting, pricing profiles, custom foods, the session reducer
 including undo, storage recovery from corrupt or stale data, the IndexedDB repository against
 `fake-indexeddb`, saved-session migration, meal event validation, ordering and bounds, the pacing
-forecast on both sides of every boundary, replay reconstruction and its named moments, the planner's determinism and bounds, uncertainty scenarios and sensitivity ordering, restaurant profiles and their preset migration,
-the diner hub's attribution boundary between explicit plates and an estimated share, menu-token boundaries and import conflict planning, challenge tokens and their privacy boundary, encrypted-backup envelope validation and cryptographic
-round trips, session comparison, the achievement engine, favourites,
-restaurant presets, share-token encoding and decoding, backup import and export, CSV escaping, local
-analytics, browser-stage history, the sitemap and crawling rules, and the service worker's caching
-policy.
+forecast on both sides of every boundary, replay reconstruction and its named moments, the planner's
+determinism and bounds, uncertainty scenarios and sensitivity ordering, restaurant profiles and
+their preset migration, the diner hub's attribution boundary between explicit plates and an
+estimated share, menu-token boundaries and import conflict planning, challenge tokens and their
+privacy boundary, encrypted-backup envelope validation and cryptographic round trips, session
+comparison, the achievement engine, favourites, restaurant presets, share-token encoding and
+decoding, backup import and export, CSV escaping, local analytics, browser-stage history, the
+sitemap and crawling rules, and the service worker's caching policy.
 
 **End-to-end tests (Playwright)** run against a production build on a 1440×900 desktop viewport and a
 390×844 mobile one, covering the full meal journey, report navigation, real browser Back and Forward,
