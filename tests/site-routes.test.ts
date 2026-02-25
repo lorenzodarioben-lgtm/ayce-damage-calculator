@@ -30,6 +30,20 @@ describe('siteUrl', () => {
     expect(siteUrl().origin).toBe('https://damage.example');
   });
 
+  it('keeps only the public origin from an explicit URL', async () => {
+    process.env.NEXT_PUBLIC_SITE_URL = 'https://person:secret@damage.example/release-preview';
+    const { siteUrl } = await load();
+
+    expect(siteUrl().toString()).toBe('https://damage.example/');
+  });
+
+  it('falls back safely when an explicit URL is not an HTTP origin', async () => {
+    process.env.NEXT_PUBLIC_SITE_URL = 'javascript:alert(1)';
+    const { siteUrl } = await load();
+
+    expect(siteUrl().origin).toBe('http://localhost:3000');
+  });
+
   it('falls back to the host the platform supplies', async () => {
     process.env.VERCEL_PROJECT_PRODUCTION_URL = 'ayce.vercel.app';
     const { siteUrl } = await load();
