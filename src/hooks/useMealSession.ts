@@ -490,17 +490,23 @@ export function useMealSession(
     markLocalChange({ type: 'clear-diners', meta: meta() });
   }, [markLocalChange, meta]);
 
-  const addAdjustment = useCallback((draft: AdjustmentDraft, id: string) => {
-    dispatch({ type: 'add-adjustment', draft, id });
-  }, []);
+  const addAdjustment = useCallback(
+    (draft: AdjustmentDraft, id: string) => {
+      markLocalChange({ type: 'add-adjustment', draft, id });
+    },
+    [markLocalChange],
+  );
 
-  const removeAdjustment = useCallback((id: string) => {
-    dispatch({ type: 'remove-adjustment', id });
-  }, []);
+  const removeAdjustment = useCallback(
+    (id: string) => {
+      markLocalChange({ type: 'remove-adjustment', id });
+    },
+    [markLocalChange],
+  );
 
   const clearAdjustments = useCallback(() => {
-    dispatch({ type: 'clear-adjustments' });
-  }, []);
+    markLocalChange({ type: 'clear-adjustments' });
+  }, [markLocalChange]);
 
   const setItemConsumption = useCallback(
     (id: string, consumed: number) => {
