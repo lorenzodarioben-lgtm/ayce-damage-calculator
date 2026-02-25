@@ -98,6 +98,7 @@ export function CalculatorApp() {
       reportRef.current?.focus({ preventScroll: true });
     } else {
       builderRef.current?.scrollIntoView({ behavior: scrollBehaviour(), block: 'start' });
+      builderRef.current?.focus({ preventScroll: true });
     }
   }, [stage]);
 
@@ -180,6 +181,9 @@ export function CalculatorApp() {
             ) : (
               <div
                 ref={builderRef}
+                role="region"
+                aria-label="Meal builder"
+                tabIndex={-1}
                 className="grid items-start gap-4 lg:grid-cols-[1fr_380px] lg:gap-6"
               >
                 <div className="space-y-4 lg:space-y-6">
