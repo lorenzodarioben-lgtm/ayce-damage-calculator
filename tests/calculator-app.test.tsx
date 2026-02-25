@@ -223,6 +223,7 @@ describe('CalculatorApp', () => {
 
     const tab = screen.getByRole('region', { name: /your tab/i });
     expect(within(tab).getByText('Ribeye')).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: /meal builder/i })).toHaveFocus();
   });
 
   it('returns to the builder from the top Back control with the meal intact', async () => {
