@@ -86,6 +86,22 @@ describe('concurrent active-session edits', () => {
     ).not.toBeInTheDocument();
   });
 
+  it('treats an edited bill as a local change before accepting another tab', async () => {
+    const user = userEvent.setup();
+    render(<CalculatorApp />);
+
+    await user.type(screen.getByLabelText('What was it'), 'Weekend surcharge');
+    await user.type(screen.getByLabelText('Amount'), '6');
+    await user.click(screen.getByRole('button', { name: 'Add to the bill' }));
+
+    dispatchStorage(storedUpdate(REMOTE_SESSION));
+
+    expect(
+      await screen.findByRole('alert', { name: /another tab changed this meal/i }),
+    ).toBeVisible();
+    expect(screen.getByText('Weekend surcharge')).toBeInTheDocument();
+  });
+
   it('keeps this tab’s complete meal instead of heuristically merging ledgers', async () => {
     const user = userEvent.setup();
     render(<CalculatorApp />);
