@@ -8,6 +8,9 @@ export const metadata: Metadata = {
   title: 'Restaurants — AYCE Damage Calculator',
   description:
     'The places you have saved on this device, and what your own records say about them.',
+  // This is a personal list rather than a public restaurant directory. It is
+  // empty for a cold visitor and should never be presented as a search result.
+  robots: { index: false, follow: false },
 };
 
 export default function RestaurantsPage() {
