@@ -8,6 +8,9 @@ export const metadata: Metadata = {
   title: 'Diners — AYCE Damage Calculator',
   description:
     'The people saved on this device, and what your own records say about eating with them.',
+  // Names and meal patterns exist only in this browser. A cold visitor has no
+  // directory to see, so search results would be both misleading and risky.
+  robots: { index: false, follow: false },
 };
 
 export default function DinersPage() {
