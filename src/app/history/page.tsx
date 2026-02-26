@@ -7,6 +7,9 @@ import { MAIN_CONTENT_ID } from '@/components/nav/destinations';
 export const metadata: Metadata = {
   title: 'Meal history — AYCE Damage Calculator',
   description: 'Previously recorded all-you-can-eat sessions, stored on this device.',
+  // The page is meaningful only once this browser has records, which are
+  // personal meal history rather than content intended for discovery.
+  robots: { index: false, follow: false },
 };
 
 export default function HistoryPage() {

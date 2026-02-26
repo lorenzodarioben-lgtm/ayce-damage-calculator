@@ -85,4 +85,10 @@ describe('machine-only and device-local routes', () => {
 
     expect(metadata.robots).toEqual({ index: false, follow: false });
   });
+
+  it('keeps local meal history out of search results', async () => {
+    const { metadata } = await import('@/app/history/page');
+
+    expect(metadata.robots).toEqual({ index: false, follow: false });
+  });
 });
