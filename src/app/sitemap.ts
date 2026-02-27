@@ -5,22 +5,17 @@ import { siteUrl } from '@/lib/site';
  * The routes worth indexing.
  *
  * Listed explicitly rather than crawled from the filesystem: `/share/<token>`
- * and `/menu/<token>` are unbounded and private, `/restaurants/<id>` and
- * `/diners/<id>` only exist on the device that saved them, `/history/data` is a
- * tool for data this device already holds, `/offline` only exists for the service
- * worker, and none of them belongs in a sitemap. Everything here is a real destination a visitor
- * could arrive at cold. Each of those exclusions also says `noindex` for itself,
- * so the two never disagree.
+ * and `/menu/<token>` are unbounded and private; the restaurant, diner,
+ * history and analytics surfaces depend on data held only on this device;
+ * `/history/data` is a tool for data this device already holds; and `/offline`
+ * only exists for the service worker. None belongs in a sitemap. Everything
+ * here is a real destination a visitor could arrive at cold. Each exclusion
+ * also says `noindex` for itself, so the two never disagree.
  */
 const ROUTES: ReadonlyArray<{ path: string; priority: number }> = [
   { path: '/', priority: 1 },
   { path: '/live', priority: 0.8 },
   { path: '/plan', priority: 0.5 },
-  { path: '/restaurants', priority: 0.5 },
-  { path: '/diners', priority: 0.5 },
-  { path: '/history', priority: 0.6 },
-  { path: '/history/compare', priority: 0.4 },
-  { path: '/stats', priority: 0.6 },
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

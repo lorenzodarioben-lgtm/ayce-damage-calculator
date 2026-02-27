@@ -71,12 +71,17 @@ describe('sitemap', () => {
     }
   });
 
-  it('keeps private and machine-only routes out', async () => {
+  it('keeps private, device-local and machine-only routes out', async () => {
     const { sitemap } = await load();
     const paths = sitemap().map((entry) => new URL(entry.url).pathname);
 
     expect(paths).not.toContain('/offline');
     expect(paths).not.toContain('/history/data');
+    expect(paths).not.toContain('/restaurants');
+    expect(paths).not.toContain('/diners');
+    expect(paths).not.toContain('/history');
+    expect(paths).not.toContain('/history/compare');
+    expect(paths).not.toContain('/stats');
     expect(paths.some((path) => path.startsWith('/share'))).toBe(false);
   });
 
