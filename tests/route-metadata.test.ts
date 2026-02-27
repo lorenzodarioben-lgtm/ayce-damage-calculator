@@ -91,4 +91,10 @@ describe('machine-only and device-local routes', () => {
 
     expect(metadata.robots).toEqual({ index: false, follow: false });
   });
+
+  it('keeps device-local analytics out of search results', async () => {
+    const { metadata } = await import('@/app/stats/page');
+
+    expect(metadata.robots).toEqual({ index: false, follow: false });
+  });
 });
