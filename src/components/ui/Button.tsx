@@ -57,7 +57,7 @@ export function Button({
       className={cn(
         'inline-flex cursor-pointer items-center justify-center gap-2 rounded-[10px] font-semibold uppercase',
         'transition-[background-color,border-color,color,transform] duration-200 ease-out-soft',
-        'active:scale-[0.985] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-70',
+        'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember-400 active:scale-[0.985] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-70',
         VARIANTS[variant],
         SIZES[size],
         fullWidth && 'w-full',
