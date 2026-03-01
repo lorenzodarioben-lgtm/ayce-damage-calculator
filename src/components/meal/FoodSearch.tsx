@@ -91,14 +91,14 @@ export function FoodSearch({ value, onChange, resultCount }: FoodSearchProps) {
           autoComplete="off"
           aria-keyshortcuts="/"
           aria-describedby={statusId}
-          className="min-h-11 w-full rounded-[10px] border border-line bg-ash-900 pl-9 pr-11 text-sm text-cream-100 placeholder:text-cream-700 focus:border-ember-600 focus:outline-none"
+          className="min-h-11 w-full rounded-[10px] border border-line bg-ash-900 pl-9 pr-11 text-sm text-cream-100 placeholder:text-cream-700 focus:border-ember-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-ember-400/50"
         />
         {value.length > 0 ? (
           <button
             type="button"
             onClick={() => onChange('')}
             aria-label="Clear the search"
-            className="absolute right-1.5 top-1/2 flex size-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-[8px] text-cream-500 transition-colors duration-200 hover:bg-ash-800 hover:text-cream-100"
+            className="absolute right-1.5 top-1/2 flex size-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-[8px] text-cream-500 transition-colors duration-200 hover:bg-ash-800 hover:text-cream-100 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ember-400"
           >
             <X size={15} aria-hidden="true" />
           </button>
@@ -121,7 +121,9 @@ export function FoodSearch({ value, onChange, resultCount }: FoodSearchProps) {
       <p id={statusId} role="status" className="tabular mt-1.5 min-h-4 text-xs text-cream-700">
         {resultCount === null
           ? ''
-          : `${resultCount} ${resultCount === 1 ? 'cut matches' : 'cuts match'}`}
+          : resultCount === 0
+            ? 'No cuts match this search'
+            : `${resultCount} ${resultCount === 1 ? 'cut matches' : 'cuts match'}`}
       </p>
     </div>
   );
