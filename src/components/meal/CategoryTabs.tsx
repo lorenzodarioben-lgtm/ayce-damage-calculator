@@ -68,6 +68,7 @@ export function CategoryTabs({ value, onChange, panelId, foods }: CategoryTabsPr
       ref={listRef}
       role="tablist"
       aria-label="Food category"
+      aria-orientation="horizontal"
       onKeyDown={handleKeyDown}
       className="grid grid-cols-4 gap-1 rounded-[12px] border border-line bg-ash-900 p-1"
     >
@@ -85,7 +86,7 @@ export function CategoryTabs({ value, onChange, panelId, foods }: CategoryTabsPr
             onClick={() => onChange(category.id)}
             className={cn(
               'relative min-h-11 cursor-pointer rounded-[9px] px-1 text-[0.8rem] font-semibold uppercase',
-              'tracking-[0.06em] transition-colors duration-200 ease-out-soft sm:text-sm',
+              'tracking-[0.06em] transition-colors duration-200 ease-out-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember-400 sm:text-sm',
               selected
                 ? 'bg-ember-500 text-ash-950'
                 : 'text-cream-500 hover:bg-ash-800 hover:text-cream-100',
