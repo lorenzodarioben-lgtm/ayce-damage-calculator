@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { Minus, Plus, Trash2, Utensils } from 'lucide-react';
 import { getPlateSizeMeta, getQualityMeta } from '@/lib/constants';
 import { CONSUMPTION_STEP, formatPlateQuantity } from '@/lib/consumption';
@@ -32,6 +32,7 @@ export function QuickLogRow({
   const descriptor = `${food.name}, ${getQualityMeta(item.quality).label}, ${getPlateSizeMeta(item.plateSize).label}`;
   const left = line.uneatenPlates > 0;
   const [open, setOpen] = useState(false);
+  const consumptionPanelId = useId();
   // Only ever unfolded on purpose, or because there is already something to
   // show. The one-tap journey is what this screen is for.
   const expanded = open || left;
@@ -86,6 +87,7 @@ export function QuickLogRow({
           type="button"
           onClick={() => setOpen((current) => !current)}
           aria-expanded={expanded}
+          aria-controls={consumptionPanelId}
           aria-label={`Record how much of ${descriptor} was eaten`}
           className="flex min-h-16 w-14 cursor-pointer items-center justify-center rounded-[12px] border border-transparent text-cream-700 transition-colors duration-200 hover:border-line hover:bg-ash-800 hover:text-cream-300"
         >
@@ -103,7 +105,10 @@ export function QuickLogRow({
       </div>
 
       {expanded && (
-        <div className="mt-3 rounded-[12px] border border-line-soft bg-ash-900 px-3 py-2">
+        <div
+          id={consumptionPanelId}
+          className="mt-3 rounded-[12px] border border-line-soft bg-ash-900 px-3 py-2"
+        >
           <div className="tabular flex items-baseline justify-between gap-2 text-xs text-cream-500">
             <span className="text-cream-300">Eaten</span>
             <span>
