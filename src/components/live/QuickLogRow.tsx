@@ -122,6 +122,7 @@ export function QuickLogRow({
             max={line.plates}
             step={CONSUMPTION_STEP}
             value={line.consumedPlates}
+            aria-valuetext={`${formatPlateQuantity(line.consumedPlates)} of ${line.plates} plates eaten`}
             onChange={(event) => onConsumptionChange(item.id, Number(event.target.value))}
             className="mt-1.5 h-8 w-full cursor-pointer accent-[var(--color-ember-500)]"
           />
