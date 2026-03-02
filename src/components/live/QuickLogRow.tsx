@@ -62,7 +62,7 @@ export function QuickLogRow({
           type="button"
           onClick={() => onIncrement(item.id)}
           aria-label={`Add one plate of ${descriptor}`}
-          className="flex min-h-16 flex-1 cursor-pointer items-center justify-center gap-2 rounded-[12px] bg-ember-500 text-base font-bold uppercase tracking-[0.1em] text-ash-950 transition-[background-color,transform] duration-200 ease-out-soft hover:bg-ember-400 active:scale-[0.985] active:bg-ember-600"
+          className="flex min-h-16 flex-1 cursor-pointer items-center justify-center gap-2 rounded-[12px] bg-ember-500 text-base font-bold uppercase tracking-[0.1em] text-ash-950 transition-[background-color,transform] duration-200 ease-out-soft hover:bg-ember-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember-300 active:scale-[0.985] active:bg-ember-600"
         >
           <Plus size={20} strokeWidth={3} aria-hidden="true" />
           <span>
@@ -78,7 +78,7 @@ export function QuickLogRow({
           onClick={() => onDecrement(item.id)}
           disabled={item.quantity <= 1}
           aria-label={`Remove one plate of ${descriptor}`}
-          className="flex min-h-16 w-14 cursor-pointer items-center justify-center rounded-[12px] border border-line bg-ash-800 text-cream-300 transition-colors duration-200 hover:border-ember-700 hover:text-cream-50 disabled:cursor-not-allowed disabled:opacity-40"
+          className="flex min-h-16 w-14 cursor-pointer items-center justify-center rounded-[12px] border border-line bg-ash-800 text-cream-300 transition-colors duration-200 hover:border-ember-700 hover:text-cream-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember-400 disabled:cursor-not-allowed disabled:opacity-40"
         >
           <Minus size={20} aria-hidden="true" />
         </button>
