@@ -112,6 +112,7 @@ export function TableRoster({
           id={inputId}
           value={name}
           onChange={(event) => setName(event.target.value)}
+          autoComplete="off"
           onKeyDown={(event) => {
             if (event.key === 'Enter') {
               event.preventDefault();
@@ -173,6 +174,7 @@ export function TableRoster({
                 id={`diner-name-${diner.id}`}
                 value={diner.displayName}
                 onChange={(event) => onRename(diner.id, event.target.value)}
+                autoComplete="off"
                 className="h-9 min-w-0 flex-1 rounded-[8px] border border-line bg-ash-850 px-2 text-sm text-cream-100 focus:border-ember-600"
               />
               <label className="sr-only" htmlFor={`diner-admission-${diner.id}`}>
