@@ -46,7 +46,7 @@ export function StatusToast({ message, offset = false }: StatusToastProps) {
             <button
               type="button"
               onClick={message.action.onAction}
-              className="pointer-events-auto min-h-9 shrink-0 cursor-pointer rounded-full bg-ember-500 px-3 text-xs font-bold uppercase tracking-[0.08em] text-ash-950 transition-colors duration-200 hover:bg-ember-400"
+              className="pointer-events-auto min-h-9 shrink-0 cursor-pointer rounded-full bg-ember-500 px-3 text-xs font-bold uppercase tracking-[0.08em] text-ash-950 transition-colors duration-200 hover:bg-ember-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember-300"
             >
               {message.action.label}
             </button>
