@@ -202,7 +202,7 @@ export function TableRoster({
                   onClick={() => onMove(diner.id, -1)}
                   disabled={index === 0}
                   aria-label={`Move ${diner.displayName} up`}
-                  className="flex size-9 cursor-pointer items-center justify-center rounded-[8px] text-cream-500 hover:bg-ash-800 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="flex size-9 cursor-pointer items-center justify-center rounded-[8px] text-cream-500 hover:bg-ash-800 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ember-400 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <ArrowUp size={16} aria-hidden="true" />
                 </button>
@@ -211,7 +211,7 @@ export function TableRoster({
                   onClick={() => onMove(diner.id, 1)}
                   disabled={index === diners.length - 1}
                   aria-label={`Move ${diner.displayName} down`}
-                  className="flex size-9 cursor-pointer items-center justify-center rounded-[8px] text-cream-500 hover:bg-ash-800 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="flex size-9 cursor-pointer items-center justify-center rounded-[8px] text-cream-500 hover:bg-ash-800 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ember-400 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <ArrowDown size={16} aria-hidden="true" />
                 </button>
@@ -219,7 +219,7 @@ export function TableRoster({
                   type="button"
                   onClick={() => remove(diner.id)}
                   aria-label={`Remove ${diner.displayName} from this table`}
-                  className="flex size-9 cursor-pointer items-center justify-center rounded-[8px] text-char-500 hover:bg-char-700/25"
+                  className="flex size-9 cursor-pointer items-center justify-center rounded-[8px] text-char-500 hover:bg-char-700/25 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-char-500"
                 >
                   <Trash2 size={16} aria-hidden="true" />
                 </button>
