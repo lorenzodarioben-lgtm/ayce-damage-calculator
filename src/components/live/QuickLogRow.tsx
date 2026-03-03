@@ -89,7 +89,7 @@ export function QuickLogRow({
           aria-expanded={expanded}
           aria-controls={consumptionPanelId}
           aria-label={`Record how much of ${descriptor} was eaten`}
-          className="flex min-h-16 w-14 cursor-pointer items-center justify-center rounded-[12px] border border-transparent text-cream-700 transition-colors duration-200 hover:border-line hover:bg-ash-800 hover:text-cream-300"
+          className="flex min-h-16 w-14 cursor-pointer items-center justify-center rounded-[12px] border border-transparent text-cream-700 transition-colors duration-200 hover:border-line hover:bg-ash-800 hover:text-cream-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember-400"
         >
           <Utensils size={18} aria-hidden="true" />
         </button>
@@ -98,7 +98,7 @@ export function QuickLogRow({
           type="button"
           onClick={() => onRemove(item.id)}
           aria-label={`Remove ${descriptor} from your tab`}
-          className="flex min-h-16 w-14 cursor-pointer items-center justify-center rounded-[12px] border border-transparent text-cream-700 transition-colors duration-200 hover:border-char-700 hover:bg-char-700/20 hover:text-char-500"
+          className="flex min-h-16 w-14 cursor-pointer items-center justify-center rounded-[12px] border border-transparent text-cream-700 transition-colors duration-200 hover:border-char-700 hover:bg-char-700/20 hover:text-char-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-char-500"
         >
           <Trash2 size={18} aria-hidden="true" />
         </button>
