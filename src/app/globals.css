@@ -33,14 +33,12 @@
   --color-line-soft: #221d17;
   --color-line-ember: #5c452a;
 
-  /* System stacks keep the app available without a build-time font download,
-     including on an offline development machine or a restricted CI runner. */
-  --font-display:
-    Impact, Haettenschweiler, 'Arial Narrow Bold', 'Arial Black', ui-sans-serif, system-ui,
-    sans-serif;
-  --font-sans:
-    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial,
-    sans-serif;
+  /* Bound to the checked-in faces in `src/app/fonts`. Each `--font-*` variable
+     is defined by `next/font/local`, which also supplies the fallback stack, so
+     nothing here is downloaded at build time or at runtime. */
+  --font-display: var(--font-display-face);
+  --font-heading: var(--font-heading-face);
+  --font-sans: var(--font-sans-face);
 
   --radius-card: 0.875rem;
 
@@ -128,11 +126,24 @@ input[type='number']::-webkit-inner-spin-button {
   margin: 0;
 }
 
+/* Section headings and cut names: condensed, but with a weight axis to move
+   along, so the same voice can be loud or quiet without changing typeface. */
 @utility display-type {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  letter-spacing: 0.015em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+/* Reserved for the moments the app raises its voice: the hero, the verdict,
+   the headline figure. Anton is unmistakable at size and unreadable small, so
+   nothing below about 28px should ever use it. */
+@utility display-hero {
   font-family: var(--font-display);
   font-weight: 400;
-  letter-spacing: 0.012em;
-  line-height: 0.9;
+  letter-spacing: 0.005em;
+  line-height: 0.86;
   text-transform: uppercase;
 }
 
