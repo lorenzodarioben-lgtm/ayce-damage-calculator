@@ -19,7 +19,7 @@ const BACK_LINK =
   'uppercase tracking-[0.1em] text-cream-500 transition-colors duration-200 hover:bg-ash-850 hover:text-cream-100';
 
 const SELECT =
-  'h-12 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-sm text-cream-50 focus:border-ember-600';
+  'h-12 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-sm text-cream-50';
 
 function describe(record: SavedMealSession): string {
   return `${formatRecordedAt(record.createdAt)} — ${record.restaurantName || 'Unnamed restaurant'}`;
