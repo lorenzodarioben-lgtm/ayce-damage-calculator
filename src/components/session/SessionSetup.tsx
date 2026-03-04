@@ -154,7 +154,7 @@ export function SessionSetup({
             value={session.restaurantName}
             onChange={(event) => onRestaurantNameChange(event.target.value)}
             placeholder="Restaurant name (optional)"
-            className="h-12 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-base text-cream-50 placeholder:text-cream-700 focus:border-ember-600"
+            className="h-12 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-base text-cream-50 placeholder:text-cream-700"
           />
         </div>
 
@@ -181,7 +181,7 @@ export function SessionSetup({
               onBlur={handlePriceBlur}
               aria-describedby={priceHintId}
               aria-invalid={priceError !== null}
-              className="tabular h-12 w-full rounded-[10px] border border-line bg-ash-900 pl-7 pr-3 text-base text-cream-50 focus:border-ember-600"
+              className="tabular h-12 w-full rounded-[10px] border border-line bg-ash-900 pl-7 pr-3 text-base text-cream-50"
             />
           </div>
           <p
@@ -213,7 +213,7 @@ export function SessionSetup({
                 onStatus(`${next.name} pricing applied to this table.`);
               }
             }}
-            className="h-12 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-base text-cream-50 focus:border-ember-600"
+            className="h-12 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-base text-cream-50"
           >
             {pricingProfiles.map((profile) => (
               <option key={profile.id} value={profile.id}>

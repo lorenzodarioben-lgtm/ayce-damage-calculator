@@ -91,7 +91,7 @@ export function FoodSearch({ value, onChange, resultCount }: FoodSearchProps) {
           autoComplete="off"
           aria-keyshortcuts="/"
           aria-describedby={statusId}
-          className="min-h-11 w-full rounded-[10px] border border-line bg-ash-900 pl-9 pr-11 text-sm text-cream-100 placeholder:text-cream-700 focus:border-ember-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-ember-400/50"
+          className="min-h-11 w-full rounded-[10px] border border-line bg-ash-900 pl-9 pr-11 text-sm text-cream-100 placeholder:text-cream-700"
         />
         {value.length > 0 ? (
           <button
