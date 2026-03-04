@@ -12,8 +12,54 @@ const GAP = 18;
 const PANEL_PADDING = 16;
 const COLUMN_GAP = 16;
 
-const SANS = "Archivo, ui-sans-serif, system-ui, 'Segoe UI', Arial, sans-serif";
-const DISPLAY = "Anton, 'Arial Narrow', Impact, ui-sans-serif, sans-serif";
+/**
+ * A style names the role it wants, not a font stack.
+ *
+ * The families are generated: `next/font` hashes each one, so naming "Anton"
+ * here would have quietly measured and drawn the fallback while the page beside
+ * it used the real face. Reading the same custom properties the stylesheet
+ * reads is what keeps the exported card on the typeface the on-screen card is
+ * rendered in — which is the point of both being drawn from one model.
+ */
+type FontRole = 'display' | 'sans';
+
+/** Used verbatim on a server, and appended after the resolved family in a browser. */
+const FALLBACK_FAMILIES: Record<FontRole, string> = {
+  display: "'Arial Narrow', Impact, ui-sans-serif, sans-serif",
+  sans: "ui-sans-serif, system-ui, 'Segoe UI', Arial, sans-serif",
+};
+
+const FAMILY_VARIABLES: Record<FontRole, string> = {
+  display: '--font-display',
+  sans: '--font-sans',
+};
+
+/*
+ * Resolved once. The custom property holds a family name, which is a constant
+ * of the build rather than of load state, so there is nothing to invalidate.
+ */
+let cachedFamilies: Record<FontRole, string> | null = null;
+
+function familyFor(role: FontRole): string {
+  if (cachedFamilies) {
+    return cachedFamilies[role];
+  }
+  if (typeof window === 'undefined' || typeof document === 'undefined') {
+    return FALLBACK_FAMILIES[role];
+  }
+
+  const computed = getComputedStyle(document.documentElement);
+  const resolve = (which: FontRole) => {
+    const declared = computed.getPropertyValue(FAMILY_VARIABLES[which]).trim();
+    return declared ? `${declared}, ${FALLBACK_FAMILIES[which]}` : FALLBACK_FAMILIES[which];
+  };
+
+  cachedFamilies = { display: resolve('display'), sans: resolve('sans') };
+  return cachedFamilies[role];
+}
+
+const SANS: FontRole = 'sans';
+const DISPLAY: FontRole = 'display';
 
 const TONE_COLOURS: Record<StatTone, string> = {
   cream: CARD_COLOURS.cream,
@@ -25,7 +71,7 @@ const TONE_COLOURS: Record<StatTone, string> = {
 type Ctx = CanvasRenderingContext2D;
 
 interface TextStyle {
-  readonly font: string;
+  readonly font: FontRole;
   readonly size: number;
   readonly lineHeight: number;
   readonly colour: string;
@@ -94,7 +140,7 @@ const STYLES = {
 
 function applyStyle(ctx: Ctx, style: TextStyle, weight = '600') {
   const isDisplay = style.font === DISPLAY;
-  ctx.font = `${isDisplay ? '400' : weight} ${style.size}px ${style.font}`;
+  ctx.font = `${isDisplay ? '400' : weight} ${style.size}px ${familyFor(style.font)}`;
   ctx.fillStyle = style.colour;
   // letterSpacing is widely supported but still guarded so export never throws.
   if ('letterSpacing' in ctx) {

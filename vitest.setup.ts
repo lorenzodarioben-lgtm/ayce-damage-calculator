@@ -21,6 +21,24 @@ vi.mock('next/navigation', () => ({
   }),
 }));
 
+/**
+ * `next/font/local` is a compile-time transform, not a runtime function: the
+ * Next plugin rewrites each call into the generated class names before any of
+ * this ever runs. Under Vitest the plugin is absent, so the import resolves to
+ * a module whose default export is not callable and every suite that reaches
+ * the root layout fails on the import rather than on anything it asserts.
+ *
+ * The stub returns the shape the real transform produces. Suites care that the
+ * layout renders and what it puts in the document, not which font it picked.
+ */
+vi.mock('next/font/local', () => ({
+  default: (options: { variable?: string }) => ({
+    className: 'mock-font',
+    variable: options.variable ?? '--mock-font',
+    style: { fontFamily: 'mock-font' },
+  }),
+}));
+
 // Suites that exercise non-DOM code (the service worker, for one) opt into the
 // node environment, where none of the browser setup below applies.
 const isDomEnvironment = typeof window !== 'undefined';
