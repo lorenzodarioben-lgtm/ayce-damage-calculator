@@ -186,7 +186,7 @@ function ProfileEditor({
               onChange={(event) => setName(event.target.value)}
               autoComplete="off"
               placeholder="e.g. Sydney dinner menu"
-              className="h-11 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-cream-50 placeholder:text-cream-700 focus:border-ember-600"
+              className="h-11 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-cream-50 placeholder:text-cream-700"
             />
           </div>
           <div>
@@ -200,7 +200,7 @@ function ProfileEditor({
               id={currencyId}
               value={currency}
               onChange={(event) => setCurrency(event.target.value as CurrencyCode)}
-              className="h-11 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-cream-50 focus:border-ember-600"
+              className="h-11 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-cream-50"
             >
               {SUPPORTED_CURRENCIES.map((code) => (
                 <option key={code} value={code}>

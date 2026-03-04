@@ -267,7 +267,7 @@ export function DamagePlanner() {
                 value={admissionPrice}
                 onChange={(event) => setAdmissionPrice(Number(event.target.value))}
                 onBlur={() => setAdmissionPrice((value) => clampPricePerDiner(value))}
-                className="h-12 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-base text-cream-50 focus:border-ember-600"
+                className="h-12 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-base text-cream-50"
               />
               {adjustments.length > 0 && (
                 <p className="tabular mt-1.5 text-xs text-cream-700">
@@ -294,7 +294,7 @@ export function DamagePlanner() {
                 value={dinerCount}
                 onChange={(event) => setDinerCount(Number(event.target.value))}
                 onBlur={() => setDinerCount((value) => clampDinerCount(value))}
-                className="h-12 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-base text-cream-50 focus:border-ember-600"
+                className="h-12 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-base text-cream-50"
               />
             </div>
 
@@ -309,7 +309,7 @@ export function DamagePlanner() {
                 id={profileFieldId}
                 value={profile.id}
                 onChange={(event) => setProfileId(event.target.value)}
-                className="h-12 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-base text-cream-50 focus:border-ember-600"
+                className="h-12 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-base text-cream-50"
               >
                 {pricingProfiles.profiles.map((entry) => (
                   <option key={entry.id} value={entry.id}>
@@ -493,7 +493,7 @@ export function DamagePlanner() {
                                   ),
                                 )
                               }
-                              className="h-9 w-16 rounded-[8px] border border-line bg-ash-900 px-2 text-sm text-cream-50 focus:border-ember-600"
+                              className="h-9 w-16 rounded-[8px] border border-line bg-ash-900 px-2 text-sm text-cream-50"
                             />
                             plates
                           </label>

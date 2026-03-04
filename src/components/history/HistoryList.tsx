@@ -161,7 +161,7 @@ export function HistoryList() {
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Restaurant name, or anything in a note…"
               autoComplete="off"
-              className="min-h-11 w-full rounded-[10px] border border-line bg-ash-900 pl-9 pr-11 text-sm text-cream-100 placeholder:text-cream-700 focus:border-ember-600 focus:outline-none"
+              className="min-h-11 w-full rounded-[10px] border border-line bg-ash-900 pl-9 pr-11 text-sm text-cream-100 placeholder:text-cream-700"
             />
             {query.length > 0 && (
               <button

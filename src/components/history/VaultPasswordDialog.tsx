@@ -17,7 +17,7 @@ interface VaultPasswordDialogProps {
 }
 
 const FIELD =
-  'h-12 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-base text-cream-50 focus:border-ember-600';
+  'h-12 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-base text-cream-50';
 
 /**
  * Asks for the password, and holds it for exactly as long as it takes to use it.
