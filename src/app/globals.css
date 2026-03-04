@@ -28,6 +28,13 @@
   --color-sesame-500: #74a05c;
   --color-sesame-600: #55803f;
 
+  /* The hot end of the grill, for the two or three moments that have earned it:
+     a meter past break-even, a verdict in the diner's favour. Deliberately
+     outside the ember ramp so it cannot be reached for casually. */
+  --color-flame-400: #f0855a;
+  --color-flame-500: #e2653a;
+  --color-flame-600: #c04a24;
+
   /* Hairlines derived from the palette, exposed as border/bg utilities. */
   --color-line: #2a241d;
   --color-line-soft: #221d17;
@@ -41,8 +48,10 @@
   --font-sans: var(--font-sans-face);
 
   --radius-card: 0.875rem;
+  --radius-panel: 1.125rem;
 
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out-back: cubic-bezier(0.34, 1.4, 0.64, 1);
 }
 
 :root {
@@ -59,6 +68,52 @@
   --text-faint: var(--color-cream-500);
 
   --grill-line: color-mix(in oklab, var(--color-ember-500) 16%, transparent);
+
+  /*
+   * Depth, in a room with one warm light above it.
+   *
+   * A dark interface cannot separate surfaces by making them lighter — six
+   * near-black browns all read as the same brown, which is exactly what this
+   * one did. Separation comes from the two edges instead: a one-pixel highlight
+   * along the top, where the light would catch, and a shadow underneath that is
+   * warm rather than neutral, so a raised panel reads as lit rather than as a
+   * hole cut in the page.
+   *
+   * Three steps and no more. A surface is on the page, above it, or floating
+   * over it; anything finer is a distinction nobody can see.
+   */
+  --edge-light: inset 0 1px 0 rgb(255 250 240 / 0.045);
+  --edge-light-strong: inset 0 1px 0 rgb(255 250 240 / 0.08);
+
+  --shadow-panel: var(--edge-light), 0 10px 24px -14px rgb(0 0 0 / 0.75);
+  --shadow-raised: var(--edge-light-strong), 0 18px 42px -20px rgb(0 0 0 / 0.85);
+  --shadow-float:
+    var(--edge-light-strong), 0 4px 10px -4px rgb(0 0 0 / 0.5), 0 28px 64px -24px rgb(0 0 0 / 0.9);
+
+  /*
+   * Glow is the accent's own light, not another shadow. Used only where
+   * something is genuinely live — a meter filling, a primary action, a verdict
+   * landing — because a page where everything glows has nothing to point at.
+   */
+  --glow-ember: 0 0 28px -6px color-mix(in oklab, var(--color-ember-500) 55%, transparent);
+  --glow-flame: 0 0 34px -6px color-mix(in oklab, var(--color-flame-500) 60%, transparent);
+  --glow-sesame: 0 0 26px -6px color-mix(in oklab, var(--color-sesame-500) 50%, transparent);
+
+  /*
+   * A fill that is very slightly lighter at the top than the bottom. Two per
+   * cent is not a gradient anybody notices; it is the difference between a
+   * panel that looks printed on the page and one that looks like an object.
+   */
+  --fill-panel: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--color-cream-100) 2.5%, var(--surface-raised)) 0%,
+    var(--surface-raised) 42%
+  );
+  --fill-panel-strong: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--color-cream-100) 3.5%, var(--surface-raised-strong)) 0%,
+    var(--surface-raised-strong) 55%
+  );
 }
 
 * {
@@ -84,7 +139,14 @@ body {
   padding-right: env(safe-area-inset-right);
 }
 
-/* Warm ambient light from above, as if from a restaurant pendant lamp. */
+/*
+ * Warm ambient light, as if from a pendant lamp over a grill.
+ *
+ * Three sources rather than two, and stronger than they were. The old pair was
+ * faint enough that the page read as one flat brown from top to bottom; these
+ * give it a lit top corner, a cooler middle and a coal-red bloom at the foot,
+ * so scrolling moves through light instead of across a wall.
+ */
 body::before {
   content: '';
   position: fixed;
@@ -93,15 +155,31 @@ body::before {
   z-index: 0;
   background:
     radial-gradient(
-      120% 70% at 50% -10%,
-      color-mix(in oklab, var(--color-ember-600) 18%, transparent) 0%,
-      transparent 60%
+      100% 62% at 18% -12%,
+      color-mix(in oklab, var(--color-ember-500) 26%, transparent) 0%,
+      transparent 62%
     ),
     radial-gradient(
-      80% 50% at 90% 100%,
-      color-mix(in oklab, var(--color-char-600) 14%, transparent) 0%,
+      86% 48% at 88% 4%,
+      color-mix(in oklab, var(--color-ember-700) 22%, transparent) 0%,
+      transparent 66%
+    ),
+    radial-gradient(
+      80% 54% at 84% 104%,
+      color-mix(in oklab, var(--color-char-600) 20%, transparent) 0%,
       transparent 70%
     );
+}
+
+/* The grain sits over the ambient light and under everything else. */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 :focus-visible {
@@ -166,6 +244,42 @@ input[type='number']::-webkit-inner-spin-button {
   border-radius: var(--radius-card);
 }
 
+/* The three elevations, as utilities, so a component asks for a height off the
+   page rather than assembling a shadow of its own. */
+@utility elevate-panel {
+  box-shadow: var(--shadow-panel);
+}
+
+@utility elevate-raised {
+  box-shadow: var(--shadow-raised);
+}
+
+@utility elevate-float {
+  box-shadow: var(--shadow-float);
+}
+
+@utility fill-panel {
+  background-image: var(--fill-panel);
+}
+
+@utility fill-panel-strong {
+  background-image: var(--fill-panel-strong);
+}
+
+/* Accent light. Composed with the elevation rather than replacing it, so a live
+   element still sits at the height it was already at. */
+@utility glow-ember {
+  box-shadow: var(--shadow-raised), var(--glow-ember);
+}
+
+@utility glow-flame {
+  box-shadow: var(--shadow-raised), var(--glow-flame);
+}
+
+@utility glow-sesame {
+  box-shadow: var(--shadow-raised), var(--glow-sesame);
+}
+
 /* Faint grill bars used behind hero and report headers. */
 @utility grill-texture {
   background-image: repeating-linear-gradient(
@@ -218,7 +332,8 @@ input[type='number']::-webkit-inner-spin-button {
     color: #000 !important;
   }
 
-  body::before {
+  body::before,
+  body::after {
     display: none !important;
   }
 
