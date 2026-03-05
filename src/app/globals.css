@@ -395,6 +395,21 @@ input[type='number']::-webkit-inner-spin-button {
   animation: ayce-ember-breathe 7s var(--ease-out-soft) infinite;
 }
 
+/* A highlight travelling along a filling meter. Slow, low-contrast and only
+   ever shown on the part of the track that is actually full. */
+@keyframes ayce-meter-sheen {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(220%);
+  }
+}
+
+@utility animate-meter-sheen {
+  animation: ayce-meter-sheen 2.8s var(--ease-out-soft) infinite;
+}
+
 @keyframes ayce-fade-up {
   from {
     opacity: 0;
