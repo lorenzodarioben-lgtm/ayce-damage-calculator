@@ -29,11 +29,7 @@ export function FoodSort({ value, onChange }: FoodSortProps) {
       <span id={labelId} className="micro-label">
         Order by
       </span>
-      <div
-        role="group"
-        aria-labelledby={labelId}
-        className="flex gap-1 rounded-[10px] border border-line bg-ash-900 p-1"
-      >
+      <div role="group" aria-labelledby={labelId} className="segmented-track flex gap-1 p-1">
         {OPTIONS.map((option) => {
           const selected = option.key === value;
           return (
@@ -44,9 +40,10 @@ export function FoodSort({ value, onChange }: FoodSortProps) {
               aria-label={option.description}
               onClick={() => onChange(option.key)}
               className={cn(
-                'min-h-9 cursor-pointer rounded-[7px] px-3 text-xs font-semibold uppercase tracking-[0.08em] transition-colors duration-200',
+                'min-h-9 cursor-pointer rounded-[9px] px-3 text-xs font-semibold uppercase tracking-[0.08em]',
+                'transition-[background-color,color,box-shadow] duration-200',
                 selected
-                  ? 'bg-ember-500 text-ash-950'
+                  ? 'segmented-thumb'
                   : 'text-cream-500 hover:bg-ash-800 hover:text-cream-100',
                 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember-400',
               )}
