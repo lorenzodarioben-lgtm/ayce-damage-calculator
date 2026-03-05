@@ -70,7 +70,7 @@ export function CategoryTabs({ value, onChange, panelId, foods }: CategoryTabsPr
       aria-label="Food category"
       aria-orientation="horizontal"
       onKeyDown={handleKeyDown}
-      className="grid grid-cols-4 gap-1 rounded-[12px] border border-line bg-ash-900 p-1"
+      className="segmented-track grid grid-cols-4 gap-1 p-1"
     >
       {categories.map((category) => {
         const selected = category.id === value;
@@ -85,18 +85,22 @@ export function CategoryTabs({ value, onChange, panelId, foods }: CategoryTabsPr
             tabIndex={selected ? 0 : -1}
             onClick={() => onChange(category.id)}
             className={cn(
-              'relative min-h-11 cursor-pointer rounded-[9px] px-1 text-[0.8rem] font-semibold uppercase',
-              'tracking-[0.06em] transition-colors duration-200 ease-out-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember-400 sm:text-sm',
-              selected
-                ? 'bg-ember-500 text-ash-950'
-                : 'text-cream-500 hover:bg-ash-800 hover:text-cream-100',
+              'relative min-h-11 cursor-pointer rounded-[10px] px-1 text-[0.8rem] font-semibold uppercase',
+              'tracking-[0.06em] transition-[background-color,color,box-shadow] duration-200 ease-out-soft',
+              'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember-400 sm:text-sm',
+              selected ? 'segmented-thumb' : 'text-cream-500 hover:bg-ash-800 hover:text-cream-100',
             )}
           >
             {category.label}
+            {/* Kept from the original treatment. The raised thumb already
+                distinguishes the chosen tab by fill and shape rather than
+                colour alone, so this is reinforcement rather than the cue
+                itself — but it was put here deliberately and it costs a dot. */}
             {selected && (
-              <span aria-hidden="true" className="ml-1 hidden font-bold sm:inline">
-                ●
-              </span>
+              <span
+                aria-hidden="true"
+                className="ml-1.5 hidden size-1.5 rounded-full bg-ash-950/70 align-middle sm:inline-block"
+              />
             )}
           </button>
         );
