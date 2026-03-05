@@ -43,7 +43,7 @@ interface MealBuilderProps {
   onActiveDinerChange?: (id: string | null) => void;
 }
 
-const GRID_CLASS = 'grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-3';
+const GRID_CLASS = 'grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3';
 
 export function MealBuilder({
   onAdd,
