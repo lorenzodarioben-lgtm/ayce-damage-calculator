@@ -30,7 +30,16 @@ function NewTabHint() {
  */
 export function SiteFooter({ children, className }: SiteFooterProps) {
   return (
-    <footer className={cn('relative z-10 border-t border-line px-4 pt-6 pb-8 sm:px-6', className)}>
+    <footer
+      className={cn(
+        'relative z-10 mt-2 border-t border-line px-4 pt-8 pb-10 sm:px-6',
+        // A single lit thread along the top edge, brightest under the content
+        // and gone by the margins. Cheaper than a border and less blunt.
+        "before:absolute before:inset-x-0 before:top-0 before:h-px before:content-['']",
+        'before:bg-[linear-gradient(90deg,transparent,var(--color-line-ember),transparent)]',
+        className,
+      )}
+    >
       <div className="mx-auto flex max-w-[1280px] flex-wrap items-center justify-between gap-3">
         <p className="max-w-[52ch] text-xs leading-relaxed text-cream-700">{children}</p>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1">

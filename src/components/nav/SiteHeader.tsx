@@ -18,12 +18,23 @@ interface SiteHeaderProps {
   brandActionLabel?: string;
 }
 
+/*
+ * A destination marks itself current with a lit bar under it rather than a
+ * filled background. The old treatment was a tint one step off the header's
+ * own, which on this palette is close to no treatment at all — and it said
+ * "hovered" in the same language it said "you are here".
+ */
 const LINK_BASE =
-  'flex min-h-11 items-center rounded-[10px] px-3 text-xs font-semibold uppercase ' +
-  'tracking-[0.1em] transition-colors duration-200';
+  'relative flex min-h-11 items-center rounded-[10px] px-3 text-xs font-semibold uppercase ' +
+  'tracking-[0.1em] transition-colors duration-200 ' +
+  "after:absolute after:inset-x-3 after:bottom-1.5 after:h-px after:rounded-full after:content-['']";
 
-const LINK_IDLE = 'text-cream-300 hover:bg-ash-800 hover:text-cream-50';
-const LINK_CURRENT = 'bg-ash-800 text-ember-400';
+const LINK_IDLE =
+  'text-cream-300 hover:bg-ash-800/70 hover:text-cream-50 after:bg-transparent ' +
+  'hover:after:bg-line-ember';
+
+const LINK_CURRENT =
+  'text-ember-300 after:bg-ember-400 after:shadow-[0_0_10px_0_var(--color-ember-500)]';
 
 /**
  * Tailwind's own small breakpoint, in pixels. The menu and its toggle are
@@ -126,7 +137,7 @@ export function SiteHeader({ onBrandClick, brandActionLabel }: SiteHeaderProps) 
   }
 
   return (
-    <header className="sticky top-0 z-30 border-b border-line bg-ash-950/85 backdrop-blur-md">
+    <header className="sticky top-0 z-30 border-b border-line/80 bg-ash-950/72 shadow-[0_1px_0_0_rgb(255_250_240/0.04),0_10px_30px_-22px_rgb(0_0_0/0.9)] backdrop-blur-xl backdrop-saturate-150">
       <div className="mx-auto flex h-14 max-w-[1280px] items-center justify-between gap-3 px-4 sm:px-6">
         {/* An explicit label rather than one derived from the child text: it keeps
             the name identical across engines, and still opens with the visible
@@ -186,7 +197,7 @@ export function SiteHeader({ onBrandClick, brandActionLabel }: SiteHeaderProps) 
         <nav
           id={menuId}
           aria-label="Primary"
-          className="border-t border-line-soft bg-ash-900 px-4 py-2 sm:hidden"
+          className="border-t border-line-soft bg-ash-900/95 px-4 py-3 shadow-[0_18px_40px_-20px_rgb(0_0_0/0.85)] backdrop-blur-xl sm:hidden"
         >
           <ul className="space-y-1">
             {DESTINATIONS.map((destination) => {
