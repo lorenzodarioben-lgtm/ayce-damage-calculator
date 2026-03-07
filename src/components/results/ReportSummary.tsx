@@ -47,8 +47,21 @@ const SEVERITY_TONE = {
 
 const VERDICT_TONE = {
   diner: 'text-sesame-400',
-  even: 'text-ember-400',
+  even: 'text-ember-300',
   house: 'text-cream-50',
+} as const;
+
+/*
+ * The light behind the verdict, in the colour the verdict is already in.
+ *
+ * This is the sentence the whole app is built to deliver, and it was arriving
+ * as centred text on the same brown as the eight tiles under it. The bloom is
+ * the one place the report is allowed to be theatrical.
+ */
+const VERDICT_GLOW = {
+  diner: 'bg-[radial-gradient(ellipse_at_center,var(--color-sesame-600)_0%,transparent_68%)]',
+  even: 'bg-[radial-gradient(ellipse_at_center,var(--color-ember-600)_0%,transparent_68%)]',
+  house: 'bg-[radial-gradient(ellipse_at_center,var(--color-char-600)_0%,transparent_70%)]',
 } as const;
 
 /**
@@ -82,7 +95,17 @@ export function ReportSummary({
   return (
     <div className="space-y-6">
       {/* 1 — Verdict */}
-      <section aria-labelledby={headingId} className="panel overflow-hidden">
+      <section
+        aria-labelledby={headingId}
+        className="panel-raised relative isolate overflow-hidden"
+      >
+        <div
+          aria-hidden="true"
+          className={cn(
+            'pointer-events-none absolute -top-24 left-1/2 -z-10 h-72 w-[36rem] max-w-[130%] -translate-x-1/2 opacity-25 blur-3xl',
+            VERDICT_GLOW[verdict.tone],
+          )}
+        />
         <div className="grill-texture border-b border-line px-5 py-4 text-center">
           <Heading id={headingId} className="micro-label !text-ember-400">
             {heading}
@@ -92,16 +115,16 @@ export function ReportSummary({
           )}
         </div>
 
-        <div className="px-5 py-8 text-center sm:py-10">
+        <div className="px-5 py-10 text-center sm:py-14">
           <p
             className={cn(
-              'display-type text-[2.5rem] leading-[0.92] sm:text-6xl',
+              'display-hero text-[clamp(2.5rem,8vw,4.75rem)]',
               VERDICT_TONE[verdict.tone],
             )}
           >
             {verdict.title}
           </p>
-          <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-cream-300 sm:text-base">
+          <p className="mx-auto mt-5 max-w-md text-sm leading-relaxed text-cream-300 sm:text-base">
             {verdict.copy}
           </p>
           {subheading && <p className="mt-3 text-xs text-cream-700">{subheading}</p>}
@@ -109,10 +132,7 @@ export function ReportSummary({
       </section>
 
       {(hasAdjustments || report.hasSeparatelyChargedItems) && (
-        <section
-          aria-labelledby="bill-breakdown-heading"
-          className="rounded-[10px] border border-line-soft bg-ash-900 px-4 py-3"
-        >
+        <section aria-labelledby="bill-breakdown-heading" className="well px-4 py-3">
           <h3 id="bill-breakdown-heading" className="micro-label mb-2">
             How the bill settled
           </h3>
@@ -215,10 +235,7 @@ export function ReportSummary({
       </div>
 
       {hasUneaten && (
-        <section
-          aria-labelledby="uneaten-heading"
-          className="rounded-[10px] border border-line-soft bg-ash-900 px-4 py-3"
-        >
+        <section aria-labelledby="uneaten-heading" className="well px-4 py-3">
           <SubHeading id="uneaten-heading" className="micro-label mb-2">
             What reached the table
           </SubHeading>
@@ -309,14 +326,14 @@ export function ReportSummary({
             detail="Before rent, wages, utilities, tax, waste, sides and overhead."
           />
         </div>
-        <div className="mt-3 flex flex-wrap items-baseline justify-between gap-2 rounded-[10px] border border-line-soft bg-ash-900 px-4 py-3">
+        <div className="well mt-3 flex flex-wrap items-baseline justify-between gap-2 px-4 py-3">
           <div>
             <p className="micro-label">Est. food cost</p>
             <p className={cn('mt-0.5 text-sm font-semibold', SEVERITY_TONE[houseStatus.severity])}>
               {houseStatus.label}
             </p>
           </div>
-          <p className="tabular display-type text-3xl text-cream-100">
+          <p className="tabular display-hero text-3xl leading-none text-cream-100">
             {formatPercent(report.estimatedFoodCostPercent)}{' '}
             <span className="text-sm text-cream-700">
               of {hasAdjustments ? 'the total paid' : 'admission'}
