@@ -33,7 +33,7 @@ export function HistoryEntry({ session, onDelete, selected = false, onSelect }: 
   const label = record.restaurantName || 'Unnamed restaurant';
 
   return (
-    <li className="panel relative p-4 transition-colors duration-200 hover:border-line-ember">
+    <li className="panel lift-on-hover relative p-4 hover:border-line-ember hover:shadow-[var(--shadow-raised)]">
       <div className="flex items-start justify-between gap-3">
         {onSelect && (
           <input

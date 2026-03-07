@@ -463,6 +463,37 @@ input[type='number']::-webkit-inner-spin-button {
   animation: ayce-fade-up 320ms var(--ease-out-soft) both;
 }
 
+/*
+ * A section arriving after the one above it.
+ *
+ * The report is eight blocks that appeared at once, which reads as a page
+ * finishing loading rather than as an answer being delivered. Staggering them
+ * by a fifth of a second each lets the verdict land first and the evidence
+ * follow, which is the order they are meant to be read in.
+ *
+ * The delay is a custom property rather than six utilities, so a caller sets
+ * its own position in the sequence and nothing here has to know how long the
+ * sequence is. Capped deliberately: past about half a second a visitor is
+ * waiting for the interface rather than watching it.
+ */
+@utility animate-rise {
+  animation: ayce-fade-up 420ms var(--ease-out-soft) both;
+  animation-delay: var(--rise-delay, 0ms);
+}
+
+/* Under the pointer, a row lifts rather than only changing colour. */
+@utility lift-on-hover {
+  transition:
+    transform 200ms var(--ease-out-soft),
+    border-color 200ms var(--ease-out-soft),
+    background-color 200ms var(--ease-out-soft),
+    box-shadow 200ms var(--ease-out-soft);
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+}
+
 @utility animate-toast-in {
   animation: ayce-toast-in 200ms var(--ease-out-soft) both;
 }

@@ -65,6 +65,17 @@ const VERDICT_GLOW = {
 } as const;
 
 /**
+ * Where a block sits in the arrival sequence.
+ *
+ * Capped at the sixth step: past about half a second a visitor is waiting for
+ * the interface rather than watching it, and the report can be as long as the
+ * meal was.
+ */
+function rise(step: number): React.CSSProperties {
+  return { '--rise-delay': `${Math.min(step, 6) * 70}ms` } as React.CSSProperties;
+}
+
+/**
  * The read-only body of a damage report.
  *
  * Shared by the live report, a saved session and a shared link, so all three
@@ -97,7 +108,8 @@ export function ReportSummary({
       {/* 1 — Verdict */}
       <section
         aria-labelledby={headingId}
-        className="panel-raised relative isolate overflow-hidden"
+        style={rise(0)}
+        className="animate-rise panel-raised relative isolate overflow-hidden"
       >
         <div
           aria-hidden="true"
@@ -132,7 +144,11 @@ export function ReportSummary({
       </section>
 
       {(hasAdjustments || report.hasSeparatelyChargedItems) && (
-        <section aria-labelledby="bill-breakdown-heading" className="well px-4 py-3">
+        <section
+          aria-labelledby="bill-breakdown-heading"
+          style={rise(1)}
+          className="animate-rise well px-4 py-3"
+        >
           <h3 id="bill-breakdown-heading" className="micro-label mb-2">
             How the bill settled
           </h3>
@@ -186,7 +202,7 @@ export function ReportSummary({
       )}
 
       {/* 2 — Retail value against what was paid */}
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div style={rise(2)} className="animate-rise grid gap-3 sm:grid-cols-2">
         <ResultMetric
           label="Est. retail value"
           value={formatMoney(report.totalRetailValue, pricingProfile.money)}
@@ -219,7 +235,7 @@ export function ReportSummary({
       </div>
 
       {/* 3 — Volume */}
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div style={rise(3)} className="animate-rise grid gap-3 sm:grid-cols-2">
         <ResultMetric
           label="Plates ordered"
           value={formatPlates(report.totalPlates)}
@@ -261,7 +277,11 @@ export function ReportSummary({
 
       {/* 4 — The even split */}
       {perDiner && (
-        <section aria-labelledby={`${headingId}-per-diner`} className="panel p-4 sm:p-5">
+        <section
+          aria-labelledby={`${headingId}-per-diner`}
+          style={rise(4)}
+          className="animate-rise panel p-4 sm:p-5"
+        >
           <SubHeading id={`${headingId}-per-diner`} className="micro-label mb-1">
             Split {formatCount(perDiner.dinerCount)} ways
           </SubHeading>
@@ -289,7 +309,7 @@ export function ReportSummary({
       )}
 
       {/* 5 — Nutrition */}
-      <section aria-labelledby={`${headingId}-nutrition`}>
+      <section aria-labelledby={`${headingId}-nutrition`} style={rise(5)} className="animate-rise">
         <SubHeading id={`${headingId}-nutrition`} className="micro-label mb-2">
           Approximate nutrition
         </SubHeading>
@@ -310,7 +330,11 @@ export function ReportSummary({
       </section>
 
       {/* 6 — The house side of the ledger */}
-      <section aria-labelledby={`${headingId}-house`} className="panel p-4 sm:p-5">
+      <section
+        aria-labelledby={`${headingId}-house`}
+        style={rise(6)}
+        className="animate-rise panel p-4 sm:p-5"
+      >
         <SubHeading id={`${headingId}-house`} className="micro-label mb-3">
           The house side of the ledger
         </SubHeading>
