@@ -15,7 +15,17 @@ import { describe, expect, it, vi } from 'vitest';
 const ORIGIN = 'http://localhost:3100';
 const SW_SOURCE = readFileSync(join(process.cwd(), 'public', 'sw.js'), 'utf8');
 
-const CURRENT_CACHE = 'ayce-shell-v2';
+/*
+ * Read from the worker rather than restated here. A bump is the one lever that
+ * retires a stale shell, and a test carrying its own copy of the version would
+ * keep passing against the old one — proving the retirement worked for a name
+ * nothing is actually cached under.
+ */
+const CACHE_VERSION = /const CACHE_VERSION = '([^']+)'/.exec(SW_SOURCE)?.[1];
+if (!CACHE_VERSION) {
+  throw new Error('public/sw.js no longer declares a CACHE_VERSION to test against.');
+}
+const CURRENT_CACHE = `ayce-shell-${CACHE_VERSION}`;
 
 /**
  * A stand-in for `Request`. The real constructor rejects `mode: 'navigate'` and
