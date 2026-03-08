@@ -129,10 +129,7 @@ export function ComparisonReport({
         </h3>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {comparison.categories.map((category) => (
-            <div
-              key={category.id}
-              className="rounded-[10px] border border-line-soft bg-ash-900 px-3 py-3"
-            >
+            <div key={category.id} className="well px-3 py-3">
               <p className="micro-label">{category.label}</p>
               <p className="tabular mt-1 text-sm text-cream-500">
                 {category.previousPlates}
