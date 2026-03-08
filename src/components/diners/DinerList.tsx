@@ -53,7 +53,7 @@ export function DinerList() {
           <li key={summary.diner.id}>
             <Link
               href={`/diners/${summary.diner.id}`}
-              className="panel flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 p-4 transition-colors duration-200 hover:border-line-ember sm:p-5"
+              className="panel lift-on-hover flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 p-4 hover:border-line-ember hover:shadow-[var(--shadow-raised)] sm:p-5"
             >
               <div className="min-w-0">
                 <p className="display-type truncate text-2xl text-cream-50">
