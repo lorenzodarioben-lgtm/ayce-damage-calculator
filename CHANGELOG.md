@@ -32,6 +32,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Fixed
 
+- **A lost connection is confirmed before it is announced.** `navigator.onLine` is a hint, and
+  only one of its answers is worth trusting: the specification promises that false means no
+  interface is up, and browsers get it wrong — on a machine carrying a virtual network adapter,
+  Chrome reports false over a working connection, which left a permanent offline banner on the
+  deployed site. A claimed disconnection is now checked with one same-origin HEAD before the bar
+  repeats it. Any HTTP answer counts, including an error status: the question is whether the
+  network carried a request, not whether a resource exists. The check runs only when the browser
+  has already said the connection is gone, so an ordinary session never pays for it.
 - **The offline banner no longer latches on over a working connection.** Network state was read
   once at hydration and afterwards only ever moved when an `online` or `offline` event arrived. A
   worker-backed app paints its shell from cache before the network has settled, so the first

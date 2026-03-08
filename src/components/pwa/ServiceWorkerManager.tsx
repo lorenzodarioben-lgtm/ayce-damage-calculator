@@ -5,6 +5,46 @@ import { useCallback, useEffect, useState } from 'react';
 const SKIP_WAITING_MESSAGE = 'ayce:skip-waiting';
 
 /**
+ * What a lost connection is checked against.
+ *
+ * Small, same-origin, and always deployed. The service worker passes it
+ * straight to the network — it is neither precached nor a hashed build asset —
+ * so reaching it means the network was genuinely reachable rather than that a
+ * cache answered.
+ */
+const REACHABILITY_URL = '/manifest.webmanifest';
+
+/** Long enough for a slow connection, short enough not to leave the bar wrong. */
+const REACHABILITY_TIMEOUT_MS = 3000;
+
+/**
+ * Whether a request actually completes.
+ *
+ * Any HTTP response counts, including an error status: this asks whether the
+ * network carried a request, not whether a resource exists. Only a transport
+ * failure — or taking longer than the timeout — reads as offline.
+ */
+async function networkReachable(): Promise<boolean> {
+  if (typeof fetch !== 'function') {
+    return false;
+  }
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REACHABILITY_TIMEOUT_MS);
+  try {
+    await fetch(REACHABILITY_URL, {
+      method: 'HEAD',
+      cache: 'no-store',
+      signal: controller.signal,
+    });
+    return true;
+  } catch {
+    return false;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/**
  * Registers the service worker and surfaces waiting updates.
  *
  * The worker is never activated behind the user's back. A build swap mid-session
@@ -67,7 +107,46 @@ export function ServiceWorkerManager() {
   }, []);
 
   useEffect(() => {
-    const update = () => setOnline(navigator.onLine);
+    let cancelled = false;
+    /*
+     * Each check supersedes the one before it. A slow verification must not be
+     * allowed to land after a newer, faster answer and overwrite it.
+     */
+    let generation = 0;
+
+    const settle = (value: boolean, from: number) => {
+      if (!cancelled && from === generation) {
+        setOnline(value);
+      }
+    };
+
+    /*
+     * `navigator.onLine` is a hint, and only one of its answers is worth
+     * trusting outright.
+     *
+     * True is taken at face value: it costs nothing, and the case it would hide
+     * — an interface that is up but leads nowhere — is not what this bar
+     * claims. False is the unreliable one. The specification only promises that
+     * false means no interface is up, and browsers get that wrong: on a machine
+     * carrying a virtual adapter, Chrome reports false over a working
+     * connection, which is exactly what this app was showing. So a claimed loss
+     * is confirmed against the network before it is repeated to anyone.
+     *
+     * The request costs one HEAD, and only ever when the browser has already
+     * said the connection is gone — never on the ordinary path where it is not.
+     */
+    const update = () => {
+      generation += 1;
+      const mine = generation;
+
+      if (navigator.onLine) {
+        settle(true, mine);
+        return;
+      }
+
+      void networkReachable().then((reachable) => settle(reachable, mine));
+    };
+
     const capture = (event: Event) => {
       event.preventDefault();
       // Nothing to offer where the app is already running as an installed one.
@@ -98,18 +177,14 @@ export function ServiceWorkerManager() {
      * app was showing: `navigator.onLine` true, requests succeeding, and a
      * banner insisting otherwise.
      *
-     * So the property is re-read whenever the page is looked at again. It is
-     * the browser's own answer rather than a probe of our own: cheap, correct
-     * for the case that actually goes wrong, and never a request the visitor
-     * did not ask for. `navigator.onLine` can still only prove the negative —
-     * false means definitely no network, true means only that an interface is
-     * up — so the bar keeps saying what is safe to say, and says it only while
-     * the browser agrees.
+     * So the reading is refreshed whenever the page is looked at again, and a
+     * claimed loss is confirmed against the network before the bar repeats it.
      */
     window.addEventListener('focus', update);
     document.addEventListener('visibilitychange', update);
     window.addEventListener('beforeinstallprompt', capture);
     return () => {
+      cancelled = true;
       window.removeEventListener('online', update);
       window.removeEventListener('offline', update);
       window.removeEventListener('focus', update);
