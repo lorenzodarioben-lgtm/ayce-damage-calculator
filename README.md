@@ -192,9 +192,11 @@ keys, and nothing you record ever leaves your device.
 
 - Installable as a PWA, with a service worker that keeps the calculator working offline
 - Responsive from 320 px phones to desktop, with original SVG food illustrations
+- A warm, grill-lit dark theme built on three elevations, one accent that is spent sparingly, and
+  self-hosted typefaces that are checked in rather than fetched
 - Skip link, keyboard-operable throughout, labelled controls, live-region confirmations,
   reduced-motion support, and AA contrast across the palette
-- 1024 automated tests
+- 2100 unit and component tests, plus 273 end-to-end cases across desktop and mobile viewports
 
 ## Tech stack
 
@@ -204,6 +206,7 @@ keys, and nothing you record ever leaves your device.
 | UI         | React 19                                 |
 | Language   | TypeScript 5.9, strict                   |
 | Styling    | Tailwind CSS 4 with a custom theme       |
+| Typefaces  | Anton, Oswald and Inter, self-hosted     |
 | Icons      | lucide-react                             |
 | QR codes   | qrcode-generator                         |
 | Storage    | localStorage + IndexedDB (via `idb`)     |
@@ -214,7 +217,8 @@ keys, and nothing you record ever leaves your device.
 | Hosting    | Vercel                                   |
 
 No component library, no state-management library, no charting library, no backend, and no external
-data services. The one dependency beyond the framework and its icons is `qrcode-generator`: a
+data services. Nothing is fetched at runtime and nothing at build time either — the typefaces are
+in the repository, not on a CDN. The one dependency beyond the framework and its icons is `qrcode-generator`: a
 standards-correct QR encoder needs Reed-Solomon correction, eight mask patterns and forty version
 tables, there is no browser-native equivalent, and getting any of it subtly wrong produces a code
 that scans as something else. It is a single dependency-free MIT module; the SVG rendering is still
@@ -378,7 +382,29 @@ emulation nor its request routing reaches the fetch a service worker makes on it
 
 **Shared result-card model.** The on-screen result card and the exported PNG render from one shared
 model, so they can't drift apart. The image is drawn directly to canvas rather than rasterised from
-the DOM — no web-font fetching, no external requests, and a predictable output every time.
+the DOM — no stylesheet to resolve, no external requests, and a predictable output every time. Each
+style names the role it wants and the family is read from the same custom property the stylesheet
+uses, because the loaded families are generated names: hard-coding one would quietly measure and
+draw the fallback while the card beside it used the real face.
+
+**A visual system with three heights and one accent.** A dark interface cannot separate two
+surfaces by making one lighter — six near-black browns all read as the same brown. Separation comes
+from the edges instead: a one-pixel highlight along the top where the light would catch, and a warm
+shadow underneath rather than a neutral one. There are three elevations, because a surface is on
+the page, above it, or floating over it, and anything finer is a distinction nobody can see. Glow
+is kept apart from elevation and spent on the two or three things that are genuinely live — a meter
+filling, the primary action, a verdict landing — since a page where everything glows has nothing
+left to point at. Every repeated surface is one utility rather than a recipe copied into seventy
+components, which is what let sixteen copies of the same recessed panel drift a radius apart.
+
+**Type that is checked in, not fetched.** Three faces live in `src/app/fonts` and are loaded with
+`next/font/local`. `next/font/google` downloads during `next build`, which would make the build
+need a network and make two builds of one commit depend on what a CDN served that day; checked-in
+files keep an offline machine and a restricted CI runner producing identical bytes. Anton carries
+the few moments the app raises its voice, Oswald gives headings a weight axis, and Inter takes the
+interface text — chosen mostly for its figures, since this app is columns of numbers and Inter's
+are the same width to the pixel. All three are SIL Open Font Licence 1.1; the licences ship beside
+them.
 
 ## How the calculations work
 
