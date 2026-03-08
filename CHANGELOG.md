@@ -32,6 +32,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Fixed
 
+- **The offline banner no longer latches on over a working connection.** Network state was read
+  once at hydration and afterwards only ever moved when an `online` or `offline` event arrived. A
+  worker-backed app paints its shell from cache before the network has settled, so the first
+  reading is often a false "offline" — and the event that should have corrected it can land before
+  the listener exists, or never fire at all if the tab was in the background when connectivity
+  returned. The deployed site was showing the banner with `navigator.onLine` true and requests
+  succeeding. The property is now re-read on mount and whenever the page is looked at again.
 - **Every field carries a visible focus ring.** Three inputs had opted out of the global focus
   outline — which is clipped by a scrolling ancestor — and replaced it with a border colour change
   alone, while a fourth, an all but identical search box, kept a ring. Thirty-one per-field
