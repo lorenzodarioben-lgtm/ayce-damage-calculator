@@ -82,7 +82,7 @@ export function RestaurantList() {
             />
             <Link
               href={`/restaurants/${summary.profile.id}`}
-              className="panel flex flex-wrap items-baseline justify-between gap-3 p-4 transition-colors duration-200 hover:border-ember-700 hover:bg-ash-800 sm:p-5"
+              className="panel lift-on-hover flex flex-wrap items-baseline justify-between gap-3 p-4 hover:border-ember-700 hover:bg-ash-800 hover:shadow-[var(--shadow-raised)] sm:p-5"
             >
               <span className="min-w-0">
                 <span className="block truncate text-base font-bold text-cream-50">
