@@ -224,6 +224,85 @@ textarea:focus-visible {
     0 0 0 4px color-mix(in oklab, var(--color-ember-500) 22%, transparent);
 }
 
+/* Checkboxes and radios keep their native behaviour and take the accent. One
+   declaration, and the browser draws the rest correctly on every platform. */
+input[type='checkbox'],
+input[type='radio'] {
+  accent-color: var(--color-ember-500);
+}
+
+/*
+ * Range inputs, drawn rather than accepted.
+ *
+ * The native control is the last obviously unstyled thing on the planner, and
+ * `accent-color` only recolours it. The track picks up the same recessed
+ * treatment every other field has and the thumb the same lit dome as a
+ * segmented thumb, so a slider stops being the one control from another app.
+ * Written twice because the two engines have never agreed a shared selector.
+ */
+input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 1.5rem;
+  background: transparent;
+  cursor: pointer;
+}
+
+input[type='range']::-webkit-slider-runnable-track {
+  height: 0.5rem;
+  border-radius: 999px;
+  background: var(--color-ash-950);
+  border: 1px solid var(--color-line);
+  box-shadow: inset 0 1px 3px rgb(0 0 0 / 0.5);
+}
+
+input[type='range']::-moz-range-track {
+  height: 0.5rem;
+  border-radius: 999px;
+  background: var(--color-ash-950);
+  border: 1px solid var(--color-line);
+  box-shadow: inset 0 1px 3px rgb(0 0 0 / 0.5);
+}
+
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 1.25rem;
+  height: 1.25rem;
+  /* Half the thumb, less half the track, lifts it onto the track's centre. */
+  margin-top: -0.4rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-ember-700);
+  background-image: linear-gradient(180deg, var(--color-ember-300) 0%, var(--color-ember-600) 100%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 250 240 / 0.4),
+    0 2px 6px -1px rgb(0 0 0 / 0.6);
+}
+
+input[type='range']::-moz-range-thumb {
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-ember-700);
+  background-image: linear-gradient(180deg, var(--color-ember-300) 0%, var(--color-ember-600) 100%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 250 240 / 0.4),
+    0 2px 6px -1px rgb(0 0 0 / 0.6);
+}
+
+input[type='range']:focus-visible::-webkit-slider-thumb {
+  box-shadow:
+    inset 0 1px 0 rgb(255 250 240 / 0.4),
+    0 0 0 4px color-mix(in oklab, var(--color-ember-500) 30%, transparent);
+}
+
+input[type='range']:focus-visible::-moz-range-thumb {
+  box-shadow:
+    inset 0 1px 0 rgb(255 250 240 / 0.4),
+    0 0 0 4px color-mix(in oklab, var(--color-ember-500) 30%, transparent);
+}
+
 input[type='number'] {
   -moz-appearance: textfield;
   appearance: textfield;

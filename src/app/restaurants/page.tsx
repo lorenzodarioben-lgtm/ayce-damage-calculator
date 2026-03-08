@@ -22,7 +22,9 @@ export default function RestaurantsPage() {
         id={MAIN_CONTENT_ID}
         className="relative z-10 mx-auto max-w-[900px] px-4 pt-8 pb-16 sm:px-6"
       >
-        <h1 className="display-type text-4xl text-cream-50 sm:text-5xl">Known establishments</h1>
+        <h1 className="display-hero text-[clamp(2.5rem,7vw,4rem)] text-cream-50">
+          Known establishments
+        </h1>
         <p className="mt-3 max-w-[60ch] text-sm leading-relaxed text-cream-300">
           Places you have saved, with the visits you have filed against each one. Every figure comes
           from your own records, recalculated from the meals themselves. There is still no bundled
