@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ServiceWorkerManager } from '@/components/pwa/ServiceWorkerManager';
@@ -14,6 +14,20 @@ const originalMatchMedia = window.matchMedia;
 function setOnline(online: boolean) {
   Object.defineProperty(navigator, 'onLine', { configurable: true, value: online });
   window.dispatchEvent(new Event(online ? 'online' : 'offline'));
+}
+
+/**
+ * The network the reachability check meets.
+ *
+ * A claimed disconnection is verified with one HEAD before the bar repeats it,
+ * so every case below has to say whether that request would have got through.
+ */
+function setNetworkReachable(reachable: boolean) {
+  const fetchMock = reachable
+    ? vi.fn().mockResolvedValue(new Response(null, { status: 200 }))
+    : vi.fn().mockRejectedValue(new TypeError('Failed to fetch'));
+  vi.stubGlobal('fetch', fetchMock);
+  return fetchMock;
 }
 
 /** Connectivity changes without the event that should have announced it. */
@@ -42,6 +56,7 @@ function fireInstallPrompt(prompt = vi.fn().mockResolvedValue(undefined)) {
 afterEach(() => {
   Object.defineProperty(navigator, 'onLine', { configurable: true, value: true });
   window.matchMedia = originalMatchMedia;
+  vi.unstubAllGlobals();
 });
 
 describe('ServiceWorkerManager', () => {
@@ -54,23 +69,25 @@ describe('ServiceWorkerManager', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  it('says the network is gone, and what that still leaves available', () => {
+  it('says the network is gone, and what that still leaves available', async () => {
+    setNetworkReachable(false);
     render(<ServiceWorkerManager />);
 
     act(() => setOnline(false));
 
-    expect(screen.getByText(/you are offline/i)).toBeInTheDocument();
+    expect(await screen.findByText(/you are offline/i)).toBeInTheDocument();
     expect(screen.getByText(/previously visited pages may remain available/i)).toBeInTheDocument();
   });
 
-  it('goes quiet again when the network comes back', () => {
+  it('goes quiet again when the network comes back', async () => {
+    setNetworkReachable(false);
     render(<ServiceWorkerManager />);
 
     act(() => setOnline(false));
-    expect(screen.getByRole('status')).toBeInTheDocument();
+    expect(await screen.findByRole('status')).toBeInTheDocument();
 
     act(() => setOnline(true));
-    expect(screen.queryByRole('status')).toBeNull();
+    await waitFor(() => expect(screen.queryByRole('status')).toBeNull());
   });
 
   /*
@@ -100,40 +117,83 @@ describe('ServiceWorkerManager', () => {
     expect(screen.queryByRole('status')).toBeNull();
   });
 
-  it('re-reads the network when the page is looked at again', () => {
+  it('re-reads the network when the page is looked at again', async () => {
+    setNetworkReachable(false);
     render(<ServiceWorkerManager />);
 
     act(() => setOnline(false));
-    expect(screen.getByText(/you are offline/i)).toBeInTheDocument();
+    expect(await screen.findByText(/you are offline/i)).toBeInTheDocument();
 
     // The connection returns while the tab is in the background, so the event
     // that would have cleared this never arrives.
     setOnlineSilently(true);
     act(() => void document.dispatchEvent(new Event('visibilitychange')));
 
-    expect(screen.queryByRole('status')).toBeNull();
+    await waitFor(() => expect(screen.queryByRole('status')).toBeNull());
   });
 
-  it('re-reads the network when the window is focused again', () => {
+  it('re-reads the network when the window is focused again', async () => {
+    setNetworkReachable(false);
     render(<ServiceWorkerManager />);
 
     act(() => setOnline(false));
-    expect(screen.getByText(/you are offline/i)).toBeInTheDocument();
+    expect(await screen.findByText(/you are offline/i)).toBeInTheDocument();
 
     setOnlineSilently(true);
     act(() => void window.dispatchEvent(new Event('focus')));
 
-    expect(screen.queryByRole('status')).toBeNull();
+    await waitFor(() => expect(screen.queryByRole('status')).toBeNull());
   });
 
-  it('still says the network is gone when it genuinely is', () => {
+  it('still says the network is gone when it genuinely is', async () => {
+    setNetworkReachable(false);
     render(<ServiceWorkerManager />);
 
     act(() => setOnline(false));
     // A look at the page does not wish a connection into existence.
     act(() => void window.dispatchEvent(new Event('focus')));
 
-    expect(screen.getByText(/you are offline/i)).toBeInTheDocument();
+    expect(await screen.findByText(/you are offline/i)).toBeInTheDocument();
+  });
+
+  /*
+   * The reason this verification exists. Chrome reports a lost connection over
+   * a working one on a machine carrying a virtual network adapter, which left a
+   * permanent offline banner on the deployed site.
+   */
+  it('does not repeat a disconnection the network disagrees with', async () => {
+    const fetchMock = setNetworkReachable(true);
+    render(<ServiceWorkerManager />);
+
+    act(() => setOnline(false));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+    await waitFor(() => expect(screen.queryByRole('status')).toBeNull());
+  });
+
+  it('reads any answer at all as a network that carried the request', async () => {
+    // A 404 still proves the request got somewhere; this asks about the
+    // connection, not about the resource.
+    const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 404 }));
+    vi.stubGlobal('fetch', fetchMock);
+    render(<ServiceWorkerManager />);
+
+    act(() => setOnline(false));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+    await waitFor(() => expect(screen.queryByRole('status')).toBeNull());
+  });
+
+  it('does not go near the network while the browser says it is there', async () => {
+    const fetchMock = setNetworkReachable(true);
+    render(<ServiceWorkerManager />);
+
+    act(() => setOnline(true));
+    act(() => void window.dispatchEvent(new Event('focus')));
+
+    // The check is the exception, not the routine: an ordinary session that
+    // never loses its connection must never pay for one.
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it('offers the install the browser held back, and hands it on when asked', async () => {
