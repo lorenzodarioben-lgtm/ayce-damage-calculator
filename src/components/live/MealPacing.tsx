@@ -328,7 +328,7 @@ export function MealPacing({
 
 function Figure({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
-    <div className="rounded-[10px] border border-line-soft bg-ash-900 px-3 py-2">
+    <div className="well px-3 py-2">
       <dt className="micro-label">{label}</dt>
       <dd
         className={cn(

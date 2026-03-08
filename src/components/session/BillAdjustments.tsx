@@ -353,7 +353,7 @@ export function BillAdjustments({
       )}
 
       {adjustments.length > 0 && (
-        <dl className="mt-3 space-y-1 rounded-[10px] border border-line-soft bg-ash-900 px-4 py-3 text-sm">
+        <dl className="mt-3 space-y-1 well px-4 py-3 text-sm">
           <Row label="Entry price" value={formatMoney(baseAdmission, pricingProfile.money)} muted />
           {totals.charges > 0 && (
             <Row

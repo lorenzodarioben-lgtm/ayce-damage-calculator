@@ -646,7 +646,7 @@ function PlanOutcome({
 
 function Figure({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[10px] border border-line-soft bg-ash-900 px-3 py-2">
+    <div className="well px-3 py-2">
       <dt className="micro-label">{label}</dt>
       <dd className="tabular mt-0.5 text-sm font-semibold text-cream-50">{value}</dd>
     </div>
