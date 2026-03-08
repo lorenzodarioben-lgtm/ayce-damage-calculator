@@ -75,12 +75,45 @@ export function ServiceWorkerManager() {
         setDeferredInstall(event as Event & { prompt: () => Promise<void> });
       }
     };
+    /*
+     * Re-read once on mount, before any listener could have helped. The initial
+     * value is taken during render and this runs after paint, so an `online`
+     * event arriving in that gap would otherwise be missed entirely — the exact
+     * window a service worker's cached first paint tends to open.
+     */
+    update();
+
     window.addEventListener('online', update);
     window.addEventListener('offline', update);
+    /*
+     * The events alone are not enough to stay in step with the network.
+     *
+     * This state starts from `navigator.onLine` at hydration and, before this,
+     * only ever moved again when an event arrived. A worker-backed app paints
+     * its shell from the cache before the network has settled, so the first
+     * reading is often a false "offline" — and the matching `online` event can
+     * land before this effect is listening, or never fire at all if the tab was
+     * in the background when connectivity returned. The bar then latches on and
+     * stays on over a working connection, which is precisely the failure this
+     * app was showing: `navigator.onLine` true, requests succeeding, and a
+     * banner insisting otherwise.
+     *
+     * So the property is re-read whenever the page is looked at again. It is
+     * the browser's own answer rather than a probe of our own: cheap, correct
+     * for the case that actually goes wrong, and never a request the visitor
+     * did not ask for. `navigator.onLine` can still only prove the negative —
+     * false means definitely no network, true means only that an interface is
+     * up — so the bar keeps saying what is safe to say, and says it only while
+     * the browser agrees.
+     */
+    window.addEventListener('focus', update);
+    document.addEventListener('visibilitychange', update);
     window.addEventListener('beforeinstallprompt', capture);
     return () => {
       window.removeEventListener('online', update);
       window.removeEventListener('offline', update);
+      window.removeEventListener('focus', update);
+      document.removeEventListener('visibilitychange', update);
       window.removeEventListener('beforeinstallprompt', capture);
     };
   }, []);
