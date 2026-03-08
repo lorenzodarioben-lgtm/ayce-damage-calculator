@@ -4,6 +4,9 @@
   "private": true,
   "description": "Track your all-you-can-eat Korean BBQ meal and calculate whether you beat the buffet.",
   "license": "MIT",
+  "engines": {
+    "node": ">=20.9.0"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
