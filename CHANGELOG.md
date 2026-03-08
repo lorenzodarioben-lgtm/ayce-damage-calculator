@@ -7,6 +7,40 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ## [Unreleased]
 
+### Changed
+
+- **A visual overhaul.** The interface kept its layout, its copy and every number it reports, and
+  changed how all of it is presented.
+  - **Three typefaces, checked into the repository** and loaded with `next/font/local`. The display
+    face was Impact, reached through a system stack: one weight, a different rendering on every
+    machine, and the tone of a 2003 flyer over an app that is careful about how it presents a
+    number. Anton now carries the hero and the verdict, Oswald gives headings and cut names a
+    weight axis, and Inter takes the interface text for its tabular figures. Nothing is downloaded
+    at build time or at runtime, which is the property the old system stack was protecting.
+  - **Depth, from the edges rather than the fill.** Six near-black browns all read as the same
+    brown, so panels are separated by a lit top edge and a warm shadow instead. Three elevations, a
+    recessed treatment for fields and inner wells, and an accent glow spent only on things that are
+    genuinely live.
+  - **A hero that fills the space it was given**, a verdict that arrives in the display face over a
+    bloom in its own colour, and a damage meter that is a recessed instrument with quarter marks
+    rather than a hairline.
+  - **One shape for repeated things.** The segmented controls, the recessed wells and the button
+    variants were each being assembled by hand in up to seventy places and drifting; they are now
+    single utilities.
+  - **A staggered arrival for the report**, so the verdict lands before the evidence, running
+    entirely through properties the existing reduced-motion rule already neutralises.
+
+### Fixed
+
+- **Every field carries a visible focus ring.** Three inputs had opted out of the global focus
+  outline — which is clipped by a scrolling ancestor — and replaced it with a border colour change
+  alone, while a fourth, an all but identical search box, kept a ring. Thirty-one per-field
+  overrides were replaced by one base rule, so a field added later cannot ship without a focus
+  state.
+- **The exported result card draws in the typeface it names.** It asked for "Anton" and had been
+  measuring and drawing the fallback, because the loaded family name is generated. Styles now name
+  a role and the family is resolved from the same custom property the stylesheet reads.
+
 ### Added
 
 - **Timestamped meal event ledger** — every plate added or taken back, every line removed or
