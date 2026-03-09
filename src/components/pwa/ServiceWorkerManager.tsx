@@ -5,6 +5,26 @@ import { useCallback, useEffect, useState } from 'react';
 const SKIP_WAITING_MESSAGE = 'ayce:skip-waiting';
 
 /**
+ * The browser's own view of the connection, defaulting to connected.
+ *
+ * Node has defined a global `navigator` since v18 and it carries no `onLine`,
+ * so the obvious guard — `typeof navigator === 'undefined'` — passes on the
+ * server, reads `undefined`, and treats it as a disconnection. This page is
+ * statically prerendered, so that put "You are offline" into the HTML shipped
+ * to every visitor, before a line of client code had run and with nothing about
+ * their actual connection involved.
+ *
+ * Only a real boolean is an answer. Anything else means nobody has said
+ * otherwise, and the honest default for a page that just loaded over the
+ * network is that the network is there.
+ */
+function browserReportsOnline(): boolean {
+  return typeof navigator !== 'undefined' && typeof navigator.onLine === 'boolean'
+    ? navigator.onLine
+    : true;
+}
+
+/**
  * What a lost connection is checked against.
  *
  * Small, same-origin, and always deployed. The service worker passes it
@@ -56,7 +76,7 @@ export function ServiceWorkerManager() {
   const [deferredInstall, setDeferredInstall] = useState<{ prompt: () => Promise<void> } | null>(
     null,
   );
-  const [online, setOnline] = useState(() => typeof navigator === 'undefined' || navigator.onLine);
+  const [online, setOnline] = useState(browserReportsOnline);
 
   useEffect(() => {
     if (process.env.NODE_ENV !== 'production' || !('serviceWorker' in navigator)) {
@@ -139,7 +159,7 @@ export function ServiceWorkerManager() {
       generation += 1;
       const mine = generation;
 
-      if (navigator.onLine) {
+      if (browserReportsOnline()) {
         settle(true, mine);
         return;
       }
