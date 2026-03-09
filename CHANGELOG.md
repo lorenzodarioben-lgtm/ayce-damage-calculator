@@ -32,6 +32,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Fixed
 
+- **"You are offline" is no longer prerendered into every page.** The initial reading guarded on
+  `typeof navigator === 'undefined'` to detect the server. Node has defined a global `navigator`
+  since v18 and it carries no `onLine`, so the guard passed, the property read `undefined`, and a
+  disconnection was assumed — baking the banner into the static HTML of nine routes and serving it
+  to every visitor before a line of client code ran, with nothing about their connection involved.
+  Only a real boolean is treated as an answer now.
 - **A lost connection is confirmed before it is announced.** `navigator.onLine` is a hint, and
   only one of its answers is worth trusting: the specification promises that false means no
   interface is up, and browsers get it wrong — on a machine carrying a virtual network adapter,
