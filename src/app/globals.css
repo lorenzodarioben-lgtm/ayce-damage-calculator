@@ -10,6 +10,10 @@
 
   --color-cream-50: #f7f0e2;
   --color-cream-100: #f3e8d0;
+  /* Asked for in eight places — table rows, bill totals, the roster labels —
+     and never defined, so every one of them silently inherited its colour
+     instead. Sits where those callers assumed: between 100 and 300. */
+  --color-cream-200: #e1d4ba;
   --color-cream-300: #cfc0a4;
   --color-cream-500: #a99b84;
   --color-cream-700: #8f8271;
