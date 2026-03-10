@@ -9,6 +9,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Changed
 
+- **Photographic backdrops**, behind the hero, the six section headers and the verdict. Used as
+  atmosphere rather than content: a third strength or less, under a wash that is almost opaque
+  where the type is, so nothing on them has to be read and no screen depends on one loading. The
+  app's own cut illustrations still do all the explaining. Bundled in `public/images`, so the app
+  still makes no external request, and cached by the service worker so an offline visit keeps them.
 - **A visual overhaul.** The interface kept its layout, its copy and every number it reports, and
   changed how all of it is presented.
   - **Three typefaces, checked into the repository** and loaded with `next/font/local`. The display

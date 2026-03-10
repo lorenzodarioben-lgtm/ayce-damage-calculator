@@ -192,6 +192,8 @@ keys, and nothing you record ever leaves your device.
 
 - Installable as a PWA, with a service worker that keeps the calculator working offline
 - Responsive from 320 px phones to desktop, with original SVG food illustrations
+- Photographic backdrops behind the hero, the section headers and the verdict — atmosphere only,
+  never content, and bundled rather than fetched
 - A warm, grill-lit dark theme built on three elevations, one accent that is spent sparingly, and
   self-hosted typefaces that are checked in rather than fetched
 - Skip link, keyboard-operable throughout, labelled controls, live-region confirmations,
@@ -396,6 +398,14 @@ is kept apart from elevation and spent on the two or three things that are genui
 filling, the primary action, a verdict landing — since a page where everything glows has nothing
 left to point at. Every repeated surface is one utility rather than a recipe copied into seventy
 components, which is what let sixteen copies of the same recessed panel drift a radius apart.
+
+**Photography as atmosphere, never as content.** The pictures sit behind type at a third strength
+or less, under a wash that is almost opaque where the words are. Nothing in them needs to be
+legible, so none of them is load-bearing: every screen says exactly what it said before they were
+added, and a backdrop that fails to load costs nothing but atmosphere. The explaining is still done
+by the app's own drawings, which is why the eighteen cut illustrations were left alone. They live
+in `public/images` and are served from there — the app still makes no external request, and the
+service worker keeps them cache-first so an offline visit does not lose them.
 
 **Type that is checked in, not fetched.** Three faces live in `src/app/fonts` and are loaded with
 `next/font/local`. `next/font/google` downloads during `next build`, which would make the build
