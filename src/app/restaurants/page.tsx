@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { SiteFooter } from '@/components/nav/SiteFooter';
+import { RouteHeader } from '@/components/nav/RouteHeader';
 import { SiteHeader } from '@/components/nav/SiteHeader';
 import { MAIN_CONTENT_ID } from '@/components/nav/destinations';
 import { RestaurantList } from '@/components/restaurants/RestaurantList';
@@ -22,14 +23,11 @@ export default function RestaurantsPage() {
         id={MAIN_CONTENT_ID}
         className="relative z-10 mx-auto max-w-[900px] px-4 pt-8 pb-16 sm:px-6"
       >
-        <h1 className="display-hero text-[clamp(2.5rem,7vw,4rem)] text-cream-50">
-          Known establishments
-        </h1>
-        <p className="mt-3 max-w-[60ch] text-sm leading-relaxed text-cream-300">
+        <RouteHeader image="/images/interior.webp" title="Known establishments">
           Places you have saved, with the visits you have filed against each one. Every figure comes
           from your own records, recalculated from the meals themselves. There is still no bundled
           restaurant directory here — a place exists because you named it.
-        </p>
+        </RouteHeader>
 
         <div className="mt-8">
           <RestaurantList />
