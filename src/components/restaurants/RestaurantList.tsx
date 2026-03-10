@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { EMPTY_STATE_LINK } from '@/components/ui/Button';
 import { useMealHistory } from '@/hooks/useMealHistory';
 import { useRestaurants } from '@/hooks/useRestaurants';
@@ -48,16 +49,18 @@ export function RestaurantList() {
 
   if (restaurants.length === 0) {
     return (
-      <div className="panel border-dashed px-6 py-14 text-center">
-        <p className="display-type text-2xl text-cream-300">No places on file.</p>
-        <p className="mx-auto mt-3 max-w-[46ch] text-sm leading-relaxed text-cream-700">
-          Name a restaurant in the calculator, set its entry price, and save the setup. It appears
-          here with every visit you file against it afterwards.
-        </p>
-        <Link href="/" className={EMPTY_STATE_LINK}>
-          Back to the calculator
-        </Link>
-      </div>
+      <EmptyState
+        mark="place"
+        title="No places on file."
+        action={
+          <Link href="/" className={EMPTY_STATE_LINK}>
+            Back to the calculator
+          </Link>
+        }
+      >
+        Name a restaurant in the calculator, set its entry price, and save the setup. It appears
+        here with every visit you file against it afterwards.
+      </EmptyState>
     );
   }
 

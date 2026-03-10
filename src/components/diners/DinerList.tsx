@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { EMPTY_STATE_LINK } from '@/components/ui/Button';
 import { useMealHistory } from '@/hooks/useMealHistory';
 import { useRegularDiners } from '@/hooks/useRegularDiners';
@@ -31,18 +32,22 @@ export function DinerList() {
 
   if (summaries.length === 0) {
     return (
-      <div className="panel border-dashed px-6 py-14 text-center">
-        <p className="display-type text-2xl text-cream-300">Nobody on file.</p>
-        <p className="mx-auto mt-3 max-w-[48ch] text-sm leading-relaxed text-cream-700">
-          People appear here when you save them from a table roster. Table Mode is optional — the
-          calculator works perfectly well as one shared tab, and nobody is added without you saying
-          so.
-        </p>
-        <Link href="/" className={EMPTY_STATE_LINK}>
-          Back to the calculator
-        </Link>
-        {unsaved.length > 0 && <UnsavedNote names={unsaved} />}
-      </div>
+      <EmptyState
+        mark="people"
+        title="Nobody on file."
+        action={
+          <>
+            <Link href="/" className={EMPTY_STATE_LINK}>
+              Back to the calculator
+            </Link>
+            {unsaved.length > 0 && <UnsavedNote names={unsaved} />}
+          </>
+        }
+      >
+        People appear here when you save them from a table roster. Table Mode is optional — the
+        calculator works perfectly well as one shared tab, and nobody is added without you saying
+        so.
+      </EmptyState>
     );
   }
 

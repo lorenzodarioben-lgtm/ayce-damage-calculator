@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { ChallengeShareActions } from '@/components/history/ChallengeShareActions';
 import { ComparisonReport } from '@/components/history/ComparisonReport';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { EMPTY_STATE_LINK } from '@/components/ui/Button';
 import { StatusToast } from '@/components/ui/StatusToast';
 import { useStatusMessage } from '@/hooks/useStatusMessage';
@@ -63,16 +64,18 @@ export function ComparisonView() {
 
   if (records.length < 2) {
     return (
-      <div className="panel border-dashed px-6 py-14 text-center">
-        <p className="display-type text-2xl text-cream-300">Insufficient evidence.</p>
-        <p className="mx-auto mt-3 max-w-[44ch] text-sm leading-relaxed text-cream-700">
-          Two filed sessions are needed before a comparison means anything. Currently on file:{' '}
-          {records.length}.
-        </p>
-        <Link href="/history" className={EMPTY_STATE_LINK}>
-          Back to the file
-        </Link>
-      </div>
+      <EmptyState
+        mark="record"
+        title="Insufficient evidence."
+        action={
+          <Link href="/history" className={EMPTY_STATE_LINK}>
+            Back to the file
+          </Link>
+        }
+      >
+        Two filed sessions are needed before a comparison means anything. Currently on file:{' '}
+        {records.length}.
+      </EmptyState>
     );
   }
 

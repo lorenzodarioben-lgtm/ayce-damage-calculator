@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { EMPTY_STATE_LINK } from '@/components/ui/Button';
 import { RecoveryTrend } from '@/components/stats/RecoveryTrend';
 import { ShareBars } from '@/components/stats/ShareBars';
@@ -51,16 +52,18 @@ export function StatsView() {
 
   if (records.length === 0) {
     return (
-      <div className="panel border-dashed px-6 py-14 text-center">
-        <p className="display-type text-2xl text-cream-300">Nothing to analyse yet.</p>
-        <p className="mx-auto mt-3 max-w-[44ch] text-sm leading-relaxed text-cream-700">
-          These figures are derived from sessions you have filed. Nothing is estimated and nothing
-          is collected — file a report and the analysis appears.
-        </p>
-        <Link href="/" className={EMPTY_STATE_LINK}>
-          Start a session
-        </Link>
-      </div>
+      <EmptyState
+        mark="chart"
+        title="Nothing to analyse yet."
+        action={
+          <Link href="/" className={EMPTY_STATE_LINK}>
+            Start a session
+          </Link>
+        }
+      >
+        These figures are derived from sessions you have filed. Nothing is estimated and nothing is
+        collected — file a report and the analysis appears.
+      </EmptyState>
     );
   }
 
