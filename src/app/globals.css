@@ -141,6 +141,26 @@ body {
      handle their own inset; these keep body text off the notch itself. */
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
+
+  /*
+   * The page reaches the bottom of the window even when it has little to say.
+   *
+   * Several routes are a single short panel — an empty file, an analysis with
+   * nothing filed against it — and in ordinary flow the footer landed halfway
+   * up the screen with black underneath, which reads as a page that failed to
+   * finish rather than one that is honestly empty. The skip link and the two
+   * ambient layers are all fixed, so none of them is a flex item here.
+   */
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* Takes the slack, so the footer is pushed to the foot of a short page and
+   simply follows the content on a long one. */
+main {
+  flex: 1 0 auto;
 }
 
 /*

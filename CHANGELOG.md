@@ -9,6 +9,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Changed
 
+- **Illustrated empty states.** Five panels that were a sentence in a dashed box now draw the same
+  overhead plate the food illustrations use, with a different thing resting on it — filed records,
+  two empty seats, a shopfront, three readings, a bare plate. For anyone arriving without a meal on
+  file these panels are most of the app, so they were the screens least worth leaving blank.
+- **Short pages reach the bottom of the window.** A route with one small panel left the footer
+  halfway up the screen with black underneath, which read as a page that had failed to load rather
+  than one that was honestly empty.
 - **Photographic backdrops**, behind the hero, the six section headers and the verdict. Used as
   atmosphere rather than content: a third strength or less, under a wash that is almost opaque
   where the type is, so nothing on them has to be read and no screen depends on one loading. The
