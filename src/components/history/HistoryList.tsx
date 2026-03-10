@@ -6,6 +6,7 @@ import { Search, X } from 'lucide-react';
 import { HistoryEntry } from '@/components/history/HistoryEntry';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useMealHistory } from '@/hooks/useMealHistory';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { cn } from '@/lib/cn';
 import { backupFilename, buildBackup, serialiseBackup } from '@/lib/backup';
 import { formatRecordedAt } from '@/lib/formatting';
@@ -115,28 +116,30 @@ export function HistoryList() {
 
   if (records.length === 0) {
     return (
-      <div className="panel border-dashed px-6 py-14 text-center">
-        <p className="display-type text-2xl text-cream-300">No prior incidents on record.</p>
-        <p className="mx-auto mt-3 max-w-[44ch] text-sm leading-relaxed text-cream-700">
-          Completed damage reports can be filed here from the report screen. Nothing is uploaded —
-          the file stays on this device.
-        </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-2">
-          <Link
-            href="/"
-            className="inline-flex min-h-12 items-center justify-center rounded-[10px] border border-line-ember bg-ash-850 px-5 text-sm font-semibold uppercase tracking-[0.1em] text-ember-400 transition-colors duration-200 hover:bg-ash-800"
-          >
-            Start a session
-          </Link>
-          {/* An empty file is exactly when someone arrives with a backup. */}
-          <Link
-            href="/history/data"
-            className="inline-flex min-h-12 items-center justify-center rounded-[10px] border border-line bg-ash-850 px-5 text-sm font-semibold uppercase tracking-[0.1em] text-cream-300 transition-colors duration-200 hover:bg-ash-800 hover:text-cream-50"
-          >
-            Restore a backup
-          </Link>
-        </div>
-      </div>
+      <EmptyState
+        mark="record"
+        title="No prior incidents on record."
+        action={
+          <div className="mt-6 flex flex-wrap justify-center gap-2">
+            <Link
+              href="/"
+              className="inline-flex min-h-12 items-center justify-center rounded-[10px] border border-line-ember bg-ash-850 px-5 text-sm font-semibold uppercase tracking-[0.1em] text-ember-400 transition-colors duration-200 hover:bg-ash-800"
+            >
+              Start a session
+            </Link>
+            {/* An empty file is exactly when someone arrives with a backup. */}
+            <Link
+              href="/history/data"
+              className="inline-flex min-h-12 items-center justify-center rounded-[10px] border border-line bg-ash-850 px-5 text-sm font-semibold uppercase tracking-[0.1em] text-cream-300 transition-colors duration-200 hover:bg-ash-800 hover:text-cream-50"
+            >
+              Restore a backup
+            </Link>
+          </div>
+        }
+      >
+        Completed damage reports can be filed here from the report screen. Nothing is uploaded — the
+        file stays on this device.
+      </EmptyState>
     );
   }
 
