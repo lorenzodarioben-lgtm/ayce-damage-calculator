@@ -24,6 +24,24 @@ export function Hero() {
       {/* The coals. Purely atmospheric, so it is hidden from assistive
           technology and sits behind everything the section actually says. */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
+        {/*
+         * The grill itself, filling the half of the hero the words do not use.
+         *
+         * Masked to nothing well before it reaches the headline, so the type
+         * keeps the contrast it had against a flat background and the picture
+         * is never something anyone has to read past. It is atmosphere: the
+         * hero says exactly what it said without it.
+         */}
+        <div className="absolute inset-y-0 right-0 hidden w-[64%] md:block">
+          <div className="absolute inset-0 bg-[url('/images/grill.webp')] bg-cover bg-center opacity-40 [mask-image:linear-gradient(to_right,transparent_2%,rgba(0,0,0,0.18)_30%,rgba(0,0,0,0.62)_58%,black_88%)]" />
+          {/* Pulls the photograph back towards the palette it is sitting in. */}
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,var(--color-ash-950),rgba(13,12,10,0.55)_38%,rgba(13,12,10,0.25))] mix-blend-multiply" />
+          {/* Feathers the top and bottom edges so the photograph ends in the
+              page rather than on a line. */}
+          <div className="absolute inset-x-0 bottom-0 h-56 bg-gradient-to-b from-transparent to-ash-950" />
+          <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-t from-transparent to-ash-950" />
+        </div>
+
         <div className="grill-texture absolute inset-0 opacity-70" />
         <div className="animate-ember-breathe absolute -top-40 left-[6%] h-[34rem] w-[34rem] rounded-full bg-[radial-gradient(circle,var(--color-ember-500)_0%,transparent_66%)] opacity-30 blur-3xl" />
         <div className="absolute -bottom-52 right-[4%] h-[28rem] w-[28rem] rounded-full bg-[radial-gradient(circle,var(--color-char-600)_0%,transparent_68%)] opacity-40 blur-3xl" />

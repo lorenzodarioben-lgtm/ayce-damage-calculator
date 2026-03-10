@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { DinerList } from '@/components/diners/DinerList';
 import { SiteFooter } from '@/components/nav/SiteFooter';
+import { RouteHeader } from '@/components/nav/RouteHeader';
 import { SiteHeader } from '@/components/nav/SiteHeader';
 import { MAIN_CONTENT_ID } from '@/components/nav/destinations';
 
@@ -22,12 +23,11 @@ export default function DinersPage() {
         id={MAIN_CONTENT_ID}
         className="relative z-10 mx-auto max-w-[900px] px-4 pt-8 pb-16 sm:px-6"
       >
-        <h1 className="display-hero text-[clamp(2.5rem,7vw,4rem)] text-cream-50">Known diners</h1>
-        <p className="mt-3 max-w-[62ch] text-sm leading-relaxed text-cream-300">
+        <RouteHeader image="/images/table.webp" title="Known diners">
           People you have saved from a table roster, with their share of the meals you filed
           together. Every figure is recalculated from the meals themselves. A meal recorded without
           a roster is not assigned to anybody — nobody said who was there.
-        </p>
+        </RouteHeader>
 
         <div className="mt-8">
           <DinerList />
