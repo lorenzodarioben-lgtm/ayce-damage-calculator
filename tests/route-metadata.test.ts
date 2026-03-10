@@ -21,15 +21,29 @@ describe('root metadata', () => {
     expect(openGraph.siteName).toBe('AYCE Damage Calculator');
     expect(openGraph.title).toBe('AYCE Damage Calculator');
     expect(openGraph.description).toBe(metadata.description);
-    expect(openGraph.images?.[0]?.url).toBe('/icon-512.png');
-    expect(openGraph.images?.[0]?.alt).toBeTruthy();
+    /*
+     * Deliberately unset. `app/opengraph-image.tsx` supplies the card, and
+     * naming one here as well would put the answer to "which image" in two
+     * places that could disagree.
+     */
+    expect(openGraph.images).toBeUndefined();
   });
 
-  it('offers a square card, matching the square image it points at', async () => {
+  it('generates a wide card rather than naming a file', async () => {
+    const og = await import('@/app/opengraph-image');
+
+    expect(og.size).toEqual({ width: 1200, height: 630 });
+    expect(og.contentType).toBe('image/png');
+    // Read aloud where the image itself cannot be seen.
+    expect(og.alt).toMatch(/buffet/i);
+  });
+
+  it('offers the wide card its generated image is shaped for', async () => {
     const { metadata } = await import('@/app/layout');
     const twitter = metadata.twitter as { card?: string; title?: string };
 
-    expect(twitter.card).toBe('summary');
+    // 1200x630 is the wide treatment's shape; `summary` would crop it square.
+    expect(twitter.card).toBe('summary_large_image');
     expect(twitter.title).toBe('AYCE Damage Calculator');
   });
 

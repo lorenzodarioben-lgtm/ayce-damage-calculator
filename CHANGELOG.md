@@ -9,6 +9,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Changed
 
+- **A generated preview card for the app itself.** A posted link used to preview as the 512px app
+  icon: square, cropped by most feeds, and silent about what the thing does. It now renders a
+  1200x630 card carrying the question the app exists to ask and the three facts that make it worth
+  opening — built on the same terms as the shared-report card, palette and type only, with no
+  photograph and no font fetch.
 - **Illustrated empty states.** Five panels that were a sentence in a dashed box now draw the same
   overhead plate the food illustrations use, with a different thing resting on it — filed records,
   two empty seats, a shopfront, three readings, a bare plate. For anyone arriving without a meal on
