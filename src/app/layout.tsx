@@ -22,9 +22,9 @@ export const metadata: Metadata = {
    *
    * A segment that sets `openGraph` replaces this whole object rather than
    * merging into it, so the shared report and challenge routes keep their own
-   * titles and their own generated previews untouched. The image here is the
-   * app's own icon — already shipped, square, and honest about what it shows —
-   * which is why the card is a `summary` rather than a large one.
+   * titles and their own generated previews untouched. No image is named here:
+   * `opengraph-image.tsx` beside this file supplies one, and leaving the field
+   * out is what keeps the answer to "which image" in a single place.
    */
   openGraph: {
     type: 'website',
@@ -33,13 +33,12 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
-    images: [{ url: '/icon-512.png', width: 512, height: 512, alt: `${SITE_NAME} icon` }],
   },
   twitter: {
-    card: 'summary',
+    // A 1200x630 card, so the wide treatment is the one that fits it.
+    card: 'summary_large_image',
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
-    images: ['/icon-512.png'],
   },
   // Installed on iOS the app runs without browser chrome, so it needs its own
   // status-bar treatment and home-screen title.
