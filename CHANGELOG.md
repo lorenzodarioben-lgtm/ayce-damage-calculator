@@ -21,6 +21,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - **Short pages reach the bottom of the window.** A route with one small panel left the footer
   halfway up the screen with black underneath, which read as a page that had failed to load rather
   than one that was honestly empty.
+- **The photographs are actually visible now.** They were dimmed to a third and disappeared into
+  the background, which is the failure mode of dimming a picture uniformly: neither a photograph nor
+  a clean surface. Each now runs at its own brightness with a scrim anchored to the corner the words
+  occupy — near-solid under the type, thin where the frame is worth seeing. The hero is full-bleed
+  and half again as tall, and the section headers are edge-to-edge bands rather than dim panels.
+  Measured rather than eyeballed: the worst backdrop pixel under an actual glyph is 4.7:1 on the
+  hero and 3.6–5.6:1 on the bands, against the 3:1 large-text threshold.
 - **Photographic backdrops**, behind the hero, the six section headers and the verdict. Used as
   atmosphere rather than content: a third strength or less, under a wash that is almost opaque
   where the type is, so nothing on them has to be read and no screen depends on one loading. The

@@ -18,17 +18,16 @@ export default function StatsPage() {
     <>
       <SiteHeader />
 
-      <main
-        id={MAIN_CONTENT_ID}
-        className="relative z-10 mx-auto max-w-[900px] px-4 pt-8 pb-16 sm:px-6"
-      >
+      <main id={MAIN_CONTENT_ID} className="relative z-10 pb-16">
         <RouteHeader image="/images/slate.webp" title="The analysis">
           Everything below is derived from the sessions on this device, recalculated from their
           recorded meals. Nothing is estimated, and nothing leaves the browser.
         </RouteHeader>
 
-        <div className="mt-8">
-          <StatsView />
+        <div className="mx-auto max-w-[900px] px-4 sm:px-6">
+          <div className="mt-8">
+            <StatsView />
+          </div>
         </div>
       </main>
 

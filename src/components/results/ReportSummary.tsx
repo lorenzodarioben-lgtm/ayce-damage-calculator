@@ -116,9 +116,19 @@ export function ReportSummary({
          * so the sentence keeps the contrast it had — the picture is there to
          * give the moment a floor to land on, not to be looked at.
          */}
+        {/*
+         * Coals under the verdict, at their own brightness rather than dimmed
+         * to a smudge. The scrim over them is what keeps the sentence legible:
+         * heaviest through the middle where the words are, thinning towards the
+         * edges where the fire is allowed to be fire.
+         */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 -z-20 bg-[url('/images/embers.webp')] bg-cover bg-center opacity-[0.14] [mask-image:radial-gradient(120%_100%_at_50%_120%,black_0%,rgba(0,0,0,0.45)_45%,transparent_78%)]"
+          className="pointer-events-none absolute inset-0 -z-20 bg-[url('/images/embers.webp')] bg-cover bg-center"
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 -z-20 bg-[radial-gradient(115%_130%_at_50%_50%,rgba(13,12,10,0.93)_0%,rgba(13,12,10,0.88)_42%,rgba(13,12,10,0.6)_74%,rgba(13,12,10,0.35)_100%)]"
         />
         <div
           aria-hidden="true"

@@ -21,47 +21,47 @@ const CREDENTIALS = [
 export function Hero() {
   return (
     <section className="relative isolate overflow-hidden border-b border-line-ember/60">
-      {/* The coals. Purely atmospheric, so it is hidden from assistive
-          technology and sits behind everything the section actually says. */}
+      {/*
+       * The grill, at full strength and across the whole hero.
+       *
+       * The picture is not dimmed. Dimming a photograph uniformly is how you
+       * end up with neither a photograph nor a clean background — it reads as
+       * dirt on the page. Instead it runs at its own brightness and a scrim is
+       * laid over the corner the words occupy, so the type gets the contrast it
+       * needs from the scrim and the picture keeps its own everywhere else.
+       *
+       * Hidden from assistive technology: it says nothing the heading does not.
+       */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
-        {/*
-         * The grill itself, filling the half of the hero the words do not use.
-         *
-         * Masked to nothing well before it reaches the headline, so the type
-         * keeps the contrast it had against a flat background and the picture
-         * is never something anyone has to read past. It is atmosphere: the
-         * hero says exactly what it said without it.
-         */}
-        <div className="absolute inset-y-0 right-0 hidden w-[64%] md:block">
-          <div className="absolute inset-0 bg-[url('/images/grill.webp')] bg-cover bg-center opacity-40 [mask-image:linear-gradient(to_right,transparent_2%,rgba(0,0,0,0.18)_30%,rgba(0,0,0,0.62)_58%,black_88%)]" />
-          {/* Pulls the photograph back towards the palette it is sitting in. */}
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,var(--color-ash-950),rgba(13,12,10,0.55)_38%,rgba(13,12,10,0.25))] mix-blend-multiply" />
-          {/* Feathers the top and bottom edges so the photograph ends in the
-              page rather than on a line. */}
-          <div className="absolute inset-x-0 bottom-0 h-56 bg-gradient-to-b from-transparent to-ash-950" />
-          <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-t from-transparent to-ash-950" />
-        </div>
+        <div className="absolute inset-0 bg-[url('/images/grill.webp')] bg-cover bg-[position:60%_45%]" />
 
-        <div className="grill-texture absolute inset-0 opacity-70" />
-        <div className="animate-ember-breathe absolute -top-40 left-[6%] h-[34rem] w-[34rem] rounded-full bg-[radial-gradient(circle,var(--color-ember-500)_0%,transparent_66%)] opacity-30 blur-3xl" />
-        <div className="absolute -bottom-52 right-[4%] h-[28rem] w-[28rem] rounded-full bg-[radial-gradient(circle,var(--color-char-600)_0%,transparent_68%)] opacity-40 blur-3xl" />
-        {/* Fades the texture out into the page rather than ending on a line. */}
-        <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent to-ash-950" />
+        {/* Warms it towards the palette without flattening it. */}
+        <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(122,51,36,0.35),rgba(13,12,10,0.1)_60%)] mix-blend-soft-light" />
+
+        {/* The scrim. Near-solid under the headline, gone by the right edge —
+            this is what buys the contrast, not a lower opacity on the photo. */}
+        <div className="absolute inset-0 bg-[radial-gradient(120%_150%_at_0%_55%,rgba(13,12,10,0.985)_0%,rgba(13,12,10,0.955)_40%,rgba(13,12,10,0.75)_60%,rgba(13,12,10,0.32)_82%,rgba(13,12,10,0.1)_100%)]" />
+        {/* A second pass downwards, so the credentials row keeps its footing
+            and the section ends in the page rather than on a cut. */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(13,12,10,0.55)_0%,rgba(13,12,10,0.15)_38%,rgba(13,12,10,0.85)_88%,var(--color-ash-950)_100%)]" />
+
+        <div className="grill-texture absolute inset-0 opacity-40" />
+        <div className="animate-ember-breathe absolute -top-40 left-[4%] h-[34rem] w-[34rem] rounded-full bg-[radial-gradient(circle,var(--color-ember-500)_0%,transparent_66%)] opacity-25 blur-3xl" />
       </div>
 
-      <div className="mx-auto max-w-[1280px] px-4 py-14 sm:px-6 sm:py-20 lg:py-24">
+      <div className="mx-auto flex min-h-[clamp(30rem,68vh,46rem)] max-w-[1280px] flex-col justify-center px-4 py-16 sm:px-6 sm:py-24">
         <div className="flex items-center gap-3">
           <span aria-hidden="true" className="h-4 w-[3px] rounded-full bg-ember-500" />
           <p className="micro-label !text-ember-400">AYCE Damage Calculator</p>
         </div>
 
-        <h1 className="display-hero mt-6 max-w-[15ch] text-[clamp(3.25rem,10vw,7.5rem)]">
+        <h1 className="display-hero mt-6 max-w-[15ch] text-[clamp(3.5rem,11vw,9rem)] drop-shadow-[0_4px_24px_rgba(13,12,10,0.85)]">
           <span className="text-cream-50">Did you beat</span>
           <br />
           <span className="text-gradient-ember">the buffet?</span>
         </h1>
 
-        <p className="mt-7 max-w-[52ch] text-base leading-relaxed text-cream-300 sm:text-lg">
+        <p className="mt-7 max-w-[52ch] text-base leading-relaxed text-cream-100 drop-shadow-[0_2px_10px_rgba(13,12,10,0.9)] sm:text-lg">
           Track the plates. Calculate the damage. Find out whether you got your money&rsquo;s worth
           or funded their next renovation.
         </p>

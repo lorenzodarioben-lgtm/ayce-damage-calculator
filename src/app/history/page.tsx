@@ -18,17 +18,16 @@ export default function HistoryPage() {
     <>
       <SiteHeader />
 
-      <main
-        id={MAIN_CONTENT_ID}
-        className="relative z-10 mx-auto max-w-[900px] px-4 pt-8 pb-16 sm:px-6"
-      >
+      <main id={MAIN_CONTENT_ID} className="relative z-10 pb-16">
         <RouteHeader image="/images/embers.webp" title="The file">
           Every session you have filed, held on this device only. Totals are recalculated from the
           meal each time, so the file always agrees with the current model.
         </RouteHeader>
 
-        <div className="mt-8">
-          <HistoryList />
+        <div className="mx-auto max-w-[900px] px-4 sm:px-6">
+          <div className="mt-8">
+            <HistoryList />
+          </div>
         </div>
       </main>
 
