@@ -4,6 +4,15 @@
   "private": true,
   "description": "Track your all-you-can-eat Korean BBQ meal and calculate whether you beat the buffet.",
   "license": "MIT",
+  "author": "Lorenzo Benjamin",
+  "homepage": "https://github.com/lorenzodarioben-lgtm/ayce-damage-calculator#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lorenzodarioben-lgtm/ayce-damage-calculator.git"
+  },
+  "bugs": {
+    "url": "https://github.com/lorenzodarioben-lgtm/ayce-damage-calculator/issues"
+  },
   "engines": {
     "node": ">=20.9.0"
   },
