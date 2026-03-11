@@ -157,10 +157,21 @@ body {
   min-height: 100dvh;
 }
 
-/* Takes the slack, so the footer is pushed to the foot of a short page and
-   simply follows the content on a long one. */
+/*
+ * Takes the slack, so the footer is pushed to the foot of a short page and
+ * simply follows the content on a long one.
+ *
+ * The explicit width is load-bearing. Every `main` here centres itself with
+ * `margin-inline: auto`, and an auto margin on the cross axis of a flex item
+ * suppresses `stretch` — so as soon as the body became a column, `main` stopped
+ * filling the window and started sizing to its content instead. On a narrow
+ * screen that let a report widen the page past the viewport. Stating the width
+ * restores what a block-level box did on its own, and leaves the `max-width`
+ * and the centring to do exactly what they did before.
+ */
 main {
   flex: 1 0 auto;
+  width: 100%;
 }
 
 /*

@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import { openCalculator } from './helpers';
 
@@ -9,7 +11,21 @@ import { openCalculator } from './helpers';
  * a browser genuinely proves: registration, control, and what lands in cache.
  */
 
-const CACHE_NAME = 'ayce-shell-v2';
+/*
+ * Read out of the worker rather than restated here.
+ *
+ * This constant was a copy, and it went stale the moment the cache version was
+ * bumped: every assertion below then looked in a cache nothing writes to and
+ * failed for a reason that had nothing to do with the worker. A bump is the one
+ * lever that retires a stale shell, so it has to be free to move without
+ * dragging a second copy along behind it.
+ */
+const SW_SOURCE = readFileSync(join(process.cwd(), 'public', 'sw.js'), 'utf8');
+const CACHE_VERSION = /const CACHE_VERSION = '([^']+)'/.exec(SW_SOURCE)?.[1];
+if (!CACHE_VERSION) {
+  throw new Error('public/sw.js no longer declares a CACHE_VERSION to test against.');
+}
+const CACHE_NAME = `ayce-shell-${CACHE_VERSION}`;
 
 /**
  * Resolves once a service worker has finished activating.
