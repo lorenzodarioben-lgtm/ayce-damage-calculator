@@ -16,10 +16,7 @@ export default function PlanPage() {
     <>
       <SiteHeader />
 
-      <main
-        id={MAIN_CONTENT_ID}
-        className="relative z-10 mx-auto max-w-[900px] px-4 pt-8 pb-16 sm:px-6"
-      >
+      <main id={MAIN_CONTENT_ID} className="relative z-10 pb-16">
         <RouteHeader image="/images/slate.webp" title="The pre-meal briefing">
           A mathematical menu simulation. Given an entry price and a set of assumptions, it works
           out which combination of plates would reach a chosen share of admission by estimated
@@ -27,8 +24,10 @@ export default function PlanPage() {
           eat, and nothing here touches the meal you are actually tracking.
         </RouteHeader>
 
-        <div className="mt-8">
-          <DamagePlanner />
+        <div className="mx-auto max-w-[900px] px-4 sm:px-6">
+          <div className="mt-8">
+            <DamagePlanner />
+          </div>
         </div>
       </main>
 

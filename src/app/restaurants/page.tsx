@@ -19,18 +19,17 @@ export default function RestaurantsPage() {
     <>
       <SiteHeader />
 
-      <main
-        id={MAIN_CONTENT_ID}
-        className="relative z-10 mx-auto max-w-[900px] px-4 pt-8 pb-16 sm:px-6"
-      >
+      <main id={MAIN_CONTENT_ID} className="relative z-10 pb-16">
         <RouteHeader image="/images/interior.webp" title="Known establishments">
           Places you have saved, with the visits you have filed against each one. Every figure comes
           from your own records, recalculated from the meals themselves. There is still no bundled
           restaurant directory here — a place exists because you named it.
         </RouteHeader>
 
-        <div className="mt-8">
-          <RestaurantList />
+        <div className="mx-auto max-w-[900px] px-4 sm:px-6">
+          <div className="mt-8">
+            <RestaurantList />
+          </div>
         </div>
       </main>
 
