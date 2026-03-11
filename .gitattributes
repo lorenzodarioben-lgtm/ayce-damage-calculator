@@ -2,3 +2,8 @@
 
 *.png binary
 *.woff2 binary
+
+# Written by npm, read by nobody. Marking it generated collapses it in a diff
+# and keeps it out of the language statistics; suppressing the textual diff
+# stops a routine dependency bump from burying the change it came with.
+package-lock.json linguist-generated=true -diff
