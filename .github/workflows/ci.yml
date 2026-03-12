@@ -5,6 +5,9 @@ on:
     branches: ['**']
   pull_request:
     branches: [main]
+  # A dependency bump can go stale without a commit to trigger it, and a
+  # transient runner failure should be re-runnable without an empty push.
+  workflow_dispatch:
 
 # This workflow only reads the checkout and publishes no releases, statuses or
 # pull requests. Keep its token unable to write if a dependency is compromised.
