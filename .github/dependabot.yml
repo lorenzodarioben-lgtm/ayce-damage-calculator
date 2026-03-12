@@ -1,0 +1,34 @@
+version: 2
+
+updates:
+  # The application's own dependencies. Grouped so a routine week arrives as
+  # one pull request the suite can verify in a single run, rather than as
+  # twenty that each pay for a full build. Major versions stay separate:
+  # those are the ones that need reading before they are merged.
+  - package-ecosystem: npm
+    directory: '/'
+    schedule:
+      interval: weekly
+      day: monday
+      time: '09:00'
+      timezone: Australia/Melbourne
+    open-pull-requests-limit: 5
+    versioning-strategy: increase
+    commit-message:
+      prefix: chore(deps)
+      prefix-development: chore(deps-dev)
+    groups:
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch
+
+  # The actions the workflow pins. Fewer and slower moving, so they are worth
+  # a separate, smaller stream.
+  - package-ecosystem: github-actions
+    directory: '/'
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: ci(deps)
