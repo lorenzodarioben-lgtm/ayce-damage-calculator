@@ -613,6 +613,20 @@ Not implemented — possible directions for later versions:
 - An optional, opt-in cloud sync adapter behind the existing storage interface
 - Anonymous public leaderboards
 
+## Documentation
+
+Seven documents, each with one job. Where two of them disagree, the one higher in this list wins.
+
+| Document                                       | What it settles                                                                      |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------ |
+| [PRODUCT.md](PRODUCT.md)                       | What the product is, who it is for, and what it refuses to become.                   |
+| [DESIGN.md](DESIGN.md)                         | The design system of record — type, colour, surfaces, layout, motion, accessibility. |
+| [CONTRIBUTING.md](CONTRIBUTING.md)             | Setup, the conventions the code follows, and what is deliberately out of scope.      |
+| [CONFIGURABLE_MENUS.md](CONFIGURABLE_MENUS.md) | Custom foods, pricing profiles, restaurant presets and menu import in one place.     |
+| [SECURITY.md](SECURITY.md)                     | How to report a vulnerability, and what this app's threat model actually is.         |
+| [CHANGELOG.md](CHANGELOG.md)                   | What changed, in the order it changed.                                               |
+| This file                                      | What the app does and how the numbers are arrived at.                                |
+
 ## Contributing
 
 Setup, the conventions the code follows, and what is deliberately out of scope are all in
