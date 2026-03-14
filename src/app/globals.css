@@ -15,7 +15,13 @@
      instead. Sits where those callers assumed: between 100 and 300. */
   --color-cream-200: #e1d4ba;
   --color-cream-300: #cfc0a4;
+  /* Asked for by two components and never defined, which is the same bug the
+     note above records having already fixed once. Midway between 300 and 500. */
+  --color-cream-400: #bcae94;
   --color-cream-500: #a99b84;
+  /* Likewise, from three components. The quietest step still allowed to carry
+     text: 5.73:1 on a panel, where 700 is 4.89:1 and sits on the AA floor. */
+  --color-cream-600: #9c8e7a;
   --color-cream-700: #8f8271;
 
   --color-ember-300: #e0b47c;
@@ -24,6 +30,9 @@
   --color-ember-600: #a97a41;
   --color-ember-700: #7d5930;
 
+  /* One step lighter than 500, which fails AA on `ash-800` at 4.45:1. Red text
+     on a raised surface uses this. */
+  --color-char-400: #d68872;
   --color-char-500: #c4694e;
   --color-char-600: #7a3324;
   --color-char-700: #5a2419;
@@ -39,9 +48,24 @@
   --color-flame-500: #e2653a;
   --color-flame-600: #c04a24;
 
-  /* Hairlines derived from the palette, exposed as border/bg utilities. */
+  /*
+   * Hairlines derived from the palette, exposed as border/bg utilities.
+   *
+   * Three weights, and which one a border takes is a question about what it
+   * separates rather than about how it should look:
+   *
+   *   soft    a divider *inside* a surface, between sibling sections
+   *   line    the edge of a surface
+   *   strong  the boundary of an interactive component — a field, a button, a
+   *           segmented track — which has to clear 3:1 on every ground it is
+   *           drawn on to satisfy non-text contrast.
+   *
+   * The values are raised in the surface phase, not here; `strong` is defined
+   * now so components can start asking for it.
+   */
   --color-line: #2a241d;
   --color-line-soft: #221d17;
+  --color-line-strong: #726558;
   --color-line-ember: #5c452a;
 
   /* Bound to the checked-in faces in `src/app/fonts`. Each `--font-*` variable
@@ -51,11 +75,63 @@
   --font-heading: var(--font-heading-face);
   --font-sans: var(--font-sans-face);
 
+  /*
+   * One radius.
+   *
+   * There were seven — 7, 8, 9, 10, 12px written by hand, plus a 14px card and
+   * an 18px panel token that between them were asked for six times against a
+   * hundred uses of `rounded-[10px]`. Four of them sat inside a three-pixel
+   * band, which is a distinction nobody can see and every file can get wrong.
+   *
+   * 10px wins because a hundred files already use it, so adopting it is
+   * subtraction. `inner` is for an element nested directly inside a surface,
+   * where matching the outer radius would read as a box drawn twice.
+   * `rounded-full` survives for circular geometry only — the meter track, the
+   * illustration discs, the stepper thumb — and not for badges or chips.
+   */
+  --radius-surface: 10px;
+  --radius-inner: 6px;
+
+  /*
+   * The type scale. Seven steps, and every piece of text in the application is
+   * one of them, the micro-label, or display type.
+   *
+   * The ramp it replaces had twenty-six sizes, of which 12px and 14px carried
+   * 402 of 493 declarations while 18px and 20px carried nine between them: a
+   * scale that could shout or whisper and do nothing in between, which is why
+   * every section heading had to be either a headline or a caption. The three
+   * middle steps are where that gap closes.
+   */
+  --text-caption: 0.8125rem; /* 13 — hints, footnotes, units, sub-values */
+  --text-caption--line-height: 1.45;
+  --text-ui: 0.9375rem; /* 15 — buttons, field labels, list rows, nav */
+  --text-ui--line-height: 1.45;
+  --text-body: 1.0625rem; /* 17 — prose, and every disclaimer */
+  --text-body--line-height: 1.6;
+  --text-lead: 1.25rem; /* 20 — sub-section headings, card titles */
+  --text-lead--line-height: 1.35;
+  --text-title: 1.625rem; /* 26 — section headings, supporting figures */
+  --text-title--line-height: 1.2;
+  --text-figure: 2.125rem; /* 34 — secondary figures, plain page titles */
+  --text-figure--line-height: 1.05;
+  --text-reading: 3rem; /* 48 — the reading, primary figures */
+  --text-reading--line-height: 1;
+
+  /* Nine tracking values, of which two were 0.1em and 0.08em doing the same
+     job on adjacent controls. Body, headings and figures take the face's own. */
+  --tracking-label: 0.14em;
+  --tracking-caps: 0.08em;
+  --tracking-display: 0.005em;
+
   --radius-card: 0.875rem;
   --radius-panel: 1.125rem;
 
+  /* Entering and exiting. Strong enough to read as intentional, which the
+     built-in easings are not. There is no overshoot curve: an `ease-out-back`
+     was defined here for a year and never once asked for. */
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
-  --ease-out-back: cubic-bezier(0.34, 1.4, 0.64, 1);
+  /* Movement on screen, as opposed to arrival and departure. */
+  --ease-in-out-strong: cubic-bezier(0.77, 0, 0.175, 1);
 }
 
 :root {
@@ -93,15 +169,6 @@
   --shadow-raised: var(--edge-light-strong), 0 18px 42px -20px rgb(0 0 0 / 0.85);
   --shadow-float:
     var(--edge-light-strong), 0 4px 10px -4px rgb(0 0 0 / 0.5), 0 28px 64px -24px rgb(0 0 0 / 0.9);
-
-  /*
-   * Glow is the accent's own light, not another shadow. Used only where
-   * something is genuinely live — a meter filling, a primary action, a verdict
-   * landing — because a page where everything glows has nothing to point at.
-   */
-  --glow-ember: 0 0 28px -6px color-mix(in oklab, var(--color-ember-500) 55%, transparent);
-  --glow-flame: 0 0 34px -6px color-mix(in oklab, var(--color-flame-500) 60%, transparent);
-  --glow-sesame: 0 0 26px -6px color-mix(in oklab, var(--color-sesame-500) 50%, transparent);
 
   /*
    * A fill that is very slightly lighter at the top than the bottom. Two per
@@ -439,20 +506,6 @@ input[type='number']::-webkit-inner-spin-button {
 
 @utility fill-panel-strong {
   background-image: var(--fill-panel-strong);
-}
-
-/* Accent light. Composed with the elevation rather than replacing it, so a live
-   element still sits at the height it was already at. */
-@utility glow-ember {
-  box-shadow: var(--shadow-raised), var(--glow-ember);
-}
-
-@utility glow-flame {
-  box-shadow: var(--shadow-raised), var(--glow-flame);
-}
-
-@utility glow-sesame {
-  box-shadow: var(--shadow-raised), var(--glow-sesame);
 }
 
 /*
