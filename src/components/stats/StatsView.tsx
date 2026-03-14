@@ -85,8 +85,8 @@ export function StatsView() {
             onClick={() => setRange(value)}
             className={
               range === value
-                ? 'rounded-[10px] bg-ember-500 px-3 py-2 text-sm font-semibold text-ash-950'
-                : 'rounded-[10px] border border-line px-3 py-2 text-sm font-semibold text-cream-300'
+                ? 'rounded-surface bg-ember-500 px-3 py-2 text-sm font-semibold text-ash-950'
+                : 'rounded-surface border border-line px-3 py-2 text-sm font-semibold text-cream-300'
             }
           >
             {label}

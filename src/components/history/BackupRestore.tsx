@@ -57,7 +57,7 @@ interface PendingReplace {
 }
 
 const BACK_LINK =
-  '-ml-2 inline-flex min-h-11 items-center gap-1.5 rounded-[10px] px-2 text-xs font-semibold ' +
+  '-ml-2 inline-flex min-h-11 items-center gap-1.5 rounded-surface px-2 text-xs font-semibold ' +
   'uppercase tracking-[0.1em] text-cream-500 transition-colors duration-200 hover:bg-ash-850 hover:text-cream-100';
 
 /** Hands the browser a file built in memory, and never leaks the object URL. */
@@ -377,7 +377,7 @@ export function BackupRestore() {
               void handleFile(file);
             }
           }}
-          className="block w-full cursor-pointer rounded-[10px] border border-line bg-ash-900 p-3 text-sm text-cream-300 file:mr-3 file:cursor-pointer file:rounded-[8px] file:border-0 file:bg-ash-800 file:px-3 file:py-2 file:text-xs file:font-semibold file:uppercase file:tracking-[0.1em] file:text-cream-100"
+          className="block w-full cursor-pointer rounded-surface border border-line bg-ash-900 p-3 text-sm text-cream-300 file:mr-3 file:cursor-pointer file:rounded-surface file:border-0 file:bg-ash-800 file:px-3 file:py-2 file:text-xs file:font-semibold file:uppercase file:tracking-[0.1em] file:text-cream-100"
         />
 
         {stage.kind === 'error' && (
@@ -393,7 +393,7 @@ export function BackupRestore() {
         )}
 
         {stage.kind === 'preview' && (
-          <div className="mt-4 rounded-[10px] border border-line-ember bg-ash-900 p-4">
+          <div className="mt-4 rounded-surface border border-line-ember bg-ash-900 p-4">
             <p className="micro-label">In this file</p>
             <ul className="tabular mt-2 space-y-1 text-sm text-cream-100">
               <li>{stage.contents.history.length} filed sessions</li>

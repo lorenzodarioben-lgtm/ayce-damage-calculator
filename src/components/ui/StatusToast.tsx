@@ -38,7 +38,7 @@ export function StatusToast({ message, offset = false }: StatusToastProps) {
           className={cn(
             'animate-toast-in flex max-w-[90vw] items-center gap-3 rounded-full border border-line-ember',
             'bg-ash-800/95 text-center text-sm font-medium text-cream-100 backdrop-blur-md',
-            'shadow-[inset_0_1px_0_rgb(255_250_240/0.07),0_18px_44px_-16px_#000]',
+            'elevate-float',
             message.action ? 'py-2 pl-4 pr-2' : 'px-4 py-2',
           )}
         >
@@ -47,7 +47,7 @@ export function StatusToast({ message, offset = false }: StatusToastProps) {
             <button
               type="button"
               onClick={message.action.onAction}
-              className="pointer-events-auto min-h-9 shrink-0 cursor-pointer rounded-full bg-linear-to-b from-ember-400 to-ember-600 px-3 text-xs font-bold uppercase tracking-[0.08em] text-ash-950 shadow-[inset_0_1px_0_rgb(255_250_240/0.35)] transition-[background-color,transform] duration-200 hover:from-ember-300 hover:to-ember-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember-300 active:scale-95"
+              className="pointer-events-auto min-h-9 shrink-0 cursor-pointer rounded-full bg-linear-to-b from-ember-400 to-ember-600 px-3 text-xs font-bold uppercase tracking-[0.08em] text-ash-950 elevate-primary transition-[background-color,transform] duration-200 hover:from-ember-300 hover:to-ember-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember-300 active:scale-95"
             >
               {message.action.label}
             </button>

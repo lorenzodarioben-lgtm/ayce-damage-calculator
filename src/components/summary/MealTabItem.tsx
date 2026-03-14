@@ -112,7 +112,7 @@ export function MealTabItem({
             onClick={() => setOpen((current) => !current)}
             aria-expanded={expanded}
             aria-label={`Record how much of ${descriptor} was eaten`}
-            className="flex size-9 cursor-pointer items-center justify-center rounded-[10px] border border-transparent text-cream-700 transition-colors duration-200 hover:border-line hover:bg-ash-800 hover:text-cream-300"
+            className="flex size-9 cursor-pointer items-center justify-center rounded-surface border border-transparent text-cream-700 transition-colors duration-200 hover:border-line hover:bg-ash-800 hover:text-cream-300"
           >
             <Utensils size={15} aria-hidden="true" />
           </button>
@@ -123,7 +123,7 @@ export function MealTabItem({
           aria-pressed={extra}
           aria-label={`Charge ${descriptor} separately from the buffet price`}
           className={[
-            'flex size-9 cursor-pointer items-center justify-center rounded-[10px] border transition-colors duration-200',
+            'flex size-9 cursor-pointer items-center justify-center rounded-surface border transition-colors duration-200',
             extra
               ? 'border-line-ember bg-ash-800 text-ember-400'
               : 'border-transparent text-cream-700 hover:border-line hover:bg-ash-800 hover:text-cream-300',
@@ -146,7 +146,7 @@ export function MealTabItem({
           type="button"
           onClick={() => onRemove(item.id)}
           aria-label={`Remove ${descriptor} from your tab`}
-          className="flex size-9 cursor-pointer items-center justify-center rounded-[10px] border border-transparent text-cream-700 transition-colors duration-200 hover:border-char-700 hover:bg-char-700/20 hover:text-char-500"
+          className="flex size-9 cursor-pointer items-center justify-center rounded-surface border border-transparent text-cream-700 transition-colors duration-200 hover:border-char-700 hover:bg-char-700/20 hover:text-char-500"
         >
           <Trash2 size={15} aria-hidden="true" />
         </button>
@@ -208,7 +208,7 @@ export function MealTabItem({
                   event.target.value === '' ? undefined : Number(event.target.value),
                 )
               }
-              className="tabular h-9 w-28 rounded-[8px] border border-line bg-ash-950 px-2 text-right text-sm font-normal text-cream-50"
+              className="tabular h-9 w-28 rounded-surface border border-line bg-ash-950 px-2 text-right text-sm font-normal text-cream-50"
             />
           </label>
           <p className="mt-1.5 text-xs leading-relaxed text-cream-700">

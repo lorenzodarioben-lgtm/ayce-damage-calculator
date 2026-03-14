@@ -186,7 +186,7 @@ function ProfileEditor({
               onChange={(event) => setName(event.target.value)}
               autoComplete="off"
               placeholder="e.g. Sydney dinner menu"
-              className="h-11 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-cream-50 placeholder:text-cream-700"
+              className="h-11 w-full rounded-surface border border-line bg-ash-900 px-3 text-cream-50 placeholder:text-cream-700"
             />
           </div>
           <div>
@@ -200,7 +200,7 @@ function ProfileEditor({
               id={currencyId}
               value={currency}
               onChange={(event) => setCurrency(event.target.value as CurrencyCode)}
-              className="h-11 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-cream-50"
+              className="h-11 w-full rounded-surface border border-line bg-ash-900 px-3 text-cream-50"
             >
               {SUPPORTED_CURRENCIES.map((code) => (
                 <option key={code} value={code}>
@@ -212,7 +212,7 @@ function ProfileEditor({
         </div>
 
         <div>
-          <div className="mb-3 rounded-[10px] border border-line-soft p-3">
+          <div className="mb-3 rounded-surface border border-line-soft p-3">
             <p className="text-sm font-semibold text-cream-100">Bulk price adjustment</p>
             <p className="mt-1 text-xs text-cream-700">
               Preview an increase or decrease across this profile before saving. Historical meal
@@ -226,12 +226,12 @@ function ProfileEditor({
                 type="number"
                 step="0.1"
                 placeholder="e.g. 10"
-                className="h-10 w-28 rounded-[8px] border border-line bg-ash-850 px-2 text-sm text-cream-50"
+                className="h-10 w-28 rounded-surface border border-line bg-ash-850 px-2 text-sm text-cream-50"
               />
               <button
                 type="button"
                 onClick={previewAdjustment}
-                className="rounded-[8px] border border-line px-3 text-xs font-semibold text-ember-400"
+                className="rounded-surface border border-line px-3 text-xs font-semibold text-ember-400"
               >
                 Preview all cuts
               </button>
@@ -241,7 +241,7 @@ function ProfileEditor({
             <h3 className="micro-label">Cut assumptions</h3>
             <p className="text-xs text-cream-700">Per item · leave a row blank to inherit</p>
           </div>
-          <div className="max-h-[40dvh] overflow-y-auto rounded-[10px] border border-line-soft bg-ash-900/50">
+          <div className="max-h-[40dvh] overflow-y-auto rounded-surface border border-line-soft bg-ash-900/50">
             {FOODS.map((food) => {
               const fields = prices[food.id];
               return (
@@ -269,7 +269,7 @@ function ProfileEditor({
                       value={fields?.retail ?? ''}
                       onChange={(event) => updatePrice(food.id, 'retail', event.target.value)}
                       placeholder="Retail"
-                      className="mt-1 h-10 w-full rounded-[8px] border border-line bg-ash-850 px-2 text-sm text-cream-50 placeholder:text-cream-700 sm:mt-0"
+                      className="mt-1 h-10 w-full rounded-surface border border-line bg-ash-850 px-2 text-sm text-cream-50 placeholder:text-cream-700 sm:mt-0"
                     />
                   </label>
                   <label className="text-xs text-cream-500 sm:text-[0px]">
@@ -282,7 +282,7 @@ function ProfileEditor({
                       value={fields?.cost ?? ''}
                       onChange={(event) => updatePrice(food.id, 'cost', event.target.value)}
                       placeholder="Cost"
-                      className="mt-1 h-10 w-full rounded-[8px] border border-line bg-ash-850 px-2 text-sm text-cream-50 placeholder:text-cream-700 sm:mt-0"
+                      className="mt-1 h-10 w-full rounded-surface border border-line bg-ash-850 px-2 text-sm text-cream-50 placeholder:text-cream-700 sm:mt-0"
                     />
                   </label>
                 </div>
@@ -301,14 +301,14 @@ function ProfileEditor({
           <button
             type="button"
             onClick={onClose}
-            className="min-h-10 rounded-[9px] px-3 text-xs font-semibold uppercase tracking-[0.1em] text-cream-400 hover:bg-ash-800 hover:text-cream-100"
+            className="min-h-10 rounded-surface px-3 text-xs font-semibold uppercase tracking-[0.1em] text-cream-400 hover:bg-ash-800 hover:text-cream-100"
           >
             Cancel
           </button>
           <button
             type="button"
             onClick={handleSave}
-            className="min-h-10 rounded-[9px] bg-ember-500 px-4 text-xs font-bold uppercase tracking-[0.1em] text-ash-950 hover:bg-ember-400"
+            className="min-h-10 rounded-surface bg-ember-500 px-4 text-xs font-bold uppercase tracking-[0.1em] text-ash-950 hover:bg-ember-400"
           >
             Save profile
           </button>
@@ -350,7 +350,7 @@ export function PricingProfileManager({
         <button
           type="button"
           onClick={() => setCreating(true)}
-          className="inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-[8px] px-2 text-xs font-semibold uppercase tracking-[0.1em] text-ember-500 transition-colors duration-200 hover:bg-ash-800"
+          className="inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-surface px-2 text-xs font-semibold uppercase tracking-[0.1em] text-ember-500 transition-colors duration-200 hover:bg-ash-800"
         >
           <Plus size={14} aria-hidden="true" />
           New profile
@@ -361,7 +361,7 @@ export function PricingProfileManager({
         {profiles.map((profile) => (
           <li
             key={profile.id}
-            className="flex min-h-12 items-center justify-between gap-3 rounded-[10px] border border-line bg-ash-900/70 px-3 py-2"
+            className="flex min-h-12 items-center justify-between gap-3 rounded-surface border border-line bg-ash-900/70 px-3 py-2"
           >
             <div className="min-w-0">
               <p className="truncate text-sm font-bold text-cream-100">{profile.name}</p>
@@ -377,7 +377,7 @@ export function PricingProfileManager({
                   type="button"
                   onClick={() => setEditingId(profile.id)}
                   aria-label={`Edit ${profile.name} pricing`}
-                  className="flex size-9 cursor-pointer items-center justify-center rounded-[8px] text-cream-500 transition-colors hover:bg-ash-800 hover:text-ember-400"
+                  className="flex size-9 cursor-pointer items-center justify-center rounded-surface text-cream-500 transition-colors hover:bg-ash-800 hover:text-ember-400"
                 >
                   <Pencil size={15} aria-hidden="true" />
                 </button>
@@ -388,7 +388,7 @@ export function PricingProfileManager({
                     onStatus(`${profile.name} pricing removed from this device.`);
                   }}
                   aria-label={`Delete ${profile.name} pricing`}
-                  className="flex size-9 cursor-pointer items-center justify-center rounded-[8px] text-cream-600 transition-colors hover:bg-char-700/25 hover:text-char-500"
+                  className="flex size-9 cursor-pointer items-center justify-center rounded-surface text-cream-600 transition-colors hover:bg-char-700/25 hover:text-char-500"
                 >
                   <Trash2 size={15} aria-hidden="true" />
                 </button>

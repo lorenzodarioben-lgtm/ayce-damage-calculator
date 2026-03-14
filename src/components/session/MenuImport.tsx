@@ -175,7 +175,7 @@ export function MenuImport({ foods, onApply, onStatus }: MenuImportProps) {
       )}
 
       {stage.kind === 'preview' && (
-        <div className="mt-4 space-y-4 rounded-[10px] border border-line bg-ash-900/60 p-3">
+        <div className="mt-4 space-y-4 rounded-surface border border-line bg-ash-900/60 p-3">
           <p role="status" className="text-sm text-cream-200">
             {stage.plan.accepted.length} {stage.plan.accepted.length === 1 ? 'row is' : 'rows are'}{' '}
             ready to import
@@ -240,7 +240,7 @@ export function MenuImport({ foods, onApply, onStatus }: MenuImportProps) {
                         return (
                           <label
                             key={choice.id}
-                            className={`min-h-9 cursor-pointer rounded-[8px] border px-2.5 py-1.5 text-xs font-semibold transition-colors duration-200 ${
+                            className={`min-h-9 cursor-pointer rounded-surface border px-2.5 py-1.5 text-xs font-semibold transition-colors duration-200 ${
                               active
                                 ? 'border-ember-600 bg-ash-800 text-cream-50'
                                 : 'border-line text-cream-500 hover:text-cream-200'
