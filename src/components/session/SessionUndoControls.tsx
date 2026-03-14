@@ -39,7 +39,7 @@ export function SessionUndoControls({
         <Redo2 size={15} aria-hidden="true" />
         Redo
       </Button>
-      <span className="self-center text-xs text-cream-700">Ctrl/Cmd+Z · Ctrl/Cmd+Shift+Z</span>
+      <span className="self-center text-caption text-cream-700">Ctrl/Cmd+Z · Ctrl/Cmd+Shift+Z</span>
     </div>
   );
 }

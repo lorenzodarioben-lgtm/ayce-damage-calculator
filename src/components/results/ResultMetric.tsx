@@ -54,20 +54,20 @@ export function ResultMetric({
     >
       <div className="flex items-center gap-1.5">
         {icon}
-        <p className="micro-label">{label}</p>
+        <p className="micro-label text-cream-500">{label}</p>
       </div>
       <p
         className={cn(
           'tabular mt-1.5 break-words',
           emphasis === 'major'
-            ? 'display-hero text-4xl leading-none sm:text-5xl'
-            : 'display-type text-2xl sm:text-3xl',
+            ? 'display-hero text-figure leading-none sm:text-reading'
+            : 'display-type text-title sm:text-figure',
           TONES[tone],
         )}
       >
         {value}
       </p>
-      {detail && <p className="tabular mt-1 text-xs leading-snug text-cream-700">{detail}</p>}
+      {detail && <p className="tabular mt-1 text-caption leading-snug text-cream-700">{detail}</p>}
     </div>
   );
 }

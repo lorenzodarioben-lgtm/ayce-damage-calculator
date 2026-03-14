@@ -22,8 +22,10 @@ export default function BackupPage() {
         id={MAIN_CONTENT_ID}
         className="relative z-10 mx-auto max-w-[720px] px-4 pt-6 pb-16 sm:px-6"
       >
-        <h1 className="display-type mt-2 text-4xl text-cream-50 sm:text-5xl">Custody of records</h1>
-        <p className="mt-3 max-w-[56ch] text-sm leading-relaxed text-cream-300">
+        <h1 className="display-type mt-2 text-figure text-cream-50 sm:text-reading">
+          Custody of records
+        </h1>
+        <p className="mt-3 max-w-[62ch] text-ui leading-relaxed text-cream-300">
           Your history and saved orders live in this browser and nowhere else. Clearing site data,
           or switching browser, takes them with it — a backup is how they survive that.
         </p>

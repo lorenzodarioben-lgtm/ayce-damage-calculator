@@ -44,8 +44,8 @@ export function ConfirmDialog({
 
   return (
     <Dialog open={open} onClose={busy ? NO_OP : onCancel} title={title} labelledById={titleId}>
-      <p className="text-sm leading-relaxed text-cream-300">{body}</p>
-      <p role="status" aria-live="polite" className="mt-3 min-h-5 text-xs text-cream-500">
+      <p className="text-ui leading-relaxed text-cream-300">{body}</p>
+      <p role="status" aria-live="polite" className="mt-3 min-h-5 text-caption text-cream-500">
         {busy && busyMessage ? busyMessage : ''}
       </p>
       <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">

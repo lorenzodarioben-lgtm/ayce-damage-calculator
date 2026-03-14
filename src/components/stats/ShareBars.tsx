@@ -20,8 +20,8 @@ export function ShareBars({ tallies, unitLabel }: ShareBarsProps) {
       {tallies.map((tally) => (
         <li key={tally.id}>
           <div className="flex items-baseline justify-between gap-3">
-            <span className="text-sm font-semibold text-cream-100">{tally.label}</span>
-            <span className="tabular text-xs text-cream-500">
+            <span className="text-ui font-semibold text-cream-100">{tally.label}</span>
+            <span className="tabular text-caption text-cream-500">
               {/* Formatted, because a share of a shared table is rarely whole. */}
               {formatPlateQuantity(tally.plates)} {unitLabel} · {formatPercent(tally.share)}
             </span>

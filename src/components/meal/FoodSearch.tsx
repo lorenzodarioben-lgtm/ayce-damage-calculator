@@ -63,7 +63,7 @@ export function FoodSearch({ value, onChange, resultCount }: FoodSearchProps) {
 
   return (
     <div className="mb-3">
-      <label htmlFor={inputId} className="micro-label mb-2 block">
+      <label htmlFor={inputId} className="text-ui font-semibold text-cream-300 mb-2 block">
         Find a cut
       </label>
 
@@ -91,7 +91,7 @@ export function FoodSearch({ value, onChange, resultCount }: FoodSearchProps) {
           autoComplete="off"
           aria-keyshortcuts="/"
           aria-describedby={statusId}
-          className="min-h-11 w-full rounded-surface border border-line bg-ash-900 pl-9 pr-11 text-sm text-cream-100 placeholder:text-cream-700"
+          className="min-h-11 w-full rounded-surface border border-line bg-ash-900 pl-9 pr-11 text-ui text-cream-100 placeholder:text-cream-700"
         />
         {value.length > 0 ? (
           <button
@@ -109,7 +109,7 @@ export function FoodSearch({ value, onChange, resultCount }: FoodSearchProps) {
              press. */
           <kbd
             aria-hidden="true"
-            className="pointer-events-none absolute right-1.5 top-1/2 hidden size-8 -translate-y-1/2 items-center justify-center rounded-inner border border-line bg-ash-850 font-sans text-xs text-cream-700 sm:flex"
+            className="pointer-events-none absolute right-1.5 top-1/2 hidden size-8 -translate-y-1/2 items-center justify-center rounded-inner border border-line bg-ash-850 font-sans text-caption text-cream-700 sm:flex"
           >
             /
           </kbd>
@@ -118,7 +118,7 @@ export function FoodSearch({ value, onChange, resultCount }: FoodSearchProps) {
 
       {/* Always present, so the count is announced rather than appearing from
           nowhere the first time a query matches nothing. */}
-      <p id={statusId} role="status" className="tabular mt-1.5 min-h-4 text-xs text-cream-700">
+      <p id={statusId} role="status" className="tabular mt-1.5 min-h-4 text-caption text-cream-700">
         {resultCount === null
           ? ''
           : resultCount === 0

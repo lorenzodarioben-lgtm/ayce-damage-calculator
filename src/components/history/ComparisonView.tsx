@@ -16,11 +16,11 @@ import { formatRecordedAt } from '@/lib/formatting';
 import type { SavedMealSession } from '@/types/history';
 
 const BACK_LINK =
-  '-ml-2 inline-flex min-h-11 items-center gap-1.5 rounded-surface px-2 text-xs font-semibold ' +
-  'uppercase tracking-[0.1em] text-cream-500 transition-colors duration-200 hover:bg-ash-850 hover:text-cream-100';
+  '-ml-2 inline-flex min-h-11 items-center gap-1.5 rounded-surface px-2 text-caption font-semibold ' +
+  'uppercase tracking-caps text-cream-500 transition-colors duration-200 hover:bg-ash-850 hover:text-cream-100';
 
 const SELECT =
-  'h-12 w-full rounded-surface border border-line bg-ash-900 px-3 text-sm text-cream-50';
+  'h-12 w-full rounded-surface border border-line bg-ash-900 px-3 text-ui text-cream-50';
 
 function describe(record: SavedMealSession): string {
   return `${formatRecordedAt(record.createdAt)} — ${record.restaurantName || 'Unnamed restaurant'}`;
@@ -56,7 +56,7 @@ export function ComparisonView() {
 
   if (status === 'loading') {
     return (
-      <p role="status" className="py-16 text-center text-sm text-cream-700">
+      <p role="status" className="py-16 text-center text-ui text-cream-700">
         Retrieving the file…
       </p>
     );
@@ -88,7 +88,7 @@ export function ComparisonView() {
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
-          <label htmlFor={previousId} className="mb-1.5 block text-sm font-semibold text-cream-300">
+          <label htmlFor={previousId} className="mb-1.5 block text-ui font-semibold text-cream-300">
             Earlier session
           </label>
           <select
@@ -105,7 +105,7 @@ export function ComparisonView() {
           </select>
         </div>
         <div>
-          <label htmlFor={currentId} className="mb-1.5 block text-sm font-semibold text-cream-300">
+          <label htmlFor={currentId} className="mb-1.5 block text-ui font-semibold text-cream-300">
             Later session
           </label>
           <select
@@ -126,7 +126,7 @@ export function ComparisonView() {
       {comparison === null ? (
         <p
           role="status"
-          className="panel border-dashed px-6 py-10 text-center text-sm text-cream-700"
+          className="panel border-dashed px-6 py-10 text-center text-ui text-cream-700"
         >
           Choose two different sessions to compare.
         </p>

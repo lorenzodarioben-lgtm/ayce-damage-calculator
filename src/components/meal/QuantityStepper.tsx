@@ -31,7 +31,7 @@ export function QuantityStepper({
   incrementLabel,
 }: QuantityStepperProps) {
   const buttonSize = size === 'sm' ? 'size-9' : 'size-12';
-  const valueSize = size === 'sm' ? 'min-w-8 text-base' : 'min-w-14 text-2xl';
+  const valueSize = size === 'sm' ? 'min-w-8 text-body' : 'min-w-14 text-title';
   const iconSize = size === 'sm' ? 14 : 18;
 
   const buttonClass = cn(
@@ -61,7 +61,7 @@ export function QuantityStepper({
 
       {/* <output> is a polite live region by default, so assistive technology
           hears the new count after pressing either control. */}
-      <output className={cn('tabular display-hero text-center text-cream-50', valueSize)}>
+      <output className={cn('tabular text-center font-bold text-cream-50', valueSize)}>
         {value}
       </output>
 

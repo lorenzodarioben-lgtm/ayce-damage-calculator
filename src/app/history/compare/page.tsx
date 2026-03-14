@@ -26,7 +26,7 @@ export default function ComparePage() {
           <div className="mt-8">
             <Suspense
               fallback={
-                <p role="status" className="text-sm text-cream-700">
+                <p role="status" className="text-ui text-cream-700">
                   Retrieving comparison…
                 </p>
               }
