@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import manifest from '@/app/manifest';
 import { DESTINATIONS } from '@/components/nav/destinations';
-import { THEME_COLOUR } from '@/lib/constants';
+import { SITE_LANGUAGE, THEME_COLOUR } from '@/lib/constants';
 
 describe('web app manifest', () => {
   it('offers the meal, from before it to across all of them', () => {
@@ -37,6 +37,14 @@ describe('web app manifest', () => {
       expect(shortcut.short_name).toBeTruthy();
       expect(shortcut.description).toBeTruthy();
     }
+  });
+
+  it('declares the language the document itself declares', () => {
+    const { lang, dir } = manifest();
+
+    // An installed app is read outside the page that would otherwise say so.
+    expect(lang).toBe(SITE_LANGUAGE);
+    expect(dir).toBe('ltr');
   });
 
   it('paints its chrome the same colour as the app', () => {
