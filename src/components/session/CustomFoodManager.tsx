@@ -174,13 +174,13 @@ function CustomFoodEditor({
       labelledById={titleId}
     >
       <div className="space-y-5">
-        <p className="text-sm leading-relaxed text-cream-500">
+        <p className="text-ui leading-relaxed text-cream-500">
           Add a cut or side your regular menu has but the calculator does not. It stays on this
           device until you export it.
         </p>
 
         <div className="grid gap-4 sm:grid-cols-[1fr_9rem]">
-          <label className="block text-sm font-semibold text-cream-300">
+          <label className="block text-ui font-semibold text-cream-300">
             Name
             <input
               value={draft.name}
@@ -190,7 +190,7 @@ function CustomFoodEditor({
               className="mt-1.5 h-11 w-full rounded-surface border border-line bg-ash-900 px-3 font-normal text-cream-50 placeholder:text-cream-700"
             />
           </label>
-          <label className="block text-sm font-semibold text-cream-300">
+          <label className="block text-ui font-semibold text-cream-300">
             Category
             <select
               value={draft.category}
@@ -206,7 +206,7 @@ function CustomFoodEditor({
           </label>
         </div>
 
-        <label className="block text-sm font-semibold text-cream-300">
+        <label className="block text-ui font-semibold text-cream-300">
           Short name <span className="font-normal text-cream-700">(optional)</span>
           <input
             value={draft.shortName}
@@ -217,7 +217,7 @@ function CustomFoodEditor({
           />
         </label>
 
-        <label className="block text-sm font-semibold text-cream-300">
+        <label className="block text-ui font-semibold text-cream-300">
           What is it? <span className="font-normal text-cream-700">(optional)</span>
           <textarea
             rows={2}
@@ -229,7 +229,7 @@ function CustomFoodEditor({
         </label>
 
         <fieldset>
-          <legend className="micro-label mb-2">How it is priced</legend>
+          <legend className="micro-label text-cream-500 mb-2">How it is priced</legend>
           <div className="grid gap-2 sm:grid-cols-2">
             {(
               [
@@ -253,15 +253,17 @@ function CustomFoodEditor({
                   onChange={() => set('valuation', model)}
                   className="sr-only"
                 />
-                <span className="block text-sm font-semibold text-cream-100">{label}</span>
-                <span className="mt-0.5 block text-xs leading-snug text-cream-700">{hint}</span>
+                <span className="block text-ui font-semibold text-cream-100">{label}</span>
+                <span className="mt-0.5 block text-caption leading-snug text-cream-700">
+                  {hint}
+                </span>
               </label>
             ))}
           </div>
         </fieldset>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <label className="block text-sm font-semibold text-cream-300">
+          <label className="block text-ui font-semibold text-cream-300">
             {perServing ? 'Retail per serving' : 'Retail per kg'}
             <input
               aria-label={perServing ? 'Retail price per serving' : 'Retail price per kg'}
@@ -273,7 +275,7 @@ function CustomFoodEditor({
               className="mt-1.5 h-11 w-full rounded-surface border border-line bg-ash-900 px-3 font-normal text-cream-50"
             />
           </label>
-          <label className="block text-sm font-semibold text-cream-300">
+          <label className="block text-ui font-semibold text-cream-300">
             {perServing ? 'Restaurant cost per serving' : 'Restaurant cost per kg'}
             <input
               aria-label={perServing ? 'Restaurant cost per serving' : 'Restaurant cost per kg'}
@@ -294,7 +296,7 @@ function CustomFoodEditor({
           nominal 155 g, which is an assumption about somebody else's portions
           and the single number every figure in the report is multiplied by.
         */}
-        <label className="block text-sm font-semibold text-cream-300">
+        <label className="block text-ui font-semibold text-cream-300">
           {perServing ? 'Grams per serving' : 'Grams per regular plate'}{' '}
           <span className="font-normal text-cream-700">(optional)</span>
           <input
@@ -306,7 +308,7 @@ function CustomFoodEditor({
             onChange={(event) => set('gramsPerServing', event.target.value)}
             className="mt-1.5 h-11 w-full rounded-surface border border-line bg-ash-900 px-3 font-normal text-cream-50"
           />
-          <span className="mt-1 block text-xs font-normal leading-snug text-cream-700">
+          <span className="mt-1 block text-caption font-normal leading-snug text-cream-700">
             {perServing
               ? 'Leave it at zero if you do not know. The item still counts towards value and nutrition; it just will not add weight to the meal, and the report says so.'
               : `Leave it blank to keep the app's nominal ${REGULAR_PLATE_GRAMS} g. Weigh a plate once and put the real figure here: retail value is weight times price per kilogram, so this moves every number in the report. Small and large plates scale from it.`}
@@ -314,10 +316,10 @@ function CustomFoodEditor({
         </label>
 
         <fieldset>
-          <legend className="micro-label mb-2">
+          <legend className="micro-label text-cream-500 mb-2">
             {perServing ? 'Nutrition per serving' : 'Nutrition per 100 g'}
           </legend>
-          <p className="mb-2 text-xs leading-relaxed text-cream-700">
+          <p className="mb-2 text-caption leading-relaxed text-cream-700">
             Leave a field blank if you do not know it. The report says the figure is not recorded
             rather than counting it as nothing.
           </p>
@@ -330,7 +332,7 @@ function CustomFoodEditor({
                 ['carbs', 'Carbs g'],
               ] as const
             ).map(([key, label]) => (
-              <label key={key} className="text-xs font-semibold text-cream-500">
+              <label key={key} className="text-caption font-semibold text-cream-500">
                 {label}
                 <input
                   type="number"
@@ -339,7 +341,7 @@ function CustomFoodEditor({
                   placeholder="Unknown"
                   value={draft[key]}
                   onChange={(event) => set(key, event.target.value)}
-                  className="mt-1 h-10 w-full rounded-surface border border-line bg-ash-900 px-2 text-sm font-normal text-cream-50 placeholder:text-cream-700"
+                  className="mt-1 h-10 w-full rounded-surface border border-line bg-ash-900 px-2 text-ui font-normal text-cream-50 placeholder:text-cream-700"
                 />
               </label>
             ))}
@@ -347,7 +349,7 @@ function CustomFoodEditor({
         </fieldset>
 
         {error && (
-          <p role="alert" className="text-sm font-semibold text-char-500">
+          <p role="alert" className="text-ui font-semibold text-char-500">
             {error}
           </p>
         )}
@@ -356,14 +358,14 @@ function CustomFoodEditor({
           <button
             type="button"
             onClick={onClose}
-            className="min-h-10 rounded-surface px-3 text-xs font-semibold uppercase tracking-[0.1em] text-cream-400 hover:bg-ash-800 hover:text-cream-100"
+            className="min-h-10 rounded-surface px-3 text-caption font-semibold uppercase tracking-caps text-cream-400 hover:bg-ash-800 hover:text-cream-100"
           >
             Cancel
           </button>
           <button
             type="button"
             onClick={handleSave}
-            className="min-h-10 rounded-surface bg-ember-500 px-4 text-xs font-bold uppercase tracking-[0.1em] text-ash-950 hover:bg-ember-400"
+            className="min-h-10 rounded-surface bg-ember-500 px-4 text-caption font-bold uppercase tracking-caps text-ash-950 hover:bg-ember-400"
           >
             Save to my menu
           </button>
@@ -407,17 +409,17 @@ export function CustomFoodManager({
     <section aria-labelledby="custom-foods-heading" className="mt-4 border-t border-line-soft pt-4">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <div>
-          <h3 id="custom-foods-heading" className="micro-label">
+          <h3 id="custom-foods-heading" className="display-type text-lead text-cream-100">
             Your menu
           </h3>
-          <p className="mt-1 text-xs leading-relaxed text-cream-700">
+          <p className="mt-1 text-caption leading-relaxed text-cream-700">
             Add the cuts and sides that make your regular haunt distinct.
           </p>
         </div>
         <button
           type="button"
           onClick={() => setCreating(true)}
-          className="inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-surface px-2 text-xs font-semibold uppercase tracking-[0.1em] text-ember-500 transition-colors hover:bg-ash-800"
+          className="inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-surface px-2 text-caption font-semibold uppercase tracking-caps text-ember-500 transition-colors hover:bg-ash-800"
         >
           <Plus size={14} aria-hidden="true" />
           Add food
@@ -425,7 +427,7 @@ export function CustomFoodManager({
       </div>
 
       {foods.length === 0 ? (
-        <p className="mt-3 rounded-surface border border-dashed border-line bg-ash-900/60 px-4 py-3 text-center text-xs leading-relaxed text-cream-700">
+        <p className="mt-3 rounded-surface border border-dashed border-line bg-ash-900/60 px-4 py-3 text-center text-caption leading-relaxed text-cream-700">
           No custom items yet. Your menu is optional; the built-in cuts remain ready to go.
         </p>
       ) : (
@@ -436,8 +438,8 @@ export function CustomFoodManager({
               className="flex min-h-12 items-center justify-between gap-3 rounded-surface border border-line bg-ash-900/70 px-3 py-2"
             >
               <div className="min-w-0">
-                <p className="truncate text-sm font-bold text-cream-100">{food.name}</p>
-                <p className="text-xs text-cream-600">
+                <p className="truncate text-ui font-bold text-cream-100">{food.name}</p>
+                <p className="text-caption text-cream-600">
                   {food.category} ·{' '}
                   {food.valuation === 'by-serving'
                     ? `${food.retailPricePerServing}/serving retail`

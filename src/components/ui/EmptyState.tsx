@@ -137,8 +137,8 @@ export function EmptyState({
         </g>
       </svg>
 
-      <p className="display-type text-2xl text-cream-300">{title}</p>
-      <p className="mx-auto mt-3 max-w-[44ch] text-sm leading-relaxed text-cream-700">{children}</p>
+      <p className="display-type text-title text-cream-300">{title}</p>
+      <p className="mx-auto mt-3 max-w-[44ch] reading">{children}</p>
       {action}
     </div>
   );

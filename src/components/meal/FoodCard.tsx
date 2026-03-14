@@ -62,18 +62,18 @@ export function FoodCard({ food, selected, onSelect }: FoodCardProps) {
         className="relative h-24 w-24 shrink-0 elevate-illustration transition-transform duration-300 ease-out-soft group-hover:scale-[1.05] sm:h-28 sm:w-28"
       />
 
-      <span className="display-type relative text-[1.1rem] leading-tight text-cream-50 sm:text-[1.3rem]">
+      <span className="display-type relative text-lead leading-tight text-cream-50 sm:text-lead">
         {food.name}
       </span>
 
-      <span className="relative text-[0.78rem] leading-snug text-cream-500 sm:text-[0.82rem]">
+      <span className="relative text-ui leading-snug text-cream-500 sm:text-ui">
         {food.description}
       </span>
 
       {/* A badge rather than a line of text: it is the one figure worth
           comparing between two cards, and it should be findable at a glance. */}
       <span className="relative mt-auto pt-2">
-        <span className="tabular inline-flex items-center rounded-full border border-line-ember bg-ash-950/70 px-2.5 py-1 text-[0.72rem] font-semibold tracking-wide text-ember-300">
+        <span className="tabular inline-flex items-center rounded-full border border-line-ember bg-ash-950/70 px-2.5 py-1 text-caption font-semibold tracking-caps text-ember-300">
           ~{formatUnitPrice(pricing, pricingProfile.money)} retail
         </span>
       </span>

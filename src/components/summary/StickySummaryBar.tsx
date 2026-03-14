@@ -37,14 +37,14 @@ export function StickySummaryBar({ report, onCalculate }: StickySummaryBarProps)
         style={{ paddingBottom: 'calc(0.625rem + env(safe-area-inset-bottom))' }}
       >
         <div className="min-w-0">
-          <p className="tabular text-sm font-bold text-cream-50">
+          <p className="tabular text-ui font-bold text-cream-50">
             {formatMoney(report.totalRetailValue, pricingProfile.money)}
             <span className="font-normal text-cream-700">
               {' '}
               / {formatMoney(report.totalAdmission, pricingProfile.money)}
             </span>
           </p>
-          <p className="tabular truncate text-xs text-cream-500">
+          <p className="tabular truncate text-caption text-cream-500">
             {formatPlates(report.totalPlates)} · {formatPercent(report.retailRecoveryPercent)}{' '}
             recovered
           </p>
