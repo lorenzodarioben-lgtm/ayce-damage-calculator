@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next';
-import { THEME_COLOUR } from '@/lib/constants';
+import { SITE_LANGUAGE, THEME_COLOUR } from '@/lib/constants';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
@@ -8,6 +8,11 @@ export default function manifest(): MetadataRoute.Manifest {
     description:
       'Track an all-you-can-eat Korean BBQ meal and find out whether you beat the buffet.',
     id: '/',
+    // The document says `en-AU`; an installed app that says nothing leaves the
+    // launcher to guess at sorting, hyphenation and the direction of its own
+    // shortcut names.
+    lang: SITE_LANGUAGE,
+    dir: 'ltr',
     start_url: '/',
     scope: '/',
     display: 'standalone',
