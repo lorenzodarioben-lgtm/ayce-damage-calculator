@@ -12,7 +12,7 @@ interface QualitySelectorProps {
 export function QualitySelector({ value, onChange }: QualitySelectorProps) {
   return (
     <fieldset>
-      <legend className="micro-label mb-2">Quality tier</legend>
+      <legend className="micro-label text-cream-500 mb-2">Quality tier</legend>
       <div className="grid grid-cols-3 gap-2">
         {QUALITY_TIERS.map((tier) => (
           <OptionCard

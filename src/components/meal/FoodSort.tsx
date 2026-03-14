@@ -26,7 +26,7 @@ export function FoodSort({ value, onChange }: FoodSortProps) {
 
   return (
     <div className="flex items-center gap-2">
-      <span id={labelId} className="micro-label">
+      <span id={labelId} className="micro-label text-cream-500">
         Order by
       </span>
       <div role="group" aria-labelledby={labelId} className="segmented-track flex gap-1 p-1">
@@ -40,7 +40,7 @@ export function FoodSort({ value, onChange }: FoodSortProps) {
               aria-label={option.description}
               onClick={() => onChange(option.key)}
               className={cn(
-                'min-h-9 cursor-pointer rounded-inner px-3 text-xs font-semibold uppercase tracking-[0.08em]',
+                'min-h-9 cursor-pointer rounded-inner px-3 text-caption font-semibold uppercase tracking-caps',
                 'transition-[background-color,color,box-shadow] duration-200',
                 selected
                   ? 'segmented-thumb'

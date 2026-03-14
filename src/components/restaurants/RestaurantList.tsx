@@ -41,7 +41,7 @@ export function RestaurantList() {
 
   if (!hydrated || status === 'loading') {
     return (
-      <p role="status" className="py-16 text-center text-sm text-cream-700">
+      <p role="status" className="py-16 text-center text-ui text-cream-700">
         Reading the file…
       </p>
     );
@@ -67,7 +67,7 @@ export function RestaurantList() {
   return (
     <div className="space-y-5">
       {restaurants.length > 1 && (
-        <p className="text-sm text-cream-700">
+        <p className="text-ui text-cream-700">
           Select two saved places to compare their explicitly linked local visits.
         </p>
       )}
@@ -88,22 +88,22 @@ export function RestaurantList() {
               className="panel lift-on-hover flex flex-wrap items-baseline justify-between gap-3 p-4 hover:border-ember-700 hover:bg-ash-800 hover:elevate-raised sm:p-5"
             >
               <span className="min-w-0">
-                <span className="block truncate text-base font-bold text-cream-50">
+                <span className="block truncate text-body font-bold text-cream-50">
                   {summary.profile.name}
                 </span>
-                <span className="tabular block text-xs text-cream-500">
+                <span className="tabular block text-caption text-cream-500">
                   {formatMoney(summary.profile.pricePerDiner, summary.money)} per diner ·{' '}
                   {summary.profile.dinerCount}{' '}
                   {summary.profile.dinerCount === 1 ? 'diner' : 'diners'}
                 </span>
               </span>
               <span className="text-right">
-                <span className="tabular block text-sm font-bold text-ember-400">
+                <span className="tabular block text-ui font-bold text-ember-400">
                   {summary.visits === 0
                     ? 'No visits filed'
                     : `${summary.visits} ${summary.visits === 1 ? 'visit' : 'visits'}`}
                 </span>
-                <span className="tabular block text-xs text-cream-700">
+                <span className="tabular block text-caption text-cream-700">
                   {summary.visits === 0
                     ? 'Saved setup only'
                     : `${formatPercent(summary.averageRecoveryPercent)} average · last ${formatRecordedAt(summary.latestVisitAt ?? '')}`}
@@ -152,11 +152,11 @@ function RestaurantComparison({
       .join(', ') || 'No visits';
   return (
     <section aria-labelledby="restaurant-comparison" className="panel p-4 sm:p-5">
-      <h2 id="restaurant-comparison" className="micro-label mb-3">
+      <h2 id="restaurant-comparison" className="display-type text-title text-cream-100 mb-3">
         Restaurant comparison
       </h2>
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm">
+        <table className="w-full text-left text-ui">
           {/* Every cell here is read against two headers at once — a measure and
               a place — so both axes have to be declared for a cell to mean
               anything out of visual order. */}

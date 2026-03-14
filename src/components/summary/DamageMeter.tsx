@@ -39,8 +39,8 @@ export function DamageMeter({
   return (
     <div>
       <div className="flex items-baseline justify-between gap-2">
-        <span className="micro-label">Retail damage</span>
-        <span className="tabular text-sm font-semibold text-cream-300">
+        <span className="micro-label text-cream-500">Retail damage</span>
+        <span className="tabular text-ui font-semibold text-cream-300">
           {formatMoney(retailValue, pricingProfile.money)}{' '}
           <span className="text-cream-700">
             / {formatMoney(totalAdmission, pricingProfile.money)}
@@ -103,7 +103,12 @@ export function DamageMeter({
       </div>
 
       <div className="mt-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
-        <p className={cn('text-xs font-semibold', beaten ? 'text-sesame-400' : 'text-cream-500')}>
+        <p
+          className={cn(
+            'text-caption font-semibold',
+            beaten ? 'text-sesame-400' : 'text-cream-500',
+          )}
+        >
           {beaten ? (
             <>
               You beat the buffet
@@ -116,8 +121,8 @@ export function DamageMeter({
         </p>
         <p
           className={cn(
-            'tabular display-hero leading-none',
-            compact ? 'text-2xl' : 'text-[2rem]',
+            'tabular font-bold leading-none',
+            compact ? 'text-title' : 'text-figure',
             beaten
               ? 'text-sesame-400 drop-shadow-[0_0_14px_var(--color-sesame-600)]'
               : 'text-ember-300',
@@ -128,7 +133,7 @@ export function DamageMeter({
       </div>
 
       {beaten && !compact && (
-        <p className="mt-1.5 text-[0.68rem] leading-snug text-cream-700">
+        <p className="mt-1.5 text-caption leading-snug text-cream-700">
           *By estimated supermarket retail value, not restaurant profitability.
         </p>
       )}

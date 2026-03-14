@@ -170,14 +170,14 @@ function ProfileEditor({
       labelledById={titleId}
     >
       <div className="space-y-5">
-        <p className="text-sm leading-relaxed text-cream-500">
+        <p className="text-ui leading-relaxed text-cream-500">
           Keep a local set of assumptions for a particular restaurant or city. Blank cut prices keep
           the original Australian estimate for that cut.
         </p>
 
         <div className="grid gap-4 sm:grid-cols-[1fr_9rem]">
           <div>
-            <label htmlFor={nameId} className="mb-1.5 block text-sm font-semibold text-cream-300">
+            <label htmlFor={nameId} className="mb-1.5 block text-ui font-semibold text-cream-300">
               Profile name
             </label>
             <input
@@ -192,7 +192,7 @@ function ProfileEditor({
           <div>
             <label
               htmlFor={currencyId}
-              className="mb-1.5 block text-sm font-semibold text-cream-300"
+              className="mb-1.5 block text-ui font-semibold text-cream-300"
             >
               Currency
             </label>
@@ -213,8 +213,8 @@ function ProfileEditor({
 
         <div>
           <div className="mb-3 rounded-surface border border-line-soft p-3">
-            <p className="text-sm font-semibold text-cream-100">Bulk price adjustment</p>
-            <p className="mt-1 text-xs text-cream-700">
+            <p className="text-ui font-semibold text-cream-100">Bulk price adjustment</p>
+            <p className="mt-1 text-caption text-cream-700">
               Preview an increase or decrease across this profile before saving. Historical meal
               snapshots are never changed.
             </p>
@@ -226,20 +226,32 @@ function ProfileEditor({
                 type="number"
                 step="0.1"
                 placeholder="e.g. 10"
-                className="h-10 w-28 rounded-surface border border-line bg-ash-850 px-2 text-sm text-cream-50"
+                className="h-10 w-28 rounded-surface border border-line bg-ash-850 px-2 text-ui text-cream-50"
               />
               <button
                 type="button"
                 onClick={previewAdjustment}
-                className="rounded-surface border border-line px-3 text-xs font-semibold text-ember-400"
+                className="rounded-surface border border-line px-3 text-caption font-semibold text-ember-400"
               >
                 Preview all cuts
               </button>
             </div>
           </div>
           <div className="mb-2 flex items-baseline justify-between gap-3">
-            <h3 className="micro-label">Cut assumptions</h3>
-            <p className="text-xs text-cream-700">Per item · leave a row blank to inherit</p>
+            <h3 className="display-type text-lead text-cream-100">Cut assumptions</h3>
+            <p className="text-caption text-cream-700">Per item · leave a row blank to inherit</p>
+          </div>
+          {/* The two number columns are identical once they hold values, so on a
+              wide screen they are named once here rather than on every row —
+              which is what the per-row labels used to do before they were sized
+              to nothing and left the columns anonymous. */}
+          <div
+            aria-hidden="true"
+            className="hidden px-3 pb-1 sm:grid sm:grid-cols-[minmax(0,1fr)_7rem_7rem] sm:items-baseline sm:gap-2"
+          >
+            <span />
+            <span className="micro-label text-cream-500">Retail</span>
+            <span className="micro-label text-cream-500">Cost</span>
           </div>
           <div className="max-h-[40dvh] overflow-y-auto rounded-surface border border-line-soft bg-ash-900/50">
             {FOODS.map((food) => {
@@ -250,8 +262,8 @@ function ProfileEditor({
                   className="grid gap-2 border-b border-line-soft px-3 py-3 last:border-b-0 sm:grid-cols-[minmax(0,1fr)_7rem_7rem] sm:items-center"
                 >
                   <div>
-                    <p className="text-sm font-bold text-cream-100">{food.name}</p>
-                    <p className="text-xs text-cream-700">
+                    <p className="text-ui font-bold text-cream-100">{food.name}</p>
+                    <p className="text-caption text-cream-700">
                       Default{' '}
                       {formatUnitPrice(resolveFoodPricing(food), {
                         currency,
@@ -259,8 +271,10 @@ function ProfileEditor({
                       })}
                     </p>
                   </div>
-                  <label className="text-xs text-cream-500 sm:text-[0px]">
-                    Retail price per {food.valuation === 'by-weight' ? 'kg' : 'serving'}
+                  <label className="text-caption text-cream-500">
+                    <span className="sm:sr-only">
+                      Retail price per {food.valuation === 'by-weight' ? 'kg' : 'serving'}
+                    </span>
                     <input
                       aria-label={`${food.name} retail price per ${food.valuation === 'by-weight' ? 'kg' : 'serving'}`}
                       type="number"
@@ -269,11 +283,13 @@ function ProfileEditor({
                       value={fields?.retail ?? ''}
                       onChange={(event) => updatePrice(food.id, 'retail', event.target.value)}
                       placeholder="Retail"
-                      className="mt-1 h-10 w-full rounded-surface border border-line bg-ash-850 px-2 text-sm text-cream-50 placeholder:text-cream-700 sm:mt-0"
+                      className="mt-1 h-10 w-full rounded-surface border border-line bg-ash-850 px-2 text-ui text-cream-50 placeholder:text-cream-700 sm:mt-0"
                     />
                   </label>
-                  <label className="text-xs text-cream-500 sm:text-[0px]">
-                    Restaurant cost per {food.valuation === 'by-weight' ? 'kg' : 'serving'}
+                  <label className="text-caption text-cream-500">
+                    <span className="sm:sr-only">
+                      Restaurant cost per {food.valuation === 'by-weight' ? 'kg' : 'serving'}
+                    </span>
                     <input
                       aria-label={`${food.name} restaurant cost per ${food.valuation === 'by-weight' ? 'kg' : 'serving'}`}
                       type="number"
@@ -282,7 +298,7 @@ function ProfileEditor({
                       value={fields?.cost ?? ''}
                       onChange={(event) => updatePrice(food.id, 'cost', event.target.value)}
                       placeholder="Cost"
-                      className="mt-1 h-10 w-full rounded-surface border border-line bg-ash-850 px-2 text-sm text-cream-50 placeholder:text-cream-700 sm:mt-0"
+                      className="mt-1 h-10 w-full rounded-surface border border-line bg-ash-850 px-2 text-ui text-cream-50 placeholder:text-cream-700 sm:mt-0"
                     />
                   </label>
                 </div>
@@ -292,7 +308,7 @@ function ProfileEditor({
         </div>
 
         {error && (
-          <p role="alert" className="text-sm font-semibold text-char-500">
+          <p role="alert" className="text-ui font-semibold text-char-500">
             {error}
           </p>
         )}
@@ -301,14 +317,14 @@ function ProfileEditor({
           <button
             type="button"
             onClick={onClose}
-            className="min-h-10 rounded-surface px-3 text-xs font-semibold uppercase tracking-[0.1em] text-cream-400 hover:bg-ash-800 hover:text-cream-100"
+            className="min-h-10 rounded-surface px-3 text-caption font-semibold uppercase tracking-caps text-cream-400 hover:bg-ash-800 hover:text-cream-100"
           >
             Cancel
           </button>
           <button
             type="button"
             onClick={handleSave}
-            className="min-h-10 rounded-surface bg-ember-500 px-4 text-xs font-bold uppercase tracking-[0.1em] text-ash-950 hover:bg-ember-400"
+            className="min-h-10 rounded-surface bg-ember-500 px-4 text-caption font-bold uppercase tracking-caps text-ash-950 hover:bg-ember-400"
           >
             Save profile
           </button>
@@ -340,17 +356,17 @@ export function PricingProfileManager({
     <section aria-labelledby="menu-pricing-heading" className="mt-4 border-t border-line-soft pt-4">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <div>
-          <h3 id="menu-pricing-heading" className="micro-label">
+          <h3 id="menu-pricing-heading" className="display-type text-lead text-cream-100">
             Menu pricing
           </h3>
-          <p className="mt-1 text-xs leading-relaxed text-cream-700">
+          <p className="mt-1 text-caption leading-relaxed text-cream-700">
             Keep your restaurant assumptions local to this device.
           </p>
         </div>
         <button
           type="button"
           onClick={() => setCreating(true)}
-          className="inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-surface px-2 text-xs font-semibold uppercase tracking-[0.1em] text-ember-500 transition-colors duration-200 hover:bg-ash-800"
+          className="inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-surface px-2 text-caption font-semibold uppercase tracking-caps text-ember-500 transition-colors duration-200 hover:bg-ash-800"
         >
           <Plus size={14} aria-hidden="true" />
           New profile
@@ -364,8 +380,8 @@ export function PricingProfileManager({
             className="flex min-h-12 items-center justify-between gap-3 rounded-surface border border-line bg-ash-900/70 px-3 py-2"
           >
             <div className="min-w-0">
-              <p className="truncate text-sm font-bold text-cream-100">{profile.name}</p>
-              <p className="text-xs text-cream-600">
+              <p className="truncate text-ui font-bold text-cream-100">{profile.name}</p>
+              <p className="text-caption text-cream-600">
                 {profile.money.currency} · {Object.keys(profile.overrides).length || 'Catalogue'}{' '}
                 assumptions
                 {profile.builtIn ? ' · Built in' : ''}

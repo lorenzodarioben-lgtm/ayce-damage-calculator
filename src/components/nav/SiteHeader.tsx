@@ -25,8 +25,8 @@ interface SiteHeaderProps {
  * "hovered" in the same language it said "you are here".
  */
 const LINK_BASE =
-  'relative flex min-h-11 items-center rounded-surface px-3 text-xs font-semibold uppercase ' +
-  'tracking-[0.1em] transition-colors duration-200 ' +
+  'relative flex min-h-11 items-center rounded-surface px-3 text-caption font-semibold uppercase ' +
+  'tracking-caps transition-colors duration-200 ' +
   "after:absolute after:inset-x-3 after:bottom-1.5 after:h-px after:rounded-full after:content-['']";
 
 const LINK_IDLE =

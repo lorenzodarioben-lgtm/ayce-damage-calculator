@@ -43,10 +43,10 @@ export function LiveSummary({
        the form it is reading from. */
     <section aria-labelledby="tab-heading" className="panel-raised p-4 sm:p-5">
       <div className="flex items-baseline justify-between gap-3 border-b border-line pb-3">
-        <h2 id="tab-heading" className="display-type text-2xl text-cream-50">
+        <h2 id="tab-heading" className="display-type text-title text-cream-50">
           Your tab
         </h2>
-        <p className="tabular rounded-full border border-line bg-ash-950/60 px-2.5 py-1 text-xs text-cream-500">
+        <p className="tabular rounded-full border border-line bg-ash-950/60 px-2.5 py-1 text-caption text-cream-500">
           {formatPlates(report.totalPlates)}
         </p>
       </div>
@@ -61,7 +61,7 @@ export function LiveSummary({
       </div>
 
       {hasItems && !report.hasBeatenBuffet && report.platesToBreakEven > 0 && (
-        <p className="well tabular mt-3 px-3 py-2 text-xs text-cream-500">
+        <p className="well tabular mt-3 px-3 py-2 text-caption text-cream-500">
           ~{formatCount(report.platesToBreakEven)} average{' '}
           {report.platesToBreakEven === 1 ? 'plate' : 'plates'} to retail break-even
         </p>
@@ -71,14 +71,14 @@ export function LiveSummary({
           their own rather than a row of a definition list nobody scans. */}
       <dl className="tabular mt-4 grid grid-cols-2 gap-2">
         <div className="well px-3 py-2.5">
-          <dt className="micro-label">Eaten</dt>
-          <dd className="mt-0.5 text-lg font-bold text-cream-50">
+          <dt className="micro-label text-cream-500">Eaten</dt>
+          <dd className="mt-0.5 text-lead font-bold text-cream-50">
             {formatKg(report.totalWeightKg)}
           </dd>
         </div>
         <div className="well px-3 py-2.5">
-          <dt className="micro-label">Admission</dt>
-          <dd className="mt-0.5 text-lg font-bold text-cream-50">
+          <dt className="micro-label text-cream-500">Admission</dt>
+          <dd className="mt-0.5 text-lead font-bold text-cream-50">
             {formatMoney(report.totalAdmission, pricingProfile.money)}
           </dd>
         </div>

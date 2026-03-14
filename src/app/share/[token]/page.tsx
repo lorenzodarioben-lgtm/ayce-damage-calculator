@@ -58,8 +58,8 @@ export async function generateMetadata({ params }: SharePageProps): Promise<Meta
 }
 
 const CTA_CLASS =
-  'inline-flex min-h-14 items-center justify-center rounded-surface bg-ember-500 px-6 text-base ' +
-  'font-bold uppercase tracking-[0.1em] text-ash-950 transition-colors duration-200 hover:bg-ember-400';
+  'inline-flex min-h-14 items-center justify-center rounded-surface bg-ember-500 px-6 text-body ' +
+  'font-bold uppercase tracking-caps text-ash-950 transition-colors duration-200 hover:bg-ember-400';
 
 function UnreadableToken() {
   return (
@@ -68,8 +68,8 @@ function UnreadableToken() {
       className="relative z-10 mx-auto max-w-[560px] px-4 pt-16 pb-16 sm:px-6"
     >
       <div className="panel border-dashed px-6 py-14 text-center">
-        <h1 className="display-type text-3xl text-cream-300">This report cannot be read.</h1>
-        <p className="mx-auto mt-4 max-w-[44ch] text-sm leading-relaxed text-cream-700">
+        <h1 className="display-type text-figure text-cream-300">This report cannot be read.</h1>
+        <p className="mx-auto mt-4 max-w-[44ch] text-ui leading-relaxed text-cream-700">
           The link is incomplete, was altered in transit, or was produced by a version of the
           calculator this one does not understand. Nothing was lost — a shared report lives entirely
           in its own link.
@@ -117,7 +117,7 @@ export default async function SharePage({ params }: SharePageProps) {
           id={MAIN_CONTENT_ID}
           className="relative z-10 mx-auto max-w-[900px] px-4 pt-8 pb-16 sm:px-6"
         >
-          <p className="micro-label mb-4">A shared damage report</p>
+          <p className="micro-label text-cream-500 mb-4">A shared damage report</p>
 
           <ReportSummary
             report={report}
@@ -141,7 +141,7 @@ export default async function SharePage({ params }: SharePageProps) {
           </div>
 
           <section aria-labelledby="shared-card-heading" className="panel mt-6 p-4 sm:p-5">
-            <h3 id="shared-card-heading" className="micro-label mb-4">
+            <h3 id="shared-card-heading" className="display-type text-lead text-cream-100 mb-4">
               The card
             </h3>
             <div className="flex justify-center overflow-x-auto pb-1">
@@ -153,7 +153,7 @@ export default async function SharePage({ params }: SharePageProps) {
             <Link href="/" className={CTA_CLASS}>
               Run your own damage report
             </Link>
-            <p className="mt-3 text-xs text-cream-700">
+            <p className="mt-3 text-caption text-cream-700">
               This report is read-only and has not changed anything on your device.
             </p>
           </div>

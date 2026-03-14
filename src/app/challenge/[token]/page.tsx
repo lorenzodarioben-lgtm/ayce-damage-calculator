@@ -43,8 +43,8 @@ export async function generateMetadata({ params }: ChallengePageProps): Promise<
 }
 
 const CTA_CLASS =
-  'inline-flex min-h-14 items-center justify-center rounded-surface bg-ember-500 px-6 text-base ' +
-  'font-bold uppercase tracking-[0.1em] text-ash-950 transition-colors duration-200 hover:bg-ember-400';
+  'inline-flex min-h-14 items-center justify-center rounded-surface bg-ember-500 px-6 text-body ' +
+  'font-bold uppercase tracking-caps text-ash-950 transition-colors duration-200 hover:bg-ember-400';
 
 export default async function ChallengePage({ params }: ChallengePageProps) {
   const { token } = await params;
@@ -59,8 +59,10 @@ export default async function ChallengePage({ params }: ChallengePageProps) {
           className="relative z-10 mx-auto max-w-[560px] px-4 pt-16 pb-16 sm:px-6"
         >
           <div className="panel border-dashed px-6 py-14 text-center">
-            <h1 className="display-type text-3xl text-cream-300">This challenge cannot be read.</h1>
-            <p className="mx-auto mt-4 max-w-[44ch] text-sm leading-relaxed text-cream-700">
+            <h1 className="display-type text-figure text-cream-300">
+              This challenge cannot be read.
+            </h1>
+            <p className="mx-auto mt-4 max-w-[44ch] text-ui leading-relaxed text-cream-700">
               The link is incomplete, was altered in transit, or was produced by a version of the
               calculator this one does not understand. Nothing was lost — a challenge lives entirely
               in its own link.
@@ -87,8 +89,10 @@ export default async function ChallengePage({ params }: ChallengePageProps) {
         id={MAIN_CONTENT_ID}
         className="relative z-10 mx-auto max-w-[900px] px-4 pt-8 pb-16 sm:px-6"
       >
-        <p className="micro-label mb-2">A shared damage challenge</p>
-        <h1 className="display-type mb-6 text-4xl text-cream-50 sm:text-5xl">Head to head</h1>
+        <p className="micro-label text-cream-500 mb-2">A shared damage challenge</p>
+        <h1 className="display-type mb-6 text-figure text-cream-50 sm:text-reading">
+          Head to head
+        </h1>
 
         <div className="space-y-6">
           <ComparisonReport
@@ -102,7 +106,7 @@ export default async function ChallengePage({ params }: ChallengePageProps) {
           <Link href="/" className={CTA_CLASS}>
             Run your own damage report
           </Link>
-          <p className="mt-3 text-xs text-cream-700">
+          <p className="mt-3 text-caption text-cream-700">
             This challenge is read-only and has not changed anything on your device.
           </p>
         </div>

@@ -131,16 +131,16 @@ export function MealBuilder({
   return (
     <section aria-labelledby="builder-heading" className="panel p-4 sm:p-5">
       <div className="mb-4 flex items-baseline justify-between gap-3">
-        <h2 id="builder-heading" className="display-type text-2xl text-cream-50 sm:text-3xl">
+        <h2 id="builder-heading" className="display-type text-title text-cream-50 sm:text-figure">
           Build the meal
         </h2>
-        <p className="text-xs text-cream-700">{catalogue.length} cuts</p>
+        <p className="text-caption text-cream-700">{catalogue.length} cuts</p>
       </div>
 
       {/* Saved orders sit above the picker: for a repeat visit they are the
           fastest path, and they cost nothing when the list is empty. */}
       <section aria-labelledby="saved-orders-heading" className="mb-4">
-        <h3 id="saved-orders-heading" className="micro-label mb-2">
+        <h3 id="saved-orders-heading" className="display-type text-lead text-cream-100 mb-2">
           Saved orders
         </h3>
         <FavoriteQuickAdd favorites={favorites} foods={catalogue} onAdd={onAdd} onRemove={remove} />
@@ -187,7 +187,7 @@ export function MealBuilder({
       )}
 
       {searching && foods.length === 0 && (
-        <p className="py-6 text-center text-sm text-cream-700">
+        <p className="py-6 text-center text-ui text-cream-700">
           Nothing on the menu matches “{trimmedQuery}”.
         </p>
       )}
@@ -196,8 +196,8 @@ export function MealBuilder({
         {selectedFood ? (
           <div className="animate-fade-up space-y-4">
             <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-              <span className="micro-label">Configuring</span>
-              <span className="display-type text-xl text-ember-400">{selectedFood.name}</span>
+              <span className="micro-label text-cream-500">Configuring</span>
+              <span className="display-type text-lead text-ember-400">{selectedFood.name}</span>
             </div>
 
             <QualitySelector value={quality} onChange={setQuality} />
@@ -212,7 +212,7 @@ export function MealBuilder({
 
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
-                <span className="micro-label mb-2 block">
+                <span className="micro-label text-cream-500 mb-2 block">
                   {unitNoun(selectedFood, true).replace(/^./, (first) => first.toUpperCase())}
                 </span>
                 <QuantityStepper
@@ -228,7 +228,7 @@ export function MealBuilder({
               </div>
 
               {preview && (
-                <dl className="tabular text-right text-sm">
+                <dl className="tabular text-right text-ui">
                   <div className="flex items-baseline justify-end gap-2">
                     <dt className="text-cream-700">Weight</dt>
                     <dd className="font-semibold text-cream-100">
@@ -261,7 +261,7 @@ export function MealBuilder({
             </div>
           </div>
         ) : (
-          <p className="py-2 text-center text-sm text-cream-700">
+          <p className="py-2 text-center text-ui text-cream-700">
             Choose a cut above to set quality, plate size and quantity.
           </p>
         )}

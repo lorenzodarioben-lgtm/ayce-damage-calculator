@@ -27,10 +27,10 @@ export function SessionConflictNotice({
       aria-labelledby="session-conflict-heading"
       className="panel border-char-600 bg-char-700/20 p-4"
     >
-      <h2 id="session-conflict-heading" className="text-sm font-bold text-cream-50">
+      <h2 id="session-conflict-heading" className="text-ui font-bold text-cream-50">
         {changedText}
       </h2>
-      <p className="mt-1 max-w-[65ch] text-sm leading-relaxed text-cream-300">
+      <p className="mt-1 max-w-[62ch] text-ui leading-relaxed text-cream-300">
         This tab has its own edits, so nothing was replaced. Choose which complete meal to keep; the
         app will not merge two tabs’ meal histories.
       </p>

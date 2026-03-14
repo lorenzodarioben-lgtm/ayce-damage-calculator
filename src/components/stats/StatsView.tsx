@@ -26,9 +26,9 @@ import {
 function Figure({ label, value, detail }: { label: string; value: string; detail?: string }) {
   return (
     <div className="panel p-4">
-      <p className="micro-label">{label}</p>
-      <p className="tabular display-type mt-1 text-3xl text-cream-50">{value}</p>
-      {detail && <p className="mt-1 text-xs text-cream-700">{detail}</p>}
+      <p className="micro-label text-cream-500">{label}</p>
+      <p className="tabular display-type mt-1 text-figure text-cream-50">{value}</p>
+      {detail && <p className="mt-1 text-caption text-cream-700">{detail}</p>}
     </div>
   );
 }
@@ -44,7 +44,7 @@ export function StatsView() {
 
   if (status === 'loading') {
     return (
-      <p role="status" className="py-16 text-center text-sm text-cream-700">
+      <p role="status" className="py-16 text-center text-ui text-cream-700">
         Reviewing the file…
       </p>
     );
@@ -85,8 +85,8 @@ export function StatsView() {
             onClick={() => setRange(value)}
             className={
               range === value
-                ? 'rounded-surface bg-ember-500 px-3 py-2 text-sm font-semibold text-ash-950'
-                : 'rounded-surface border border-line px-3 py-2 text-sm font-semibold text-cream-300'
+                ? 'rounded-surface bg-ember-500 px-3 py-2 text-ui font-semibold text-ash-950'
+                : 'rounded-surface border border-line px-3 py-2 text-ui font-semibold text-cream-300'
             }
           >
             {label}
@@ -94,13 +94,13 @@ export function StatsView() {
         ))}
       </section>
       {analytics.sessionCount === 0 ? (
-        <p className="panel border-dashed px-6 py-10 text-center text-sm text-cream-700">
+        <p className="panel border-dashed px-6 py-10 text-center text-ui text-cream-700">
           No filed sessions fall within this period.
         </p>
       ) : (
         <>
           <section aria-labelledby="totals-heading">
-            <h2 id="totals-heading" className="micro-label mb-3">
+            <h2 id="totals-heading" className="display-type text-title text-cream-100 mb-3">
               On record
             </h2>
             <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -120,7 +120,7 @@ export function StatsView() {
           </section>
 
           <section aria-labelledby="recovery-heading">
-            <h2 id="recovery-heading" className="micro-label mb-3">
+            <h2 id="recovery-heading" className="display-type text-title text-cream-100 mb-3">
               Retail recovery
             </h2>
             <div className="grid gap-3 sm:grid-cols-2">
@@ -137,28 +137,28 @@ export function StatsView() {
             </div>
 
             <div className="panel mt-3 p-4 sm:p-5">
-              <h3 className="micro-label mb-3">Recent sessions</h3>
+              <h3 className="display-type text-lead text-cream-100 mb-3">Recent sessions</h3>
               <RecoveryTrend points={analytics.trend} headingId="recovery-trend" />
             </div>
           </section>
 
           <section aria-labelledby="mix-heading">
-            <h2 id="mix-heading" className="micro-label mb-3">
+            <h2 id="mix-heading" className="display-type text-title text-cream-100 mb-3">
               What gets ordered
             </h2>
             <div className="grid gap-3 lg:grid-cols-2">
               <div className="panel p-4 sm:p-5">
-                <h3 className="micro-label mb-3">By category</h3>
+                <h3 className="display-type text-lead text-cream-100 mb-3">By category</h3>
                 <ShareBars tallies={analytics.categories} unitLabel="plates" />
               </div>
               <div className="panel p-4 sm:p-5">
-                <h3 className="micro-label mb-3">By grade</h3>
+                <h3 className="display-type text-lead text-cream-100 mb-3">By grade</h3>
                 <ShareBars tallies={analytics.qualities} unitLabel="plates" />
               </div>
             </div>
 
             <div className="panel mt-3 p-4 sm:p-5">
-              <h3 className="micro-label mb-3">Most ordered cuts</h3>
+              <h3 className="display-type text-lead text-cream-100 mb-3">Most ordered cuts</h3>
               <ol className="space-y-2">
                 {analytics.topFoods.map((food, index) => (
                   <li
@@ -166,12 +166,12 @@ export function StatsView() {
                     className="flex items-baseline justify-between gap-3 border-b border-line-soft pb-2 last:border-b-0 last:pb-0"
                   >
                     <span className="flex min-w-0 items-baseline gap-3">
-                      <span className="tabular text-xs text-cream-700">{index + 1}</span>
-                      <span className="truncate text-sm font-semibold text-cream-100">
+                      <span className="tabular text-caption text-cream-700">{index + 1}</span>
+                      <span className="truncate text-ui font-semibold text-cream-100">
                         {food.name}
                       </span>
                     </span>
-                    <span className="tabular shrink-0 text-sm text-ember-400">
+                    <span className="tabular shrink-0 text-ui text-ember-400">
                       {formatPlates(food.plates)}
                     </span>
                   </li>
@@ -182,10 +182,10 @@ export function StatsView() {
 
           {analytics.mostPlates && (
             <section aria-labelledby="standout-heading" className="panel p-4 sm:p-5">
-              <h2 id="standout-heading" className="micro-label mb-2">
+              <h2 id="standout-heading" className="display-type text-title text-cream-100 mb-2">
                 Largest recorded session
               </h2>
-              <p className="text-sm text-cream-300">
+              <p className="text-ui text-cream-300">
                 {formatPlates(analytics.mostPlates.value)} at{' '}
                 <Link
                   href={`/history/${analytics.mostPlates.id}`}
@@ -199,10 +199,10 @@ export function StatsView() {
           )}
           {mealTrends.recent.count > 0 && (
             <section aria-labelledby="meal-trends-heading" className="panel p-4 sm:p-5">
-              <h2 id="meal-trends-heading" className="micro-label mb-2">
+              <h2 id="meal-trends-heading" className="display-type text-title text-cream-100 mb-2">
                 Recent meal trends
               </h2>
-              <p className="mb-4 text-sm text-cream-700">
+              <p className="mb-4 text-ui text-cream-700">
                 Latest {mealTrends.recent.count} filed meal
                 {mealTrends.recent.count === 1 ? '' : 's'}
                 {mealTrends.previous.count > 0
@@ -246,7 +246,7 @@ export function StatsView() {
                   unit="%"
                 />
               </div>
-              <p className="mt-4 text-xs text-cream-700">
+              <p className="mt-4 text-caption text-cream-700">
                 Changes describe recorded behaviour only; more consumption is not inherently better.
                 Recovery and break-even changes are percentage points; the other changes are
                 percentages relative to the previous period.

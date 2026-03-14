@@ -37,9 +37,9 @@ const VARIANTS: Record<Variant, string> = {
 };
 
 const SIZES: Record<Size, string> = {
-  sm: 'min-h-9 px-3 text-xs tracking-[0.1em]',
-  md: 'min-h-11 px-4 text-sm tracking-[0.08em]',
-  lg: 'min-h-14 px-6 text-base tracking-[0.1em]',
+  sm: 'min-h-9 px-3 text-caption tracking-caps',
+  md: 'min-h-11 px-4 text-ui tracking-caps',
+  lg: 'min-h-14 px-6 text-body tracking-caps',
 };
 
 /**
@@ -49,7 +49,7 @@ const SIZES: Record<Size, string> = {
  */
 export const EMPTY_STATE_LINK =
   'mt-6 inline-flex min-h-12 items-center justify-center rounded-surface border border-line-ember ' +
-  'bg-ash-850 px-5 text-sm font-semibold uppercase tracking-[0.1em] text-ember-300 ' +
+  'bg-ash-850 px-5 text-ui font-semibold uppercase tracking-caps text-ember-300 ' +
   'elevate-control ' +
   'transition-[background-color,border-color,transform] duration-200 ' +
   'hover:-translate-y-px hover:border-ember-600 hover:bg-ash-800';

@@ -33,8 +33,8 @@ type LoadState =
   | { status: 'found'; resolved: ResolvedSavedSession };
 
 const BACK_LINK =
-  '-ml-2 inline-flex min-h-11 items-center gap-1.5 rounded-surface px-2 text-xs font-semibold ' +
-  'uppercase tracking-[0.1em] text-cream-500 transition-colors duration-200 hover:bg-ash-850 hover:text-cream-100';
+  '-ml-2 inline-flex min-h-11 items-center gap-1.5 rounded-surface px-2 text-caption font-semibold ' +
+  'uppercase tracking-caps text-cream-500 transition-colors duration-200 hover:bg-ash-850 hover:text-cream-100';
 
 /**
  * A filed session, rendered read-only.
@@ -98,7 +98,7 @@ export function HistoryDetail({ id }: { id: string }) {
 
   if (state.status === 'loading') {
     return (
-      <p role="status" className="py-16 text-center text-sm text-cream-700">
+      <p role="status" className="py-16 text-center text-ui text-cream-700">
         Retrieving the record…
       </p>
     );
@@ -107,8 +107,8 @@ export function HistoryDetail({ id }: { id: string }) {
   if (state.status === 'missing') {
     return (
       <div className="panel border-dashed px-6 py-14 text-center">
-        <p className="display-type text-2xl text-cream-300">No such record.</p>
-        <p className="mx-auto mt-3 max-w-[44ch] text-sm leading-relaxed text-cream-700">
+        <p className="display-type text-title text-cream-300">No such record.</p>
+        <p className="mx-auto mt-3 max-w-[44ch] text-ui leading-relaxed text-cream-700">
           This session is not in the file on this device. It may have been deleted, or filed in a
           different browser.
         </p>
@@ -175,18 +175,18 @@ export function HistoryDetail({ id }: { id: string }) {
 
         {record.note && (
           <section aria-labelledby="saved-note-heading" className="panel p-4 sm:p-5">
-            <h3 id="saved-note-heading" className="micro-label mb-2">
+            <h3 id="saved-note-heading" className="display-type text-lead text-cream-100 mb-2">
               Note on file
             </h3>
-            <p className="break-words text-sm leading-relaxed text-cream-300">{record.note}</p>
+            <p className="break-words text-ui leading-relaxed text-cream-300">{record.note}</p>
           </section>
         )}
 
         <section aria-labelledby="saved-tags-heading" className="panel p-4 sm:p-5">
-          <h3 id="saved-tags-heading" className="micro-label mb-2">
+          <h3 id="saved-tags-heading" className="display-type text-lead text-cream-100 mb-2">
             Tags
           </h3>
-          <p className="mb-3 text-sm leading-relaxed text-cream-500">
+          <p className="mb-3 text-ui leading-relaxed text-cream-500">
             Add a few labels to make this local record easier to find later.
           </p>
           {record.tags.length > 0 && (
@@ -194,7 +194,7 @@ export function HistoryDetail({ id }: { id: string }) {
               {record.tags.map((tag) => (
                 <li
                   key={tag}
-                  className="inline-flex items-center gap-1 rounded-full border border-line-ember bg-ash-900 py-1 pl-3 pr-1 text-sm text-ember-400"
+                  className="inline-flex items-center gap-1 rounded-full border border-line-ember bg-ash-900 py-1 pl-3 pr-1 text-ui text-ember-400"
                 >
                   {tag}
                   <button
@@ -227,7 +227,7 @@ export function HistoryDetail({ id }: { id: string }) {
                 }
               }}
               placeholder="Birthday, friends, lunch…"
-              className="min-h-11 min-w-0 flex-1 rounded-surface border border-line bg-ash-900 px-3 text-sm text-cream-100 placeholder:text-cream-700"
+              className="min-h-11 min-w-0 flex-1 rounded-surface border border-line bg-ash-900 px-3 text-ui text-cream-100 placeholder:text-cream-700"
             />
             <Button
               variant="secondary"
@@ -238,7 +238,7 @@ export function HistoryDetail({ id }: { id: string }) {
               Add tag
             </Button>
           </div>
-          <p role="status" className="mt-2 min-h-5 text-xs text-cream-700">
+          <p role="status" className="mt-2 min-h-5 text-caption text-cream-700">
             {tagStatus}
           </p>
         </section>

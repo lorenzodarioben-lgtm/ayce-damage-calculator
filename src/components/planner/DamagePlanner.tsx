@@ -50,8 +50,8 @@ import { loadSession, saveSession } from '@/lib/storage';
 import type { BillAdjustment, PlateSize, QualityTier } from '@/types/meal';
 
 const CHIP =
-  'min-h-11 cursor-pointer rounded-surface border px-3 text-xs font-semibold uppercase ' +
-  'tracking-[0.08em] transition-colors duration-200';
+  'min-h-11 cursor-pointer rounded-surface border px-3 text-caption font-semibold uppercase ' +
+  'tracking-caps transition-colors duration-200';
 
 const ON = 'border-line-ember bg-ash-800 text-ember-400';
 const OFF = 'border-line bg-ash-900 text-cream-300 hover:bg-ash-800';
@@ -245,7 +245,7 @@ export function DamagePlanner() {
     <PricingProfileProvider profile={profile}>
       <div className="space-y-6">
         <section aria-labelledby="plan-setup-heading" className="panel p-4 sm:p-5">
-          <h2 id="plan-setup-heading" className="micro-label mb-4">
+          <h2 id="plan-setup-heading" className="display-type text-title text-cream-100 mb-4">
             The assumptions
           </h2>
 
@@ -253,7 +253,7 @@ export function DamagePlanner() {
             <div>
               <label
                 htmlFor={admissionId}
-                className="mb-1.5 block text-sm font-semibold text-cream-300"
+                className="mb-1.5 block text-ui font-semibold text-cream-300"
               >
                 Admission per diner
               </label>
@@ -267,10 +267,10 @@ export function DamagePlanner() {
                 value={admissionPrice}
                 onChange={(event) => setAdmissionPrice(Number(event.target.value))}
                 onBlur={() => setAdmissionPrice((value) => clampPricePerDiner(value))}
-                className="h-12 w-full rounded-surface border border-line bg-ash-900 px-3 text-base text-cream-50"
+                className="h-12 w-full rounded-surface border border-line bg-ash-900 px-3 text-body text-cream-50"
               />
               {adjustments.length > 0 && (
-                <p className="tabular mt-1.5 text-xs text-cream-700">
+                <p className="tabular mt-1.5 text-caption text-cream-700">
                   Planning against {formatMoney(admission, profile.money)}, which is your open
                   tab&rsquo;s {formatMoney(bill.baseAdmission, profile.money)} admission after{' '}
                   {adjustments.length} {adjustments.length === 1 ? 'adjustment' : 'adjustments'}.
@@ -281,7 +281,7 @@ export function DamagePlanner() {
             <div>
               <label
                 htmlFor={dinersId}
-                className="mb-1.5 block text-sm font-semibold text-cream-300"
+                className="mb-1.5 block text-ui font-semibold text-cream-300"
               >
                 Diners
               </label>
@@ -294,14 +294,14 @@ export function DamagePlanner() {
                 value={dinerCount}
                 onChange={(event) => setDinerCount(Number(event.target.value))}
                 onBlur={() => setDinerCount((value) => clampDinerCount(value))}
-                className="h-12 w-full rounded-surface border border-line bg-ash-900 px-3 text-base text-cream-50"
+                className="h-12 w-full rounded-surface border border-line bg-ash-900 px-3 text-body text-cream-50"
               />
             </div>
 
             <div>
               <label
                 htmlFor={profileFieldId}
-                className="mb-1.5 block text-sm font-semibold text-cream-300"
+                className="mb-1.5 block text-ui font-semibold text-cream-300"
               >
                 Pricing profile
               </label>
@@ -309,7 +309,7 @@ export function DamagePlanner() {
                 id={profileFieldId}
                 value={profile.id}
                 onChange={(event) => setProfileId(event.target.value)}
-                className="h-12 w-full rounded-surface border border-line bg-ash-900 px-3 text-base text-cream-50"
+                className="h-12 w-full rounded-surface border border-line bg-ash-900 px-3 text-body text-cream-50"
               >
                 {pricingProfiles.profiles.map((entry) => (
                   <option key={entry.id} value={entry.id}>
@@ -322,7 +322,7 @@ export function DamagePlanner() {
             <div>
               <label
                 htmlFor={targetId}
-                className="mb-1.5 block text-sm font-semibold text-cream-300"
+                className="mb-1.5 block text-ui font-semibold text-cream-300"
               >
                 Target recovery: {formatPercent(target)}
               </label>
@@ -340,14 +340,14 @@ export function DamagePlanner() {
             </div>
           </div>
 
-          <p className="tabular mt-2 text-xs text-cream-700">
+          <p className="tabular mt-2 text-caption text-cream-700">
             Total admission {formatMoney(admission, profile.money)} · target retail value{' '}
             {formatMoney((admission * clampTargetRecovery(target)) / 100, profile.money)}
           </p>
         </section>
 
         <section aria-labelledby="plan-strategy-heading" className="panel p-4 sm:p-5">
-          <h2 id="plan-strategy-heading" className="micro-label mb-3">
+          <h2 id="plan-strategy-heading" className="display-type text-title text-cream-100 mb-3">
             The strategy
           </h2>
           <div role="radiogroup" aria-labelledby="plan-strategy-heading" className="space-y-2">
@@ -368,8 +368,8 @@ export function DamagePlanner() {
                   className="mt-1 accent-[var(--color-ember-500)]"
                 />
                 <span>
-                  <span className="block text-sm font-bold text-cream-50">{meta.label}</span>
-                  <span className="block text-xs text-cream-500">{meta.description}</span>
+                  <span className="block text-ui font-bold text-cream-50">{meta.label}</span>
+                  <span className="block text-caption text-cream-500">{meta.description}</span>
                 </span>
               </label>
             ))}
@@ -378,7 +378,7 @@ export function DamagePlanner() {
           <div className="mt-4">
             <label
               htmlFor={perItemId}
-              className="mb-1.5 block text-sm font-semibold text-cream-300"
+              className="mb-1.5 block text-ui font-semibold text-cream-300"
             >
               Most plates of any one configuration: {maxPerItem}
             </label>
@@ -396,7 +396,7 @@ export function DamagePlanner() {
         </section>
 
         <section aria-labelledby="plan-menu-heading" className="panel p-4 sm:p-5">
-          <h2 id="plan-menu-heading" className="micro-label mb-3">
+          <h2 id="plan-menu-heading" className="display-type text-title text-cream-100 mb-3">
             The menu it may use
           </h2>
 
@@ -435,7 +435,7 @@ export function DamagePlanner() {
             }
             return (
               <div key={category.id} className="mt-4">
-                <h3 className="micro-label mb-2">{category.label}</h3>
+                <h3 className="display-type text-lead text-cream-100 mb-2">{category.label}</h3>
                 <ul className="space-y-1">
                   {foods.map((food) => {
                     const isIncluded = !excluded.includes(food.id);
@@ -452,7 +452,7 @@ export function DamagePlanner() {
                             onChange={() => setExcluded((current) => toggle(current, food.id))}
                             className="size-4 accent-[var(--color-ember-500)]"
                           />
-                          <span className="truncate text-sm text-cream-100">{food.name}</span>
+                          <span className="truncate text-ui text-cream-100">{food.name}</span>
                         </label>
                         <button
                           type="button"
@@ -477,7 +477,7 @@ export function DamagePlanner() {
                           {lock ? 'Locked' : 'Lock'}
                         </button>
                         {lock && (
-                          <label className="flex items-center gap-1.5 text-xs text-cream-500">
+                          <label className="flex items-center gap-1.5 text-caption text-cream-500">
                             <span className="sr-only">Locked plates of {food.name}</span>
                             <input
                               type="number"
@@ -493,7 +493,7 @@ export function DamagePlanner() {
                                   ),
                                 )
                               }
-                              className="h-9 w-16 rounded-surface border border-line bg-ash-900 px-2 text-sm text-cream-50"
+                              className="h-9 w-16 rounded-surface border border-line bg-ash-900 px-2 text-ui text-cream-50"
                             />
                             plates
                           </label>
@@ -553,10 +553,10 @@ function PlanOutcome({
   if (!result.feasible) {
     return (
       <section aria-labelledby="plan-result-heading" className="panel border-dashed p-4 sm:p-5">
-        <h2 id="plan-result-heading" className="micro-label mb-2">
+        <h2 id="plan-result-heading" className="display-type text-title text-cream-100 mb-2">
           No plan
         </h2>
-        <p role="status" className="max-w-[56ch] text-sm leading-relaxed text-cream-300">
+        <p role="status" className="max-w-[62ch] text-ui leading-relaxed text-cream-300">
           {result.failure ? PLAN_FAILURE_MESSAGES[result.failure] : 'No plan was produced.'}
         </p>
       </section>
@@ -565,7 +565,7 @@ function PlanOutcome({
 
   return (
     <section aria-labelledby="plan-result-heading" className="panel p-4 sm:p-5">
-      <h2 id="plan-result-heading" className="micro-label mb-3">
+      <h2 id="plan-result-heading" className="display-type text-title text-cream-100 mb-3">
         The proposed configuration
       </h2>
 
@@ -579,7 +579,7 @@ function PlanOutcome({
         <Figure label="Food weight" value={formatWeight(result.totals.totalWeightG)} />
       </dl>
 
-      <p className="tabular mt-2 text-xs text-cream-700">
+      <p className="tabular mt-2 text-caption text-cream-700">
         {formatCalories(result.totals.nutrition.calories)} ·{' '}
         {formatGrams(result.totals.nutrition.protein)} protein ·{' '}
         {formatGrams(result.totals.nutrition.fat)} fat ·{' '}
@@ -587,16 +587,16 @@ function PlanOutcome({
       </p>
 
       {progress && (
-        <p role="status" className="mt-3 text-sm text-cream-300">
+        <p role="status" className="mt-3 text-ui text-cream-300">
           Meal progress: {formatPlates(progress.matchedPlates)} matched from the actual ledger ·{' '}
           {formatPlates(progress.remainingPlates)} planned remaining. This guidance never changes
           your meal, quantities, damage totals or report.
         </p>
       )}
 
-      <table className="mt-4 w-full text-left text-sm">
+      <table className="mt-4 w-full text-left text-ui">
         <caption className="sr-only">The plates this simulation proposes.</caption>
-        <thead className="text-xs text-cream-500">
+        <thead className="text-caption text-cream-500">
           <tr>
             <th scope="col" className="pb-2 pr-3">
               Cut
@@ -615,7 +615,7 @@ function PlanOutcome({
               <th scope="row" className="py-2 pr-3 text-left font-semibold text-cream-50">
                 {line.food.name}
               </th>
-              <td className="py-2 pr-3 text-xs text-cream-500">
+              <td className="py-2 pr-3 text-caption text-cream-500">
                 {line.item.quality} · {line.item.plateSize}
               </td>
               <td className="tabular py-2 text-right">{line.plates}</td>
@@ -624,8 +624,8 @@ function PlanOutcome({
         </tbody>
       </table>
 
-      <h3 className="micro-label mt-4 mb-2">Why this one</h3>
-      <ul className="space-y-1 text-xs leading-relaxed text-cream-500">
+      <h3 className="display-type text-lead text-cream-100 mt-4 mb-2">Why this one</h3>
+      <ul className="space-y-1 text-caption leading-relaxed text-cream-500">
         {result.rationale.map((line) => (
           <li key={line}>{line}</li>
         ))}
@@ -647,8 +647,8 @@ function PlanOutcome({
 function Figure({ label, value }: { label: string; value: string }) {
   return (
     <div className="well px-3 py-2">
-      <dt className="micro-label">{label}</dt>
-      <dd className="tabular mt-0.5 text-sm font-semibold text-cream-50">{value}</dd>
+      <dt className="micro-label text-cream-500">{label}</dt>
+      <dd className="tabular mt-0.5 text-ui font-semibold text-cream-50">{value}</dd>
     </div>
   );
 }

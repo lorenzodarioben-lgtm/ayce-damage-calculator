@@ -138,11 +138,11 @@ export function ReportSummary({
           )}
         />
         <div className="grill-texture border-b border-line px-5 py-4 text-center">
-          <Heading id={headingId} className="micro-label !text-ember-400">
+          <Heading id={headingId} className="display-type text-lead text-cream-300">
             {heading}
           </Heading>
           {restaurantName && (
-            <p className="mt-1 break-words text-sm text-cream-300">{restaurantName}</p>
+            <p className="mt-1 break-words text-ui text-cream-300">{restaurantName}</p>
           )}
         </div>
 
@@ -155,10 +155,8 @@ export function ReportSummary({
           >
             {verdict.title}
           </p>
-          <p className="mx-auto mt-5 max-w-md text-sm leading-relaxed text-cream-300 sm:text-base">
-            {verdict.copy}
-          </p>
-          {subheading && <p className="mt-3 text-xs text-cream-700">{subheading}</p>}
+          <p className="mx-auto mt-5 max-w-md reading text-cream-300 sm:">{verdict.copy}</p>
+          {subheading && <p className="mt-3 text-caption text-cream-700">{subheading}</p>}
         </div>
       </section>
 
@@ -168,7 +166,7 @@ export function ReportSummary({
           style={rise(1)}
           className="animate-rise well px-4 py-3"
         >
-          <h3 id="bill-breakdown-heading" className="micro-label mb-2">
+          <h3 id="bill-breakdown-heading" className="display-type mb-2 text-lead text-cream-100">
             How the bill settled
           </h3>
           <dl className="space-y-1">
@@ -207,7 +205,7 @@ export function ReportSummary({
               </>
             )}
           </dl>
-          <p className="mt-2 max-w-[60ch] text-xs leading-relaxed text-cream-700">
+          <p className="mt-2 max-w-[62ch] reading">
             Every figure below is measured against the total paid, not the entry price — that is
             what the evening actually cost.
             {report.hasSeparatelyChargedItems
@@ -271,7 +269,7 @@ export function ReportSummary({
 
       {hasUneaten && (
         <section aria-labelledby="uneaten-heading" className="well px-4 py-3">
-          <SubHeading id="uneaten-heading" className="micro-label mb-2">
+          <SubHeading id="uneaten-heading" className="display-type mb-2 text-lead text-cream-100">
             What reached the table
           </SubHeading>
           <dl className="grid grid-cols-2 gap-2 sm:grid-cols-3">
@@ -285,7 +283,7 @@ export function ReportSummary({
             />
             <Figure label="Left" value={formatPlateQuantity(report.totalUneatenPlates)} />
           </dl>
-          <p className="mt-2 max-w-[62ch] text-xs leading-relaxed text-cream-700">
+          <p className="mt-2 max-w-[62ch] reading">
             Recovery is measured on what was eaten, because value you did not eat is not value you
             extracted. What reached the table is kept alongside it, so the tab still says what
             arrived. Estimated ingredient cost follows the ordered figure — the restaurant bought
@@ -301,10 +299,13 @@ export function ReportSummary({
           style={rise(4)}
           className="animate-rise panel p-4 sm:p-5"
         >
-          <SubHeading id={`${headingId}-per-diner`} className="micro-label mb-1">
+          <SubHeading
+            id={`${headingId}-per-diner`}
+            className="display-type mb-1 text-lead text-cream-100"
+          >
             Split {formatCount(perDiner.dinerCount)} ways
           </SubHeading>
-          <p className="mb-3 text-xs text-cream-700">
+          <p className="mb-3 text-caption text-cream-700">
             An even split of the table&rsquo;s totals. The calculator records one shared tab, so it
             cannot know who reached for what.
           </p>
@@ -329,7 +330,10 @@ export function ReportSummary({
 
       {/* 5 — Nutrition */}
       <section aria-labelledby={`${headingId}-nutrition`} style={rise(5)} className="animate-rise">
-        <SubHeading id={`${headingId}-nutrition`} className="micro-label mb-2">
+        <SubHeading
+          id={`${headingId}-nutrition`}
+          className="display-type mb-2 text-lead text-cream-100"
+        >
           Approximate nutrition
         </SubHeading>
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -339,7 +343,7 @@ export function ReportSummary({
           <ResultMetric label="Carbohydrates" value={formatGrams(report.nutrition.carbs)} />
         </div>
         {report.linesWithoutNutrition > 0 && (
-          <p className="mt-2 max-w-[62ch] text-xs leading-relaxed text-cream-700">
+          <p className="mt-2 max-w-[62ch] reading">
             {report.linesWithoutNutrition}{' '}
             {report.linesWithoutNutrition === 1 ? 'item on this tab has' : 'items on this tab have'}{' '}
             no nutrition recorded, so {report.linesWithoutNutrition === 1 ? 'it is' : 'they are'}{' '}
@@ -354,7 +358,10 @@ export function ReportSummary({
         style={rise(6)}
         className="animate-rise panel p-4 sm:p-5"
       >
-        <SubHeading id={`${headingId}-house`} className="micro-label mb-3">
+        <SubHeading
+          id={`${headingId}-house`}
+          className="display-type mb-3 text-lead text-cream-100"
+        >
           The house side of the ledger
         </SubHeading>
         <div className="grid gap-3 sm:grid-cols-2">
@@ -371,14 +378,14 @@ export function ReportSummary({
         </div>
         <div className="well mt-3 flex flex-wrap items-baseline justify-between gap-2 px-4 py-3">
           <div>
-            <p className="micro-label">Est. food cost</p>
-            <p className={cn('mt-0.5 text-sm font-semibold', SEVERITY_TONE[houseStatus.severity])}>
+            <p className="micro-label text-cream-500">Est. food cost</p>
+            <p className={cn('mt-0.5 text-ui font-semibold', SEVERITY_TONE[houseStatus.severity])}>
               {houseStatus.label}
             </p>
           </div>
-          <p className="tabular display-hero text-3xl leading-none text-cream-100">
+          <p className="tabular display-hero text-figure leading-none text-cream-100">
             {formatPercent(report.estimatedFoodCostPercent)}{' '}
-            <span className="text-sm text-cream-700">
+            <span className="text-ui text-cream-700">
               of {hasAdjustments ? 'the total paid' : 'admission'}
             </span>
           </p>
@@ -399,13 +406,15 @@ function BillRow({
 }) {
   return (
     <div className="flex items-baseline justify-between gap-3">
-      <dt className={total ? 'text-sm font-semibold text-cream-200' : 'text-xs text-cream-700'}>
+      <dt
+        className={total ? 'text-ui font-semibold text-cream-200' : 'text-caption text-cream-700'}
+      >
         {label}
       </dt>
       <dd
         className={cn(
           'tabular',
-          total ? 'text-sm font-semibold text-ember-400' : 'text-xs text-cream-500',
+          total ? 'text-ui font-semibold text-ember-400' : 'text-caption text-cream-500',
         )}
       >
         {value}
@@ -417,8 +426,8 @@ function BillRow({
 function Figure({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="micro-label">{label}</dt>
-      <dd className="tabular mt-0.5 text-sm font-semibold text-cream-50">{value}</dd>
+      <dt className="micro-label text-cream-500">{label}</dt>
+      <dd className="tabular mt-0.5 text-ui font-semibold text-cream-50">{value}</dd>
     </div>
   );
 }
