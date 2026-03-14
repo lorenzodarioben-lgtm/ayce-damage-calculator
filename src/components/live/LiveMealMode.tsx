@@ -237,7 +237,7 @@ export function LiveMealMode() {
                       key={`${payload.foodId}-${payload.quality}-${payload.plateSize}`}
                       type="button"
                       onClick={() => handleAdd(payload)}
-                      className="rounded-[10px] border border-line px-3 py-2 text-sm text-cream-100 hover:border-ember-700"
+                      className="rounded-surface border border-line px-3 py-2 text-sm text-cream-100 hover:border-ember-700"
                     >
                       {food?.name ?? 'Saved cut'}{' '}
                       <span className="text-xs text-cream-700">· {count} plates</span>
@@ -266,8 +266,8 @@ export function LiveMealMode() {
               tabIndex={hasItems ? undefined : -1}
               className={
                 hasItems
-                  ? 'flex min-h-14 w-full items-center justify-center gap-2 rounded-[10px] bg-ember-500 px-6 text-base font-bold uppercase tracking-[0.1em] text-ash-950 transition-colors duration-200 hover:bg-ember-400'
-                  : 'pointer-events-none flex min-h-14 w-full items-center justify-center gap-2 rounded-[10px] bg-ash-700 px-6 text-base font-bold uppercase tracking-[0.1em] text-cream-700'
+                  ? 'flex min-h-14 w-full items-center justify-center gap-2 rounded-surface bg-ember-500 px-6 text-base font-bold uppercase tracking-[0.1em] text-ash-950 transition-colors duration-200 hover:bg-ember-400'
+                  : 'pointer-events-none flex min-h-14 w-full items-center justify-center gap-2 rounded-surface bg-ash-700 px-6 text-base font-bold uppercase tracking-[0.1em] text-cream-700'
               }
             >
               <Receipt size={18} aria-hidden="true" />

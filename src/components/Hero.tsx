@@ -55,13 +55,13 @@ export function Hero() {
           <p className="micro-label !text-ember-400">AYCE Damage Calculator</p>
         </div>
 
-        <h1 className="display-hero mt-6 max-w-[15ch] text-[clamp(3.5rem,11vw,9rem)] drop-shadow-[0_4px_24px_rgba(13,12,10,0.85)]">
+        <h1 className="display-hero mt-6 max-w-[15ch] text-[clamp(3.5rem,11vw,9rem)] text-over-photo">
           <span className="text-cream-50">Did you beat</span>
           <br />
           <span className="text-gradient-ember">the buffet?</span>
         </h1>
 
-        <p className="mt-7 max-w-[52ch] text-base leading-relaxed text-cream-100 drop-shadow-[0_2px_10px_rgba(13,12,10,0.9)] sm:text-lg">
+        <p className="mt-7 max-w-[52ch] text-base leading-relaxed text-cream-100 text-over-photo sm:text-lg">
           Track the plates. Calculate the damage. Find out whether you got your money&rsquo;s worth
           or funded their next renovation.
         </p>

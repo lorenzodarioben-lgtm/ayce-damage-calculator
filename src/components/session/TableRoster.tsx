@@ -121,7 +121,7 @@ export function TableRoster({
           }}
           maxLength={40}
           placeholder="Add a diner"
-          className="h-11 min-w-0 flex-1 rounded-[10px] border border-line bg-ash-900 px-3 text-sm text-cream-50 placeholder:text-cream-700"
+          className="h-11 min-w-0 flex-1 rounded-surface border border-line bg-ash-900 px-3 text-sm text-cream-50 placeholder:text-cream-700"
         />
         <Button variant="secondary" size="md" onClick={() => addNamed(false)}>
           <UserPlus size={16} aria-hidden="true" />
@@ -159,13 +159,13 @@ export function TableRoster({
       </div>
 
       {diners.length === 0 ? (
-        <p className="mt-4 rounded-[10px] bg-ash-900 px-3 py-3 text-sm text-cream-500">
+        <p className="mt-4 rounded-surface bg-ash-900 px-3 py-3 text-sm text-cream-500">
           No one is being tracked individually. Food you log remains shared by the table.
         </p>
       ) : (
         <ol className="mt-4 space-y-2">
           {diners.map((diner, index) => (
-            <li key={diner.id} className="flex items-center gap-2 rounded-[10px] bg-ash-900 p-2">
+            <li key={diner.id} className="flex items-center gap-2 rounded-surface bg-ash-900 p-2">
               <span className="w-5 text-center text-xs font-bold text-ember-400">{index + 1}</span>
               <label className="sr-only" htmlFor={`diner-name-${diner.id}`}>
                 Diner {index + 1} name
@@ -175,7 +175,7 @@ export function TableRoster({
                 value={diner.displayName}
                 onChange={(event) => onRename(diner.id, event.target.value)}
                 autoComplete="off"
-                className="h-9 min-w-0 flex-1 rounded-[8px] border border-line bg-ash-850 px-2 text-sm text-cream-100"
+                className="h-9 min-w-0 flex-1 rounded-surface border border-line bg-ash-850 px-2 text-sm text-cream-100"
               />
               <label className="sr-only" htmlFor={`diner-admission-${diner.id}`}>
                 {diner.displayName} admission price
@@ -194,7 +194,7 @@ export function TableRoster({
                   onAdmissionPriceChange(diner.id, Number.isFinite(value) ? value : undefined);
                 }}
                 placeholder="Default"
-                className="h-9 w-24 rounded-[8px] border border-line bg-ash-850 px-2 text-right text-sm text-cream-100 placeholder:text-cream-700"
+                className="h-9 w-24 rounded-surface border border-line bg-ash-850 px-2 text-right text-sm text-cream-100 placeholder:text-cream-700"
               />
               <div className="flex shrink-0">
                 <button
@@ -202,7 +202,7 @@ export function TableRoster({
                   onClick={() => onMove(diner.id, -1)}
                   disabled={index === 0}
                   aria-label={`Move ${diner.displayName} up`}
-                  className="flex size-9 cursor-pointer items-center justify-center rounded-[8px] text-cream-500 hover:bg-ash-800 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ember-400 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="flex size-9 cursor-pointer items-center justify-center rounded-surface text-cream-500 hover:bg-ash-800 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ember-400 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <ArrowUp size={16} aria-hidden="true" />
                 </button>
@@ -211,7 +211,7 @@ export function TableRoster({
                   onClick={() => onMove(diner.id, 1)}
                   disabled={index === diners.length - 1}
                   aria-label={`Move ${diner.displayName} down`}
-                  className="flex size-9 cursor-pointer items-center justify-center rounded-[8px] text-cream-500 hover:bg-ash-800 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ember-400 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="flex size-9 cursor-pointer items-center justify-center rounded-surface text-cream-500 hover:bg-ash-800 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ember-400 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <ArrowDown size={16} aria-hidden="true" />
                 </button>
@@ -219,7 +219,7 @@ export function TableRoster({
                   type="button"
                   onClick={() => remove(diner.id)}
                   aria-label={`Remove ${diner.displayName} from this table`}
-                  className="flex size-9 cursor-pointer items-center justify-center rounded-[8px] text-char-500 hover:bg-char-700/25 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-char-500"
+                  className="flex size-9 cursor-pointer items-center justify-center rounded-surface text-char-500 hover:bg-char-700/25 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-char-500"
                 >
                   <Trash2 size={16} aria-hidden="true" />
                 </button>

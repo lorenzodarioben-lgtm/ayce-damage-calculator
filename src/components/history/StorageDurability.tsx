@@ -80,7 +80,7 @@ export function StorageDurability() {
   return (
     <section aria-labelledby="storage-durability-heading" className="panel p-4 sm:p-5">
       <div className="flex items-start gap-3">
-        <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-ash-800 text-ember-400">
+        <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-surface bg-ash-800 text-ember-400">
           <ShieldCheck size={18} aria-hidden="true" />
         </div>
         <div>

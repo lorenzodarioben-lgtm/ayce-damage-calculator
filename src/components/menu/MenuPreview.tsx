@@ -16,7 +16,7 @@ import { findFoodInCatalogue } from '@/lib/foodCatalogue';
 import { FOODS } from '@/data/foods';
 
 const CTA_CLASS =
-  'inline-flex min-h-14 items-center justify-center rounded-[10px] bg-ember-500 px-6 text-base ' +
+  'inline-flex min-h-14 items-center justify-center rounded-surface bg-ember-500 px-6 text-base ' +
   'font-bold uppercase tracking-[0.1em] text-ash-950 transition-colors duration-200 hover:bg-ember-400';
 
 /**
@@ -222,7 +222,7 @@ export function MenuPreview({ payload }: { payload: MenuSharePayload }) {
             {(plan.pricingProfileRenamed ||
               plan.renamedFoods.length > 0 ||
               plan.restaurantRenamed) && (
-              <div className="mt-3 rounded-[10px] border border-line bg-ash-900 px-4 py-3">
+              <div className="mt-3 rounded-surface border border-line bg-ash-900 px-4 py-3">
                 <p className="micro-label mb-1">Some names are already taken here</p>
                 <ul className="space-y-1 text-xs leading-relaxed text-cream-500">
                   {plan.pricingProfileRenamed && plan.pricingProfile && (

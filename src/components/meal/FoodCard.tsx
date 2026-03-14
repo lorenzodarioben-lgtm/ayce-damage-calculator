@@ -24,14 +24,14 @@ export function FoodCard({ food, selected, onSelect }: FoodCardProps) {
       aria-pressed={selected}
       onClick={() => onSelect(food.id)}
       className={cn(
-        'group relative flex h-full cursor-pointer flex-col gap-2 overflow-hidden rounded-panel border p-3 text-left',
+        'group relative flex h-full cursor-pointer flex-col gap-2 overflow-hidden rounded-surface border p-3 text-left',
         'transition-[border-color,background-color,transform,box-shadow] duration-200 ease-out-soft',
         // Lifts a pixel under the pointer and settles back under the press, so
         // the card behaves like something on the page rather than a hit area.
         'hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] sm:p-4',
         selected
-          ? 'border-ember-500 bg-ash-800 shadow-[inset_0_1px_0_rgb(255_250_240/0.08),0_0_0_1px_var(--color-ember-500),0_14px_34px_-16px_#000,0_0_26px_-10px_var(--color-ember-500)]'
-          : 'border-line bg-ash-850 shadow-[var(--shadow-panel)] hover:border-ember-700 hover:bg-ash-800 hover:shadow-[var(--shadow-raised)]',
+          ? 'border-ember-500 bg-ash-800 elevate-selected'
+          : 'border-line bg-ash-850 elevate-panel hover:border-ember-700 hover:bg-ash-800 hover:elevate-raised',
       )}
     >
       {/* The light the cut is sitting under. Warms on hover and stays warm
@@ -59,7 +59,7 @@ export function FoodCard({ food, selected, onSelect }: FoodCardProps) {
 
       <FoodIllustration
         food={food}
-        className="relative h-24 w-24 shrink-0 drop-shadow-[0_6px_14px_rgb(0_0_0/0.55)] transition-transform duration-300 ease-out-soft group-hover:scale-[1.05] sm:h-28 sm:w-28"
+        className="relative h-24 w-24 shrink-0 elevate-illustration transition-transform duration-300 ease-out-soft group-hover:scale-[1.05] sm:h-28 sm:w-28"
       />
 
       <span className="display-type relative text-[1.1rem] leading-tight text-cream-50 sm:text-[1.3rem]">

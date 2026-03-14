@@ -71,7 +71,7 @@ export function MenuShare({ pricingProfile, customFoods, restaurant, onStatus }:
       </h3>
 
       {token === null ? (
-        <p className="rounded-[10px] border border-dashed border-line bg-ash-900/60 px-4 py-3 text-center text-xs leading-relaxed text-cream-700">
+        <p className="rounded-surface border border-dashed border-line bg-ash-900/60 px-4 py-3 text-center text-xs leading-relaxed text-cream-700">
           {!result.ok && result.reason === 'too-large'
             ? 'This menu is too large to fit inside a link. A menu link carries every price and custom food in the address itself, so there is a limit to what it can hold — share fewer foods, or trim their descriptions.'
             : 'There is nothing to share yet. A menu link carries your own price assumptions and custom foods — add one of those, or a restaurant setup, and a link appears here.'}

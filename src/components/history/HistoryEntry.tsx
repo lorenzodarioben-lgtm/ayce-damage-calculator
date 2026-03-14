@@ -33,7 +33,7 @@ export function HistoryEntry({ session, onDelete, selected = false, onSelect }: 
   const label = record.restaurantName || 'Unnamed restaurant';
 
   return (
-    <li className="panel lift-on-hover relative p-4 hover:border-line-ember hover:shadow-[var(--shadow-raised)]">
+    <li className="panel lift-on-hover relative p-4 hover:border-line-ember hover:elevate-raised">
       <div className="flex items-start justify-between gap-3">
         {onSelect && (
           <input
@@ -78,7 +78,7 @@ export function HistoryEntry({ session, onDelete, selected = false, onSelect }: 
           type="button"
           onClick={() => onDelete(record)}
           aria-label={`Delete the record from ${label} on ${formatRecordedAt(record.createdAt)}`}
-          className="relative z-10 flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-[10px] border border-transparent text-cream-700 transition-colors duration-200 hover:border-char-700 hover:bg-char-700/20 hover:text-char-500"
+          className="relative z-10 flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-surface border border-transparent text-cream-700 transition-colors duration-200 hover:border-char-700 hover:bg-char-700/20 hover:text-char-500"
         >
           <Trash2 size={15} aria-hidden="true" />
         </button>

@@ -43,14 +43,13 @@ export function ResultMetric({
   return (
     <div
       className={cn(
-        'relative overflow-hidden rounded-card border border-line bg-ash-850 p-4 pl-5',
-        'shadow-[var(--shadow-panel)]',
+        'relative overflow-hidden rounded-surface border border-line bg-ash-850 p-4 pl-5',
+        'elevate-panel',
         "before:absolute before:inset-y-0 before:left-0 before:w-1 before:content-['']",
         EDGES[tone],
         // A major figure is the one the section exists to report, so it sits a
         // step above its neighbours rather than merely being set larger.
-        emphasis === 'major' &&
-          'bg-ash-800 bg-[image:var(--fill-panel-strong)] shadow-[var(--shadow-raised)]',
+        emphasis === 'major' && 'bg-ash-800 bg-[image:var(--fill-panel-strong)] elevate-raised',
       )}
     >
       <div className="flex items-center gap-1.5">

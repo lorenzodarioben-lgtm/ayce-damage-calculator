@@ -33,7 +33,7 @@ type LoadState =
   | { status: 'found'; resolved: ResolvedSavedSession };
 
 const BACK_LINK =
-  '-ml-2 inline-flex min-h-11 items-center gap-1.5 rounded-[10px] px-2 text-xs font-semibold ' +
+  '-ml-2 inline-flex min-h-11 items-center gap-1.5 rounded-surface px-2 text-xs font-semibold ' +
   'uppercase tracking-[0.1em] text-cream-500 transition-colors duration-200 hover:bg-ash-850 hover:text-cream-100';
 
 /**
@@ -227,7 +227,7 @@ export function HistoryDetail({ id }: { id: string }) {
                 }
               }}
               placeholder="Birthday, friends, lunch…"
-              className="min-h-11 min-w-0 flex-1 rounded-[10px] border border-line bg-ash-900 px-3 text-sm text-cream-100 placeholder:text-cream-700"
+              className="min-h-11 min-w-0 flex-1 rounded-surface border border-line bg-ash-900 px-3 text-sm text-cream-100 placeholder:text-cream-700"
             />
             <Button
               variant="secondary"

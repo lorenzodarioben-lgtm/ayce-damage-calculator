@@ -57,7 +57,7 @@ export function Methodology({ open, onClose }: MethodologyProps) {
               {PLATE_SIZES.map((size) => (
                 <li
                   key={size.id}
-                  className="rounded-[10px] border border-line bg-ash-900 px-3 py-2 text-center"
+                  className="rounded-surface border border-line bg-ash-900 px-3 py-2 text-center"
                 >
                   <span className="block text-xs uppercase tracking-wider text-cream-700">
                     {size.label}
@@ -70,7 +70,7 @@ export function Methodology({ open, onClose }: MethodologyProps) {
         </div>
       </dl>
 
-      <div className="mt-6 rounded-[10px] border border-line bg-ash-900 px-4 py-4">
+      <div className="mt-6 rounded-surface border border-line bg-ash-900 px-4 py-4">
         <p className="micro-label mb-2">Important disclaimer</p>
         <p className="text-sm leading-relaxed text-cream-300">
           AYCE Damage Calculator is for entertainment and estimation only. Actual meat prices,

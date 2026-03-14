@@ -64,7 +64,7 @@ export function RestoreImpactSummary({ impact }: RestoreImpactSummaryProps) {
         Merging adds only the new records below. Replacing discards the current records shown for
         each collection before writing this backup.
       </p>
-      <ul className="rounded-[8px] border border-line bg-ash-950 px-3 text-sm">
+      <ul className="rounded-surface border border-line bg-ash-950 px-3 text-sm">
         {rows.map((row) => (
           <ImpactRow
             key={row.label}

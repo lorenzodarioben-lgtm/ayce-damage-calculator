@@ -50,7 +50,7 @@ import { loadSession, saveSession } from '@/lib/storage';
 import type { BillAdjustment, PlateSize, QualityTier } from '@/types/meal';
 
 const CHIP =
-  'min-h-11 cursor-pointer rounded-[10px] border px-3 text-xs font-semibold uppercase ' +
+  'min-h-11 cursor-pointer rounded-surface border px-3 text-xs font-semibold uppercase ' +
   'tracking-[0.08em] transition-colors duration-200';
 
 const ON = 'border-line-ember bg-ash-800 text-ember-400';
@@ -267,7 +267,7 @@ export function DamagePlanner() {
                 value={admissionPrice}
                 onChange={(event) => setAdmissionPrice(Number(event.target.value))}
                 onBlur={() => setAdmissionPrice((value) => clampPricePerDiner(value))}
-                className="h-12 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-base text-cream-50"
+                className="h-12 w-full rounded-surface border border-line bg-ash-900 px-3 text-base text-cream-50"
               />
               {adjustments.length > 0 && (
                 <p className="tabular mt-1.5 text-xs text-cream-700">
@@ -294,7 +294,7 @@ export function DamagePlanner() {
                 value={dinerCount}
                 onChange={(event) => setDinerCount(Number(event.target.value))}
                 onBlur={() => setDinerCount((value) => clampDinerCount(value))}
-                className="h-12 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-base text-cream-50"
+                className="h-12 w-full rounded-surface border border-line bg-ash-900 px-3 text-base text-cream-50"
               />
             </div>
 
@@ -309,7 +309,7 @@ export function DamagePlanner() {
                 id={profileFieldId}
                 value={profile.id}
                 onChange={(event) => setProfileId(event.target.value)}
-                className="h-12 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-base text-cream-50"
+                className="h-12 w-full rounded-surface border border-line bg-ash-900 px-3 text-base text-cream-50"
               >
                 {pricingProfiles.profiles.map((entry) => (
                   <option key={entry.id} value={entry.id}>
@@ -355,7 +355,7 @@ export function DamagePlanner() {
               <label
                 key={meta.id}
                 className={cn(
-                  'flex cursor-pointer items-start gap-3 rounded-[10px] border p-3',
+                  'flex cursor-pointer items-start gap-3 rounded-surface border p-3',
                   strategy === meta.id ? ON : OFF,
                 )}
               >
@@ -493,7 +493,7 @@ export function DamagePlanner() {
                                   ),
                                 )
                               }
-                              className="h-9 w-16 rounded-[8px] border border-line bg-ash-900 px-2 text-sm text-cream-50"
+                              className="h-9 w-16 rounded-surface border border-line bg-ash-900 px-2 text-sm text-cream-50"
                             />
                             plates
                           </label>
