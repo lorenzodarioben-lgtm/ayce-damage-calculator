@@ -56,6 +56,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Fixed
 
+- **The installed app declares its own language.** The document says `en-AU` and the social
+  metadata says `en_AU`, but the manifest said nothing — and an installed app is read by a
+  launcher that never loads the page, so it was the one surface with no `lang` to inherit. The
+  literal now sits beside the theme colour, for the same reason that one does.
 - **"You are offline" is no longer prerendered into every page.** The initial reading guarded on
   `typeof navigator === 'undefined'` to detect the server. Node has defined a global `navigator`
   since v18 and it carries no `onLine`, so the guard passed, the property read `undefined`, and a
@@ -85,6 +89,23 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - **The exported result card draws in the typeface it names.** It asked for "Anton" and had been
   measuring and drawing the fallback, because the loaded family name is generated. Styles now name
   a role and the family is resolved from the same custom property the stylesheet reads.
+
+### Housekeeping
+
+- **DESIGN.md**, the design system of record: sixteen sections derived from the shipped code
+  rather than from intentions, stating what is load-bearing and what may not be removed. The
+  README now maps every document in the repository and the precedence between them.
+- **Dependabot** raises the weekly dependency and monthly action bumps, grouped so an ordinary
+  week arrives as one pull request. `.npmrc` keeps exact versions the default, which every
+  existing entry already was by hand.
+- **The Node version is single-sourced from `.nvmrc`**, which both CI jobs now read instead of
+  naming a major of their own. The workflow can also be started by hand.
+- Smaller repository hygiene: the package manifest names its repository, issues and homepage;
+  the lockfile is marked generated so it folds away in a diff; `.vercel` is ignored; the editor
+  extension recommendations the `.gitignore` had always carved an exception for now exist; and
+  `npm run test:e2e:report` reopens the last Playwright report.
+- The issue chooser links the private security advisory form, which SECURITY.md asked for and
+  the one screen where somebody decides where to file did not offer.
 
 ### Added
 
