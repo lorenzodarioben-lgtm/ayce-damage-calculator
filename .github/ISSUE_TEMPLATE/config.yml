@@ -5,6 +5,11 @@ contact_links:
     about: >
       Retail value, ingredient cost, recovery and break-even are all explained
       in the README, including what the figures deliberately do not claim.
+  - name: Report a security vulnerability
+    url: https://github.com/lorenzodarioben-lgtm/ayce-damage-calculator/security/advisories/new
+    about: >
+      Report it privately through the advisory form rather than here. A public
+      issue with a reproduction puts other people's stored meals at risk.
   - name: Contributing
     url: https://github.com/lorenzodarioben-lgtm/ayce-damage-calculator/blob/main/CONTRIBUTING.md
     about: Setting up, the conventions the code follows, and what gets merged.
