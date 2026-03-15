@@ -159,7 +159,7 @@ export function CalculatorApp() {
         <main id={MAIN_CONTENT_ID} className="relative z-10">
           {stage === 'builder' && <Hero />}
 
-          <div className="mx-auto max-w-[1280px] px-4 pb-32 pt-6 sm:px-6 lg:pb-16">
+          <div className="mx-auto max-w-page px-4 pb-32 pt-6 sm:px-6 lg:pb-16">
             {sessionConflict && (
               <div className="mb-4">
                 <SessionConflictNotice

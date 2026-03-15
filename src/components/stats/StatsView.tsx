@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
+import { Figure } from '@/components/ui/Figure';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { EMPTY_STATE_LINK } from '@/components/ui/Button';
 import { RecoveryTrend } from '@/components/stats/RecoveryTrend';
@@ -22,16 +23,6 @@ import {
   formatPlates,
   formatRecordedAt,
 } from '@/lib/formatting';
-
-function Figure({ label, value, detail }: { label: string; value: string; detail?: string }) {
-  return (
-    <div className="panel p-4">
-      <p className="micro-label text-cream-500">{label}</p>
-      <p className="tabular display-type mt-1 text-figure text-cream-50">{value}</p>
-      {detail && <p className="mt-1 text-caption text-cream-700">{detail}</p>}
-    </div>
-  );
-}
 
 export function StatsView() {
   const { status, records } = useMealHistory();
@@ -103,28 +94,34 @@ export function StatsView() {
             <h2 id="totals-heading" className="display-type text-title text-cream-100 mb-3">
               On record
             </h2>
-            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <dl className="grid grid-cols-2 gap-3 lg:grid-cols-4">
               <Figure
                 label="Sessions"
                 value={formatCount(analytics.sessionCount)}
                 detail={`${analytics.sessionsAtBreakEven} at or past break-even`}
+                size="figure"
               />
-              <Figure label="Plates" value={formatCount(analytics.totalPlates)} />
+              <Figure label="Plates" value={formatCount(analytics.totalPlates)} size="figure" />
               <Figure
                 label="Food"
                 value={formatKg(analytics.totalWeightKg)}
                 detail={`${formatKg(analytics.averageWeightKg)} average`}
+                size="figure"
               />
-              <Figure label="Protein" value={formatGrams(analytics.totalProteinG)} />
-            </div>
+              <Figure label="Protein" value={formatGrams(analytics.totalProteinG)} size="figure" />
+            </dl>
           </section>
 
           <section aria-labelledby="recovery-heading">
             <h2 id="recovery-heading" className="display-type text-title text-cream-100 mb-3">
               Retail recovery
             </h2>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Figure label="Average" value={formatPercent(analytics.averageRecoveryPercent)} />
+            <dl className="grid gap-3 sm:grid-cols-2">
+              <Figure
+                label="Average"
+                value={formatPercent(analytics.averageRecoveryPercent)}
+                size="figure"
+              />
               <Figure
                 label="Best"
                 value={formatPercent(analytics.bestRecoveryPercent)}
@@ -133,8 +130,9 @@ export function StatsView() {
                       detail: `${analytics.best.label} · ${formatRecordedAt(analytics.best.recordedAt)}`,
                     }
                   : {})}
+                size="figure"
               />
-            </div>
+            </dl>
 
             <div className="panel mt-3 p-4 sm:p-5">
               <h3 className="display-type text-lead text-cream-100 mb-3">Recent sessions</h3>
@@ -287,6 +285,7 @@ function TrendFigure({
           ? 'No previous baseline'
           : `${change >= 0 ? '+' : ''}${change.toFixed(1)}${unit} vs previous 5`
       }
+      size="figure"
     />
   );
 }

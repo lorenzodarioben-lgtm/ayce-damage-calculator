@@ -20,7 +20,7 @@ export default function BackupPage() {
 
       <main
         id={MAIN_CONTENT_ID}
-        className="relative z-10 mx-auto max-w-[720px] px-4 pt-6 pb-16 sm:px-6"
+        className="relative z-10 mx-auto max-w-page px-4 pt-6 pb-16 sm:px-6"
       >
         <h1 className="display-type mt-2 text-figure text-cream-50 sm:text-reading">
           Custody of records

@@ -19,7 +19,7 @@ export default function OfflinePage() {
   return (
     <main
       id={MAIN_CONTENT_ID}
-      className="relative z-10 mx-auto flex min-h-dvh max-w-[560px] flex-col justify-center px-6 py-16"
+      className="relative z-10 mx-auto flex min-h-dvh max-w-narrow flex-col justify-center px-6 py-16"
     >
       <BrandMark />
 
