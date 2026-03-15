@@ -98,7 +98,7 @@ export function HistoryDetail({ id }: { id: string }) {
 
   if (state.status === 'loading') {
     return (
-      <p role="status" className="py-16 text-center text-ui text-cream-700">
+      <p role="status" className="py-16 text-center text-ui text-cream-600">
         Retrieving the record…
       </p>
     );
@@ -108,7 +108,7 @@ export function HistoryDetail({ id }: { id: string }) {
     return (
       <div className="panel border-dashed px-6 py-14 text-center">
         <p className="display-type text-title text-cream-300">No such record.</p>
-        <p className="mx-auto mt-3 max-w-[44ch] text-ui leading-relaxed text-cream-700">
+        <p className="mx-auto mt-3 max-w-[44ch] text-ui leading-relaxed text-cream-600">
           This session is not in the file on this device. It may have been deleted, or filed in a
           different browser.
         </p>
@@ -194,7 +194,7 @@ export function HistoryDetail({ id }: { id: string }) {
               {record.tags.map((tag) => (
                 <li
                   key={tag}
-                  className="inline-flex items-center gap-1 rounded-full border border-line-ember bg-ash-900 py-1 pl-3 pr-1 text-ui text-ember-400"
+                  className="inline-flex items-center gap-1 rounded-full border border-line-ember bg-ash-900 py-1 pl-3 pr-1 text-ui text-cream-100"
                 >
                   {tag}
                   <button
@@ -227,7 +227,7 @@ export function HistoryDetail({ id }: { id: string }) {
                 }
               }}
               placeholder="Birthday, friends, lunch…"
-              className="min-h-11 min-w-0 flex-1 rounded-surface border border-line-strong bg-ash-900 px-3 text-ui text-cream-100 placeholder:text-cream-700"
+              className="min-h-11 min-w-0 flex-1 rounded-surface border border-line-strong bg-ash-900 px-3 text-ui text-cream-100 placeholder:text-cream-600"
             />
             <Button
               variant="secondary"
@@ -238,7 +238,7 @@ export function HistoryDetail({ id }: { id: string }) {
               Add tag
             </Button>
           </div>
-          <p role="status" className="mt-2 min-h-5 text-caption text-cream-700">
+          <p role="status" className="mt-2 min-h-5 text-caption text-cream-600">
             {tagStatus}
           </p>
         </section>

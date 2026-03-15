@@ -51,13 +51,13 @@ export function MealBreakdown({
                 {getQualityMeta(line.item.quality).label} ·{' '}
                 {getPlateSizeMeta(line.item.plateSize).label}
               </p>
-              <p className="tabular mt-0.5 text-caption text-cream-700">
+              <p className="tabular mt-0.5 text-caption text-cream-600">
                 {formatUnits(line)}
                 {line.hasWeight ? ` · ${formatWeight(line.weightG)}` : ' · not weighed'}
                 {line.uneatenPlates > 0 && <> · {formatPlateQuantity(line.uneatenPlates)} left</>}
               </p>
             </div>
-            <p className="tabular shrink-0 text-ui font-bold text-ember-400">
+            <p className="tabular shrink-0 text-ui font-bold text-cream-100">
               {formatMoney(line.retailValue, pricingProfile.money)}
             </p>
           </li>

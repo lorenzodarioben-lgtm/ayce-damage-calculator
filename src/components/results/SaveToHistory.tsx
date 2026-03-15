@@ -35,7 +35,7 @@ export function SaveToHistory({ session, report, verdict }: SaveToHistoryProps) 
       {/* The note is optional and stays out of the way: a label, a box, and no
           demand that anything be written before the meal can be filed. */}
       <div>
-        <label htmlFor={noteId} className="mb-1.5 block text-caption text-cream-700">
+        <label htmlFor={noteId} className="mb-1.5 block text-caption text-cream-600">
           Note for the file (optional)
         </label>
         <textarea
@@ -46,7 +46,7 @@ export function SaveToHistory({ session, report, verdict }: SaveToHistoryProps) 
           disabled={filed || state === 'saving'}
           onChange={(event) => setNote(event.target.value)}
           placeholder="Who was there, what was worth ordering again…"
-          className="w-full resize-none rounded-surface border border-line-strong bg-ash-900 px-3 py-2 text-ui text-cream-100 placeholder:text-cream-700 disabled:opacity-60"
+          className="w-full resize-none rounded-surface border border-line-strong bg-ash-900 px-3 py-2 text-ui text-cream-100 placeholder:text-cream-600 disabled:opacity-60"
         />
       </div>
 
@@ -66,8 +66,8 @@ export function SaveToHistory({ session, report, verdict }: SaveToHistoryProps) 
         role="status"
         className={
           state === 'unavailable'
-            ? 'text-center text-caption text-char-500'
-            : 'text-center text-caption text-cream-700'
+            ? 'text-center text-caption text-char-400'
+            : 'text-center text-caption text-cream-600'
         }
       >
         {settled ? CONFIRMATION[state] : ''}

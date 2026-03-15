@@ -59,13 +59,13 @@ export function ChallengeShareActions({ previous, current, onStatus }: Challenge
       </h3>
 
       {token === null ? (
-        <p className="text-caption leading-relaxed text-cream-700">
+        <p className="text-caption leading-relaxed text-cream-600">
           These two meals are too large to fit inside a link. A challenge carries both of them in
           the address itself, so there is a limit to how much it can hold.
         </p>
       ) : (
         <>
-          <p className="max-w-[62ch] text-caption leading-relaxed text-cream-700">
+          <p className="max-w-[62ch] text-caption leading-relaxed text-cream-600">
             The link carries both meals and their entry prices, encoded into the address. Diner
             names, roster attribution and any note on either record stay on this device.
           </p>
@@ -89,7 +89,7 @@ export function ChallengeShareActions({ previous, current, onStatus }: Challenge
           {showQr && (
             <div className="mt-3 flex flex-col items-center gap-2">
               <QrCode value={url} label="A scannable link to this challenge" />
-              <p className="max-w-[44ch] text-center text-caption leading-relaxed text-cream-700">
+              <p className="max-w-[44ch] text-center text-caption leading-relaxed text-cream-600">
                 Two meals make a long address, so a code is not always possible. The copied link
                 always works.
               </p>

@@ -3,6 +3,7 @@
 import { Figure } from '@/components/ui/Figure';
 import { ResultMetric } from '@/components/results/ResultMetric';
 import { usePricingProfile } from '@/components/session/PricingContext';
+import { SEVERITY_TEXT, VERDICT_TEXT } from '@/lib/bands';
 import { perDinerTotals } from '@/lib/calculations';
 import { cn } from '@/lib/cn';
 import { formatPlateQuantity } from '@/lib/consumption';
@@ -38,20 +39,6 @@ interface ReportSummaryProps {
   subheading?: string;
 }
 
-const SEVERITY_TONE = {
-  calm: 'text-cream-500',
-  normal: 'text-cream-300',
-  watch: 'text-ember-400',
-  alert: 'text-ember-300',
-  breach: 'text-char-500',
-} as const;
-
-const VERDICT_TONE = {
-  diner: 'text-sesame-400',
-  even: 'text-ember-300',
-  house: 'text-cream-50',
-} as const;
-
 /*
  * The light behind the verdict, in the colour the verdict is already in.
  *
@@ -61,7 +48,9 @@ const VERDICT_TONE = {
  */
 const VERDICT_GLOW = {
   diner: 'bg-[radial-gradient(ellipse_at_center,var(--color-sesame-600)_0%,transparent_68%)]',
-  even: 'bg-[radial-gradient(ellipse_at_center,var(--color-ember-600)_0%,transparent_68%)]',
+  // Recovered is recovered. This used to bloom ember while the meter beside it
+  // had already turned green, so the two disagreed about the same number.
+  even: 'bg-[radial-gradient(ellipse_at_center,var(--color-sesame-600)_0%,transparent_68%)]',
   house: 'bg-[radial-gradient(ellipse_at_center,var(--color-char-600)_0%,transparent_70%)]',
 } as const;
 
@@ -151,13 +140,13 @@ export function ReportSummary({
           <p
             className={cn(
               'display-hero text-[clamp(2.5rem,8vw,4.75rem)]',
-              VERDICT_TONE[verdict.tone],
+              VERDICT_TEXT[verdict.tone],
             )}
           >
             {verdict.title}
           </p>
-          <p className="mx-auto mt-5 max-w-md reading text-cream-300 sm:">{verdict.copy}</p>
-          {subheading && <p className="mt-3 text-caption text-cream-700">{subheading}</p>}
+          <p className="mx-auto mt-5 max-w-[44ch] reading text-cream-300">{verdict.copy}</p>
+          {subheading && <p className="mt-3 text-caption text-cream-600">{subheading}</p>}
         </div>
       </section>
 
@@ -306,7 +295,7 @@ export function ReportSummary({
           >
             Split {formatCount(perDiner.dinerCount)} ways
           </SubHeading>
-          <p className="mb-3 text-caption text-cream-700">
+          <p className="mb-3 text-caption text-cream-600">
             An even split of the table&rsquo;s totals. The calculator records one shared tab, so it
             cannot know who reached for what.
           </p>
@@ -380,13 +369,13 @@ export function ReportSummary({
         <div className="well mt-3 flex flex-wrap items-baseline justify-between gap-2 px-4 py-3">
           <div>
             <p className="micro-label text-cream-500">Est. food cost</p>
-            <p className={cn('mt-0.5 text-ui font-semibold', SEVERITY_TONE[houseStatus.severity])}>
+            <p className={cn('mt-0.5 text-ui font-semibold', SEVERITY_TEXT[houseStatus.severity])}>
               {houseStatus.label}
             </p>
           </div>
           <p className="tabular display-hero text-figure leading-none text-cream-100">
             {formatPercent(report.estimatedFoodCostPercent)}{' '}
-            <span className="text-ui text-cream-700">
+            <span className="text-ui text-cream-600">
               of {hasAdjustments ? 'the total paid' : 'admission'}
             </span>
           </p>
@@ -408,14 +397,14 @@ function BillRow({
   return (
     <div className="flex items-baseline justify-between gap-3">
       <dt
-        className={total ? 'text-ui font-semibold text-cream-200' : 'text-caption text-cream-700'}
+        className={total ? 'text-ui font-semibold text-cream-200' : 'text-caption text-cream-600'}
       >
         {label}
       </dt>
       <dd
         className={cn(
           'tabular',
-          total ? 'text-ui font-semibold text-ember-400' : 'text-caption text-cream-500',
+          total ? 'text-ui font-semibold text-cream-100' : 'text-caption text-cream-500',
         )}
       >
         {value}

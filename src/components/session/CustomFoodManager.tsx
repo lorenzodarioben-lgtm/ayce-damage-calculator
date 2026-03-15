@@ -187,7 +187,7 @@ function CustomFoodEditor({
               onChange={(event) => set('name', event.target.value)}
               autoComplete="off"
               placeholder="e.g. Honey soy chicken"
-              className="mt-1.5 h-11 w-full rounded-surface border border-line-strong bg-ash-900 px-3 font-normal text-cream-50 placeholder:text-cream-700"
+              className="mt-1.5 h-11 w-full rounded-surface border border-line-strong bg-ash-900 px-3 font-normal text-cream-50 placeholder:text-cream-600"
             />
           </label>
           <label className="block text-ui font-semibold text-cream-300">
@@ -207,24 +207,24 @@ function CustomFoodEditor({
         </div>
 
         <label className="block text-ui font-semibold text-cream-300">
-          Short name <span className="font-normal text-cream-700">(optional)</span>
+          Short name <span className="font-normal text-cream-600">(optional)</span>
           <input
             value={draft.shortName}
             onChange={(event) => set('shortName', event.target.value)}
             autoComplete="off"
             placeholder="Used where space is tight"
-            className="mt-1.5 h-11 w-full rounded-surface border border-line-strong bg-ash-900 px-3 font-normal text-cream-50 placeholder:text-cream-700"
+            className="mt-1.5 h-11 w-full rounded-surface border border-line-strong bg-ash-900 px-3 font-normal text-cream-50 placeholder:text-cream-600"
           />
         </label>
 
         <label className="block text-ui font-semibold text-cream-300">
-          What is it? <span className="font-normal text-cream-700">(optional)</span>
+          What is it? <span className="font-normal text-cream-600">(optional)</span>
           <textarea
             rows={2}
             value={draft.description}
             onChange={(event) => set('description', event.target.value)}
             placeholder="A quick note to distinguish it on the menu"
-            className="mt-1.5 w-full resize-none rounded-surface border border-line-strong bg-ash-900 px-3 py-2 font-normal text-cream-50 placeholder:text-cream-700"
+            className="mt-1.5 w-full resize-none rounded-surface border border-line-strong bg-ash-900 px-3 py-2 font-normal text-cream-50 placeholder:text-cream-600"
           />
         </label>
 
@@ -254,7 +254,7 @@ function CustomFoodEditor({
                   className="sr-only"
                 />
                 <span className="block text-ui font-semibold text-cream-100">{label}</span>
-                <span className="mt-0.5 block text-caption leading-snug text-cream-700">
+                <span className="mt-0.5 block text-caption leading-snug text-cream-600">
                   {hint}
                 </span>
               </label>
@@ -298,7 +298,7 @@ function CustomFoodEditor({
         */}
         <label className="block text-ui font-semibold text-cream-300">
           {perServing ? 'Grams per serving' : 'Grams per regular plate'}{' '}
-          <span className="font-normal text-cream-700">(optional)</span>
+          <span className="font-normal text-cream-600">(optional)</span>
           <input
             aria-label={perServing ? 'Grams per serving' : 'Grams per regular plate'}
             type="number"
@@ -308,7 +308,7 @@ function CustomFoodEditor({
             onChange={(event) => set('gramsPerServing', event.target.value)}
             className="mt-1.5 h-11 w-full rounded-surface border border-line-strong bg-ash-900 px-3 font-normal text-cream-50"
           />
-          <span className="mt-1 block text-caption font-normal leading-snug text-cream-700">
+          <span className="mt-1 block text-caption font-normal leading-snug text-cream-600">
             {perServing
               ? 'Leave it at zero if you do not know. The item still counts towards value and nutrition; it just will not add weight to the meal, and the report says so.'
               : `Leave it blank to keep the app's nominal ${REGULAR_PLATE_GRAMS} g. Weigh a plate once and put the real figure here: retail value is weight times price per kilogram, so this moves every number in the report. Small and large plates scale from it.`}
@@ -319,7 +319,7 @@ function CustomFoodEditor({
           <legend className="micro-label text-cream-500 mb-2">
             {perServing ? 'Nutrition per serving' : 'Nutrition per 100 g'}
           </legend>
-          <p className="mb-2 text-caption leading-relaxed text-cream-700">
+          <p className="mb-2 text-caption leading-relaxed text-cream-600">
             Leave a field blank if you do not know it. The report says the figure is not recorded
             rather than counting it as nothing.
           </p>
@@ -341,7 +341,7 @@ function CustomFoodEditor({
                   placeholder="Unknown"
                   value={draft[key]}
                   onChange={(event) => set(key, event.target.value)}
-                  className="mt-1 h-10 w-full rounded-surface border border-line-strong bg-ash-900 px-2 text-ui font-normal text-cream-50 placeholder:text-cream-700"
+                  className="mt-1 h-10 w-full rounded-surface border border-line-strong bg-ash-900 px-2 text-ui font-normal text-cream-50 placeholder:text-cream-600"
                 />
               </label>
             ))}
@@ -349,7 +349,7 @@ function CustomFoodEditor({
         </fieldset>
 
         {error && (
-          <p role="alert" className="text-ui font-semibold text-char-500">
+          <p role="alert" className="text-ui font-semibold text-char-400">
             {error}
           </p>
         )}
@@ -412,14 +412,14 @@ export function CustomFoodManager({
           <h3 id="custom-foods-heading" className="display-type text-lead text-cream-100">
             Your menu
           </h3>
-          <p className="mt-1 text-caption leading-relaxed text-cream-700">
+          <p className="mt-1 text-caption leading-relaxed text-cream-600">
             Add the cuts and sides that make your regular haunt distinct.
           </p>
         </div>
         <button
           type="button"
           onClick={() => setCreating(true)}
-          className="inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-surface px-2 text-caption font-semibold uppercase tracking-caps text-ember-500 transition-colors hover:bg-ash-800"
+          className="inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-surface px-2 text-caption font-semibold uppercase tracking-caps text-cream-100 transition-colors hover:bg-ash-800"
         >
           <Plus size={14} aria-hidden="true" />
           Add food
@@ -427,7 +427,7 @@ export function CustomFoodManager({
       </div>
 
       {foods.length === 0 ? (
-        <p className="mt-3 rounded-surface border border-dashed border-line bg-ash-900/60 px-4 py-3 text-center text-caption leading-relaxed text-cream-700">
+        <p className="mt-3 rounded-surface border border-dashed border-line bg-ash-900/60 px-4 py-3 text-center text-caption leading-relaxed text-cream-600">
           No custom items yet. Your menu is optional; the built-in cuts remain ready to go.
         </p>
       ) : (
@@ -451,7 +451,7 @@ export function CustomFoodManager({
                   type="button"
                   onClick={() => setEditingId(food.id)}
                   aria-label={`Edit ${food.name}`}
-                  className="flex size-9 cursor-pointer items-center justify-center rounded-surface text-cream-500 transition-colors hover:bg-ash-800 hover:text-ember-400"
+                  className="flex size-9 cursor-pointer items-center justify-center rounded-surface text-cream-500 transition-colors hover:bg-ash-800 hover:text-cream-50"
                 >
                   <Pencil size={15} aria-hidden="true" />
                 </button>
@@ -462,7 +462,7 @@ export function CustomFoodManager({
                     onStatus(`${food.name} removed from your menu.`);
                   }}
                   aria-label={`Delete ${food.name}`}
-                  className="flex size-9 cursor-pointer items-center justify-center rounded-surface text-cream-600 transition-colors hover:bg-char-700/25 hover:text-char-500"
+                  className="flex size-9 cursor-pointer items-center justify-center rounded-surface text-cream-600 transition-colors hover:bg-char-700/25 hover:text-char-400"
                 >
                   <Trash2 size={15} aria-hidden="true" />
                 </button>

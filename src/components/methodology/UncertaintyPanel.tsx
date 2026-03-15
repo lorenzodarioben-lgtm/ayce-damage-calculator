@@ -81,7 +81,7 @@ export function UncertaintyPanel({
       <p className="mt-2 max-w-[62ch] reading text-cream-300">{analysis.headline}</p>
 
       <details className="mt-3">
-        <summary className="min-h-11 cursor-pointer py-2 text-caption font-semibold uppercase tracking-caps text-ember-500 underline-offset-4 hover:underline">
+        <summary className="min-h-11 cursor-pointer py-2 text-caption font-semibold uppercase tracking-caps text-cream-100 underline-offset-4 hover:underline">
           Show the range and what moves it
         </summary>
 
@@ -128,7 +128,7 @@ export function UncertaintyPanel({
                   <th scope="row" className="py-2 pr-3 text-left font-semibold text-cream-50">
                     {entry.label}
                   </th>
-                  <td className="tabular py-2 pr-3 text-ember-400">
+                  <td className="tabular py-2 pr-3 text-cream-100">
                     {formatMoney(entry.retailValue, profile.money)}
                   </td>
                   <td className="tabular py-2 pr-3">{formatPercent(entry.recoveryPercent)}</td>
@@ -140,7 +140,7 @@ export function UncertaintyPanel({
           </table>
         </div>
 
-        <p className="tabular mt-2 text-caption text-cream-700">
+        <p className="tabular mt-2 text-caption text-cream-600">
           The stated range spans {formatPercent(scenarioSpreadPercent(analysis))} of the base
           estimate.{' '}
           {analysis.verdictHolds

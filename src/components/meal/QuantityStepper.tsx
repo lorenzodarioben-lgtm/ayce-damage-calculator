@@ -39,8 +39,8 @@ export function QuantityStepper({
     'flex shrink-0 cursor-pointer items-center justify-center rounded-inner border border-line-strong',
     'bg-ash-800 text-cream-100 elevate-control',
     'transition-[background-color,border-color,transform] duration-200 ease-out-soft',
-    'hover:border-ember-600 hover:bg-ash-700 active:scale-95 active:bg-ash-800',
-    'disabled:cursor-not-allowed disabled:border-line-soft disabled:bg-ash-900 disabled:text-cream-700',
+    'hover:border-line-strong hover:bg-ash-700 active:scale-95 active:bg-ash-800',
+    'disabled:cursor-not-allowed disabled:border-line-soft disabled:bg-ash-900 disabled:text-cream-600',
   );
 
   return (

@@ -13,8 +13,8 @@ interface ResultMetricProps {
 const TONES: Record<NonNullable<ResultMetricProps['tone']>, string> = {
   neutral: 'text-cream-50',
   positive: 'text-sesame-400',
-  negative: 'text-char-500',
-  accent: 'text-ember-300',
+  negative: 'text-char-400',
+  accent: 'text-cream-100',
 };
 
 /*
@@ -67,7 +67,7 @@ export function ResultMetric({
       >
         {value}
       </p>
-      {detail && <p className="tabular mt-1 text-caption leading-snug text-cream-700">{detail}</p>}
+      {detail && <p className="tabular mt-1 text-caption leading-snug text-cream-600">{detail}</p>}
     </div>
   );
 }

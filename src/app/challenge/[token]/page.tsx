@@ -62,7 +62,7 @@ export default async function ChallengePage({ params }: ChallengePageProps) {
             <h1 className="display-type text-figure text-cream-300">
               This challenge cannot be read.
             </h1>
-            <p className="mx-auto mt-4 max-w-[44ch] text-ui leading-relaxed text-cream-700">
+            <p className="mx-auto mt-4 max-w-[44ch] text-ui leading-relaxed text-cream-600">
               The link is incomplete, was altered in transit, or was produced by a version of the
               calculator this one does not understand. Nothing was lost — a challenge lives entirely
               in its own link.
@@ -106,7 +106,7 @@ export default async function ChallengePage({ params }: ChallengePageProps) {
           <Link href="/" className={CTA_CLASS}>
             Run your own damage report
           </Link>
-          <p className="mt-3 text-caption text-cream-700">
+          <p className="mt-3 text-caption text-cream-600">
             This challenge is read-only and has not changed anything on your device.
           </p>
         </div>

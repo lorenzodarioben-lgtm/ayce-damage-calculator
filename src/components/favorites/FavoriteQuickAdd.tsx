@@ -33,7 +33,7 @@ export function FavoriteQuickAdd({
 }: FavoriteQuickAddProps) {
   if (favorites.length === 0) {
     return (
-      <p className="rounded-surface border border-dashed border-line bg-ash-900/60 px-4 py-3 text-center text-caption leading-relaxed text-cream-700">
+      <p className="rounded-surface border border-dashed border-line bg-ash-900/60 px-4 py-3 text-center text-caption leading-relaxed text-cream-600">
         No saved orders yet. Use the star beside a configured cut to keep it here for next time.
       </p>
     );
@@ -72,7 +72,7 @@ export function FavoriteQuickAdd({
                 size={15}
                 strokeWidth={3}
                 aria-hidden="true"
-                className="shrink-0 text-ember-400"
+                className="shrink-0 text-cream-100"
               />
               <span className="min-w-0">
                 <span className="block text-ui font-bold text-cream-50">{food.name}</span>
@@ -87,7 +87,7 @@ export function FavoriteQuickAdd({
               type="button"
               onClick={() => onRemove(favorite.id)}
               aria-label={`Remove ${description} from saved orders`}
-              className="absolute right-1 top-1/2 flex size-7 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-cream-700 transition-colors duration-200 hover:bg-char-700/25 hover:text-char-500"
+              className="absolute right-1 top-1/2 flex size-7 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-cream-600 transition-colors duration-200 hover:bg-char-700/25 hover:text-char-400"
             >
               <X size={14} aria-hidden="true" />
             </button>
@@ -118,8 +118,8 @@ export function FavoriteToggle({ active, onToggle, description }: FavoriteToggle
       aria-label={`Save ${description} as a quick order`}
       className={`flex size-14 shrink-0 cursor-pointer items-center justify-center rounded-surface border transition-colors duration-200 ${
         active
-          ? 'border-ember-500 bg-ash-800 text-ember-400'
-          : 'border-line bg-ash-800 text-cream-500 hover:border-ember-700 hover:text-cream-100'
+          ? 'border-ember-500 bg-ash-800 text-cream-100'
+          : 'border-line bg-ash-800 text-cream-500 hover:border-line-strong hover:text-cream-100'
       }`}
     >
       <Star size={20} aria-hidden="true" fill={active ? 'currentColor' : 'none'} />

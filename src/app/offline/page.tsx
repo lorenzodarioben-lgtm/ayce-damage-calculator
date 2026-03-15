@@ -38,7 +38,7 @@ export default function OfflinePage() {
 
       <Link
         href="/"
-        className="mt-8 inline-flex min-h-12 items-center justify-center rounded-surface border border-line-ember bg-ash-850 px-5 text-ui font-semibold uppercase tracking-caps text-ember-400 transition-colors duration-200 hover:bg-ash-800"
+        className="mt-8 inline-flex min-h-12 items-center justify-center rounded-surface border border-line-ember bg-ash-850 px-5 text-ui font-semibold uppercase tracking-caps text-cream-100 transition-colors duration-200 hover:bg-ash-800"
       >
         Return to the calculator
       </Link>

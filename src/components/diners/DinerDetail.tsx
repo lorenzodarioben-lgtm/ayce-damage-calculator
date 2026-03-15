@@ -78,7 +78,7 @@ export function DinerDetail({ id }: { id: string }) {
 
   if (!hydrated || status === 'loading') {
     return (
-      <p role="status" className="py-16 text-center text-ui text-cream-700">
+      <p role="status" className="py-16 text-center text-ui text-cream-600">
         Reading the file…
       </p>
     );
@@ -88,7 +88,7 @@ export function DinerDetail({ id }: { id: string }) {
     return (
       <div className="panel border-dashed px-6 py-14 text-center">
         <p className="display-type text-title text-cream-300">Nobody by that name here.</p>
-        <p className="mx-auto mt-3 max-w-[44ch] text-ui leading-relaxed text-cream-700">
+        <p className="mx-auto mt-3 max-w-[44ch] text-ui leading-relaxed text-cream-600">
           This person is not saved on this device. Any meals filed with them still hold the roster
           they were recorded with, exactly as it was.
         </p>
@@ -139,7 +139,7 @@ export function DinerDetail({ id }: { id: string }) {
         </h2>
 
         {summary.visits === 0 ? (
-          <p className="max-w-[62ch] text-ui leading-relaxed text-cream-700">
+          <p className="max-w-[62ch] text-ui leading-relaxed text-cream-600">
             No meals filed with them yet. Add them to a table roster and file the report, and their
             share of it appears here. Meals recorded without a roster are not assigned to anybody —
             nobody said who was there, and the calculator will not guess.
@@ -171,7 +171,7 @@ export function DinerDetail({ id }: { id: string }) {
                 />
                 <Figure label="Estimated share" value={formatPlateQuantity(summary.sharedPlates)} />
               </dl>
-              <p className="mt-2 max-w-[62ch] text-caption leading-relaxed text-cream-700">
+              <p className="mt-2 max-w-[62ch] text-caption leading-relaxed text-cream-600">
                 The first figure is a record: somebody said those plates were theirs. The second is
                 an even split of what the table shared, which is an assumption rather than a
                 measurement — the calculator records one tab and cannot know who reached for what.

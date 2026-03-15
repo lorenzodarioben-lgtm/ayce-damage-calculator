@@ -149,7 +149,7 @@ export function MealPacing({
               className={cn(
                 CHIP,
                 active
-                  ? 'border-line-ember bg-ash-800 text-ember-400'
+                  ? 'border-line-ember bg-ash-800 text-cream-100'
                   : 'border-line bg-ash-900 text-cream-300 hover:bg-ash-800',
               )}
             >
@@ -173,7 +173,7 @@ export function MealPacing({
           className={cn(
             CHIP,
             plannedDurationMinutes === undefined
-              ? 'border-line-ember bg-ash-800 text-ember-400'
+              ? 'border-line-ember bg-ash-800 text-cream-100'
               : 'border-line bg-ash-900 text-cream-300 hover:bg-ash-800',
           )}
         >
@@ -208,7 +208,7 @@ export function MealPacing({
         <div className="mt-4">
           <div className="flex items-baseline justify-between gap-3">
             <p className="micro-label text-cream-500">{clockLabel}</p>
-            <p className="text-caption text-cream-700">
+            <p className="text-caption text-cream-600">
               {formatDurationLabel(forecast.plannedDurationMs ?? 0)} booked
             </p>
           </div>
@@ -236,7 +236,7 @@ export function MealPacing({
           </div>
         </div>
       ) : (
-        <p className="mt-3 text-caption leading-relaxed text-cream-700">
+        <p className="mt-3 text-caption leading-relaxed text-cream-600">
           No time limit set. Pick a length above if your table has one — the meal itself works
           exactly the same either way.
         </p>
@@ -307,7 +307,7 @@ export function MealPacing({
       )}
 
       {started && (
-        <p className="mt-3 text-caption leading-relaxed text-cream-700">
+        <p className="mt-3 text-caption leading-relaxed text-cream-600">
           {forecast.expired
             ? 'The booked window is over. Anything after this is extra time, and the numbers keep counting it.'
             : forecast.projectedRecoveryPercent === null

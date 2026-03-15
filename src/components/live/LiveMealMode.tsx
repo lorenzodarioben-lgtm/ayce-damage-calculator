@@ -149,7 +149,7 @@ export function LiveMealMode() {
               <h1 id="live-damage-heading" className="display-type text-title text-cream-50">
                 Live damage
               </h1>
-              <p className="tabular text-caption text-cream-700">
+              <p className="tabular text-caption text-cream-600">
                 {formatPlates(report.totalPlates)} · {formatKg(report.totalWeightKg)}
               </p>
             </div>
@@ -201,7 +201,7 @@ export function LiveMealMode() {
           ) : (
             <div className="panel border-dashed px-6 py-12 text-center">
               <p className="display-type text-title text-cream-300">Nothing on the grill yet.</p>
-              <p className="mx-auto mt-3 max-w-[44ch] text-ui leading-relaxed text-cream-700">
+              <p className="mx-auto mt-3 max-w-[44ch] text-ui leading-relaxed text-cream-600">
                 Add the cuts you are ordering. Each one gets its own button, so logging a plate is a
                 single tap for the rest of the meal.
               </p>
@@ -234,7 +234,7 @@ export function LiveMealMode() {
               >
                 Frequently logged on this device
               </h2>
-              <p className="mb-2 text-caption text-cream-700">
+              <p className="mb-2 text-caption text-cream-600">
                 Based only on your filed local history.
               </p>
               <div className="flex flex-wrap gap-2">
@@ -245,10 +245,10 @@ export function LiveMealMode() {
                       key={`${payload.foodId}-${payload.quality}-${payload.plateSize}`}
                       type="button"
                       onClick={() => handleAdd(payload)}
-                      className="rounded-surface border border-line px-3 py-2 text-ui text-cream-100 hover:border-ember-700"
+                      className="rounded-surface border border-line px-3 py-2 text-ui text-cream-100 hover:border-line-strong"
                     >
                       {food?.name ?? 'Saved cut'}{' '}
-                      <span className="text-caption text-cream-700">· {count} plates</span>
+                      <span className="text-caption text-cream-600">· {count} plates</span>
                     </button>
                   );
                 })}
@@ -275,17 +275,17 @@ export function LiveMealMode() {
               className={
                 hasItems
                   ? 'flex min-h-14 w-full items-center justify-center gap-2 rounded-surface bg-ember-500 px-6 text-body font-bold uppercase tracking-caps text-ash-950 transition-colors duration-200 hover:bg-ember-400'
-                  : 'pointer-events-none flex min-h-14 w-full items-center justify-center gap-2 rounded-surface bg-ash-700 px-6 text-body font-bold uppercase tracking-caps text-cream-700'
+                  : 'pointer-events-none flex min-h-14 w-full items-center justify-center gap-2 rounded-surface bg-ash-700 px-6 text-body font-bold uppercase tracking-caps text-cream-600'
               }
             >
               <Receipt size={18} aria-hidden="true" />
               Calculate the damage
             </Link>
 
-            <p className="text-center text-caption text-cream-700">
+            <p className="text-center text-caption text-cream-600">
               {formatMoney(session.pricePerDiner, pricingProfile.money)} per diner ×{' '}
               {session.dinerCount}.{' '}
-              <Link href="/" className="text-ember-500 underline-offset-4 hover:underline">
+              <Link href="/" className="text-cream-100 underline-offset-4 hover:underline">
                 Change in the full builder
               </Link>
               .

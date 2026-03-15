@@ -33,7 +33,7 @@ const LINK_IDLE =
   'text-cream-300 hover:bg-ash-800/70 hover:text-cream-50 after:bg-transparent ' +
   'hover:after:bg-line-ember';
 
-const LINK_CURRENT = 'text-ember-300 after:bg-ember-400';
+const LINK_CURRENT = 'text-cream-100 after:bg-ember-400';
 
 /**
  * Tailwind's own small breakpoint, in pixels. The menu and its toggle are

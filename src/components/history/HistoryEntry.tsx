@@ -23,7 +23,7 @@ interface HistoryEntryProps {
 
 const TONE = {
   diner: 'text-sesame-400',
-  even: 'text-ember-400',
+  even: 'text-cream-100',
   house: 'text-cream-100',
 } as const;
 
@@ -65,7 +65,7 @@ export function HistoryEntry({ session, onDelete, selected = false, onSelect }: 
               {record.tags.map((tag) => (
                 <li
                   key={tag}
-                  className="rounded-full border border-line-ember bg-ash-900 px-2 py-0.5 text-caption font-semibold text-ember-400"
+                  className="rounded-full border border-line-ember bg-ash-900 px-2 py-0.5 text-caption font-semibold text-cream-100"
                 >
                   {tag}
                 </li>
@@ -78,7 +78,7 @@ export function HistoryEntry({ session, onDelete, selected = false, onSelect }: 
           type="button"
           onClick={() => onDelete(record)}
           aria-label={`Delete the record from ${label} on ${formatRecordedAt(record.createdAt)}`}
-          className="relative z-10 flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-surface border border-transparent text-cream-700 transition-colors duration-200 hover:border-char-700 hover:bg-char-700/20 hover:text-char-500"
+          className="relative z-10 flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-surface border border-transparent text-cream-600 transition-colors duration-200 hover:border-char-700 hover:bg-char-700/20 hover:text-char-400"
         >
           <Trash2 size={15} aria-hidden="true" />
         </button>
@@ -87,7 +87,7 @@ export function HistoryEntry({ session, onDelete, selected = false, onSelect }: 
       <dl className="tabular mt-4 grid grid-cols-2 gap-x-3 gap-y-3 border-t border-line-soft pt-3 sm:grid-cols-4">
         <div>
           <dt className="micro-label text-cream-500">Recovery</dt>
-          <dd className="text-body font-bold text-ember-400">
+          <dd className="text-body font-bold text-cream-100">
             {formatPercent(report.retailRecoveryPercent)}
           </dd>
         </div>
@@ -109,7 +109,7 @@ export function HistoryEntry({ session, onDelete, selected = false, onSelect }: 
             {formatPlates(report.totalPlates)}{' '}
             {/* The separator is a real character, so this does not read as
                 "3 plates0.47 kg" to a screen reader. */}
-            <span className="text-caption font-normal text-cream-700">
+            <span className="text-caption font-normal text-cream-600">
               {formatKg(report.totalWeightKg)}
             </span>
           </dd>

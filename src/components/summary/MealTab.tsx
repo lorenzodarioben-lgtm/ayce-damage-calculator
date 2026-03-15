@@ -29,7 +29,7 @@ export function MealTab({
     return (
       <div className="rounded-surface border border-dashed border-line bg-ash-900/60 px-4 py-6 text-center">
         <p className="display-type text-lead text-cream-300">No damage yet</p>
-        <p className="mt-1 text-ui text-cream-700">
+        <p className="mt-1 text-ui text-cream-600">
           Add your first plate to begin the investigation.
         </p>
       </div>

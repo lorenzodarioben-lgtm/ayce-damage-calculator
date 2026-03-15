@@ -186,7 +186,7 @@ function ProfileEditor({
               onChange={(event) => setName(event.target.value)}
               autoComplete="off"
               placeholder="e.g. Sydney dinner menu"
-              className="h-11 w-full rounded-surface border border-line-strong bg-ash-900 px-3 text-cream-50 placeholder:text-cream-700"
+              className="h-11 w-full rounded-surface border border-line-strong bg-ash-900 px-3 text-cream-50 placeholder:text-cream-600"
             />
           </div>
           <div>
@@ -214,7 +214,7 @@ function ProfileEditor({
         <div>
           <div className="mb-3 rounded-surface border border-line-soft p-3">
             <p className="text-ui font-semibold text-cream-100">Bulk price adjustment</p>
-            <p className="mt-1 text-caption text-cream-700">
+            <p className="mt-1 text-caption text-cream-600">
               Preview an increase or decrease across this profile before saving. Historical meal
               snapshots are never changed.
             </p>
@@ -231,7 +231,7 @@ function ProfileEditor({
               <button
                 type="button"
                 onClick={previewAdjustment}
-                className="rounded-surface border border-line px-3 text-caption font-semibold text-ember-400"
+                className="rounded-surface border border-line px-3 text-caption font-semibold text-cream-100"
               >
                 Preview all cuts
               </button>
@@ -239,7 +239,7 @@ function ProfileEditor({
           </div>
           <div className="mb-2 flex items-baseline justify-between gap-3">
             <h3 className="display-type text-lead text-cream-100">Cut assumptions</h3>
-            <p className="text-caption text-cream-700">Per item · leave a row blank to inherit</p>
+            <p className="text-caption text-cream-600">Per item · leave a row blank to inherit</p>
           </div>
           {/* The two number columns are identical once they hold values, so on a
               wide screen they are named once here rather than on every row —
@@ -263,7 +263,7 @@ function ProfileEditor({
                 >
                   <div>
                     <p className="text-ui font-bold text-cream-100">{food.name}</p>
-                    <p className="text-caption text-cream-700">
+                    <p className="text-caption text-cream-600">
                       Default{' '}
                       {formatUnitPrice(resolveFoodPricing(food), {
                         currency,
@@ -283,7 +283,7 @@ function ProfileEditor({
                       value={fields?.retail ?? ''}
                       onChange={(event) => updatePrice(food.id, 'retail', event.target.value)}
                       placeholder="Retail"
-                      className="mt-1 h-10 w-full rounded-surface border border-line-strong bg-ash-850 px-2 text-ui text-cream-50 placeholder:text-cream-700 sm:mt-0"
+                      className="mt-1 h-10 w-full rounded-surface border border-line-strong bg-ash-850 px-2 text-ui text-cream-50 placeholder:text-cream-600 sm:mt-0"
                     />
                   </label>
                   <label className="text-caption text-cream-500">
@@ -298,7 +298,7 @@ function ProfileEditor({
                       value={fields?.cost ?? ''}
                       onChange={(event) => updatePrice(food.id, 'cost', event.target.value)}
                       placeholder="Cost"
-                      className="mt-1 h-10 w-full rounded-surface border border-line-strong bg-ash-850 px-2 text-ui text-cream-50 placeholder:text-cream-700 sm:mt-0"
+                      className="mt-1 h-10 w-full rounded-surface border border-line-strong bg-ash-850 px-2 text-ui text-cream-50 placeholder:text-cream-600 sm:mt-0"
                     />
                   </label>
                 </div>
@@ -308,7 +308,7 @@ function ProfileEditor({
         </div>
 
         {error && (
-          <p role="alert" className="text-ui font-semibold text-char-500">
+          <p role="alert" className="text-ui font-semibold text-char-400">
             {error}
           </p>
         )}
@@ -359,14 +359,14 @@ export function PricingProfileManager({
           <h3 id="menu-pricing-heading" className="display-type text-lead text-cream-100">
             Menu pricing
           </h3>
-          <p className="mt-1 text-caption leading-relaxed text-cream-700">
+          <p className="mt-1 text-caption leading-relaxed text-cream-600">
             Keep your restaurant assumptions local to this device.
           </p>
         </div>
         <button
           type="button"
           onClick={() => setCreating(true)}
-          className="inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-surface px-2 text-caption font-semibold uppercase tracking-caps text-ember-500 transition-colors duration-200 hover:bg-ash-800"
+          className="inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-surface px-2 text-caption font-semibold uppercase tracking-caps text-cream-100 transition-colors duration-200 hover:bg-ash-800"
         >
           <Plus size={14} aria-hidden="true" />
           New profile
@@ -393,7 +393,7 @@ export function PricingProfileManager({
                   type="button"
                   onClick={() => setEditingId(profile.id)}
                   aria-label={`Edit ${profile.name} pricing`}
-                  className="flex size-9 cursor-pointer items-center justify-center rounded-surface text-cream-500 transition-colors hover:bg-ash-800 hover:text-ember-400"
+                  className="flex size-9 cursor-pointer items-center justify-center rounded-surface text-cream-500 transition-colors hover:bg-ash-800 hover:text-cream-50"
                 >
                   <Pencil size={15} aria-hidden="true" />
                 </button>
@@ -404,7 +404,7 @@ export function PricingProfileManager({
                     onStatus(`${profile.name} pricing removed from this device.`);
                   }}
                   aria-label={`Delete ${profile.name} pricing`}
-                  className="flex size-9 cursor-pointer items-center justify-center rounded-surface text-cream-600 transition-colors hover:bg-char-700/25 hover:text-char-500"
+                  className="flex size-9 cursor-pointer items-center justify-center rounded-surface text-cream-600 transition-colors hover:bg-char-700/25 hover:text-char-400"
                 >
                   <Trash2 size={15} aria-hidden="true" />
                 </button>

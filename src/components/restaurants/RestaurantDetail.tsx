@@ -120,7 +120,7 @@ export function RestaurantDetail({ id }: { id: string }) {
 
   if (!hydrated || status === 'loading') {
     return (
-      <p role="status" className="py-16 text-center text-ui text-cream-700">
+      <p role="status" className="py-16 text-center text-ui text-cream-600">
         Reading the file…
       </p>
     );
@@ -130,7 +130,7 @@ export function RestaurantDetail({ id }: { id: string }) {
     return (
       <div className="panel border-dashed px-6 py-14 text-center">
         <p className="display-type text-title text-cream-300">No such place.</p>
-        <p className="mx-auto mt-3 max-w-[44ch] text-ui leading-relaxed text-cream-700">
+        <p className="mx-auto mt-3 max-w-[44ch] text-ui leading-relaxed text-cream-600">
           This restaurant is not saved on this device. Any meals you filed against it are still in
           the file, with the name and prices they were recorded under.
         </p>
@@ -186,7 +186,7 @@ export function RestaurantDetail({ id }: { id: string }) {
         </h2>
 
         {summary.visits === 0 ? (
-          <p className="max-w-[62ch] text-ui leading-relaxed text-cream-700">
+          <p className="max-w-[62ch] text-ui leading-relaxed text-cream-600">
             No visits filed here yet. Start a meal from this place and file the report, and it will
             appear with everything that follows it.
           </p>
