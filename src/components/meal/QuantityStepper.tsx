@@ -36,7 +36,7 @@ export function QuantityStepper({
 
   const buttonClass = cn(
     buttonSize,
-    'flex shrink-0 cursor-pointer items-center justify-center rounded-inner border border-line',
+    'flex shrink-0 cursor-pointer items-center justify-center rounded-inner border border-line-strong',
     'bg-ash-800 text-cream-100 elevate-control',
     'transition-[background-color,border-color,transform] duration-200 ease-out-soft',
     'hover:border-ember-600 hover:bg-ash-700 active:scale-95 active:bg-ash-800',

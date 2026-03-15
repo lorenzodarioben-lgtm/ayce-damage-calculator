@@ -24,7 +24,7 @@ export default function HistoryPage() {
           meal each time, so the file always agrees with the current model.
         </RouteHeader>
 
-        <div className="mx-auto max-w-[900px] px-4 sm:px-6">
+        <div className="mx-auto max-w-page px-4 sm:px-6">
           <div className="mt-8">
             <HistoryList />
           </div>

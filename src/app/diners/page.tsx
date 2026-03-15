@@ -26,7 +26,7 @@ export default function DinersPage() {
           a roster is not assigned to anybody — nobody said who was there.
         </RouteHeader>
 
-        <div className="mx-auto max-w-[900px] px-4 sm:px-6">
+        <div className="mx-auto max-w-page px-4 sm:px-6">
           <div className="mt-8">
             <DinerList />
           </div>

@@ -91,7 +91,7 @@ export function UncertaintyPanel({
           assumptions moved to the ends of a range this project chose and states below.
         </p>
 
-        <div className="mt-4 overflow-x-auto">
+        <div className="mt-4 scroll-x">
           <table className="w-full min-w-[420px] text-left text-ui">
             <caption className="sr-only">
               Estimated retail value, recovery and verdict under the conservative, base and upper

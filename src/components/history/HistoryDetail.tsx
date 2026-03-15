@@ -227,7 +227,7 @@ export function HistoryDetail({ id }: { id: string }) {
                 }
               }}
               placeholder="Birthday, friends, lunch…"
-              className="min-h-11 min-w-0 flex-1 rounded-surface border border-line bg-ash-900 px-3 text-ui text-cream-100 placeholder:text-cream-700"
+              className="min-h-11 min-w-0 flex-1 rounded-surface border border-line-strong bg-ash-900 px-3 text-ui text-cream-100 placeholder:text-cream-700"
             />
             <Button
               variant="secondary"

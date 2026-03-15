@@ -24,7 +24,7 @@ const VARIANTS: Record<Variant, string> = {
     'active:from-ember-500 active:to-ember-700 ' +
     'disabled:bg-ash-700 disabled:bg-none disabled:text-cream-700 disabled:shadow-none',
   secondary:
-    'bg-ash-800 text-cream-100 border border-line ' +
+    'bg-ash-800 text-cream-100 border border-line-strong ' +
     'elevate-control ' +
     'hover:border-ember-700 hover:bg-ash-700 ' +
     'disabled:text-cream-700 disabled:shadow-none',

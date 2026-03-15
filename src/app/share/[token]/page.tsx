@@ -65,7 +65,7 @@ function UnreadableToken() {
   return (
     <main
       id={MAIN_CONTENT_ID}
-      className="relative z-10 mx-auto max-w-[560px] px-4 pt-16 pb-16 sm:px-6"
+      className="relative z-10 mx-auto max-w-narrow px-4 pt-16 pb-16 sm:px-6"
     >
       <div className="panel border-dashed px-6 py-14 text-center">
         <h1 className="display-type text-figure text-cream-300">This report cannot be read.</h1>
@@ -115,7 +115,7 @@ export default async function SharePage({ params }: SharePageProps) {
       <PricingProfileProvider profile={payload.pricingProfile}>
         <main
           id={MAIN_CONTENT_ID}
-          className="relative z-10 mx-auto max-w-[900px] px-4 pt-8 pb-16 sm:px-6"
+          className="relative z-10 mx-auto max-w-page px-4 pt-8 pb-16 sm:px-6"
         >
           <p className="micro-label text-cream-500 mb-4">A shared damage report</p>
 
