@@ -232,7 +232,7 @@ export function BillAdjustments({
               maxLength={MAX_ADJUSTMENT_LABEL_LENGTH}
               placeholder={suggestions[0]}
               onChange={(event) => setLabel(event.target.value)}
-              className="h-12 w-full rounded-surface border border-line bg-ash-900 px-3 text-body text-cream-50"
+              className="h-12 w-full rounded-surface border border-line-strong bg-ash-900 px-3 text-body text-cream-50"
             />
             <datalist id={suggestionsId}>
               {suggestions.map((suggestion) => (
@@ -257,7 +257,7 @@ export function BillAdjustments({
               step="0.01"
               value={amount}
               onChange={(event) => setAmount(event.target.value)}
-              className="tabular h-12 w-full rounded-surface border border-line bg-ash-900 px-3 text-body text-cream-50"
+              className="tabular h-12 w-full rounded-surface border border-line-strong bg-ash-900 px-3 text-body text-cream-50"
             />
           </div>
         </div>
@@ -282,7 +282,7 @@ export function BillAdjustments({
               id={dinerId}
               value={scope}
               onChange={(event) => setScope(event.target.value)}
-              className="h-12 w-full rounded-surface border border-line bg-ash-900 px-3 text-body text-cream-50"
+              className="h-12 w-full rounded-surface border border-line-strong bg-ash-900 px-3 text-body text-cream-50"
             >
               <option value="">The whole table</option>
               {diners.map((diner) => (

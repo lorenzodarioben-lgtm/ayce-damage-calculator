@@ -10,7 +10,7 @@ export default function NotFound() {
 
       <main
         id={MAIN_CONTENT_ID}
-        className="relative z-10 mx-auto flex min-h-[calc(100dvh-14rem)] max-w-[560px] flex-col justify-center px-4 py-16 sm:px-6"
+        className="relative z-10 mx-auto flex min-h-[calc(100dvh-14rem)] max-w-narrow flex-col justify-center px-4 py-16 sm:px-6"
       >
         <p className="micro-label text-cream-500">404 — lost at the buffet</p>
         <h1 className="display-type mt-4 text-figure text-cream-50 sm:text-reading">

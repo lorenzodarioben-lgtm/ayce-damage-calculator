@@ -14,7 +14,7 @@ export function DinerAttribution({ diners, activeDinerId, onChange }: DinerAttri
   return (
     <div className="mb-4" role="group" aria-label="Plate attribution">
       <p className="micro-label text-cream-500 mb-2">Log plates to</p>
-      <div className="flex gap-2 overflow-x-auto pb-1">
+      <div className="flex gap-2 scroll-x pb-1">
         {[{ id: null, displayName: 'Table' }, ...diners].map((target) => {
           const active = target.id === activeDinerId;
           return (

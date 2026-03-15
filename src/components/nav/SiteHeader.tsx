@@ -137,7 +137,7 @@ export function SiteHeader({ onBrandClick, brandActionLabel }: SiteHeaderProps) 
 
   return (
     <header className="sticky top-0 z-30 border-b border-line/80 bg-ash-950/72 elevate-panel backdrop-blur-xl backdrop-saturate-150">
-      <div className="mx-auto flex h-14 max-w-[1280px] items-center justify-between gap-3 px-4 sm:px-6">
+      <div className="mx-auto flex h-14 max-w-page items-center justify-between gap-3 px-4 sm:px-6">
         {/* An explicit label rather than one derived from the child text: it keeps
             the name identical across engines, and still opens with the visible
             wordmark so speech input can target what the user actually sees. */}

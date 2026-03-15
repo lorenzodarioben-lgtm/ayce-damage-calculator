@@ -4,6 +4,7 @@ import { useCallback, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Trash2, UserPlus } from 'lucide-react';
+import { Figure } from '@/components/ui/Figure';
 import { ShareBars } from '@/components/stats/ShareBars';
 import { Button, EMPTY_STATE_LINK } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -256,15 +257,6 @@ export function DinerDetail({ id }: { id: string }) {
       />
 
       <StatusToast message={message} />
-    </div>
-  );
-}
-
-function Figure({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="well px-3 py-2">
-      <dt className="micro-label text-cream-500">{label}</dt>
-      <dd className="tabular mt-0.5 text-ui font-semibold text-cream-50">{value}</dd>
     </div>
   );
 }

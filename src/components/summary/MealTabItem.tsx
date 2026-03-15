@@ -208,7 +208,7 @@ export function MealTabItem({
                   event.target.value === '' ? undefined : Number(event.target.value),
                 )
               }
-              className="tabular h-9 w-28 rounded-surface border border-line bg-ash-950 px-2 text-right text-ui font-normal text-cream-50"
+              className="tabular h-9 w-28 rounded-surface border border-line-strong bg-ash-950 px-2 text-right text-ui font-normal text-cream-50"
             />
           </label>
           <p className="mt-1.5 text-caption leading-relaxed text-cream-700">

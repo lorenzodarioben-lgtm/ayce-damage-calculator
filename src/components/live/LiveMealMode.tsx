@@ -124,7 +124,7 @@ export function LiveMealMode() {
 
         <main
           id={MAIN_CONTENT_ID}
-          className="relative z-10 mx-auto max-w-[640px] px-4 pt-4 pb-28 sm:px-6"
+          className="relative z-10 mx-auto max-w-narrow px-4 pt-4 pb-28 sm:px-6"
         >
           {sessionConflict && (
             <div className="mb-4">

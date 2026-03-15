@@ -130,7 +130,7 @@ export function HistoryList() {
             {/* An empty file is exactly when someone arrives with a backup. */}
             <Link
               href="/history/data"
-              className="inline-flex min-h-12 items-center justify-center rounded-surface border border-line bg-ash-850 px-5 text-ui font-semibold uppercase tracking-caps text-cream-300 transition-colors duration-200 hover:bg-ash-800 hover:text-cream-50"
+              className="inline-flex min-h-12 items-center justify-center rounded-surface border border-line-strong bg-ash-850 px-5 text-ui font-semibold uppercase tracking-caps text-cream-300 transition-colors duration-200 hover:bg-ash-800 hover:text-cream-50"
             >
               Restore a backup
             </Link>
@@ -164,7 +164,7 @@ export function HistoryList() {
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Restaurant name, or anything in a note…"
               autoComplete="off"
-              className="min-h-11 w-full rounded-surface border border-line bg-ash-900 pl-9 pr-11 text-ui text-cream-100 placeholder:text-cream-700"
+              className="min-h-11 w-full rounded-surface border border-line-strong bg-ash-900 pl-9 pr-11 text-ui text-cream-100 placeholder:text-cream-700"
             />
             {query.length > 0 && (
               <button
@@ -196,7 +196,7 @@ export function HistoryList() {
               type="date"
               value={fromDate}
               onChange={(event) => setFromDate(event.target.value)}
-              className="mt-1 min-h-11 w-full rounded-surface border border-line bg-ash-900 px-3 text-cream-100"
+              className="mt-1 min-h-11 w-full rounded-surface border border-line-strong bg-ash-900 px-3 text-cream-100"
             />
           </label>
           <label className="text-ui text-cream-300">
@@ -205,7 +205,7 @@ export function HistoryList() {
               type="date"
               value={toDate}
               onChange={(event) => setToDate(event.target.value)}
-              className="mt-1 min-h-11 w-full rounded-surface border border-line bg-ash-900 px-3 text-cream-100"
+              className="mt-1 min-h-11 w-full rounded-surface border border-line-strong bg-ash-900 px-3 text-cream-100"
             />
           </label>
           <label className="text-ui text-cream-300">
@@ -213,7 +213,7 @@ export function HistoryList() {
             <select
               value={restaurant}
               onChange={(event) => setRestaurant(event.target.value)}
-              className="mt-1 min-h-11 w-full rounded-surface border border-line bg-ash-900 px-3 text-cream-100"
+              className="mt-1 min-h-11 w-full rounded-surface border border-line-strong bg-ash-900 px-3 text-cream-100"
             >
               <option value="">All restaurants</option>
               {restaurants.map((name) => (
@@ -228,7 +228,7 @@ export function HistoryList() {
             <select
               value={verdict}
               onChange={(event) => setVerdict(event.target.value)}
-              className="mt-1 min-h-11 w-full rounded-surface border border-line bg-ash-900 px-3 text-cream-100"
+              className="mt-1 min-h-11 w-full rounded-surface border border-line-strong bg-ash-900 px-3 text-cream-100"
             >
               <option value="">All outcomes</option>
               {VERDICTS.map((option) => (
@@ -243,7 +243,7 @@ export function HistoryList() {
             <select
               value={tag}
               onChange={(event) => setTag(event.target.value)}
-              className="mt-1 min-h-11 w-full rounded-surface border border-line bg-ash-900 px-3 text-cream-100"
+              className="mt-1 min-h-11 w-full rounded-surface border border-line-strong bg-ash-900 px-3 text-cream-100"
             >
               <option value="">All tags</option>
               {tags.map((value) => (
@@ -273,7 +273,7 @@ export function HistoryList() {
               setSelectionMode((current) => !current);
               setSelectedIds(new Set());
             }}
-            className="min-h-11 rounded-surface border border-line px-3 text-caption font-semibold uppercase tracking-caps text-cream-300 hover:bg-ash-800"
+            className="min-h-11 rounded-surface border border-line-strong px-3 text-caption font-semibold uppercase tracking-caps text-cream-300 hover:bg-ash-800"
           >
             {selectionMode ? 'Done selecting' : 'Select'}
           </button>
@@ -320,7 +320,7 @@ export function HistoryList() {
           )}
           <Link
             href="/history/data"
-            className="flex min-h-11 items-center rounded-surface border border-line px-3 text-caption font-semibold uppercase tracking-caps text-cream-300 transition-colors duration-200 hover:bg-ash-800 hover:text-cream-50"
+            className="flex min-h-11 items-center rounded-surface border border-line-strong px-3 text-caption font-semibold uppercase tracking-caps text-cream-300 transition-colors duration-200 hover:bg-ash-800 hover:text-cream-50"
           >
             Backup
           </Link>

@@ -121,7 +121,7 @@ export function TableRoster({
           }}
           maxLength={40}
           placeholder="Add a diner"
-          className="h-11 min-w-0 flex-1 rounded-surface border border-line bg-ash-900 px-3 text-ui text-cream-50 placeholder:text-cream-700"
+          className="h-11 min-w-0 flex-1 rounded-surface border border-line-strong bg-ash-900 px-3 text-ui text-cream-50 placeholder:text-cream-700"
         />
         <Button variant="secondary" size="md" onClick={() => addNamed(false)}>
           <UserPlus size={16} aria-hidden="true" />
@@ -177,7 +177,7 @@ export function TableRoster({
                 value={diner.displayName}
                 onChange={(event) => onRename(diner.id, event.target.value)}
                 autoComplete="off"
-                className="h-9 min-w-0 flex-1 rounded-surface border border-line bg-ash-850 px-2 text-ui text-cream-100"
+                className="h-9 min-w-0 flex-1 rounded-surface border border-line-strong bg-ash-850 px-2 text-ui text-cream-100"
               />
               <label className="sr-only" htmlFor={`diner-admission-${diner.id}`}>
                 {diner.displayName} admission price
@@ -196,7 +196,7 @@ export function TableRoster({
                   onAdmissionPriceChange(diner.id, Number.isFinite(value) ? value : undefined);
                 }}
                 placeholder="Default"
-                className="h-9 w-24 rounded-surface border border-line bg-ash-850 px-2 text-right text-ui text-cream-100 placeholder:text-cream-700"
+                className="h-9 w-24 rounded-surface border border-line-strong bg-ash-850 px-2 text-right text-ui text-cream-100 placeholder:text-cream-700"
               />
               <div className="flex shrink-0">
                 <button

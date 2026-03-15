@@ -2,6 +2,7 @@
 
 import { useCallback, useId, useMemo, useState } from 'react';
 import { Calculator, ClipboardCopy, Lock, Unlock } from 'lucide-react';
+import { Figure } from '@/components/ui/Figure';
 import { PricingProfileProvider, usePricingProfile } from '@/components/session/PricingContext';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -267,7 +268,7 @@ export function DamagePlanner() {
                 value={admissionPrice}
                 onChange={(event) => setAdmissionPrice(Number(event.target.value))}
                 onBlur={() => setAdmissionPrice((value) => clampPricePerDiner(value))}
-                className="h-12 w-full rounded-surface border border-line bg-ash-900 px-3 text-body text-cream-50"
+                className="h-12 w-full rounded-surface border border-line-strong bg-ash-900 px-3 text-body text-cream-50"
               />
               {adjustments.length > 0 && (
                 <p className="tabular mt-1.5 text-caption text-cream-700">
@@ -294,7 +295,7 @@ export function DamagePlanner() {
                 value={dinerCount}
                 onChange={(event) => setDinerCount(Number(event.target.value))}
                 onBlur={() => setDinerCount((value) => clampDinerCount(value))}
-                className="h-12 w-full rounded-surface border border-line bg-ash-900 px-3 text-body text-cream-50"
+                className="h-12 w-full rounded-surface border border-line-strong bg-ash-900 px-3 text-body text-cream-50"
               />
             </div>
 
@@ -309,7 +310,7 @@ export function DamagePlanner() {
                 id={profileFieldId}
                 value={profile.id}
                 onChange={(event) => setProfileId(event.target.value)}
-                className="h-12 w-full rounded-surface border border-line bg-ash-900 px-3 text-body text-cream-50"
+                className="h-12 w-full rounded-surface border border-line-strong bg-ash-900 px-3 text-body text-cream-50"
               >
                 {pricingProfiles.profiles.map((entry) => (
                   <option key={entry.id} value={entry.id}>
@@ -493,7 +494,7 @@ export function DamagePlanner() {
                                   ),
                                 )
                               }
-                              className="h-9 w-16 rounded-surface border border-line bg-ash-900 px-2 text-ui text-cream-50"
+                              className="h-9 w-16 rounded-surface border border-line-strong bg-ash-900 px-2 text-ui text-cream-50"
                             />
                             plates
                           </label>
@@ -641,14 +642,5 @@ function PlanOutcome({
         </Button>
       </div>
     </section>
-  );
-}
-
-function Figure({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="well px-3 py-2">
-      <dt className="micro-label text-cream-500">{label}</dt>
-      <dd className="tabular mt-0.5 text-ui font-semibold text-cream-50">{value}</dd>
-    </div>
   );
 }

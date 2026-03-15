@@ -63,10 +63,10 @@
    * The values are raised in the surface phase, not here; `strong` is defined
    * now so components can start asking for it.
    */
-  --color-line: #2a241d;
-  --color-line-soft: #221d17;
+  --color-line: #63564b;
+  --color-line-soft: #4a4038;
   --color-line-strong: #726558;
-  --color-line-ember: #5c452a;
+  --color-line-ember: #7d5930;
 
   /* Bound to the checked-in faces in `src/app/fonts`. Each `--font-*` variable
      is defined by `next/font/local`, which also supplies the fallback stack, so
@@ -89,6 +89,16 @@
    * `rounded-full` survives for circular geometry only — the meter track, the
    * illustration discs, the stepper thumb — and not for badges or chips.
    */
+  /*
+   * Two page measures, where there were six — 1280, 900, 720, 640, 560 and a
+   * `max-w-md`. The header and footer sat at 1280 while every section route sat
+   * at 900, so on six of eight routes the brand mark stood a hundred and ninety
+   * pixels left of the content it heads. The report inherited the difference
+   * too: 1280 on the calculator and 900 from the same component everywhere else.
+   */
+  --container-page: 1100px;
+  --container-narrow: 640px;
+
   --radius-surface: 10px;
   --radius-inner: 6px;
 
@@ -632,7 +642,7 @@ input[type='number']::-webkit-inner-spin-button {
  */
 @utility segmented-track {
   background-color: var(--color-ash-950);
-  border: 1px solid var(--color-line);
+  border: 1px solid var(--color-line-strong);
   border-radius: var(--radius-surface);
   box-shadow: inset 0 1px 3px rgb(0 0 0 / 0.45);
 }
@@ -647,6 +657,19 @@ input[type='number']::-webkit-inner-spin-button {
 }
 
 /* Faint grill bars used behind hero and report headers. */
+/*
+ * A container that scrolls sideways, and shows it.
+ *
+ * Three tables and the share card overflowed on a phone with no affordance at
+ * all — no fade, no shadow, nothing to say the row continued. The mask fades
+ * the trailing edge only while there is something past it to reach.
+ */
+@utility scroll-x {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  mask-image: linear-gradient(to right, #000 calc(100% - 2.5rem), transparent 100%);
+}
+
 @utility grill-texture {
   background-image: repeating-linear-gradient(
     to bottom,

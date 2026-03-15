@@ -26,7 +26,7 @@ export default function GlobalError({ error: _error, retry }: GlobalErrorProps) 
     <html lang="en-AU">
       <body>
         <title>Service interrupted — AYCE Damage Calculator</title>
-        <main className="relative z-10 mx-auto flex min-h-dvh max-w-[560px] flex-col justify-center px-4 py-16 sm:px-6">
+        <main className="relative z-10 mx-auto flex min-h-dvh max-w-narrow flex-col justify-center px-4 py-16 sm:px-6">
           <p className="micro-label text-cream-500">Service interrupted</p>
           <h1 className="display-type mt-4 text-figure text-cream-50 sm:text-reading">
             The grill went cold.
