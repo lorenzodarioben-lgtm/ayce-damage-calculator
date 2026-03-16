@@ -106,7 +106,10 @@ export function ComparisonReport({
         </p>
       </section>
 
-      <section aria-labelledby="metric-shift-heading" className="panel p-4 sm:p-5">
+      <section
+        aria-labelledby="metric-shift-heading"
+        className="border-t border-line pt-5 first:border-t-0 first:pt-0"
+      >
         <h3 id="metric-shift-heading" className="display-type text-lead text-cream-100 mb-1">
           Line by line
         </h3>
@@ -123,7 +126,10 @@ export function ComparisonReport({
         )}
       </section>
 
-      <section aria-labelledby="category-shift-heading" className="panel p-4 sm:p-5">
+      <section
+        aria-labelledby="category-shift-heading"
+        className="border-t border-line pt-5 first:border-t-0 first:pt-0"
+      >
         <h3 id="category-shift-heading" className="display-type text-lead text-cream-100 mb-3">
           Category mix, in plates
         </h3>
@@ -155,7 +161,10 @@ export function ComparisonReport({
         </div>
       </section>
 
-      <section aria-labelledby="achievement-shift-heading" className="panel p-4 sm:p-5">
+      <section
+        aria-labelledby="achievement-shift-heading"
+        className="border-t border-line pt-5 first:border-t-0 first:pt-0"
+      >
         <h3 id="achievement-shift-heading" className="display-type text-lead text-cream-100 mb-3">
           Commendations
         </h3>

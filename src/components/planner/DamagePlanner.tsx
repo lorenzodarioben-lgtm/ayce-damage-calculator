@@ -245,7 +245,10 @@ export function DamagePlanner() {
   return (
     <PricingProfileProvider profile={profile}>
       <div className="space-y-6">
-        <section aria-labelledby="plan-setup-heading" className="panel p-4 sm:p-5">
+        <section
+          aria-labelledby="plan-setup-heading"
+          className="border-t border-line pt-5 first:border-t-0 first:pt-0"
+        >
           <h2 id="plan-setup-heading" className="display-type text-title text-cream-100 mb-4">
             The assumptions
           </h2>
@@ -347,7 +350,10 @@ export function DamagePlanner() {
           </p>
         </section>
 
-        <section aria-labelledby="plan-strategy-heading" className="panel p-4 sm:p-5">
+        <section
+          aria-labelledby="plan-strategy-heading"
+          className="border-t border-line pt-5 first:border-t-0 first:pt-0"
+        >
           <h2 id="plan-strategy-heading" className="display-type text-title text-cream-100 mb-3">
             The strategy
           </h2>
@@ -396,7 +402,10 @@ export function DamagePlanner() {
           </div>
         </section>
 
-        <section aria-labelledby="plan-menu-heading" className="panel p-4 sm:p-5">
+        <section
+          aria-labelledby="plan-menu-heading"
+          className="border-t border-line pt-5 first:border-t-0 first:pt-0"
+        >
           <h2 id="plan-menu-heading" className="display-type text-title text-cream-100 mb-3">
             The menu it may use
           </h2>
@@ -565,7 +574,10 @@ function PlanOutcome({
   }
 
   return (
-    <section aria-labelledby="plan-result-heading" className="panel p-4 sm:p-5">
+    <section
+      aria-labelledby="plan-result-heading"
+      className="border-t border-line pt-5 first:border-t-0 first:pt-0"
+    >
       <h2 id="plan-result-heading" className="display-type text-title text-cream-100 mb-3">
         The proposed configuration
       </h2>

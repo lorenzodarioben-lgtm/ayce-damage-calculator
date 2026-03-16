@@ -43,7 +43,7 @@ export function BrandMark({ className }: BrandMarkProps) {
           <line x1="6" y1="17" x2="18" y2="17" opacity="0.4" />
         </g>
       </svg>
-      <span className="display-type text-lead leading-none tracking-display text-cream-50">
+      <span className="display-type whitespace-nowrap text-lead leading-none tracking-display text-cream-50">
         AYCE <span className="text-ember-500">{'//'}</span> Damage
       </span>
     </span>

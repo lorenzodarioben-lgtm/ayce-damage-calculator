@@ -149,7 +149,10 @@ export function RestaurantDetail({ id }: { id: string }) {
         Back to the places
       </Link>
 
-      <section aria-labelledby="restaurant-heading" className="panel p-4 sm:p-5">
+      <section
+        aria-labelledby="restaurant-heading"
+        className="border-t border-line pt-5 first:border-t-0 first:pt-0"
+      >
         <h1
           id="restaurant-heading"
           className="display-type text-figure text-cream-50 sm:text-figure"
@@ -178,7 +181,10 @@ export function RestaurantDetail({ id }: { id: string }) {
         </div>
       </section>
 
-      <section aria-labelledby="restaurant-visits-heading" className="panel p-4 sm:p-5">
+      <section
+        aria-labelledby="restaurant-visits-heading"
+        className="border-t border-line pt-5 first:border-t-0 first:pt-0"
+      >
         <h2 id="restaurant-visits-heading" className="display-type text-title text-cream-100 mb-3">
           The record
         </h2>

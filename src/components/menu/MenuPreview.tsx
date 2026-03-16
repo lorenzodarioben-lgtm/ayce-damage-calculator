@@ -72,7 +72,10 @@ export function MenuPreview({ payload }: { payload: MenuSharePayload }) {
 
   return (
     <div className="space-y-6">
-      <section aria-labelledby="shared-menu-heading" className="panel p-4 sm:p-5">
+      <section
+        aria-labelledby="shared-menu-heading"
+        className="border-t border-line pt-5 first:border-t-0 first:pt-0"
+      >
         <p className="micro-label text-cream-500 mb-2">A shared personal menu</p>
         <h1
           id="shared-menu-heading"
@@ -92,7 +95,10 @@ export function MenuPreview({ payload }: { payload: MenuSharePayload }) {
       </section>
 
       {payload.restaurant && (
-        <section aria-labelledby="shared-restaurant-heading" className="panel p-4 sm:p-5">
+        <section
+          aria-labelledby="shared-restaurant-heading"
+          className="border-t border-line pt-5 first:border-t-0 first:pt-0"
+        >
           <h2
             id="shared-restaurant-heading"
             className="display-type text-title text-cream-100 mb-2"
@@ -157,7 +163,10 @@ export function MenuPreview({ payload }: { payload: MenuSharePayload }) {
       )}
 
       {payload.customFoods.length > 0 && (
-        <section aria-labelledby="shared-foods-heading" className="panel p-4 sm:p-5">
+        <section
+          aria-labelledby="shared-foods-heading"
+          className="border-t border-line pt-5 first:border-t-0 first:pt-0"
+        >
           <h2 id="shared-foods-heading" className="display-type text-title text-cream-100 mb-3">
             Custom foods
           </h2>
@@ -202,7 +211,10 @@ export function MenuPreview({ payload }: { payload: MenuSharePayload }) {
         </section>
       )}
 
-      <section aria-labelledby="shared-import-heading" className="panel p-4 sm:p-5">
+      <section
+        aria-labelledby="shared-import-heading"
+        className="border-t border-line pt-5 first:border-t-0 first:pt-0"
+      >
         <h2 id="shared-import-heading" className="display-type text-title text-cream-100 mb-2">
           Save it to this device
         </h2>
