@@ -22,18 +22,18 @@ const VARIANTS: Record<Variant, string> = {
     'elevate-primary ' +
     'hover:from-ember-300 hover:to-ember-500 ' +
     'active:from-ember-500 active:to-ember-700 ' +
-    'disabled:bg-ash-700 disabled:bg-none disabled:text-cream-700 disabled:shadow-none',
+    'disabled:bg-ash-800 disabled:bg-none disabled:text-cream-500 disabled:shadow-none',
   secondary:
     'bg-ash-800 text-cream-100 border border-line-strong ' +
     'elevate-control ' +
-    'hover:border-ember-700 hover:bg-ash-700 ' +
-    'disabled:text-cream-700 disabled:shadow-none',
+    'hover:border-line-strong hover:bg-ash-700 ' +
+    'disabled:text-cream-500 disabled:shadow-none',
   ghost:
     'bg-transparent text-cream-300 border border-transparent hover:text-cream-100 ' +
-    'hover:bg-ash-800 disabled:text-cream-700',
+    'hover:bg-ash-800 disabled:text-cream-500',
   danger:
-    'bg-transparent text-char-500 border border-char-700 hover:border-char-600 ' +
-    'hover:bg-char-700/30 hover:text-cream-100 disabled:text-cream-700',
+    'bg-transparent text-char-400 border border-char-700 hover:border-char-600 ' +
+    'hover:bg-char-700/30 hover:text-cream-100 disabled:text-cream-500',
 };
 
 const SIZES: Record<Size, string> = {
@@ -49,10 +49,10 @@ const SIZES: Record<Size, string> = {
  */
 export const EMPTY_STATE_LINK =
   'mt-6 inline-flex min-h-12 items-center justify-center rounded-surface border border-line-ember ' +
-  'bg-ash-850 px-5 text-ui font-semibold uppercase tracking-caps text-ember-300 ' +
+  'bg-ash-850 px-5 text-ui font-semibold uppercase tracking-caps text-cream-100 ' +
   'elevate-control ' +
   'transition-[background-color,border-color,transform] duration-200 ' +
-  'hover:-translate-y-px hover:border-ember-600 hover:bg-ash-800';
+  'hover:-translate-y-px hover:border-line-strong hover:bg-ash-800';
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant;
@@ -76,7 +76,7 @@ export function Button({
       className={cn(
         'inline-flex cursor-pointer items-center justify-center gap-2 rounded-surface font-semibold uppercase',
         'transition-[background-color,border-color,color,transform,box-shadow] duration-200 ease-out-soft',
-        'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember-400 active:scale-[0.985] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-70',
+        'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember-400 active:scale-[0.985] disabled:pointer-events-none disabled:cursor-not-allowed',
         VARIANTS[variant],
         SIZES[size],
         fullWidth && 'w-full',

@@ -144,7 +144,7 @@ export function MenuPreview({ payload }: { payload: MenuSharePayload }) {
                     <th scope="row" className="py-2 pr-3 text-left font-semibold text-cream-50">
                       {known?.name ?? shared?.name ?? foodId}
                     </th>
-                    <td className="tabular py-2 pr-3 text-ember-400">
+                    <td className="tabular py-2 pr-3 text-cream-100">
                       {formatUnitPrice(pricing, payload.pricingProfile.money)}
                     </td>
                     <td className="tabular py-2">
@@ -182,7 +182,7 @@ export function MenuPreview({ payload }: { payload: MenuSharePayload }) {
                       : `${food.caloriesPer100g} kcal / 100 g`}
                   </span>
                 </span>
-                <span className="tabular shrink-0 text-ui font-bold text-ember-400">
+                <span className="tabular shrink-0 text-ui font-bold text-cream-100">
                   {formatUnitPrice(
                     food.valuation === 'by-serving'
                       ? {
@@ -264,7 +264,7 @@ export function MenuPreview({ payload }: { payload: MenuSharePayload }) {
               <Download size={18} aria-hidden="true" />
               Import this menu
             </Button>
-            <p className="mt-3 text-center text-caption text-cream-700">
+            <p className="mt-3 text-center text-caption text-cream-600">
               Until you press that, this page has changed nothing on your device.
             </p>
           </>

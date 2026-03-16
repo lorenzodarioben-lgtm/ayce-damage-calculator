@@ -42,7 +42,7 @@ export function DamageMeter({
         <span className="micro-label text-cream-500">Retail damage</span>
         <span className="tabular text-ui font-semibold text-cream-300">
           {formatMoney(retailValue, pricingProfile.money)}{' '}
-          <span className="text-cream-700">
+          <span className="text-cream-600">
             / {formatMoney(totalAdmission, pricingProfile.money)}
           </span>
         </span>
@@ -133,7 +133,7 @@ export function DamageMeter({
       </div>
 
       {beaten && !compact && (
-        <p className="mt-1.5 text-caption leading-snug text-cream-700">
+        <p className="mt-1.5 text-caption leading-snug text-cream-600">
           *By estimated supermarket retail value, not restaurant profitability.
         </p>
       )}

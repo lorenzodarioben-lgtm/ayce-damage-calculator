@@ -108,7 +108,7 @@ export function HistoryList() {
 
   if (status === 'loading') {
     return (
-      <p role="status" className="py-16 text-center text-ui text-cream-700">
+      <p role="status" className="py-16 text-center text-ui text-cream-600">
         Retrieving the file…
       </p>
     );
@@ -123,7 +123,7 @@ export function HistoryList() {
           <div className="mt-6 flex flex-wrap justify-center gap-2">
             <Link
               href="/"
-              className="inline-flex min-h-12 items-center justify-center rounded-surface border border-line-ember bg-ash-850 px-5 text-ui font-semibold uppercase tracking-caps text-ember-400 transition-colors duration-200 hover:bg-ash-800"
+              className="inline-flex min-h-12 items-center justify-center rounded-surface border border-line-ember bg-ash-850 px-5 text-ui font-semibold uppercase tracking-caps text-cream-100 transition-colors duration-200 hover:bg-ash-800"
             >
               Start a session
             </Link>
@@ -155,7 +155,7 @@ export function HistoryList() {
             <Search
               size={16}
               aria-hidden="true"
-              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-cream-700"
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-cream-600"
             />
             <input
               id={searchId}
@@ -164,7 +164,7 @@ export function HistoryList() {
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Restaurant name, or anything in a note…"
               autoComplete="off"
-              className="min-h-11 w-full rounded-surface border border-line-strong bg-ash-900 pl-9 pr-11 text-ui text-cream-100 placeholder:text-cream-700"
+              className="min-h-11 w-full rounded-surface border border-line-strong bg-ash-900 pl-9 pr-11 text-ui text-cream-100 placeholder:text-cream-600"
             />
             {query.length > 0 && (
               <button
@@ -177,7 +177,7 @@ export function HistoryList() {
               </button>
             )}
           </div>
-          <p role="status" className="tabular mt-1.5 min-h-4 text-caption text-cream-700">
+          <p role="status" className="tabular mt-1.5 min-h-4 text-caption text-cream-600">
             {query.trim().length === 0 && !hasFilters
               ? ''
               : `${ordered.length} of ${records.length} sessions match`}
@@ -258,7 +258,7 @@ export function HistoryList() {
           <button
             type="button"
             onClick={clearFilters}
-            className="mt-4 text-ui font-semibold text-ember-400 hover:text-ember-300"
+            className="mt-4 text-ui font-semibold text-cream-100 hover:text-cream-50"
           >
             Clear all filters
           </button>
@@ -313,7 +313,7 @@ export function HistoryList() {
           {records.length >= 2 && (
             <Link
               href="/history/compare"
-              className="flex min-h-11 items-center rounded-surface border border-line-ember px-3 text-caption font-semibold uppercase tracking-caps text-ember-400 transition-colors duration-200 hover:bg-ash-800"
+              className="flex min-h-11 items-center rounded-surface border border-line-ember px-3 text-caption font-semibold uppercase tracking-caps text-cream-100 transition-colors duration-200 hover:bg-ash-800"
             >
               Compare
             </Link>
@@ -327,7 +327,7 @@ export function HistoryList() {
           <button
             type="button"
             onClick={() => setPending({ kind: 'all' })}
-            className="min-h-11 cursor-pointer rounded-surface border border-char-700 px-3 text-caption font-semibold uppercase tracking-caps text-char-500 transition-colors duration-200 hover:bg-char-700/25 hover:text-cream-100"
+            className="min-h-11 cursor-pointer rounded-surface border border-char-700 px-3 text-caption font-semibold uppercase tracking-caps text-char-400 transition-colors duration-200 hover:bg-char-700/25 hover:text-cream-100"
           >
             Clear history
           </button>
@@ -335,7 +335,7 @@ export function HistoryList() {
       </div>
 
       {ordered.length === 0 ? (
-        <p className="panel border-dashed px-6 py-12 text-center text-ui text-cream-700">
+        <p className="panel border-dashed px-6 py-12 text-center text-ui text-cream-600">
           No session on file matches that. The records are still there — only the current filters
           are narrowing them.
         </p>
@@ -351,7 +351,7 @@ export function HistoryList() {
               <button
                 type="button"
                 onClick={() => setSelectedIds(new Set(ordered.map(({ record }) => record.id)))}
-                className="text-ui font-semibold text-ember-400"
+                className="text-ui font-semibold text-cream-100"
               >
                 Select filtered
               </button>
@@ -365,7 +365,7 @@ export function HistoryList() {
               {selectedRecords.length === 2 && (
                 <Link
                   href={`/history/compare?left=${selectedRecords[0]?.record.id}&right=${selectedRecords[1]?.record.id}`}
-                  className="text-ui font-semibold text-ember-400"
+                  className="text-ui font-semibold text-cream-100"
                 >
                   Compare selected
                 </Link>
@@ -374,7 +374,7 @@ export function HistoryList() {
                 <button
                   type="button"
                   onClick={() => downloadSubset(selectedRecords.map(({ record }) => record))}
-                  className="text-ui font-semibold text-ember-400"
+                  className="text-ui font-semibold text-cream-100"
                 >
                   Export selected
                 </button>
@@ -383,7 +383,7 @@ export function HistoryList() {
                 <button
                   type="button"
                   onClick={() => setPending({ kind: 'all' })}
-                  className="text-ui font-semibold text-char-500"
+                  className="text-ui font-semibold text-char-400"
                 >
                   Delete selected
                 </button>

@@ -7,12 +7,12 @@ import type { MetricComparison, SessionComparison } from '@/lib/comparison';
 /** Amber for a neutral move, green or red only where "better" is meaningful. */
 function deltaTone(metric: MetricComparison): string {
   if (metric.delta === null || metric.delta === 0) {
-    return 'text-cream-700';
+    return 'text-cream-600';
   }
   if (metric.bias === 'neutral') {
     return 'text-cream-300';
   }
-  return metric.delta > 0 ? 'text-sesame-400' : 'text-char-500';
+  return metric.delta > 0 ? 'text-sesame-400' : 'text-char-400';
 }
 
 function MetricRow({ metric }: { metric: MetricComparison }) {
@@ -22,7 +22,7 @@ function MetricRow({ metric }: { metric: MetricComparison }) {
 
       <p className="tabular text-ui text-cream-500">
         {formatMetricValue(metric.previous, metric.unit, metric.previousMoney)}
-        <span aria-hidden="true" className="px-2 text-cream-700">
+        <span aria-hidden="true" className="px-2 text-cream-600">
           →
         </span>
         <span className="font-bold text-cream-50">
@@ -35,7 +35,7 @@ function MetricRow({ metric }: { metric: MetricComparison }) {
           <>
             {formatDelta(metric.delta, metric.unit, metric.currentMoney)}
             {metric.relativeChange !== null && metric.relativeChange !== 0 && (
-              <span className="ml-1 text-caption font-normal text-cream-700">
+              <span className="ml-1 text-caption font-normal text-cream-600">
                 ({formatPercent(metric.relativeChange)})
               </span>
             )}
@@ -78,7 +78,7 @@ export function ComparisonReport({
         <div className="grid gap-px bg-line sm:grid-cols-2">
           <div className="bg-ash-850 px-5 py-6 text-center">
             <p className="micro-label text-cream-500">{previousLabel}</p>
-            <p className="mt-1 text-caption text-cream-700">
+            <p className="mt-1 text-caption text-cream-600">
               {formatRecordedAt(comparison.previous.record.createdAt)}
             </p>
             <p className="tabular display-type mt-2 text-figure text-cream-100">
@@ -90,13 +90,13 @@ export function ComparisonReport({
           </div>
           <div className="bg-ash-850 px-5 py-6 text-center">
             <p className="micro-label text-cream-500">{currentLabel}</p>
-            <p className="mt-1 text-caption text-cream-700">
+            <p className="mt-1 text-caption text-cream-600">
               {formatRecordedAt(comparison.current.record.createdAt)}
             </p>
-            <p className="tabular display-type mt-2 text-figure text-ember-300">
+            <p className="tabular display-type mt-2 text-figure text-cream-100">
               {formatPercent(comparison.current.report.retailRecoveryPercent)}
             </p>
-            <p className="display-type mt-2 text-title text-ember-400">
+            <p className="display-type mt-2 text-title text-cream-100">
               {comparison.current.verdict.title}
             </p>
           </div>
@@ -116,7 +116,7 @@ export function ComparisonReport({
           ))}
         </div>
         {comparison.metrics.some((metric) => !metric.comparable) && (
-          <p className="mt-3 text-caption leading-relaxed text-cream-700">
+          <p className="mt-3 text-caption leading-relaxed text-cream-600">
             Money figures are shown in the currency recorded for each visit. No currency delta is
             claimed without an exchange-rate assumption.
           </p>
@@ -133,7 +133,7 @@ export function ComparisonReport({
               <p className="micro-label text-cream-500">{category.label}</p>
               <p className="tabular mt-1 text-ui text-cream-500">
                 {category.previousPlates}
-                <span aria-hidden="true" className="px-1.5 text-cream-700">
+                <span aria-hidden="true" className="px-1.5 text-cream-600">
                   →
                 </span>
                 <span className="font-bold text-cream-50">{category.currentPlates}</span>
@@ -142,10 +142,10 @@ export function ComparisonReport({
                 className={cn(
                   'tabular mt-0.5 text-caption font-semibold',
                   category.delta === 0
-                    ? 'text-cream-700'
+                    ? 'text-cream-600'
                     : category.delta > 0
                       ? 'text-sesame-400'
-                      : 'text-char-500',
+                      : 'text-char-400',
                 )}
               >
                 {formatDelta(category.delta, 'count')}
@@ -161,7 +161,7 @@ export function ComparisonReport({
         </h3>
         {comparison.achievements.previous.length === 0 &&
         comparison.achievements.current.length === 0 ? (
-          <p className="text-ui text-cream-700">Neither side earned one.</p>
+          <p className="text-ui text-cream-600">Neither side earned one.</p>
         ) : (
           <dl className="space-y-3">
             <AchievementGroup label="Newly earned" achievements={comparison.achievements.gained} />

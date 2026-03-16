@@ -136,7 +136,7 @@ export function BillAdjustments({
             <Receipt size={17} aria-hidden="true" />
             Charges and discounts
           </h3>
-          <p className="mt-1 max-w-[62ch] text-caption leading-relaxed text-cream-700">
+          <p className="mt-1 max-w-[62ch] text-caption leading-relaxed text-cream-600">
             Optional. A voucher, a weekend surcharge, a card fee, a drink charged separately —
             anything the bill picked up beyond the entry price. Leave it empty and nothing changes.
           </p>
@@ -263,7 +263,7 @@ export function BillAdjustments({
         </div>
 
         {isPercent && (
-          <p className="mt-2 max-w-[62ch] text-caption leading-relaxed text-cream-700">
+          <p className="mt-2 max-w-[62ch] text-caption leading-relaxed text-cream-600">
             Worked out against the entry price plus any fixed charges already on the bill, and
             recalculated whenever those change. Percentages never compound: each one is a share of a
             base that contains no percentage, so the order you add them in cannot change the total.
@@ -299,7 +299,7 @@ export function BillAdjustments({
           Add to the bill
         </Button>
         {full && (
-          <p className="mt-2 text-caption text-cream-700">
+          <p className="mt-2 text-caption text-cream-600">
             That is {MAX_BILL_ADJUSTMENTS} adjustments, which is as many as a bill can carry here.
           </p>
         )}
@@ -316,7 +316,7 @@ export function BillAdjustments({
               >
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-ui text-cream-100">{adjustment.label}</p>
-                  <p className="text-caption text-cream-700">
+                  <p className="text-caption text-cream-600">
                     {adjustment.kind === 'charge' ? 'Added to' : 'Taken off'} ·{' '}
                     {owner ? owner.displayName : 'The whole table'}
                     {adjustment.basis === 'percent'
@@ -331,7 +331,7 @@ export function BillAdjustments({
                 <p
                   className={[
                     'tabular shrink-0 text-ui font-semibold',
-                    adjustment.kind === 'charge' ? 'text-cream-50' : 'text-ember-400',
+                    adjustment.kind === 'charge' ? 'text-cream-50' : 'text-cream-100',
                   ].join(' ')}
                 >
                   {adjustment.kind === 'charge' ? '+' : '−'}
@@ -351,7 +351,7 @@ export function BillAdjustments({
                     onRemove(adjustment.id);
                     onStatus(`${adjustment.label} was taken off the bill.`);
                   }}
-                  className="inline-flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-surface text-cream-500 transition-colors duration-200 hover:bg-ash-800 hover:text-char-500"
+                  className="inline-flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-surface text-cream-500 transition-colors duration-200 hover:bg-ash-800 hover:text-char-400"
                 >
                   <Trash2 size={15} aria-hidden="true" />
                 </button>
@@ -380,7 +380,7 @@ export function BillAdjustments({
           )}
           <Row label="Paid in total" value={formatMoney(totalPaid, pricingProfile.money)} />
           {totalPaid === 0 && (
-            <p className="pt-1 text-caption leading-relaxed text-cream-700">
+            <p className="pt-1 text-caption leading-relaxed text-cream-600">
               The discounts cover the whole bill. Nothing was paid, so there is no recovery
               percentage to report — every plate is upside.
             </p>
@@ -409,7 +409,7 @@ function Row({ label, value, muted = false }: { label: string; value: string; mu
   return (
     <div className="flex items-baseline justify-between gap-3">
       <dt
-        className={muted ? 'text-caption text-cream-700' : 'text-ui font-semibold text-cream-200'}
+        className={muted ? 'text-caption text-cream-600' : 'text-ui font-semibold text-cream-200'}
       >
         {label}
       </dt>
@@ -417,7 +417,7 @@ function Row({ label, value, muted = false }: { label: string; value: string; mu
         className={
           muted
             ? 'tabular text-caption text-cream-500'
-            : 'tabular text-ui font-semibold text-ember-400'
+            : 'tabular text-ui font-semibold text-cream-100'
         }
       >
         {value}
