@@ -98,27 +98,35 @@ export function DamageReport({ report, session, onEditMeal, onStatus }: DamageRe
         <h3 id="share-heading" className="display-type text-lead text-cream-100 mb-4">
           Share the damage
         </h3>
-        <div className="flex justify-center overflow-x-auto pb-1">
-          <ResultCard model={cardModel} />
-        </div>
-        <div className="mt-4 space-y-2">
-          <ShareActions
-            report={report}
-            verdict={verdict}
-            session={session}
-            cardModel={cardModel}
-            onStatus={onStatus}
-          />
-          <SaveToHistory session={session} report={report} verdict={verdict} />
+        {/*
+         * The card is a fixed 420px object, and centring it in a full-width
+         * panel left three hundred pixels of nothing on either side of the most
+         * shareable thing the app makes. On a phone it fills the column; on a
+         * wide screen the actions move alongside it instead of underneath.
+         */}
+        <div className="grid gap-4 lg:grid-cols-[420px_minmax(0,1fr)] lg:items-start">
+          <div className="mx-auto w-full max-w-[420px] lg:mx-0">
+            <ResultCard model={cardModel} />
+          </div>
+          <div className="space-y-2">
+            <SaveToHistory session={session} report={report} verdict={verdict} />
+            <ShareActions
+              report={report}
+              verdict={verdict}
+              session={session}
+              cardModel={cardModel}
+              onStatus={onStatus}
+            />
+          </div>
         </div>
       </section>
 
       <div className="grid gap-2 sm:grid-cols-2">
-        <Button variant="secondary" size="lg" fullWidth onClick={onEditMeal}>
+        <Button variant="ghost" size="lg" fullWidth onClick={onEditMeal}>
           <PencilLine size={18} aria-hidden="true" />
           Edit meal
         </Button>
-        <Button variant="secondary" size="lg" fullWidth onClick={() => window.print()}>
+        <Button variant="ghost" size="lg" fullWidth onClick={() => window.print()}>
           <Printer size={18} aria-hidden="true" />
           Print damage receipt
         </Button>
