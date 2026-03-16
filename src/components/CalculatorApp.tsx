@@ -170,7 +170,7 @@ export function CalculatorApp() {
         />
 
         <main id={MAIN_CONTENT_ID} className="relative z-10">
-          {stage === 'builder' && <Hero />}
+          {stage === 'builder' && <Hero compact={report.lines.length > 0} />}
 
           <div className="mx-auto max-w-page px-4 pb-32 pt-6 sm:px-6 lg:pb-16">
             {sessionConflict && (
@@ -206,6 +206,22 @@ export function CalculatorApp() {
                     onUndo={undo}
                     onRedo={redo}
                   />
+                  {/*
+                   * The builder comes first.
+                   *
+                   * Configuration used to be twelve stacked sections above it, five of
+                   * them empty states for features nobody had used yet, so the first
+                   * plate was thousands of pixels down a phone. The product's own
+                   * principle is that configuration is an enhancement rather than a
+                   * prerequisite, and the entry price already has a sensible default.
+                   */}
+                  <MealBuilder
+                    onAdd={handleAdd}
+                    customFoods={customFoods.foods}
+                    diners={session.diners ?? []}
+                    activeDinerId={selectedDinerId}
+                    onActiveDinerChange={setActiveDinerId}
+                  />
                   <SessionSetup
                     session={session}
                     baseAdmission={report.baseAdmission}
@@ -234,13 +250,6 @@ export function CalculatorApp() {
                     onRemoveAdjustment={removeAdjustment}
                     onClearAdjustments={clearAdjustments}
                     onStatus={announce}
-                  />
-                  <MealBuilder
-                    onAdd={handleAdd}
-                    customFoods={customFoods.foods}
-                    diners={session.diners ?? []}
-                    activeDinerId={selectedDinerId}
-                    onActiveDinerChange={setActiveDinerId}
                   />
                 </div>
 

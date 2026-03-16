@@ -70,7 +70,7 @@ export function CategoryTabs({ value, onChange, panelId, foods }: CategoryTabsPr
       aria-label="Food category"
       aria-orientation="horizontal"
       onKeyDown={handleKeyDown}
-      className="segmented-track grid grid-cols-4 gap-1 p-1"
+      className="segmented-track flex gap-1 overflow-x-auto p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
       {categories.map((category) => {
         const selected = category.id === value;
@@ -85,7 +85,7 @@ export function CategoryTabs({ value, onChange, panelId, foods }: CategoryTabsPr
             tabIndex={selected ? 0 : -1}
             onClick={() => onChange(category.id)}
             className={cn(
-              'relative min-h-11 cursor-pointer rounded-inner px-1 text-ui font-semibold uppercase',
+              'relative min-h-11 flex-1 shrink-0 cursor-pointer whitespace-nowrap rounded-inner px-3 text-ui font-semibold uppercase',
               'tracking-caps transition-[background-color,color,box-shadow] duration-160 ease-out-soft',
               'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember-400 sm:text-ui',
               selected ? 'segmented-thumb' : 'text-cream-500 hover:bg-ash-800 hover:text-cream-100',
