@@ -1,8 +1,8 @@
 'use client';
 
+import { Receipt } from 'lucide-react';
+import { DamageMeter } from '@/components/summary/DamageMeter';
 import { Button } from '@/components/ui/Button';
-import { formatMoney, formatPercent, formatPlates } from '@/lib/formatting';
-import { usePricingProfile } from '@/components/session/PricingContext';
 import type { DamageReport } from '@/types/meal';
 
 interface StickySummaryBarProps {
@@ -10,46 +10,43 @@ interface StickySummaryBarProps {
   onCalculate: () => void;
 }
 
-/** Mobile-only condensed tab. Hidden entirely until the meal has content. */
+/**
+ * The reading, where it is actually read.
+ *
+ * This used to be a four-pixel unlabelled progress bar with a total beside it,
+ * which is what the product's own answer had been reduced to on the only device
+ * anybody uses it on. It is the reading now — label, value pair, calibrated
+ * track, break-even datum and the figure itself — pinned to the bottom edge
+ * where a thumb can reach it and an eye can find it across a table.
+ *
+ * Below `lg` only. On a wide screen the same reading sits at the top of the
+ * rail, where there is room for it to stay in view without covering anything.
+ */
 export function StickySummaryBar({ report, onCalculate }: StickySummaryBarProps) {
-  const pricingProfile = usePricingProfile();
   if (report.lines.length === 0) {
     return null;
   }
 
-  const fill = Math.min(100, Math.max(0, report.retailRecoveryPercent));
-
   return (
-    <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line-ember/70 bg-ash-900/88 shadow-[0_-14px_36px_-18px_#000] backdrop-blur-xl backdrop-saturate-150 lg:hidden">
-      <div aria-hidden="true" className="h-1 bg-ash-950">
-        <div
-          className={
-            report.hasBeatenBuffet
-              ? 'h-full bg-linear-to-r from-sesame-600 to-sesame-400 shadow-[0_0_10px_0_var(--color-sesame-500)] transition-[width] duration-350 ease-out-soft'
-              : 'h-full bg-linear-to-r from-char-600 via-ember-600 to-ember-400 shadow-[0_0_10px_0_var(--color-ember-500)] transition-[width] duration-350 ease-out-soft'
-          }
-          style={{ width: `${fill}%` }}
-        />
-      </div>
+    <div
+      className="elevate-float fixed inset-x-0 bottom-0 z-30 border-t border-line-ember bg-ash-900/95 backdrop-blur-xl backdrop-saturate-150 lg:hidden"
+      style={{ paddingBottom: 'calc(0.5rem + env(safe-area-inset-bottom))' }}
+    >
+      <DamageMeter
+        retailValue={report.totalRetailValue}
+        totalAdmission={report.totalAdmission}
+        recoveryPercent={report.retailRecoveryPercent}
+        remainingGap={report.remainingRetailGap}
+        variant="bar"
+      />
 
-      <div
-        className="flex items-center justify-between gap-3 px-4 py-2.5"
-        style={{ paddingBottom: 'calc(0.625rem + env(safe-area-inset-bottom))' }}
-      >
-        <div className="min-w-0">
-          <p className="tabular text-ui font-bold text-cream-50">
-            {formatMoney(report.totalRetailValue, pricingProfile.money)}
-            <span className="font-normal text-cream-600">
-              {' '}
-              / {formatMoney(report.totalAdmission, pricingProfile.money)}
-            </span>
-          </p>
-          <p className="tabular truncate text-caption text-cream-500">
-            {formatPlates(report.totalPlates)} · {formatPercent(report.retailRecoveryPercent)}{' '}
-            recovered
-          </p>
-        </div>
-        <Button onClick={onCalculate} className="shrink-0">
+      {/* Named "Calculate" rather than "Calculate the damage": the tab in the
+          rail already owns that name, and below `lg` both are in the document
+          at once. Two controls answering to one name is ambiguous to a screen
+          reader before it is ambiguous to a test. */}
+      <div className="px-4 pb-1 pt-2.5">
+        <Button fullWidth onClick={onCalculate}>
+          <Receipt size={18} aria-hidden="true" />
           Calculate
         </Button>
       </div>

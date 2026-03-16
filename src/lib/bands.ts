@@ -68,11 +68,25 @@ export const BAND_FILL: Record<Band, string> = {
  * same result on the same screen. A verdict below break-even is stated in plain
  * cream: the copy is doing that work, and it does not need a colour to help.
  */
-export const VERDICT_TEXT = {
-  house: 'text-cream-50',
-  even: BAND_TEXT.recovered,
-  diner: BAND_TEXT.recovered,
-} as const;
+export type VerdictTone = 'house' | 'even' | 'diner';
+
+export function verdictText(tone: VerdictTone, recoveryPercent: number): string {
+  return tone === 'house' ? 'text-cream-50' : BAND_TEXT[bandForPercent(recoveryPercent)];
+}
+
+/**
+ * The light behind the verdict, in the colour the verdict is already in.
+ * Derived from the same band, so the bloom cannot disagree with the word.
+ */
+const GLOW: Record<Band, string> = {
+  behind: 'bg-[radial-gradient(ellipse_at_center,var(--color-char-600)_0%,transparent_70%)]',
+  recovered: 'bg-[radial-gradient(ellipse_at_center,var(--color-sesame-600)_0%,transparent_68%)]',
+  runaway: 'bg-[radial-gradient(ellipse_at_center,var(--color-flame-600)_0%,transparent_68%)]',
+};
+
+export function verdictGlow(tone: VerdictTone, recoveryPercent: number): string {
+  return tone === 'house' ? GLOW.behind : GLOW[bandForPercent(recoveryPercent)];
+}
 
 /**
  * The house's own status, read from the diner's side of the table.
