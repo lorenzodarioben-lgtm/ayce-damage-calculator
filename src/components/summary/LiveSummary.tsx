@@ -3,6 +3,7 @@
 import { Receipt } from 'lucide-react';
 import { DamageMeter } from '@/components/summary/DamageMeter';
 import { MealTab } from '@/components/summary/MealTab';
+import { Figure } from '@/components/ui/Figure';
 import { Button } from '@/components/ui/Button';
 import { formatCount, formatKg, formatMoney, formatPlates } from '@/lib/formatting';
 import { usePricingProfile } from '@/components/session/PricingContext';
@@ -57,11 +58,12 @@ export function LiveSummary({
           totalAdmission={report.totalAdmission}
           recoveryPercent={report.retailRecoveryPercent}
           remainingGap={report.remainingRetailGap}
+          variant="rail"
         />
       </div>
 
       {hasItems && !report.hasBeatenBuffet && report.platesToBreakEven > 0 && (
-        <p className="well tabular mt-3 px-3 py-2 text-caption text-cream-500">
+        <p className="tabular mt-2 text-caption text-cream-500">
           ~{formatCount(report.platesToBreakEven)} average{' '}
           {report.platesToBreakEven === 1 ? 'plate' : 'plates'} to retail break-even
         </p>
@@ -69,19 +71,14 @@ export function LiveSummary({
 
       {/* Two figures worth reading at a glance, so they are given tiles of
           their own rather than a row of a definition list nobody scans. */}
-      <dl className="tabular mt-4 grid grid-cols-2 gap-2">
-        <div className="well px-3 py-2.5">
-          <dt className="micro-label text-cream-500">Eaten</dt>
-          <dd className="mt-0.5 text-lead font-bold text-cream-50">
-            {formatKg(report.totalWeightKg)}
-          </dd>
-        </div>
-        <div className="well px-3 py-2.5">
-          <dt className="micro-label text-cream-500">Admission</dt>
-          <dd className="mt-0.5 text-lead font-bold text-cream-50">
-            {formatMoney(report.totalAdmission, pricingProfile.money)}
-          </dd>
-        </div>
+      {/* Two figures worth reading at a glance. A rule groups them; a pair of
+          boxes inside a raised panel was a third surface for no gain. */}
+      <dl className="mt-4 grid grid-cols-2 gap-x-4">
+        <Figure label="Eaten" value={formatKg(report.totalWeightKg)} />
+        <Figure
+          label="Admission"
+          value={formatMoney(report.totalAdmission, pricingProfile.money)}
+        />
       </dl>
 
       <div className="mt-4">
