@@ -23,6 +23,7 @@ import { useMealSession, type AddItemPayload } from '@/hooks/useMealSession';
 import { usePricingProfiles } from '@/hooks/usePricingProfiles';
 import { useCustomFoods } from '@/hooks/useCustomFoods';
 import { useStatusMessage } from '@/hooks/useStatusMessage';
+import { useUndoableRemove } from '@/hooks/useUndoableRemove';
 import { REPORT_STAGE, STAGE_PARAM } from '@/hooks/useStageHistory';
 import { findFoodInCatalogue, foodCatalogue } from '@/lib/foodCatalogue';
 import { formatKg, formatMoney, formatPlates } from '@/lib/formatting';
@@ -52,6 +53,7 @@ export function LiveMealMode() {
     decrementItem,
     setItemConsumption,
     removeItem,
+    restoreItem,
     canUndo,
     canRedo,
     undo,
@@ -70,6 +72,17 @@ export function LiveMealMode() {
   const [addOpen, setAddOpen] = useState(false);
   const [activeDinerId, setActiveDinerId] = useState<string | null>(null);
   const [status, announce] = useStatusMessage();
+
+  // Removing a line drops a quality, a plate size and a running count, so it
+  // is offered back rather than simply confirmed. The hook for this existed,
+  // and was wired to nothing.
+  const removeItemWithUndo = useUndoableRemove({
+    items: session.items,
+    removeItem,
+    restoreItem,
+    announce,
+    location: 'the meal',
+  });
 
   const handleAdd = useCallback(
     (payload: AddItemPayload) => {
@@ -194,7 +207,7 @@ export function LiveMealMode() {
                   onIncrement={handleIncrement}
                   onDecrement={decrementItem}
                   onConsumptionChange={setItemConsumption}
-                  onRemove={removeItem}
+                  onRemove={removeItemWithUndo}
                 />
               ))}
             </ul>
@@ -274,7 +287,7 @@ export function LiveMealMode() {
               tabIndex={hasItems ? undefined : -1}
               className={
                 hasItems
-                  ? 'flex min-h-14 w-full items-center justify-center gap-2 rounded-surface bg-ember-500 px-6 text-body font-bold uppercase tracking-caps text-ash-950 transition-colors duration-200 hover:bg-ember-400'
+                  ? 'flex min-h-14 w-full items-center justify-center gap-2 rounded-surface bg-ember-500 px-6 text-body font-bold uppercase tracking-caps text-ash-950 transition-colors duration-160 hover:bg-ember-400'
                   : 'pointer-events-none flex min-h-14 w-full items-center justify-center gap-2 rounded-surface bg-ash-700 px-6 text-body font-bold uppercase tracking-caps text-cream-600'
               }
             >

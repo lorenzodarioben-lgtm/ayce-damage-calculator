@@ -236,6 +236,7 @@ export function TableRoster({
         title="Move plates back to the table?"
         body="Removing this diner keeps every plate on the tab. Their attributed plates become shared Table plates."
         confirmLabel="Remove diner"
+        destructive
         cancelLabel="Keep diner"
         onConfirm={() => {
           const diner = diners.find((entry) => entry.id === pendingRemoval);
@@ -252,6 +253,7 @@ export function TableRoster({
         title="Clear this table roster?"
         body="Every diner-specific allocation will remain on the tab as a shared Table plate."
         confirmLabel="Clear roster"
+        destructive
         cancelLabel="Keep roster"
         onConfirm={() => {
           onClear();

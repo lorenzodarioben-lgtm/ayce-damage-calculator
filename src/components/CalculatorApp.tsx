@@ -21,6 +21,7 @@ import { usePricingProfiles } from '@/hooks/usePricingProfiles';
 import { useRegularDiners } from '@/hooks/useRegularDiners';
 import { useStageHistory } from '@/hooks/useStageHistory';
 import { useStatusMessage } from '@/hooks/useStatusMessage';
+import { useUndoableRemove } from '@/hooks/useUndoableRemove';
 import { scrollBehaviour } from '@/lib/motion';
 import { DEFAULT_PRICING_PROFILE_ID } from '@/lib/pricing';
 
@@ -53,6 +54,7 @@ export function CalculatorApp() {
     setItemCharge,
     setItemAllocations,
     removeItem,
+    restoreItem,
     canUndo,
     canRedo,
     undo,
@@ -72,6 +74,17 @@ export function CalculatorApp() {
   const [resetOpen, setResetOpen] = useState(false);
   const [activeDinerId, setActiveDinerId] = useState<string | null>(null);
   const [status, announce] = useStatusMessage();
+
+  // Removing a line drops a quality, a plate size and a running count, so it
+  // is offered back rather than simply confirmed. The hook for this existed,
+  // and was wired to nothing.
+  const removeItemWithUndo = useUndoableRemove({
+    items: session.items,
+    removeItem,
+    restoreItem,
+    announce,
+    location: 'your tab',
+  });
 
   const reportRef = useRef<HTMLDivElement>(null);
   const builderRef = useRef<HTMLDivElement>(null);
@@ -246,7 +259,7 @@ export function CalculatorApp() {
                       )
                     }
                     diners={session.diners ?? []}
-                    onRemove={removeItem}
+                    onRemove={removeItemWithUndo}
                     onCalculate={handleCalculate}
                     onReset={() => setResetOpen(true)}
                   />
@@ -272,6 +285,8 @@ export function CalculatorApp() {
           title="Reset session?"
           body="This clears the restaurant name, entry price, diners and every plate on your tab. It cannot be undone."
           confirmLabel="Reset everything"
+          cancelLabel="Keep my tab"
+          destructive
           onConfirm={handleConfirmReset}
           onCancel={() => setResetOpen(false)}
         />

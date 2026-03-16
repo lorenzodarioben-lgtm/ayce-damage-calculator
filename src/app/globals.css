@@ -758,20 +758,92 @@ input[type='number']::-webkit-inner-spin-button {
 }
 
 /* Under the pointer, a row lifts rather than only changing colour. */
+/*
+ * Under the pointer, a row lifts rather than only changing colour.
+ *
+ * Gated, because a tap on a touch screen leaves `:hover` stuck on the element
+ * until something else is tapped — so a card stays lifted and lit after you
+ * have finished with it. Tailwind's own `hover:` variants are gated for us;
+ * this one is hand-written and had to say so itself.
+ */
+/*
+ * A pressable control.
+ *
+ * Two categories in one declaration: the press is the fastest thing in the app
+ * because it is the interface saying it heard you, and the colour behind it
+ * settles a little slower. Sixty-two of sixty-nine durations in the app used to
+ * be the same two hundred milliseconds, so a button press and a panel hover
+ * moved at the same speed and neither had a character of its own.
+ */
+@utility motion-button {
+  transition:
+    transform 120ms var(--ease-out-soft),
+    background-color 160ms var(--ease-out-soft),
+    border-color 160ms var(--ease-out-soft),
+    color 160ms var(--ease-out-soft),
+    box-shadow 160ms var(--ease-out-soft);
+}
+
 @utility lift-on-hover {
   transition:
-    transform 200ms var(--ease-out-soft),
-    border-color 200ms var(--ease-out-soft),
-    background-color 200ms var(--ease-out-soft),
-    box-shadow 200ms var(--ease-out-soft);
+    transform 160ms var(--ease-out-soft),
+    border-color 160ms var(--ease-out-soft),
+    background-color 160ms var(--ease-out-soft),
+    box-shadow 160ms var(--ease-out-soft);
 
-  &:hover {
-    transform: translateY(-1px);
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      transform: translateY(-1px);
+    }
   }
 }
 
 @utility animate-toast-in {
-  animation: ayce-toast-in 200ms var(--ease-out-soft) both;
+  animation: ayce-toast-in 180ms var(--ease-out-soft) both;
+}
+
+/*
+ * A dialog that arrives instead of appearing.
+ *
+ * The native element gives us the backdrop, inertness and Escape, and no
+ * transition at all: the most interrupting thing in the app hard-cut into
+ * place while the report, which a visitor sees far less often, got a staggered
+ * arrival. `@starting-style` is what lets a modal animate in without a mounted
+ * flag and a re-render.
+ *
+ * Origin stays centred. A modal is not anchored to a trigger, so scaling it
+ * from one would be a lie about where it came from.
+ */
+dialog[open] {
+  opacity: 1;
+  transform: scale(1);
+  transition:
+    opacity 220ms var(--ease-out-soft),
+    transform 220ms var(--ease-out-soft),
+    overlay 220ms allow-discrete,
+    display 220ms allow-discrete;
+}
+
+@starting-style {
+  dialog[open] {
+    opacity: 0;
+    /* Never from nothing: an element that grows from zero comes from nowhere. */
+    transform: scale(0.96);
+  }
+}
+
+dialog[open]::backdrop {
+  opacity: 1;
+  transition:
+    opacity 220ms var(--ease-out-soft),
+    overlay 220ms allow-discrete,
+    display 220ms allow-discrete;
+}
+
+@starting-style {
+  dialog[open]::backdrop {
+    opacity: 0;
+  }
 }
 
 /* Printing yields the receipt and nothing else.
@@ -816,13 +888,29 @@ input[type='number']::-webkit-inner-spin-button {
   }
 }
 
+/*
+ * Reduced motion means fewer and gentler, not none.
+ *
+ * This rule used to collapse every animation *and every transition* in the app
+ * to a thousandth of a millisecond, which also took out the things that help
+ * rather than distract: the focus ring appearing, a button acknowledging a
+ * press, the meter changing colour as it passes break-even. Those are
+ * comprehension, not decoration, and they stay — capped short.
+ *
+ * What goes is movement. Nothing slides, lifts, scales or travels; the looping
+ * ambient animations stop; the report's blocks arrive together instead of in
+ * sequence; and the reading changes value without sliding to it.
+ */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
     animation-duration: 0.001ms !important;
+    animation-delay: 0ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
+    transition-property:
+      opacity, color, background-color, border-color, outline-color, box-shadow !important;
+    transition-duration: 120ms !important;
   }
 }
