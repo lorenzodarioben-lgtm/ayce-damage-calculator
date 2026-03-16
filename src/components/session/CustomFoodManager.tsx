@@ -341,7 +341,7 @@ function CustomFoodEditor({
                   placeholder="Unknown"
                   value={draft[key]}
                   onChange={(event) => set(key, event.target.value)}
-                  className="mt-1 h-10 w-full rounded-surface border border-line-strong bg-ash-900 px-2 text-ui font-normal text-cream-50 placeholder:text-cream-600"
+                  className="mt-1 h-11 w-full rounded-surface border border-line-strong bg-ash-900 px-2 text-ui font-normal text-cream-50 placeholder:text-cream-600"
                 />
               </label>
             ))}
@@ -358,14 +358,14 @@ function CustomFoodEditor({
           <button
             type="button"
             onClick={onClose}
-            className="min-h-10 rounded-surface px-3 text-caption font-semibold uppercase tracking-caps text-cream-400 hover:bg-ash-800 hover:text-cream-100"
+            className="min-h-11 rounded-surface px-3 text-caption font-semibold uppercase tracking-caps text-cream-400 hover:bg-ash-800 hover:text-cream-100"
           >
             Cancel
           </button>
           <button
             type="button"
             onClick={handleSave}
-            className="min-h-10 rounded-surface bg-ember-500 px-4 text-caption font-bold uppercase tracking-caps text-ash-950 hover:bg-ember-400"
+            className="min-h-11 rounded-surface bg-ember-500 px-4 text-caption font-bold uppercase tracking-caps text-ash-950 hover:bg-ember-400"
           >
             Save to my menu
           </button>
@@ -419,7 +419,7 @@ export function CustomFoodManager({
         <button
           type="button"
           onClick={() => setCreating(true)}
-          className="inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-surface px-2 text-caption font-semibold uppercase tracking-caps text-cream-100 transition-colors hover:bg-ash-800"
+          className="inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-surface px-2 text-caption font-semibold uppercase tracking-caps text-cream-100 transition-colors hover:bg-ash-800"
         >
           <Plus size={14} aria-hidden="true" />
           Add food
@@ -451,7 +451,7 @@ export function CustomFoodManager({
                   type="button"
                   onClick={() => setEditingId(food.id)}
                   aria-label={`Edit ${food.name}`}
-                  className="flex size-9 cursor-pointer items-center justify-center rounded-surface text-cream-500 transition-colors hover:bg-ash-800 hover:text-cream-50"
+                  className="flex size-11 cursor-pointer items-center justify-center rounded-surface text-cream-500 transition-colors hover:bg-ash-800 hover:text-cream-50"
                 >
                   <Pencil size={15} aria-hidden="true" />
                 </button>
@@ -462,7 +462,7 @@ export function CustomFoodManager({
                     onStatus(`${food.name} removed from your menu.`);
                   }}
                   aria-label={`Delete ${food.name}`}
-                  className="flex size-9 cursor-pointer items-center justify-center rounded-surface text-cream-600 transition-colors hover:bg-char-700/25 hover:text-char-400"
+                  className="flex size-11 cursor-pointer items-center justify-center rounded-surface text-cream-600 transition-colors hover:bg-char-700/25 hover:text-char-400"
                 >
                   <Trash2 size={15} aria-hidden="true" />
                 </button>
