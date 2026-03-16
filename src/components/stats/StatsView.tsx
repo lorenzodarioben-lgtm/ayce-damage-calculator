@@ -134,7 +134,7 @@ export function StatsView() {
               />
             </dl>
 
-            <div className="panel mt-3 p-4 sm:p-5">
+            <div className="mt-6 border-t border-line pt-5">
               <h3 className="display-type text-lead text-cream-100 mb-3">Recent sessions</h3>
               <RecoveryTrend points={analytics.trend} headingId="recovery-trend" />
             </div>
@@ -145,17 +145,17 @@ export function StatsView() {
               What gets ordered
             </h2>
             <div className="grid gap-3 lg:grid-cols-2">
-              <div className="panel p-4 sm:p-5">
+              <div className="border-t border-line pt-5 first:border-t-0 first:pt-0">
                 <h3 className="display-type text-lead text-cream-100 mb-3">By category</h3>
                 <ShareBars tallies={analytics.categories} unitLabel="plates" />
               </div>
-              <div className="panel p-4 sm:p-5">
+              <div className="border-t border-line pt-5 first:border-t-0 first:pt-0">
                 <h3 className="display-type text-lead text-cream-100 mb-3">By grade</h3>
                 <ShareBars tallies={analytics.qualities} unitLabel="plates" />
               </div>
             </div>
 
-            <div className="panel mt-3 p-4 sm:p-5">
+            <div className="mt-6 border-t border-line pt-5">
               <h3 className="display-type text-lead text-cream-100 mb-3">Most ordered cuts</h3>
               <ol className="space-y-2">
                 {analytics.topFoods.map((food, index) => (
@@ -179,7 +179,10 @@ export function StatsView() {
           </section>
 
           {analytics.mostPlates && (
-            <section aria-labelledby="standout-heading" className="panel p-4 sm:p-5">
+            <section
+              aria-labelledby="standout-heading"
+              className="border-t border-line pt-5 first:border-t-0 first:pt-0"
+            >
               <h2 id="standout-heading" className="display-type text-title text-cream-100 mb-2">
                 Largest recorded session
               </h2>
@@ -196,7 +199,10 @@ export function StatsView() {
             </section>
           )}
           {mealTrends.recent.count > 0 && (
-            <section aria-labelledby="meal-trends-heading" className="panel p-4 sm:p-5">
+            <section
+              aria-labelledby="meal-trends-heading"
+              className="border-t border-line pt-5 first:border-t-0 first:pt-0"
+            >
               <h2 id="meal-trends-heading" className="display-type text-title text-cream-100 mb-2">
                 Recent meal trends
               </h2>
