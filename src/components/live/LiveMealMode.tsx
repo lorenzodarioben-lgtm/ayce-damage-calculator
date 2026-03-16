@@ -3,6 +3,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Plus, Receipt } from 'lucide-react';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { FavoriteQuickAdd } from '@/components/favorites/FavoriteQuickAdd';
 import { AddCutDialog } from '@/components/live/AddCutDialog';
 import { MealPacing } from '@/components/live/MealPacing';
@@ -212,13 +213,10 @@ export function LiveMealMode() {
               ))}
             </ul>
           ) : (
-            <div className="panel border-dashed px-6 py-12 text-center">
-              <p className="display-type text-title text-cream-300">Nothing on the grill yet.</p>
-              <p className="mx-auto mt-3 max-w-[44ch] text-ui leading-relaxed text-cream-600">
-                Add the cuts you are ordering. Each one gets its own button, so logging a plate is a
-                single tap for the rest of the meal.
-              </p>
-            </div>
+            <EmptyState title="Nothing on the grill yet.">
+              Add the cuts you are ordering. Each one gets its own button, so logging a plate is a
+              single tap for the rest of the meal.
+            </EmptyState>
           )}
 
           {favorites.length > 0 && (

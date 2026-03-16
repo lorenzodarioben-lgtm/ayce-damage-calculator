@@ -40,7 +40,7 @@ export function FoodSort({ value, onChange }: FoodSortProps) {
               aria-label={option.description}
               onClick={() => onChange(option.key)}
               className={cn(
-                'min-h-9 cursor-pointer rounded-inner px-3 text-caption font-semibold uppercase tracking-caps',
+                'min-h-11 cursor-pointer rounded-inner px-3 text-caption font-semibold uppercase tracking-caps',
                 'transition-[background-color,color,box-shadow] duration-160',
                 selected
                   ? 'segmented-thumb'

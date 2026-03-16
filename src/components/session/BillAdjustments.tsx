@@ -154,17 +154,15 @@ export function BillAdjustments({
         <div
           role="radiogroup"
           aria-label="Direction"
-          className="inline-flex rounded-surface border border-line bg-ash-900 p-0.5"
+          className="segmented-track inline-flex gap-1 p-1"
         >
           {(['charge', 'discount'] as const).map((option) => (
             <label
               key={option}
               className={[
-                'inline-flex min-h-10 cursor-pointer items-center gap-1.5 rounded-surface px-3 text-caption font-semibold uppercase tracking-caps',
+                'inline-flex min-h-11 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-inner px-3 text-caption font-semibold uppercase tracking-caps',
                 'transition-colors duration-160',
-                kind === option
-                  ? 'bg-ash-700 text-cream-50'
-                  : 'text-cream-500 hover:text-cream-200',
+                kind === option ? 'segmented-thumb' : 'text-cream-500 hover:text-cream-200',
               ].join(' ')}
             >
               <input
@@ -188,17 +186,15 @@ export function BillAdjustments({
         <div
           role="radiogroup"
           aria-label="Basis"
-          className="ml-2 inline-flex rounded-surface border border-line bg-ash-900 p-0.5"
+          className="segmented-track ml-2 inline-flex gap-1 p-1"
         >
           {(['fixed', 'percent'] as const).map((option) => (
             <label
               key={option}
               className={[
-                'inline-flex min-h-10 cursor-pointer items-center rounded-surface px-3 text-caption font-semibold uppercase tracking-caps',
+                'inline-flex min-h-11 flex-1 cursor-pointer items-center justify-center rounded-inner px-3 text-caption font-semibold uppercase tracking-caps',
                 'transition-colors duration-160',
-                basis === option
-                  ? 'bg-ash-700 text-cream-50'
-                  : 'text-cream-500 hover:text-cream-200',
+                basis === option ? 'segmented-thumb' : 'text-cream-500 hover:text-cream-200',
               ].join(' ')}
             >
               <input
@@ -351,7 +347,7 @@ export function BillAdjustments({
                     onRemove(adjustment.id);
                     onStatus(`${adjustment.label} was taken off the bill.`);
                   }}
-                  className="inline-flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-surface text-cream-500 transition-colors duration-160 hover:bg-ash-800 hover:text-char-400"
+                  className="inline-flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-surface text-cream-500 transition-colors duration-160 hover:bg-ash-800 hover:text-char-400"
                 >
                   <Trash2 size={15} aria-hidden="true" />
                 </button>
