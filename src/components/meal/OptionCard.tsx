@@ -22,7 +22,7 @@ export function OptionCard({ selected, onSelect, label, detail, glyph, name }: O
     <label
       className={cn(
         'relative flex cursor-pointer flex-col items-center gap-1 rounded-surface border px-2 py-3 text-center',
-        'transition-[border-color,background-color,box-shadow,transform] duration-200 ease-out-soft',
+        'transition-[border-color,background-color,box-shadow,transform] duration-160 ease-out-soft',
         'has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2',
         'has-[:focus-visible]:outline-ember-400',
         selected

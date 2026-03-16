@@ -42,7 +42,7 @@ const STATUS_LABELS: Record<MealLifecycleStatus, string> = {
 
 const CHIP =
   'min-h-11 flex-1 cursor-pointer rounded-surface border px-3 text-caption font-semibold uppercase ' +
-  'tracking-caps transition-colors duration-200';
+  'tracking-caps transition-colors duration-160';
 
 /**
  * The meal clock, and what the current pace implies.
@@ -224,14 +224,14 @@ export function MealPacing({
             aria-valuemax={100}
             aria-valuenow={Math.round(forecast.progressPercent)}
             aria-valuetext={`${formatDurationLabel(forecast.elapsedMs)} elapsed, ${formatDurationLabel(forecast.remainingMs ?? 0)} remaining`}
-            className="mt-2 h-2 w-full overflow-hidden rounded-full bg-ash-800"
+            className="relative mt-2 h-2 w-full overflow-hidden rounded-full bg-ash-800"
           >
             <div
               className={cn(
-                'h-full rounded-full transition-[width] duration-500 ease-out-soft',
+                'absolute inset-0 rounded-full transition-transform duration-[420ms] ease-out-soft',
                 forecast.expired ? 'bg-char-500' : 'bg-ember-500',
               )}
-              style={{ width: `${Math.max(2, forecast.progressPercent)}%` }}
+              style={{ transform: `translateX(${Math.max(2, forecast.progressPercent) - 100}%)` }}
             />
           </div>
         </div>

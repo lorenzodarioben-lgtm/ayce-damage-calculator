@@ -243,7 +243,7 @@ export function MenuImport({ foods, onApply, onStatus }: MenuImportProps) {
                         return (
                           <label
                             key={choice.id}
-                            className={`min-h-9 cursor-pointer rounded-surface border px-2.5 py-1.5 text-caption font-semibold transition-colors duration-200 ${
+                            className={`min-h-9 cursor-pointer rounded-surface border px-2.5 py-1.5 text-caption font-semibold transition-colors duration-160 ${
                               active
                                 ? 'border-ember-600 bg-ash-800 text-cream-50'
                                 : 'border-line text-cream-500 hover:text-cream-200'
