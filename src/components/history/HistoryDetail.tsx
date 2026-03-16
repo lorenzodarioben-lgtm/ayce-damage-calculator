@@ -172,7 +172,10 @@ export function HistoryDetail({ id }: { id: string }) {
         />
 
         {record.note && (
-          <section aria-labelledby="saved-note-heading" className="panel p-4 sm:p-5">
+          <section
+            aria-labelledby="saved-note-heading"
+            className="border-t border-line pt-5 first:border-t-0 first:pt-0"
+          >
             <h3 id="saved-note-heading" className="display-type text-lead text-cream-100 mb-2">
               Note on file
             </h3>
@@ -180,7 +183,10 @@ export function HistoryDetail({ id }: { id: string }) {
           </section>
         )}
 
-        <section aria-labelledby="saved-tags-heading" className="panel p-4 sm:p-5">
+        <section
+          aria-labelledby="saved-tags-heading"
+          className="border-t border-line pt-5 first:border-t-0 first:pt-0"
+        >
           <h3 id="saved-tags-heading" className="display-type text-lead text-cream-100 mb-2">
             Tags
           </h3>
