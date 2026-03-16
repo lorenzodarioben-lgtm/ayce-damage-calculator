@@ -10,7 +10,7 @@ import { AchievementList } from '@/components/results/AchievementList';
 import { MealBreakdown } from '@/components/results/MealBreakdown';
 import { ReportSummary } from '@/components/results/ReportSummary';
 import { PricingProfileProvider } from '@/components/session/PricingContext';
-import { Button, EMPTY_STATE_LINK } from '@/components/ui/Button';
+import { Button, EMPTY_STATE_LINK, buttonClasses } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { formatPlates, formatRecordedAt } from '@/lib/formatting';
 import {
@@ -32,9 +32,7 @@ type LoadState =
   | { status: 'missing' }
   | { status: 'found'; resolved: ResolvedSavedSession };
 
-const BACK_LINK =
-  '-ml-2 inline-flex min-h-11 items-center gap-1.5 rounded-surface px-2 text-caption font-semibold ' +
-  'uppercase tracking-caps text-cream-500 transition-colors duration-200 hover:bg-ash-850 hover:text-cream-100';
+const BACK_LINK = buttonClasses('ghost', 'sm', '-ml-2');
 
 /**
  * A filed session, rendered read-only.

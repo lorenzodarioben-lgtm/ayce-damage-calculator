@@ -161,7 +161,7 @@ export function BillAdjustments({
               key={option}
               className={[
                 'inline-flex min-h-10 cursor-pointer items-center gap-1.5 rounded-surface px-3 text-caption font-semibold uppercase tracking-caps',
-                'transition-colors duration-200',
+                'transition-colors duration-160',
                 kind === option
                   ? 'bg-ash-700 text-cream-50'
                   : 'text-cream-500 hover:text-cream-200',
@@ -195,7 +195,7 @@ export function BillAdjustments({
               key={option}
               className={[
                 'inline-flex min-h-10 cursor-pointer items-center rounded-surface px-3 text-caption font-semibold uppercase tracking-caps',
-                'transition-colors duration-200',
+                'transition-colors duration-160',
                 basis === option
                   ? 'bg-ash-700 text-cream-50'
                   : 'text-cream-500 hover:text-cream-200',
@@ -351,7 +351,7 @@ export function BillAdjustments({
                     onRemove(adjustment.id);
                     onStatus(`${adjustment.label} was taken off the bill.`);
                   }}
-                  className="inline-flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-surface text-cream-500 transition-colors duration-200 hover:bg-ash-800 hover:text-char-400"
+                  className="inline-flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-surface text-cream-500 transition-colors duration-160 hover:bg-ash-800 hover:text-char-400"
                 >
                   <Trash2 size={15} aria-hidden="true" />
                 </button>
@@ -393,6 +393,7 @@ export function BillAdjustments({
         title="Clear every charge and discount?"
         body="The bill goes back to the entry price alone. The meal itself, and every plate on it, is untouched."
         confirmLabel="Clear them"
+        destructive
         cancelLabel="Keep them"
         onConfirm={() => {
           onClear();

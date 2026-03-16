@@ -17,7 +17,7 @@ function PlateGlyph({ grams, active }: { grams: number; active: boolean }) {
   return (
     <span
       aria-hidden="true"
-      className="flex h-8 items-center justify-center transition-colors duration-200"
+      className="flex h-8 items-center justify-center transition-colors duration-160"
     >
       <span
         style={{ width: diameter, height: diameter }}

@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Download } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { Button, buttonClasses } from '@/components/ui/Button';
 import { StatusToast } from '@/components/ui/StatusToast';
 import { useCustomFoods } from '@/hooks/useCustomFoods';
 import { usePricingProfiles } from '@/hooks/usePricingProfiles';
@@ -15,9 +15,7 @@ import { planMenuImport, type MenuSharePayload } from '@/lib/menuShare';
 import { findFoodInCatalogue } from '@/lib/foodCatalogue';
 import { FOODS } from '@/data/foods';
 
-const CTA_CLASS =
-  'inline-flex min-h-14 items-center justify-center rounded-surface bg-ember-500 px-6 text-body ' +
-  'font-bold uppercase tracking-caps text-ash-950 transition-colors duration-200 hover:bg-ember-400';
+const CTA_CLASS = buttonClasses('primary', 'lg');
 
 /**
  * A received menu, shown read-only until the recipient says otherwise.

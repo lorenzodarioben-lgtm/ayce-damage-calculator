@@ -7,7 +7,7 @@ import { ArrowLeft } from 'lucide-react';
 import { ChallengeShareActions } from '@/components/history/ChallengeShareActions';
 import { ComparisonReport } from '@/components/history/ComparisonReport';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { EMPTY_STATE_LINK } from '@/components/ui/Button';
+import { EMPTY_STATE_LINK, buttonClasses } from '@/components/ui/Button';
 import { StatusToast } from '@/components/ui/StatusToast';
 import { useStatusMessage } from '@/hooks/useStatusMessage';
 import { useMealHistory } from '@/hooks/useMealHistory';
@@ -15,9 +15,7 @@ import { compareSessions, orderByRecordedAt } from '@/lib/comparison';
 import { formatRecordedAt } from '@/lib/formatting';
 import type { SavedMealSession } from '@/types/history';
 
-const BACK_LINK =
-  '-ml-2 inline-flex min-h-11 items-center gap-1.5 rounded-surface px-2 text-caption font-semibold ' +
-  'uppercase tracking-caps text-cream-500 transition-colors duration-200 hover:bg-ash-850 hover:text-cream-100';
+const BACK_LINK = buttonClasses('ghost', 'sm', '-ml-2');
 
 const SELECT =
   'h-12 w-full rounded-surface border border-line bg-ash-900 px-3 text-ui text-cream-50';

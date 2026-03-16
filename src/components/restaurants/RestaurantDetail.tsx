@@ -7,7 +7,7 @@ import { ArrowLeft, Link2, Play, Trash2 } from 'lucide-react';
 import { Figure } from '@/components/ui/Figure';
 import { RecoveryTrend } from '@/components/stats/RecoveryTrend';
 import { ShareBars } from '@/components/stats/ShareBars';
-import { Button, EMPTY_STATE_LINK } from '@/components/ui/Button';
+import { Button, EMPTY_STATE_LINK, buttonClasses } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { StatusToast } from '@/components/ui/StatusToast';
 import { useMealHistory } from '@/hooks/useMealHistory';
@@ -24,9 +24,7 @@ import { putSessions } from '@/lib/historyRepository';
 import { buildRestaurantSummary, unlinkedVisitCandidates } from '@/lib/restaurantHub';
 import { loadSession, saveSession } from '@/lib/storage';
 
-const BACK_LINK =
-  '-ml-2 inline-flex min-h-11 items-center gap-1.5 rounded-surface px-2 text-caption font-semibold ' +
-  'uppercase tracking-caps text-cream-500 transition-colors duration-200 hover:bg-ash-850 hover:text-cream-100';
+const BACK_LINK = buttonClasses('ghost', 'sm', '-ml-2');
 
 /**
  * One place, and what the file says about visiting it.
@@ -310,6 +308,7 @@ export function RestaurantDetail({ id }: { id: string }) {
         title="Delete this place?"
         body={`This removes the saved setup for ${profile.name} from this device. Every meal you filed here stays in your history exactly as it was recorded, with its own name, prices and menu context.`}
         confirmLabel="Delete the place"
+        destructive
         cancelLabel="Keep it"
         onConfirm={() => {
           remove(profile.id);

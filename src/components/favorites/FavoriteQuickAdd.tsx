@@ -66,7 +66,7 @@ export function FavoriteQuickAdd({
                 )
               }
               aria-label={`Add one plate of ${description}`}
-              className={`flex cursor-pointer items-center gap-2 rounded-surface border border-line-ember bg-ash-850 pr-9 text-left transition-colors duration-200 hover:bg-ash-800 ${padding}`}
+              className={`flex cursor-pointer items-center gap-2 rounded-surface border border-line-ember bg-ash-850 pr-9 text-left transition-colors duration-160 hover:bg-ash-800 ${padding}`}
             >
               <Plus
                 size={15}
@@ -87,7 +87,7 @@ export function FavoriteQuickAdd({
               type="button"
               onClick={() => onRemove(favorite.id)}
               aria-label={`Remove ${description} from saved orders`}
-              className="absolute right-1 top-1/2 flex size-7 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-cream-600 transition-colors duration-200 hover:bg-char-700/25 hover:text-char-400"
+              className="absolute right-1 top-1/2 flex size-7 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-cream-600 transition-colors duration-160 hover:bg-char-700/25 hover:text-char-400"
             >
               <X size={14} aria-hidden="true" />
             </button>
@@ -116,7 +116,7 @@ export function FavoriteToggle({ active, onToggle, description }: FavoriteToggle
       // the correct toggle pattern and keeps it distinct from the strip's own
       // remove control.
       aria-label={`Save ${description} as a quick order`}
-      className={`flex size-14 shrink-0 cursor-pointer items-center justify-center rounded-surface border transition-colors duration-200 ${
+      className={`flex size-14 shrink-0 cursor-pointer items-center justify-center rounded-surface border transition-colors duration-160 ${
         active
           ? 'border-ember-500 bg-ash-800 text-cream-100'
           : 'border-line bg-ash-800 text-cream-500 hover:border-line-strong hover:text-cream-100'

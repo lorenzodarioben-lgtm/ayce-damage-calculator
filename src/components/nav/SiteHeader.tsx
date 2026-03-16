@@ -26,7 +26,7 @@ interface SiteHeaderProps {
  */
 const LINK_BASE =
   'relative flex min-h-11 items-center rounded-surface px-3 text-caption font-semibold uppercase ' +
-  'tracking-caps transition-colors duration-200 ' +
+  'tracking-caps transition-colors duration-160 ' +
   "after:absolute after:inset-x-3 after:bottom-1.5 after:h-px after:rounded-full after:content-['']";
 
 const LINK_IDLE =
@@ -146,7 +146,7 @@ export function SiteHeader({ onBrandClick, brandActionLabel }: SiteHeaderProps) 
             type="button"
             onClick={onBrandClick}
             aria-label={`${BRAND_NAME} — ${brandActionLabel ?? 'Back to the top of the page'}`}
-            className="-mx-2 flex min-h-11 cursor-pointer items-center rounded-surface px-2 transition-colors duration-200 hover:bg-ash-800"
+            className="-mx-2 flex min-h-11 cursor-pointer items-center rounded-surface px-2 transition-colors duration-160 hover:bg-ash-800"
           >
             <BrandMark />
           </button>
@@ -154,7 +154,7 @@ export function SiteHeader({ onBrandClick, brandActionLabel }: SiteHeaderProps) 
           <Link
             href="/"
             aria-label={`${BRAND_NAME} — back to the calculator`}
-            className="-mx-2 flex min-h-11 items-center rounded-surface px-2 transition-colors duration-200 hover:bg-ash-800"
+            className="-mx-2 flex min-h-11 items-center rounded-surface px-2 transition-colors duration-160 hover:bg-ash-800"
           >
             <BrandMark />
           </Link>
@@ -186,7 +186,7 @@ export function SiteHeader({ onBrandClick, brandActionLabel }: SiteHeaderProps) 
           aria-expanded={menuOpen}
           aria-controls={menuId}
           aria-label={menuOpen ? 'Close the menu' : 'Open the menu'}
-          className="-mr-2 flex size-11 cursor-pointer items-center justify-center rounded-surface text-cream-300 transition-colors duration-200 hover:bg-ash-800 hover:text-cream-50 sm:hidden"
+          className="-mr-2 flex size-11 cursor-pointer items-center justify-center rounded-surface text-cream-300 transition-colors duration-160 hover:bg-ash-800 hover:text-cream-50 sm:hidden"
         >
           {menuOpen ? <X size={20} aria-hidden="true" /> : <Menu size={20} aria-hidden="true" />}
         </button>

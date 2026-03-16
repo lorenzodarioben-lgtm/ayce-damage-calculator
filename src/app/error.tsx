@@ -38,7 +38,7 @@ export default function ErrorPage({ error: _error, retry }: ErrorPageProps) {
           </Button>
           <Link
             href="/"
-            className="inline-flex min-h-14 items-center justify-center rounded-surface border border-line-ember bg-ash-850 px-6 text-body font-bold uppercase tracking-caps text-cream-100 transition-colors duration-200 hover:bg-ash-800"
+            className="inline-flex min-h-14 items-center justify-center rounded-surface border border-line-ember bg-ash-850 px-6 text-body font-bold uppercase tracking-caps text-cream-100 transition-colors duration-160 hover:bg-ash-800"
           >
             Return to calculator
           </Link>

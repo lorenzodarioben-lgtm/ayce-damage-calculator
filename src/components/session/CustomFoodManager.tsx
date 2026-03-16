@@ -239,7 +239,7 @@ function CustomFoodEditor({
             ).map(([model, label, hint]) => (
               <label
                 key={model}
-                className={`block cursor-pointer rounded-surface border px-3 py-2 transition-colors duration-200 ${
+                className={`block cursor-pointer rounded-surface border px-3 py-2 transition-colors duration-160 ${
                   draft.valuation === model
                     ? 'border-ember-600 bg-ash-800'
                     : 'border-line bg-ash-900 hover:border-line-ember'
