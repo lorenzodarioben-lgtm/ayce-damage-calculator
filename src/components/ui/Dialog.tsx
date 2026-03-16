@@ -80,7 +80,7 @@ export function Dialog({ open, onClose, title, children, labelledById }: DialogP
           type="button"
           onClick={onClose}
           aria-label="Close dialog"
-          className="-mr-1 -mt-1 flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-surface text-cream-500 transition-colors hover:bg-ash-800 hover:text-cream-100"
+          className="-mr-1 -mt-1 flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-surface text-cream-500 transition-colors hover:bg-ash-800 hover:text-cream-100"
         >
           <X size={18} aria-hidden="true" />
         </button>

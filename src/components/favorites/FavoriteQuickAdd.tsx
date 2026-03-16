@@ -33,7 +33,7 @@ export function FavoriteQuickAdd({
 }: FavoriteQuickAddProps) {
   if (favorites.length === 0) {
     return (
-      <p className="rounded-surface border border-dashed border-line bg-ash-900/60 px-4 py-3 text-center text-caption leading-relaxed text-cream-600">
+      <p className="text-caption leading-relaxed text-cream-600">
         No saved orders yet. Use the star beside a configured cut to keep it here for next time.
       </p>
     );
@@ -87,7 +87,7 @@ export function FavoriteQuickAdd({
               type="button"
               onClick={() => onRemove(favorite.id)}
               aria-label={`Remove ${description} from saved orders`}
-              className="absolute right-1 top-1/2 flex size-7 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-cream-600 transition-colors duration-160 hover:bg-char-700/25 hover:text-char-400"
+              className="absolute right-1 top-1/2 flex size-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-cream-600 transition-colors duration-160 hover:bg-char-700/25 hover:text-char-400"
             >
               <X size={14} aria-hidden="true" />
             </button>

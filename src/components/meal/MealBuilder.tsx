@@ -139,21 +139,12 @@ export function MealBuilder({
 
       {/* Saved orders sit above the picker: for a repeat visit they are the
           fastest path, and they cost nothing when the list is empty. */}
-      {/* Shown once there is something to show. An empty panel explaining a
-          feature nobody has used yet is not worth a screen of a phone. */}
-      {favorites.length > 0 && (
-        <section aria-labelledby="saved-orders-heading" className="mb-4">
-          <h3 id="saved-orders-heading" className="display-type mb-2 text-lead text-cream-100">
-            Saved orders
-          </h3>
-          <FavoriteQuickAdd
-            favorites={favorites}
-            foods={catalogue}
-            onAdd={onAdd}
-            onRemove={remove}
-          />
-        </section>
-      )}
+      <section aria-labelledby="saved-orders-heading" className="mb-4">
+        <h3 id="saved-orders-heading" className="display-type mb-2 text-lead text-cream-100">
+          Saved orders
+        </h3>
+        <FavoriteQuickAdd favorites={favorites} foods={catalogue} onAdd={onAdd} onRemove={remove} />
+      </section>
 
       {onActiveDinerChange && (
         <DinerAttribution
