@@ -75,14 +75,14 @@ export function TableBreakdown({
               <td className="py-3 pr-3">
                 {formatMoney(diner.admission, pricingProfile.money)}
                 {diner.adjustmentNet !== 0 && (
-                  <span className="block text-caption text-cream-700">
+                  <span className="block text-caption text-cream-600">
                     {formatMoney(diner.baseAdmission, pricingProfile.money)} entry{' '}
                     {diner.adjustmentNet > 0 ? '+' : '−'}
                     {formatMoney(Math.abs(diner.adjustmentNet), pricingProfile.money)}
                   </span>
                 )}
               </td>
-              <td className="py-3 pr-3 text-ember-400">
+              <td className="py-3 pr-3 text-cream-100">
                 {formatMoney(diner.retailValue, pricingProfile.money)}
               </td>
               <td className="py-3 pr-3">{formatPercent(diner.retailRecoveryPercent)}</td>

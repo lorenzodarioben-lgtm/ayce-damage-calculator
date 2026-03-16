@@ -343,7 +343,7 @@ export function BackupRestore() {
             Download spreadsheet
           </Button>
         </div>
-        <p className="mt-3 text-caption leading-relaxed text-cream-700">
+        <p className="mt-3 text-caption leading-relaxed text-cream-600">
           The spreadsheet is history only, one row per plate, and cannot be restored from. Saved
           orders, menu settings and the ability to restore live in the JSON backup. The encrypted
           backup holds exactly the same contents, sealed with a key this browser derives from your
@@ -381,7 +381,7 @@ export function BackupRestore() {
         />
 
         {stage.kind === 'error' && (
-          <p role="alert" className="mt-4 text-ui font-semibold text-char-500">
+          <p role="alert" className="mt-4 text-ui font-semibold text-char-400">
             {stage.message}
           </p>
         )}
@@ -401,7 +401,7 @@ export function BackupRestore() {
               <li>{stage.contents.configuration.pricingProfiles.length} pricing profiles</li>
               <li>{stage.contents.configuration.customFoods.length} custom foods</li>
               <li>{stage.contents.configuration.restaurants.length} saved restaurants</li>
-              <li className="text-caption text-cream-700">
+              <li className="text-caption text-cream-600">
                 Exported {formatRecordedAt(stage.contents.exportedAt)}
               </li>
             </ul>
@@ -411,7 +411,7 @@ export function BackupRestore() {
               stage.summary.skippedPricingProfiles > 0 ||
               stage.summary.skippedCustomFoods > 0 ||
               stage.summary.skippedRestaurants > 0) && (
-              <p className="mt-3 text-caption text-ember-400">
+              <p className="mt-3 text-caption text-cream-100">
                 {stage.summary.skippedHistory} sessions and {stage.summary.skippedFavorites} saved
                 orders, {stage.summary.skippedPricingProfiles} pricing profiles,{' '}
                 {stage.summary.skippedCustomFoods} custom foods and{' '}
@@ -442,7 +442,7 @@ export function BackupRestore() {
               </Button>
             </div>
 
-            <p className="mt-3 text-caption leading-relaxed text-cream-700">
+            <p className="mt-3 text-caption leading-relaxed text-cream-600">
               Merging keeps everything already on this device and adds anything new. Replacing
               discards the current history, saved orders and menu settings first.
             </p>

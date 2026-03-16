@@ -56,7 +56,7 @@ export function ComparisonView() {
 
   if (status === 'loading') {
     return (
-      <p role="status" className="py-16 text-center text-ui text-cream-700">
+      <p role="status" className="py-16 text-center text-ui text-cream-600">
         Retrieving the file…
       </p>
     );
@@ -126,7 +126,7 @@ export function ComparisonView() {
       {comparison === null ? (
         <p
           role="status"
-          className="panel border-dashed px-6 py-10 text-center text-ui text-cream-700"
+          className="panel border-dashed px-6 py-10 text-center text-ui text-cream-600"
         >
           Choose two different sessions to compare.
         </p>

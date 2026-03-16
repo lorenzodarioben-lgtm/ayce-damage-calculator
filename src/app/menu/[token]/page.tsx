@@ -42,7 +42,7 @@ export default async function SharedMenuPage({ params }: MenuPageProps) {
         >
           <div className="panel border-dashed px-6 py-14 text-center">
             <h1 className="display-type text-figure text-cream-300">This menu cannot be read.</h1>
-            <p className="mx-auto mt-4 max-w-[44ch] text-ui leading-relaxed text-cream-700">
+            <p className="mx-auto mt-4 max-w-[44ch] text-ui leading-relaxed text-cream-600">
               The link is incomplete, was altered in transit, or was produced by a version of the
               calculator this one does not understand. Nothing was lost — a shared menu lives
               entirely in its own link.

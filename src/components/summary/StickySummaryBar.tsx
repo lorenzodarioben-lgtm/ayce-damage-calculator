@@ -39,7 +39,7 @@ export function StickySummaryBar({ report, onCalculate }: StickySummaryBarProps)
         <div className="min-w-0">
           <p className="tabular text-ui font-bold text-cream-50">
             {formatMoney(report.totalRetailValue, pricingProfile.money)}
-            <span className="font-normal text-cream-700">
+            <span className="font-normal text-cream-600">
               {' '}
               / {formatMoney(report.totalAdmission, pricingProfile.money)}
             </span>

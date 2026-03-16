@@ -131,13 +131,13 @@ export function MealReplay({ replay, record, headingId }: MealReplayProps) {
         <h3 id={headingId} className="display-type text-lead text-cream-100">
           The replay
         </h3>
-        <p className="text-caption text-cream-700">
+        <p className="text-caption text-cream-600">
           {formatDurationLabel(replay.durationMs)} of recorded activity
         </p>
       </div>
 
       {replay.truncated && (
-        <p className="mt-2 text-caption leading-relaxed text-cream-700">
+        <p className="mt-2 text-caption leading-relaxed text-cream-600">
           This meal ran longer than the ledger keeps. The replay starts partway in, so its early
           figures are lower than the filed totals.
         </p>
@@ -200,7 +200,7 @@ export function MealReplay({ replay, record, headingId }: MealReplayProps) {
         </svg>
       </div>
 
-      <p className="mt-1 text-center text-caption text-cream-700">
+      <p className="mt-1 text-center text-caption text-cream-600">
         Dashed line marks retail break-even. Dots mark the moments listed below.
       </p>
 
@@ -278,7 +278,7 @@ export function MealReplay({ replay, record, headingId }: MealReplayProps) {
             >
               <span className="text-ui font-semibold text-cream-50">{moment.label}</span>
               <span className="text-caption text-cream-500">{moment.detail}</span>
-              <span className="tabular text-caption text-cream-700">
+              <span className="tabular text-caption text-cream-600">
                 {formatClock(moment.offsetMs)}
               </span>
             </li>
@@ -297,7 +297,7 @@ export function MealReplay({ replay, record, headingId }: MealReplayProps) {
               Every recorded step of the meal, with the running plates, retail value and recovery.
             </caption>
             <thead>
-              <tr className="text-cream-700">
+              <tr className="text-cream-600">
                 <th scope="col" className="py-1 font-semibold">
                   At
                 </th>

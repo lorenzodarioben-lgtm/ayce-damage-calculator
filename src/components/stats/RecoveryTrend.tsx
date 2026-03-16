@@ -77,7 +77,7 @@ export function RecoveryTrend({ points, headingId }: RecoveryTrendProps) {
         })}
       </svg>
 
-      <p className="mt-2 text-center text-caption text-cream-700">
+      <p className="mt-2 text-center text-caption text-cream-600">
         Dashed line marks retail break-even. Oldest on the left.
       </p>
 
@@ -86,7 +86,7 @@ export function RecoveryTrend({ points, headingId }: RecoveryTrendProps) {
         <summary className="cursor-pointer text-caption text-cream-500">Show these figures</summary>
         <table className="tabular mt-2 w-full text-left text-caption">
           <thead>
-            <tr className="text-cream-700">
+            <tr className="text-cream-600">
               <th scope="col" className="py-1 font-semibold">
                 Session
               </th>

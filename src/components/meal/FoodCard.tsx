@@ -31,7 +31,7 @@ export function FoodCard({ food, selected, onSelect }: FoodCardProps) {
         'hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] sm:p-4',
         selected
           ? 'border-ember-500 bg-ash-800 elevate-selected'
-          : 'border-line bg-ash-850 elevate-panel hover:border-ember-700 hover:bg-ash-800 hover:elevate-raised',
+          : 'border-line bg-ash-850 elevate-panel hover:border-line-strong hover:bg-ash-800 hover:elevate-raised',
       )}
     >
       {/* The light the cut is sitting under. Warms on hover and stays warm
@@ -73,7 +73,7 @@ export function FoodCard({ food, selected, onSelect }: FoodCardProps) {
       {/* A badge rather than a line of text: it is the one figure worth
           comparing between two cards, and it should be findable at a glance. */}
       <span className="relative mt-auto pt-2">
-        <span className="tabular inline-flex items-center rounded-full border border-line-ember bg-ash-950/70 px-2.5 py-1 text-caption font-semibold tracking-caps text-ember-300">
+        <span className="tabular inline-flex items-center rounded-full border border-line-ember bg-ash-950/70 px-2.5 py-1 text-caption font-semibold tracking-caps text-cream-100">
           ~{formatUnitPrice(pricing, pricingProfile.money)} retail
         </span>
       </span>

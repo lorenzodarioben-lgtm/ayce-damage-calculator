@@ -71,7 +71,7 @@ export function FoodSearch({ value, onChange, resultCount }: FoodSearchProps) {
         <Search
           size={16}
           aria-hidden="true"
-          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-cream-700"
+          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-cream-600"
         />
         <input
           ref={inputRef}
@@ -91,7 +91,7 @@ export function FoodSearch({ value, onChange, resultCount }: FoodSearchProps) {
           autoComplete="off"
           aria-keyshortcuts="/"
           aria-describedby={statusId}
-          className="min-h-11 w-full rounded-surface border border-line-strong bg-ash-900 pl-9 pr-11 text-ui text-cream-100 placeholder:text-cream-700"
+          className="min-h-11 w-full rounded-surface border border-line-strong bg-ash-900 pl-9 pr-11 text-ui text-cream-100 placeholder:text-cream-600"
         />
         {value.length > 0 ? (
           <button
@@ -109,7 +109,7 @@ export function FoodSearch({ value, onChange, resultCount }: FoodSearchProps) {
              press. */
           <kbd
             aria-hidden="true"
-            className="pointer-events-none absolute right-1.5 top-1/2 hidden size-8 -translate-y-1/2 items-center justify-center rounded-inner border border-line bg-ash-850 font-sans text-caption text-cream-700 sm:flex"
+            className="pointer-events-none absolute right-1.5 top-1/2 hidden size-8 -translate-y-1/2 items-center justify-center rounded-inner border border-line bg-ash-850 font-sans text-caption text-cream-600 sm:flex"
           >
             /
           </kbd>
@@ -118,7 +118,7 @@ export function FoodSearch({ value, onChange, resultCount }: FoodSearchProps) {
 
       {/* Always present, so the count is announced rather than appearing from
           nowhere the first time a query matches nothing. */}
-      <p id={statusId} role="status" className="tabular mt-1.5 min-h-4 text-caption text-cream-700">
+      <p id={statusId} role="status" className="tabular mt-1.5 min-h-4 text-caption text-cream-600">
         {resultCount === null
           ? ''
           : resultCount === 0

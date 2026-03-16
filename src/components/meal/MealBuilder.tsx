@@ -134,7 +134,7 @@ export function MealBuilder({
         <h2 id="builder-heading" className="display-type text-title text-cream-50 sm:text-figure">
           Build the meal
         </h2>
-        <p className="text-caption text-cream-700">{catalogue.length} cuts</p>
+        <p className="text-caption text-cream-600">{catalogue.length} cuts</p>
       </div>
 
       {/* Saved orders sit above the picker: for a repeat visit they are the
@@ -187,7 +187,7 @@ export function MealBuilder({
       )}
 
       {searching && foods.length === 0 && (
-        <p className="py-6 text-center text-ui text-cream-700">
+        <p className="py-6 text-center text-ui text-cream-600">
           Nothing on the menu matches “{trimmedQuery}”.
         </p>
       )}
@@ -197,7 +197,7 @@ export function MealBuilder({
           <div className="animate-fade-up space-y-4">
             <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
               <span className="micro-label text-cream-500">Configuring</span>
-              <span className="display-type text-lead text-ember-400">{selectedFood.name}</span>
+              <span className="display-type text-lead text-cream-100">{selectedFood.name}</span>
             </div>
 
             <QualitySelector value={quality} onChange={setQuality} />
@@ -230,14 +230,14 @@ export function MealBuilder({
               {preview && (
                 <dl className="tabular text-right text-ui">
                   <div className="flex items-baseline justify-end gap-2">
-                    <dt className="text-cream-700">Weight</dt>
+                    <dt className="text-cream-600">Weight</dt>
                     <dd className="font-semibold text-cream-100">
                       {preview.hasWeight ? formatGrams(preview.orderedWeightG) : 'Not weighed'}
                     </dd>
                   </div>
                   <div className="flex items-baseline justify-end gap-2">
-                    <dt className="text-cream-700">Retail value</dt>
-                    <dd className="font-semibold text-ember-400">
+                    <dt className="text-cream-600">Retail value</dt>
+                    <dd className="font-semibold text-cream-100">
                       {formatMoney(preview.retailValue, pricingProfile.money)}
                     </dd>
                   </div>
@@ -261,7 +261,7 @@ export function MealBuilder({
             </div>
           </div>
         ) : (
-          <p className="py-2 text-center text-ui text-cream-700">
+          <p className="py-2 text-center text-ui text-cream-600">
             Choose a cut above to set quality, plate size and quantity.
           </p>
         )}
