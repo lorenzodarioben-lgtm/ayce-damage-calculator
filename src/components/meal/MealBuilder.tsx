@@ -43,7 +43,7 @@ interface MealBuilderProps {
   onActiveDinerChange?: (id: string | null) => void;
 }
 
-const GRID_CLASS = 'grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3';
+const GRID_CLASS = 'grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3';
 
 export function MealBuilder({
   onAdd,
@@ -139,12 +139,21 @@ export function MealBuilder({
 
       {/* Saved orders sit above the picker: for a repeat visit they are the
           fastest path, and they cost nothing when the list is empty. */}
-      <section aria-labelledby="saved-orders-heading" className="mb-4">
-        <h3 id="saved-orders-heading" className="display-type text-lead text-cream-100 mb-2">
-          Saved orders
-        </h3>
-        <FavoriteQuickAdd favorites={favorites} foods={catalogue} onAdd={onAdd} onRemove={remove} />
-      </section>
+      {/* Shown once there is something to show. An empty panel explaining a
+          feature nobody has used yet is not worth a screen of a phone. */}
+      {favorites.length > 0 && (
+        <section aria-labelledby="saved-orders-heading" className="mb-4">
+          <h3 id="saved-orders-heading" className="display-type mb-2 text-lead text-cream-100">
+            Saved orders
+          </h3>
+          <FavoriteQuickAdd
+            favorites={favorites}
+            foods={catalogue}
+            onAdd={onAdd}
+            onRemove={remove}
+          />
+        </section>
+      )}
 
       {onActiveDinerChange && (
         <DinerAttribution
