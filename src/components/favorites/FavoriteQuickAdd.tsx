@@ -33,7 +33,7 @@ export function FavoriteQuickAdd({
 }: FavoriteQuickAddProps) {
   if (favorites.length === 0) {
     return (
-      <p className="rounded-[10px] border border-dashed border-line bg-ash-900/60 px-4 py-3 text-center text-xs leading-relaxed text-cream-700">
+      <p className="text-caption leading-relaxed text-cream-600">
         No saved orders yet. Use the star beside a configured cut to keep it here for next time.
       </p>
     );
@@ -66,17 +66,17 @@ export function FavoriteQuickAdd({
                 )
               }
               aria-label={`Add one plate of ${description}`}
-              className={`flex cursor-pointer items-center gap-2 rounded-[10px] border border-line-ember bg-ash-850 pr-9 text-left transition-colors duration-200 hover:bg-ash-800 ${padding}`}
+              className={`flex cursor-pointer items-center gap-2 rounded-surface border border-line-ember bg-ash-850 pr-9 text-left transition-colors duration-160 hover:bg-ash-800 ${padding}`}
             >
               <Plus
                 size={15}
                 strokeWidth={3}
                 aria-hidden="true"
-                className="shrink-0 text-ember-400"
+                className="shrink-0 text-cream-100"
               />
               <span className="min-w-0">
-                <span className="block text-sm font-bold text-cream-50">{food.name}</span>
-                <span className="block text-[0.7rem] text-cream-500">
+                <span className="block text-ui font-bold text-cream-50">{food.name}</span>
+                <span className="block text-caption text-cream-500">
                   {getQualityMeta(favorite.quality).label} ·{' '}
                   {getPlateSizeMeta(favorite.plateSize).label}
                 </span>
@@ -87,7 +87,7 @@ export function FavoriteQuickAdd({
               type="button"
               onClick={() => onRemove(favorite.id)}
               aria-label={`Remove ${description} from saved orders`}
-              className="absolute right-1 top-1/2 flex size-7 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-cream-700 transition-colors duration-200 hover:bg-char-700/25 hover:text-char-500"
+              className="absolute right-1 top-1/2 flex size-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-cream-600 transition-colors duration-160 hover:bg-char-700/25 hover:text-char-400"
             >
               <X size={14} aria-hidden="true" />
             </button>
@@ -116,10 +116,10 @@ export function FavoriteToggle({ active, onToggle, description }: FavoriteToggle
       // the correct toggle pattern and keeps it distinct from the strip's own
       // remove control.
       aria-label={`Save ${description} as a quick order`}
-      className={`flex size-14 shrink-0 cursor-pointer items-center justify-center rounded-[10px] border transition-colors duration-200 ${
+      className={`flex size-14 shrink-0 cursor-pointer items-center justify-center rounded-surface border transition-colors duration-160 ${
         active
-          ? 'border-ember-500 bg-ash-800 text-ember-400'
-          : 'border-line bg-ash-800 text-cream-500 hover:border-ember-700 hover:text-cream-100'
+          ? 'border-ember-500 bg-ash-800 text-cream-100'
+          : 'border-line bg-ash-800 text-cream-500 hover:border-line-strong hover:text-cream-100'
       }`}
     >
       <Star size={20} aria-hidden="true" fill={active ? 'currentColor' : 'none'} />

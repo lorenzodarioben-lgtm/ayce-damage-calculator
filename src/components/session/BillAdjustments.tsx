@@ -131,12 +131,12 @@ export function BillAdjustments({
         <div>
           <h3
             id="bill-adjustments-heading"
-            className="flex items-center gap-2 text-sm font-semibold text-cream-200"
+            className="flex items-center gap-2 text-ui font-semibold text-cream-200"
           >
             <Receipt size={17} aria-hidden="true" />
             Charges and discounts
           </h3>
-          <p className="mt-1 max-w-[62ch] text-xs leading-relaxed text-cream-700">
+          <p className="mt-1 max-w-[62ch] text-caption leading-relaxed text-cream-600">
             Optional. A voucher, a weekend surcharge, a card fee, a drink charged separately —
             anything the bill picked up beyond the entry price. Leave it empty and nothing changes.
           </p>
@@ -154,17 +154,15 @@ export function BillAdjustments({
         <div
           role="radiogroup"
           aria-label="Direction"
-          className="inline-flex rounded-[10px] border border-line bg-ash-900 p-0.5"
+          className="segmented-track inline-flex gap-1 p-1"
         >
           {(['charge', 'discount'] as const).map((option) => (
             <label
               key={option}
               className={[
-                'inline-flex min-h-10 cursor-pointer items-center gap-1.5 rounded-[8px] px-3 text-xs font-semibold uppercase tracking-[0.08em]',
-                'transition-colors duration-200',
-                kind === option
-                  ? 'bg-ash-700 text-cream-50'
-                  : 'text-cream-500 hover:text-cream-200',
+                'inline-flex min-h-11 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-inner px-3 text-caption font-semibold uppercase tracking-caps',
+                'transition-colors duration-160',
+                kind === option ? 'segmented-thumb' : 'text-cream-500 hover:text-cream-200',
               ].join(' ')}
             >
               <input
@@ -188,17 +186,15 @@ export function BillAdjustments({
         <div
           role="radiogroup"
           aria-label="Basis"
-          className="ml-2 inline-flex rounded-[10px] border border-line bg-ash-900 p-0.5"
+          className="segmented-track ml-2 inline-flex gap-1 p-1"
         >
           {(['fixed', 'percent'] as const).map((option) => (
             <label
               key={option}
               className={[
-                'inline-flex min-h-10 cursor-pointer items-center rounded-[8px] px-3 text-xs font-semibold uppercase tracking-[0.08em]',
-                'transition-colors duration-200',
-                basis === option
-                  ? 'bg-ash-700 text-cream-50'
-                  : 'text-cream-500 hover:text-cream-200',
+                'inline-flex min-h-11 flex-1 cursor-pointer items-center justify-center rounded-inner px-3 text-caption font-semibold uppercase tracking-caps',
+                'transition-colors duration-160',
+                basis === option ? 'segmented-thumb' : 'text-cream-500 hover:text-cream-200',
               ].join(' ')}
             >
               <input
@@ -218,7 +214,10 @@ export function BillAdjustments({
 
         <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_9rem]">
           <div>
-            <label htmlFor={labelId} className="mb-1.5 block text-xs font-semibold text-cream-300">
+            <label
+              htmlFor={labelId}
+              className="mb-1.5 block text-caption font-semibold text-cream-300"
+            >
               What was it
             </label>
             <input
@@ -229,7 +228,7 @@ export function BillAdjustments({
               maxLength={MAX_ADJUSTMENT_LABEL_LENGTH}
               placeholder={suggestions[0]}
               onChange={(event) => setLabel(event.target.value)}
-              className="h-12 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-base text-cream-50"
+              className="h-12 w-full rounded-surface border border-line-strong bg-ash-900 px-3 text-body text-cream-50"
             />
             <datalist id={suggestionsId}>
               {suggestions.map((suggestion) => (
@@ -239,7 +238,10 @@ export function BillAdjustments({
           </div>
 
           <div>
-            <label htmlFor={amountId} className="mb-1.5 block text-xs font-semibold text-cream-300">
+            <label
+              htmlFor={amountId}
+              className="mb-1.5 block text-caption font-semibold text-cream-300"
+            >
               {isPercent ? 'Percent' : 'Amount'}
             </label>
             <input
@@ -251,13 +253,13 @@ export function BillAdjustments({
               step="0.01"
               value={amount}
               onChange={(event) => setAmount(event.target.value)}
-              className="tabular h-12 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-base text-cream-50"
+              className="tabular h-12 w-full rounded-surface border border-line-strong bg-ash-900 px-3 text-body text-cream-50"
             />
           </div>
         </div>
 
         {isPercent && (
-          <p className="mt-2 max-w-[62ch] text-xs leading-relaxed text-cream-700">
+          <p className="mt-2 max-w-[62ch] text-caption leading-relaxed text-cream-600">
             Worked out against the entry price plus any fixed charges already on the bill, and
             recalculated whenever those change. Percentages never compound: each one is a share of a
             base that contains no percentage, so the order you add them in cannot change the total.
@@ -266,14 +268,17 @@ export function BillAdjustments({
 
         {diners.length > 0 && (
           <div className="mt-2">
-            <label htmlFor={dinerId} className="mb-1.5 block text-xs font-semibold text-cream-300">
+            <label
+              htmlFor={dinerId}
+              className="mb-1.5 block text-caption font-semibold text-cream-300"
+            >
               Who it belongs to
             </label>
             <select
               id={dinerId}
               value={scope}
               onChange={(event) => setScope(event.target.value)}
-              className="h-12 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-base text-cream-50"
+              className="h-12 w-full rounded-surface border border-line-strong bg-ash-900 px-3 text-body text-cream-50"
             >
               <option value="">The whole table</option>
               {diners.map((diner) => (
@@ -290,7 +295,7 @@ export function BillAdjustments({
           Add to the bill
         </Button>
         {full && (
-          <p className="mt-2 text-xs text-cream-700">
+          <p className="mt-2 text-caption text-cream-600">
             That is {MAX_BILL_ADJUSTMENTS} adjustments, which is as many as a bill can carry here.
           </p>
         )}
@@ -306,8 +311,8 @@ export function BillAdjustments({
                 className="flex items-center gap-3 border-t border-line-soft py-2"
               >
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm text-cream-100">{adjustment.label}</p>
-                  <p className="text-xs text-cream-700">
+                  <p className="truncate text-ui text-cream-100">{adjustment.label}</p>
+                  <p className="text-caption text-cream-600">
                     {adjustment.kind === 'charge' ? 'Added to' : 'Taken off'} ·{' '}
                     {owner ? owner.displayName : 'The whole table'}
                     {adjustment.basis === 'percent'
@@ -321,8 +326,8 @@ export function BillAdjustments({
                 </div>
                 <p
                   className={[
-                    'tabular shrink-0 text-sm font-semibold',
-                    adjustment.kind === 'charge' ? 'text-cream-50' : 'text-ember-400',
+                    'tabular shrink-0 text-ui font-semibold',
+                    adjustment.kind === 'charge' ? 'text-cream-50' : 'text-cream-100',
                   ].join(' ')}
                 >
                   {adjustment.kind === 'charge' ? '+' : '−'}
@@ -342,7 +347,7 @@ export function BillAdjustments({
                     onRemove(adjustment.id);
                     onStatus(`${adjustment.label} was taken off the bill.`);
                   }}
-                  className="inline-flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-[8px] text-cream-500 transition-colors duration-200 hover:bg-ash-800 hover:text-char-500"
+                  className="inline-flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-surface text-cream-500 transition-colors duration-160 hover:bg-ash-800 hover:text-char-400"
                 >
                   <Trash2 size={15} aria-hidden="true" />
                 </button>
@@ -353,7 +358,7 @@ export function BillAdjustments({
       )}
 
       {adjustments.length > 0 && (
-        <dl className="mt-3 space-y-1 well px-4 py-3 text-sm">
+        <dl className="mt-3 space-y-1 well px-4 py-3 text-ui">
           <Row label="Entry price" value={formatMoney(baseAdmission, pricingProfile.money)} muted />
           {totals.charges > 0 && (
             <Row
@@ -371,7 +376,7 @@ export function BillAdjustments({
           )}
           <Row label="Paid in total" value={formatMoney(totalPaid, pricingProfile.money)} />
           {totalPaid === 0 && (
-            <p className="pt-1 text-xs leading-relaxed text-cream-700">
+            <p className="pt-1 text-caption leading-relaxed text-cream-600">
               The discounts cover the whole bill. Nothing was paid, so there is no recovery
               percentage to report — every plate is upside.
             </p>
@@ -384,6 +389,7 @@ export function BillAdjustments({
         title="Clear every charge and discount?"
         body="The bill goes back to the entry price alone. The meal itself, and every plate on it, is untouched."
         confirmLabel="Clear them"
+        destructive
         cancelLabel="Keep them"
         onConfirm={() => {
           onClear();
@@ -399,12 +405,16 @@ export function BillAdjustments({
 function Row({ label, value, muted = false }: { label: string; value: string; muted?: boolean }) {
   return (
     <div className="flex items-baseline justify-between gap-3">
-      <dt className={muted ? 'text-xs text-cream-700' : 'text-sm font-semibold text-cream-200'}>
+      <dt
+        className={muted ? 'text-caption text-cream-600' : 'text-ui font-semibold text-cream-200'}
+      >
         {label}
       </dt>
       <dd
         className={
-          muted ? 'tabular text-xs text-cream-500' : 'tabular text-sm font-semibold text-ember-400'
+          muted
+            ? 'tabular text-caption text-cream-500'
+            : 'tabular text-ui font-semibold text-cream-100'
         }
       >
         {value}

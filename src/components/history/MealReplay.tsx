@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useMemo, useState } from 'react';
 import { Pause, Play, RotateCcw } from 'lucide-react';
+import { Figure } from '@/components/ui/Figure';
 import { usePricingProfile } from '@/components/session/PricingContext';
 import { Button } from '@/components/ui/Button';
 import {
@@ -127,16 +128,16 @@ export function MealReplay({ replay, record, headingId }: MealReplayProps) {
   return (
     <section aria-labelledby={headingId} className="panel p-4 sm:p-5">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h3 id={headingId} className="micro-label">
+        <h3 id={headingId} className="display-type text-lead text-cream-100">
           The replay
         </h3>
-        <p className="text-xs text-cream-700">
+        <p className="text-caption text-cream-600">
           {formatDurationLabel(replay.durationMs)} of recorded activity
         </p>
       </div>
 
       {replay.truncated && (
-        <p className="mt-2 text-xs leading-relaxed text-cream-700">
+        <p className="mt-2 text-caption leading-relaxed text-cream-600">
           This meal ran longer than the ledger keeps. The replay starts partway in, so its early
           figures are lower than the filed totals.
         </p>
@@ -199,12 +200,12 @@ export function MealReplay({ replay, record, headingId }: MealReplayProps) {
         </svg>
       </div>
 
-      <p className="mt-1 text-center text-[0.7rem] text-cream-700">
+      <p className="mt-1 text-center text-caption text-cream-600">
         Dashed line marks retail break-even. Dots mark the moments listed below.
       </p>
 
       <div className="mt-4">
-        <label htmlFor={scrubberId} className="micro-label mb-1 block">
+        <label htmlFor={scrubberId} className="text-ui font-semibold text-cream-300 mb-1 block">
           Scrub the meal
         </label>
         <input
@@ -275,9 +276,11 @@ export function MealReplay({ replay, record, headingId }: MealReplayProps) {
               key={moment.id}
               className="flex flex-wrap items-baseline justify-between gap-2 border-t border-line-soft pt-2"
             >
-              <span className="text-sm font-semibold text-cream-50">{moment.label}</span>
-              <span className="text-xs text-cream-500">{moment.detail}</span>
-              <span className="tabular text-xs text-cream-700">{formatClock(moment.offsetMs)}</span>
+              <span className="text-ui font-semibold text-cream-50">{moment.label}</span>
+              <span className="text-caption text-cream-500">{moment.detail}</span>
+              <span className="tabular text-caption text-cream-600">
+                {formatClock(moment.offsetMs)}
+              </span>
             </li>
           ))}
         </ul>
@@ -285,16 +288,16 @@ export function MealReplay({ replay, record, headingId }: MealReplayProps) {
 
       {/* The same series, readable without the drawing. */}
       <details className="mt-4">
-        <summary className="cursor-pointer text-xs text-cream-500">
+        <summary className="cursor-pointer text-caption text-cream-500">
           Show the timeline as figures
         </summary>
         <div className="overflow-x-auto">
-          <table className="tabular mt-2 w-full min-w-[320px] text-left text-xs">
+          <table className="tabular mt-2 w-full min-w-[320px] text-left text-caption">
             <caption className="sr-only">
               Every recorded step of the meal, with the running plates, retail value and recovery.
             </caption>
             <thead>
-              <tr className="text-cream-700">
+              <tr className="text-cream-600">
                 <th scope="col" className="py-1 font-semibold">
                   At
                 </th>
@@ -330,23 +333,14 @@ export function MealReplay({ replay, record, headingId }: MealReplayProps) {
   );
 }
 
-function Figure({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="well px-3 py-2">
-      <dt className="micro-label truncate">{label}</dt>
-      <dd className="tabular mt-0.5 text-sm font-semibold text-cream-50">{value}</dd>
-    </div>
-  );
-}
-
 /** Named for a record that predates the ledger, which is not the same as an empty one. */
 export function UntimedMealNotice({ headingId }: { headingId: string }) {
   return (
     <section aria-labelledby={headingId} className="panel border-dashed p-4 sm:p-5">
-      <h3 id={headingId} className="micro-label">
+      <h3 id={headingId} className="display-type text-lead text-cream-100">
         The replay
       </h3>
-      <p className="mt-2 max-w-[56ch] text-sm leading-relaxed text-cream-300">
+      <p className="mt-2 max-w-[62ch] text-ui leading-relaxed text-cream-300">
         Detailed timing was not recorded for this meal. It was filed before the calculator kept a
         timeline, so there is nothing to replay — the meal itself, and every figure on this page,
         are exactly as they were recorded.

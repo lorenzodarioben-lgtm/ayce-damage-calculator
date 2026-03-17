@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Download } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { Button, buttonClasses } from '@/components/ui/Button';
 import { StatusToast } from '@/components/ui/StatusToast';
 import { useCustomFoods } from '@/hooks/useCustomFoods';
 import { usePricingProfiles } from '@/hooks/usePricingProfiles';
@@ -15,9 +15,7 @@ import { planMenuImport, type MenuSharePayload } from '@/lib/menuShare';
 import { findFoodInCatalogue } from '@/lib/foodCatalogue';
 import { FOODS } from '@/data/foods';
 
-const CTA_CLASS =
-  'inline-flex min-h-14 items-center justify-center rounded-[10px] bg-ember-500 px-6 text-base ' +
-  'font-bold uppercase tracking-[0.1em] text-ash-950 transition-colors duration-200 hover:bg-ember-400';
+const CTA_CLASS = buttonClasses('primary', 'lg');
 
 /**
  * A received menu, shown read-only until the recipient says otherwise.
@@ -74,29 +72,41 @@ export function MenuPreview({ payload }: { payload: MenuSharePayload }) {
 
   return (
     <div className="space-y-6">
-      <section aria-labelledby="shared-menu-heading" className="panel p-4 sm:p-5">
-        <p className="micro-label mb-2">A shared personal menu</p>
-        <h1 id="shared-menu-heading" className="display-type text-3xl text-cream-50 sm:text-4xl">
+      <section
+        aria-labelledby="shared-menu-heading"
+        className="border-t border-line pt-5 first:border-t-0 first:pt-0"
+      >
+        <p className="micro-label text-cream-500 mb-2">A shared personal menu</p>
+        <h1
+          id="shared-menu-heading"
+          className="display-type text-figure text-cream-50 sm:text-figure"
+        >
           {payload.pricingProfile.name}
         </h1>
-        <p className="tabular mt-2 text-sm text-cream-500">
+        <p className="tabular mt-2 text-ui text-cream-500">
           Prices in {payload.pricingProfile.money.currency} · {overrides.length} adjusted{' '}
           {overrides.length === 1 ? 'cut' : 'cuts'} · {payload.customFoods.length} custom{' '}
           {payload.customFoods.length === 1 ? 'food' : 'foods'}
         </p>
-        <p className="mt-3 max-w-[60ch] text-sm leading-relaxed text-cream-300">
+        <p className="mt-3 max-w-[62ch] text-ui leading-relaxed text-cream-300">
           This is a preview. Nothing has been saved to your device, and your own menu, history and
           saved orders are untouched.
         </p>
       </section>
 
       {payload.restaurant && (
-        <section aria-labelledby="shared-restaurant-heading" className="panel p-4 sm:p-5">
-          <h2 id="shared-restaurant-heading" className="micro-label mb-2">
+        <section
+          aria-labelledby="shared-restaurant-heading"
+          className="border-t border-line pt-5 first:border-t-0 first:pt-0"
+        >
+          <h2
+            id="shared-restaurant-heading"
+            className="display-type text-title text-cream-100 mb-2"
+          >
             The restaurant setup
           </h2>
-          <p className="text-base font-bold text-cream-50">{payload.restaurant.name}</p>
-          <p className="tabular text-sm text-cream-500">
+          <p className="text-body font-bold text-cream-50">{payload.restaurant.name}</p>
+          <p className="tabular text-ui text-cream-500">
             {formatMoney(payload.restaurant.pricePerDiner, payload.pricingProfile.money)} per diner
             · {payload.restaurant.dinerCount}{' '}
             {payload.restaurant.dinerCount === 1 ? 'diner' : 'diners'}
@@ -109,14 +119,14 @@ export function MenuPreview({ payload }: { payload: MenuSharePayload }) {
           aria-labelledby="shared-prices-heading"
           className="panel overflow-x-auto p-4 sm:p-5"
         >
-          <h2 id="shared-prices-heading" className="micro-label mb-3">
+          <h2 id="shared-prices-heading" className="display-type text-title text-cream-100 mb-3">
             Adjusted prices
           </h2>
-          <table className="w-full min-w-[360px] text-left text-sm">
+          <table className="w-full min-w-[360px] text-left text-ui">
             <caption className="sr-only">
               The cuts this menu prices differently, with its own figures.
             </caption>
-            <thead className="text-xs text-cream-500">
+            <thead className="text-caption text-cream-500">
               <tr>
                 <th scope="col" className="pb-2 pr-3">
                   Cut
@@ -138,7 +148,7 @@ export function MenuPreview({ payload }: { payload: MenuSharePayload }) {
                     <th scope="row" className="py-2 pr-3 text-left font-semibold text-cream-50">
                       {known?.name ?? shared?.name ?? foodId}
                     </th>
-                    <td className="tabular py-2 pr-3 text-ember-400">
+                    <td className="tabular py-2 pr-3 text-cream-100">
                       {formatUnitPrice(pricing, payload.pricingProfile.money)}
                     </td>
                     <td className="tabular py-2">
@@ -153,8 +163,11 @@ export function MenuPreview({ payload }: { payload: MenuSharePayload }) {
       )}
 
       {payload.customFoods.length > 0 && (
-        <section aria-labelledby="shared-foods-heading" className="panel p-4 sm:p-5">
-          <h2 id="shared-foods-heading" className="micro-label mb-3">
+        <section
+          aria-labelledby="shared-foods-heading"
+          className="border-t border-line pt-5 first:border-t-0 first:pt-0"
+        >
+          <h2 id="shared-foods-heading" className="display-type text-title text-cream-100 mb-3">
             Custom foods
           </h2>
           <ul>
@@ -164,10 +177,10 @@ export function MenuPreview({ payload }: { payload: MenuSharePayload }) {
                 className="flex flex-wrap items-baseline justify-between gap-2 border-b border-line-soft py-3 first:pt-0"
               >
                 <span className="min-w-0">
-                  <span className="block truncate text-sm font-bold text-cream-50">
+                  <span className="block truncate text-ui font-bold text-cream-50">
                     {food.name}
                   </span>
-                  <span className="block text-xs text-cream-500">
+                  <span className="block text-caption text-cream-500">
                     {CATEGORY_META.find((entry) => entry.id === food.category)?.label ??
                       food.category}{' '}
                     ·{' '}
@@ -176,7 +189,7 @@ export function MenuPreview({ payload }: { payload: MenuSharePayload }) {
                       : `${food.caloriesPer100g} kcal / 100 g`}
                   </span>
                 </span>
-                <span className="tabular shrink-0 text-sm font-bold text-ember-400">
+                <span className="tabular shrink-0 text-ui font-bold text-cream-100">
                   {formatUnitPrice(
                     food.valuation === 'by-serving'
                       ? {
@@ -198,14 +211,17 @@ export function MenuPreview({ payload }: { payload: MenuSharePayload }) {
         </section>
       )}
 
-      <section aria-labelledby="shared-import-heading" className="panel p-4 sm:p-5">
-        <h2 id="shared-import-heading" className="micro-label mb-2">
+      <section
+        aria-labelledby="shared-import-heading"
+        className="border-t border-line pt-5 first:border-t-0 first:pt-0"
+      >
+        <h2 id="shared-import-heading" className="display-type text-title text-cream-100 mb-2">
           Save it to this device
         </h2>
 
         {imported ? (
           <>
-            <p role="status" className="max-w-[60ch] text-sm leading-relaxed text-cream-300">
+            <p role="status" className="max-w-[62ch] text-ui leading-relaxed text-cream-300">
               Saved. The menu is now in your own pricing profiles and custom foods, and nothing that
               was already there was changed.
             </p>
@@ -215,16 +231,16 @@ export function MenuPreview({ payload }: { payload: MenuSharePayload }) {
           </>
         ) : (
           <>
-            <p className="max-w-[60ch] text-sm leading-relaxed text-cream-300">
+            <p className="max-w-[62ch] text-ui leading-relaxed text-cream-300">
               Importing adds this menu alongside your own. Nothing of yours is replaced or removed.
             </p>
 
             {(plan.pricingProfileRenamed ||
               plan.renamedFoods.length > 0 ||
               plan.restaurantRenamed) && (
-              <div className="mt-3 rounded-[10px] border border-line bg-ash-900 px-4 py-3">
-                <p className="micro-label mb-1">Some names are already taken here</p>
-                <ul className="space-y-1 text-xs leading-relaxed text-cream-500">
+              <div className="mt-3 rounded-surface border border-line bg-ash-900 px-4 py-3">
+                <p className="micro-label text-cream-500 mb-1">Some names are already taken here</p>
+                <ul className="space-y-1 text-caption leading-relaxed text-cream-500">
                   {plan.pricingProfileRenamed && plan.pricingProfile && (
                     <li>
                       The pricing profile will be saved as{' '}
@@ -258,7 +274,7 @@ export function MenuPreview({ payload }: { payload: MenuSharePayload }) {
               <Download size={18} aria-hidden="true" />
               Import this menu
             </Button>
-            <p className="mt-3 text-center text-xs text-cream-700">
+            <p className="mt-3 text-center text-caption text-cream-600">
               Until you press that, this page has changed nothing on your device.
             </p>
           </>

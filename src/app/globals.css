@@ -15,7 +15,13 @@
      instead. Sits where those callers assumed: between 100 and 300. */
   --color-cream-200: #e1d4ba;
   --color-cream-300: #cfc0a4;
+  /* Asked for by two components and never defined, which is the same bug the
+     note above records having already fixed once. Midway between 300 and 500. */
+  --color-cream-400: #bcae94;
   --color-cream-500: #a99b84;
+  /* Likewise, from three components. The quietest step still allowed to carry
+     text: 5.73:1 on a panel, where 700 is 4.89:1 and sits on the AA floor. */
+  --color-cream-600: #9c8e7a;
   --color-cream-700: #8f8271;
 
   --color-ember-300: #e0b47c;
@@ -24,6 +30,9 @@
   --color-ember-600: #a97a41;
   --color-ember-700: #7d5930;
 
+  /* One step lighter than 500, which fails AA on `ash-800` at 4.45:1. Red text
+     on a raised surface uses this. */
+  --color-char-400: #d68872;
   --color-char-500: #c4694e;
   --color-char-600: #7a3324;
   --color-char-700: #5a2419;
@@ -39,10 +48,25 @@
   --color-flame-500: #e2653a;
   --color-flame-600: #c04a24;
 
-  /* Hairlines derived from the palette, exposed as border/bg utilities. */
-  --color-line: #2a241d;
-  --color-line-soft: #221d17;
-  --color-line-ember: #5c452a;
+  /*
+   * Hairlines derived from the palette, exposed as border/bg utilities.
+   *
+   * Three weights, and which one a border takes is a question about what it
+   * separates rather than about how it should look:
+   *
+   *   soft    a divider *inside* a surface, between sibling sections
+   *   line    the edge of a surface
+   *   strong  the boundary of an interactive component — a field, a button, a
+   *           segmented track — which has to clear 3:1 on every ground it is
+   *           drawn on to satisfy non-text contrast.
+   *
+   * The values are raised in the surface phase, not here; `strong` is defined
+   * now so components can start asking for it.
+   */
+  --color-line: #63564b;
+  --color-line-soft: #4a4038;
+  --color-line-strong: #726558;
+  --color-line-ember: #7d5930;
 
   /* Bound to the checked-in faces in `src/app/fonts`. Each `--font-*` variable
      is defined by `next/font/local`, which also supplies the fallback stack, so
@@ -51,11 +75,70 @@
   --font-heading: var(--font-heading-face);
   --font-sans: var(--font-sans-face);
 
-  --radius-card: 0.875rem;
-  --radius-panel: 1.125rem;
+  /*
+   * One radius.
+   *
+   * There were seven — 7, 8, 9, 10, 12px written by hand, plus a 14px card and
+   * an 18px panel token that between them were asked for six times against a
+   * hundred uses of `rounded-[10px]`. Four of them sat inside a three-pixel
+   * band, which is a distinction nobody can see and every file can get wrong.
+   *
+   * 10px wins because a hundred files already use it, so adopting it is
+   * subtraction. `inner` is for an element nested directly inside a surface,
+   * where matching the outer radius would read as a box drawn twice.
+   * `rounded-full` survives for circular geometry only — the meter track, the
+   * illustration discs, the stepper thumb — and not for badges or chips.
+   */
+  /*
+   * Two page measures, where there were six — 1280, 900, 720, 640, 560 and a
+   * `max-w-md`. The header and footer sat at 1280 while every section route sat
+   * at 900, so on six of eight routes the brand mark stood a hundred and ninety
+   * pixels left of the content it heads. The report inherited the difference
+   * too: 1280 on the calculator and 900 from the same component everywhere else.
+   */
+  --container-page: 1100px;
+  --container-narrow: 640px;
 
+  --radius-surface: 10px;
+  --radius-inner: 6px;
+
+  /*
+   * The type scale. Seven steps, and every piece of text in the application is
+   * one of them, the micro-label, or display type.
+   *
+   * The ramp it replaces had twenty-six sizes, of which 12px and 14px carried
+   * 402 of 493 declarations while 18px and 20px carried nine between them: a
+   * scale that could shout or whisper and do nothing in between, which is why
+   * every section heading had to be either a headline or a caption. The three
+   * middle steps are where that gap closes.
+   */
+  --text-caption: 0.8125rem; /* 13 — hints, footnotes, units, sub-values */
+  --text-caption--line-height: 1.45;
+  --text-ui: 0.9375rem; /* 15 — buttons, field labels, list rows, nav */
+  --text-ui--line-height: 1.45;
+  --text-body: 1.0625rem; /* 17 — prose, and every disclaimer */
+  --text-body--line-height: 1.6;
+  --text-lead: 1.25rem; /* 20 — sub-section headings, card titles */
+  --text-lead--line-height: 1.35;
+  --text-title: 1.625rem; /* 26 — section headings, supporting figures */
+  --text-title--line-height: 1.2;
+  --text-figure: 2.125rem; /* 34 — secondary figures, plain page titles */
+  --text-figure--line-height: 1.05;
+  --text-reading: 3rem; /* 48 — the reading, primary figures */
+  --text-reading--line-height: 1;
+
+  /* Nine tracking values, of which two were 0.1em and 0.08em doing the same
+     job on adjacent controls. Body, headings and figures take the face's own. */
+  --tracking-label: 0.14em;
+  --tracking-caps: 0.08em;
+  --tracking-display: 0.005em;
+
+  /* Entering and exiting. Strong enough to read as intentional, which the
+     built-in easings are not. There is no overshoot curve: an `ease-out-back`
+     was defined here for a year and never once asked for. */
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
-  --ease-out-back: cubic-bezier(0.34, 1.4, 0.64, 1);
+  /* Movement on screen, as opposed to arrival and departure. */
+  --ease-in-out-strong: cubic-bezier(0.77, 0, 0.175, 1);
 }
 
 :root {
@@ -93,15 +176,6 @@
   --shadow-raised: var(--edge-light-strong), 0 18px 42px -20px rgb(0 0 0 / 0.85);
   --shadow-float:
     var(--edge-light-strong), 0 4px 10px -4px rgb(0 0 0 / 0.5), 0 28px 64px -24px rgb(0 0 0 / 0.9);
-
-  /*
-   * Glow is the accent's own light, not another shadow. Used only where
-   * something is genuinely live — a meter filling, a primary action, a verdict
-   * landing — because a page where everything glows has nothing to point at.
-   */
-  --glow-ember: 0 0 28px -6px color-mix(in oklab, var(--color-ember-500) 55%, transparent);
-  --glow-flame: 0 0 34px -6px color-mix(in oklab, var(--color-flame-500) 60%, transparent);
-  --glow-sesame: 0 0 26px -6px color-mix(in oklab, var(--color-sesame-500) 50%, transparent);
 
   /*
    * A fill that is very slightly lighter at the top than the bottom. Two per
@@ -217,10 +291,82 @@ body::after {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
+/*
+ * The focus ring, and the one deliberate exception to the rule that colour
+ * means measurement. Keyboard users get one unmistakable signal, and it never
+ * competes with a reading because nothing else in the app is this colour for
+ * this reason.
+ *
+ * No radius is set here at all. The rule used to force four pixels onto every
+ * focused element, which drew a near-rectangular ring around every pill and a
+ * four-pixel corner around every ten-pixel one — and `inherit` would be worse,
+ * since border-radius does not inherit and would resolve to the parent's
+ * corner rather than the element's own. Browsers already curve an outline to
+ * follow the box it surrounds; the fix is to stop overriding that.
+ */
 :focus-visible {
   outline: 2px solid var(--color-ember-400);
   outline-offset: 2px;
-  border-radius: 4px;
+}
+
+/*
+ * Inside a scroll container, an outline is clipped by the container's own
+ * overflow — which is why the fields below opted out of it years ago and
+ * replaced it with a ring drawn inside their own box. The same is true of every
+ * control in a scrolling list: a tab line's trash button, a diner chip. Ask for
+ * this where that applies.
+ */
+@utility focus-ring-inset {
+  &:focus-visible {
+    outline: none;
+    box-shadow:
+      inset 0 0 0 2px var(--color-ember-400),
+      inset 0 0 0 4px color-mix(in oklab, var(--color-ash-950) 70%, transparent);
+  }
+}
+
+/*
+ * Forced colours: the system supplies the palette and drops every shadow, so
+ * anything whose boundary came from an elevation has to grow a real border, and
+ * a state that was carried by colour alone has to be carried by something else.
+ */
+@media (forced-colors: active) {
+  .panel,
+  .panel-raised,
+  .well,
+  .segmented-track,
+  dialog {
+    border: 1px solid CanvasText;
+  }
+
+  .segmented-thumb {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
+
+  :focus-visible {
+    outline: 2px solid Highlight;
+  }
+}
+
+/*
+ * More contrast, asked for. The quiet steps step up, the hairlines take the
+ * interactive weight, and disabled controls stop leaning on opacity.
+ */
+@media (prefers-contrast: more) {
+  :root {
+    --color-line: #726558;
+    --color-line-soft: #63564b;
+  }
+
+  .text-cream-600,
+  .text-cream-500 {
+    color: var(--color-cream-300);
+  }
+
+  [disabled] {
+    opacity: 1;
+  }
 }
 
 ::selection {
@@ -370,12 +516,42 @@ input[type='number']::-webkit-inner-spin-button {
   text-transform: uppercase;
 }
 
+/*
+ * The caption of a value, or the header of a column. Never a heading.
+ *
+ * It was carrying seven different semantic roles at one identical weight —
+ * thirty-six h3s, twenty-seven h2s, and twenty-four paragraphs, which meant a
+ * section boundary and a field caption were the same eleven pixels. The
+ * headings are headings now; this is what is left, and what is left is a label.
+ *
+ * The colour is deliberately not set here. Baking one in is what forced four
+ * `!important` escapes across the components; a label takes the colour of the
+ * thing it labels.
+ */
 @utility micro-label {
+  font-family: var(--font-heading);
   font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
+  font-weight: 500;
+  letter-spacing: var(--tracking-label);
   text-transform: uppercase;
-  color: var(--text-faint);
+}
+
+/*
+ * Text that is meant to be read rather than scanned.
+ *
+ * The app had no reading typography at all: ninety-three passages set with
+ * `leading-relaxed` at twelve or fourteen pixels, including the uncertainty
+ * explanation — the content that makes this rigorous rather than a toy — set
+ * two steps below body text in the faintest colour on the palette.
+ *
+ * Seventeen pixels, a leading that suits it, and a colour with real contrast.
+ * Disclaimers are body copy: they are the product's honesty, not its small
+ * print, and they take this like everything else.
+ */
+@utility reading {
+  font-size: var(--text-body);
+  line-height: 1.6;
+  color: var(--color-cream-300);
 }
 
 @utility tabular {
@@ -394,7 +570,7 @@ input[type='number']::-webkit-inner-spin-button {
   background-color: var(--surface-raised);
   background-image: var(--fill-panel);
   border: 1px solid var(--surface-line);
-  border-radius: var(--radius-panel);
+  border-radius: var(--radius-surface);
   box-shadow: var(--shadow-panel);
 }
 
@@ -404,7 +580,7 @@ input[type='number']::-webkit-inner-spin-button {
   background-color: var(--surface-raised-strong);
   background-image: var(--fill-panel-strong);
   border: 1px solid var(--color-line-ember);
-  border-radius: var(--radius-panel);
+  border-radius: var(--radius-surface);
   box-shadow: var(--shadow-raised);
 }
 
@@ -415,7 +591,7 @@ input[type='number']::-webkit-inner-spin-button {
 @utility well {
   background-color: var(--color-ash-900);
   border: 1px solid var(--color-line-soft);
-  border-radius: var(--radius-card);
+  border-radius: var(--radius-surface);
   box-shadow: inset 0 1px 3px rgb(0 0 0 / 0.4);
 }
 
@@ -429,6 +605,65 @@ input[type='number']::-webkit-inner-spin-button {
   box-shadow: var(--shadow-raised);
 }
 
+/*
+ * The recipes that are not elevations but were being hand-assembled as though
+ * they were.
+ *
+ * Thirty-one distinct `shadow-[…]` strings had accumulated across the
+ * components, against eight that asked for a token — including near-duplicate
+ * pairs that differed only in an alpha value nobody chose deliberately. These
+ * five cover every one of them, so a component states what a thing *is* rather
+ * than how deep its shadow goes.
+ */
+
+/* A small control that sits on a surface: a secondary button, a stepper key. */
+@utility elevate-control {
+  box-shadow:
+    inset 0 1px 0 rgb(255 250 240 / 0.05),
+    0 2px 6px -3px rgb(0 0 0 / 0.5);
+}
+
+/* The one action a screen region is for. The lit top edge and the accent's own
+   light, which nothing else on the page is allowed to have. */
+@utility elevate-primary {
+  box-shadow:
+    inset 0 1px 0 rgb(255 250 240 / 0.4),
+    0 2px 8px -2px rgb(0 0 0 / 0.6),
+    0 0 22px -8px var(--color-ember-500);
+}
+
+/* A chosen card or option. The inset rule is the selection; the lift is the
+   same one every raised thing gets, so choosing does not change the height. */
+@utility elevate-selected {
+  box-shadow:
+    var(--edge-light-strong),
+    inset 0 0 0 1px var(--color-ember-500),
+    0 14px 34px -16px rgb(0 0 0 / 0.85);
+}
+
+/* An illustration resting on a surface — a cut on its card, a plate in an empty
+   panel. Drawn art casts a shadow; the box it sits in does not need two. */
+@utility elevate-illustration {
+  filter: drop-shadow(0 6px 14px rgb(0 0 0 / 0.55));
+}
+
+/* Recessed: a field, a track, an inner well. The inverse of an elevation. */
+@utility recessed {
+  box-shadow: inset 0 1px 3px rgb(0 0 0 / 0.4);
+}
+
+/*
+ * Type over a photograph.
+ *
+ * Not an elevation — a legibility device, and the one place a drop-shadow is
+ * still allowed. There were eight distinct values for this, including two pairs
+ * separated by five one-hundredths of an alpha. One value, used everywhere type
+ * lands on a picture.
+ */
+@utility text-over-photo {
+  filter: drop-shadow(0 2px 12px rgb(13 12 10 / 0.92));
+}
+
 @utility elevate-float {
   box-shadow: var(--shadow-float);
 }
@@ -439,20 +674,6 @@ input[type='number']::-webkit-inner-spin-button {
 
 @utility fill-panel-strong {
   background-image: var(--fill-panel-strong);
-}
-
-/* Accent light. Composed with the elevation rather than replacing it, so a live
-   element still sits at the height it was already at. */
-@utility glow-ember {
-  box-shadow: var(--shadow-raised), var(--glow-ember);
-}
-
-@utility glow-flame {
-  box-shadow: var(--shadow-raised), var(--glow-flame);
-}
-
-@utility glow-sesame {
-  box-shadow: var(--shadow-raised), var(--glow-sesame);
 }
 
 /*
@@ -493,8 +714,8 @@ input[type='number']::-webkit-inner-spin-button {
  */
 @utility segmented-track {
   background-color: var(--color-ash-950);
-  border: 1px solid var(--color-line);
-  border-radius: 0.875rem;
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-surface);
   box-shadow: inset 0 1px 3px rgb(0 0 0 / 0.45);
 }
 
@@ -508,6 +729,19 @@ input[type='number']::-webkit-inner-spin-button {
 }
 
 /* Faint grill bars used behind hero and report headers. */
+/*
+ * A container that scrolls sideways, and shows it.
+ *
+ * Three tables and the share card overflowed on a phone with no affordance at
+ * all — no fade, no shadow, nothing to say the row continued. The mask fades
+ * the trailing edge only while there is something past it to reach.
+ */
+@utility scroll-x {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  mask-image: linear-gradient(to right, #000 calc(100% - 2.5rem), transparent 100%);
+}
+
 @utility grill-texture {
   background-image: repeating-linear-gradient(
     to bottom,
@@ -596,20 +830,92 @@ input[type='number']::-webkit-inner-spin-button {
 }
 
 /* Under the pointer, a row lifts rather than only changing colour. */
+/*
+ * Under the pointer, a row lifts rather than only changing colour.
+ *
+ * Gated, because a tap on a touch screen leaves `:hover` stuck on the element
+ * until something else is tapped — so a card stays lifted and lit after you
+ * have finished with it. Tailwind's own `hover:` variants are gated for us;
+ * this one is hand-written and had to say so itself.
+ */
+/*
+ * A pressable control.
+ *
+ * Two categories in one declaration: the press is the fastest thing in the app
+ * because it is the interface saying it heard you, and the colour behind it
+ * settles a little slower. Sixty-two of sixty-nine durations in the app used to
+ * be the same two hundred milliseconds, so a button press and a panel hover
+ * moved at the same speed and neither had a character of its own.
+ */
+@utility motion-button {
+  transition:
+    transform 120ms var(--ease-out-soft),
+    background-color 160ms var(--ease-out-soft),
+    border-color 160ms var(--ease-out-soft),
+    color 160ms var(--ease-out-soft),
+    box-shadow 160ms var(--ease-out-soft);
+}
+
 @utility lift-on-hover {
   transition:
-    transform 200ms var(--ease-out-soft),
-    border-color 200ms var(--ease-out-soft),
-    background-color 200ms var(--ease-out-soft),
-    box-shadow 200ms var(--ease-out-soft);
+    transform 160ms var(--ease-out-soft),
+    border-color 160ms var(--ease-out-soft),
+    background-color 160ms var(--ease-out-soft),
+    box-shadow 160ms var(--ease-out-soft);
 
-  &:hover {
-    transform: translateY(-1px);
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      transform: translateY(-1px);
+    }
   }
 }
 
 @utility animate-toast-in {
-  animation: ayce-toast-in 200ms var(--ease-out-soft) both;
+  animation: ayce-toast-in 180ms var(--ease-out-soft) both;
+}
+
+/*
+ * A dialog that arrives instead of appearing.
+ *
+ * The native element gives us the backdrop, inertness and Escape, and no
+ * transition at all: the most interrupting thing in the app hard-cut into
+ * place while the report, which a visitor sees far less often, got a staggered
+ * arrival. `@starting-style` is what lets a modal animate in without a mounted
+ * flag and a re-render.
+ *
+ * Origin stays centred. A modal is not anchored to a trigger, so scaling it
+ * from one would be a lie about where it came from.
+ */
+dialog[open] {
+  opacity: 1;
+  transform: scale(1);
+  transition:
+    opacity 220ms var(--ease-out-soft),
+    transform 220ms var(--ease-out-soft),
+    overlay 220ms allow-discrete,
+    display 220ms allow-discrete;
+}
+
+@starting-style {
+  dialog[open] {
+    opacity: 0;
+    /* Never from nothing: an element that grows from zero comes from nowhere. */
+    transform: scale(0.96);
+  }
+}
+
+dialog[open]::backdrop {
+  opacity: 1;
+  transition:
+    opacity 220ms var(--ease-out-soft),
+    overlay 220ms allow-discrete,
+    display 220ms allow-discrete;
+}
+
+@starting-style {
+  dialog[open]::backdrop {
+    opacity: 0;
+  }
 }
 
 /* Printing yields the receipt and nothing else.
@@ -654,13 +960,29 @@ input[type='number']::-webkit-inner-spin-button {
   }
 }
 
+/*
+ * Reduced motion means fewer and gentler, not none.
+ *
+ * This rule used to collapse every animation *and every transition* in the app
+ * to a thousandth of a millisecond, which also took out the things that help
+ * rather than distract: the focus ring appearing, a button acknowledging a
+ * press, the meter changing colour as it passes break-even. Those are
+ * comprehension, not decoration, and they stay — capped short.
+ *
+ * What goes is movement. Nothing slides, lifts, scales or travels; the looping
+ * ambient animations stop; the report's blocks arrive together instead of in
+ * sequence; and the reading changes value without sliding to it.
+ */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
     animation-duration: 0.001ms !important;
+    animation-delay: 0ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
+    transition-property:
+      opacity, color, background-color, border-color, outline-color, box-shadow !important;
+    transition-duration: 120ms !important;
   }
 }

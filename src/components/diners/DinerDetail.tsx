@@ -4,8 +4,9 @@ import { useCallback, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Trash2, UserPlus } from 'lucide-react';
+import { Figure } from '@/components/ui/Figure';
 import { ShareBars } from '@/components/stats/ShareBars';
-import { Button, EMPTY_STATE_LINK } from '@/components/ui/Button';
+import { Button, EMPTY_STATE_LINK, buttonClasses } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { StatusToast } from '@/components/ui/StatusToast';
 import { useMealHistory } from '@/hooks/useMealHistory';
@@ -22,9 +23,7 @@ import {
 } from '@/lib/formatting';
 import { loadSession, saveSession } from '@/lib/storage';
 
-const BACK_LINK =
-  '-ml-2 inline-flex min-h-11 items-center gap-1.5 rounded-[10px] px-2 text-xs font-semibold ' +
-  'uppercase tracking-[0.1em] text-cream-500 transition-colors duration-200 hover:bg-ash-850 hover:text-cream-100';
+const BACK_LINK = buttonClasses('ghost', 'sm', '-ml-2');
 
 /**
  * One person, and what the file says about eating with them.
@@ -77,7 +76,7 @@ export function DinerDetail({ id }: { id: string }) {
 
   if (!hydrated || status === 'loading') {
     return (
-      <p role="status" className="py-16 text-center text-sm text-cream-700">
+      <p role="status" className="py-16 text-center text-ui text-cream-600">
         Reading the file…
       </p>
     );
@@ -86,8 +85,8 @@ export function DinerDetail({ id }: { id: string }) {
   if (!diner) {
     return (
       <div className="panel border-dashed px-6 py-14 text-center">
-        <p className="display-type text-2xl text-cream-300">Nobody by that name here.</p>
-        <p className="mx-auto mt-3 max-w-[46ch] text-sm leading-relaxed text-cream-700">
+        <p className="display-type text-title text-cream-300">Nobody by that name here.</p>
+        <p className="mx-auto mt-3 max-w-[44ch] text-ui leading-relaxed text-cream-600">
           This person is not saved on this device. Any meals filed with them still hold the roster
           they were recorded with, exactly as it was.
         </p>
@@ -108,14 +107,17 @@ export function DinerDetail({ id }: { id: string }) {
         Back to the people
       </Link>
 
-      <section aria-labelledby="diner-heading" className="panel p-4 sm:p-5">
+      <section
+        aria-labelledby="diner-heading"
+        className="border-t border-line pt-5 first:border-t-0 first:pt-0"
+      >
         <h1
           id="diner-heading"
-          className="display-type break-words text-3xl text-cream-50 sm:text-4xl"
+          className="display-type break-words text-figure text-cream-50 sm:text-figure"
         >
           {diner.displayName}
         </h1>
-        <p className="mt-2 text-sm text-cream-500">
+        <p className="mt-2 text-ui text-cream-500">
           Saved on this device. Every figure below comes from meals you filed with them at the
           table.
         </p>
@@ -132,13 +134,16 @@ export function DinerDetail({ id }: { id: string }) {
         </div>
       </section>
 
-      <section aria-labelledby="diner-record-heading" className="panel p-4 sm:p-5">
-        <h2 id="diner-record-heading" className="micro-label mb-3">
+      <section
+        aria-labelledby="diner-record-heading"
+        className="border-t border-line pt-5 first:border-t-0 first:pt-0"
+      >
+        <h2 id="diner-record-heading" className="display-type text-title text-cream-100 mb-3">
           The record
         </h2>
 
         {summary.visits === 0 ? (
-          <p className="max-w-[56ch] text-sm leading-relaxed text-cream-700">
+          <p className="max-w-[62ch] text-ui leading-relaxed text-cream-600">
             No meals filed with them yet. Add them to a table roster and file the report, and their
             share of it appears here. Meals recorded without a roster are not assigned to anybody —
             nobody said who was there, and the calculator will not guess.
@@ -160,7 +165,9 @@ export function DinerDetail({ id }: { id: string }) {
             </dl>
 
             <div className="mt-4 well px-4 py-3">
-              <h3 className="micro-label mb-2">How those plates were counted</h3>
+              <h3 className="display-type text-lead text-cream-100 mb-2">
+                How those plates were counted
+              </h3>
               <dl className="grid grid-cols-2 gap-2">
                 <Figure
                   label="Explicitly theirs"
@@ -168,7 +175,7 @@ export function DinerDetail({ id }: { id: string }) {
                 />
                 <Figure label="Estimated share" value={formatPlateQuantity(summary.sharedPlates)} />
               </dl>
-              <p className="mt-2 max-w-[62ch] text-xs leading-relaxed text-cream-700">
+              <p className="mt-2 max-w-[62ch] text-caption leading-relaxed text-cream-600">
                 The first figure is a record: somebody said those plates were theirs. The second is
                 an even split of what the table shared, which is an assumption rather than a
                 measurement — the calculator records one tab and cannot know who reached for what.
@@ -177,19 +184,19 @@ export function DinerDetail({ id }: { id: string }) {
 
             {categories.length > 0 && (
               <div className="mt-5">
-                <h3 className="micro-label mb-2">What they go for</h3>
+                <h3 className="display-type text-lead text-cream-100 mb-2">What they go for</h3>
                 <ShareBars tallies={categories} unitLabel="plates" />
               </div>
             )}
 
             {summary.topFoods.length > 0 && (
               <div className="mt-5">
-                <h3 className="micro-label mb-2">Most ordered</h3>
+                <h3 className="display-type text-lead text-cream-100 mb-2">Most ordered</h3>
                 <ul className="space-y-1">
                   {summary.topFoods.map((food) => (
                     <li
                       key={food.foodId}
-                      className="flex items-baseline justify-between gap-3 border-t border-line-soft py-2 text-sm"
+                      className="flex items-baseline justify-between gap-3 border-t border-line-soft py-2 text-ui"
                     >
                       <span className="min-w-0 truncate text-cream-100">{food.name}</span>
                       <span className="tabular shrink-0 text-cream-500">
@@ -202,18 +209,18 @@ export function DinerDetail({ id }: { id: string }) {
             )}
 
             <div className="mt-5">
-              <h3 className="micro-label mb-2">Recent meals</h3>
+              <h3 className="display-type text-lead text-cream-100 mb-2">Recent meals</h3>
               <ul className="space-y-1">
                 {summary.recent.slice(0, 5).map((visit) => (
                   <li key={visit.recordId} className="border-t border-line-soft py-2">
                     <Link
                       href={`/history/${visit.recordId}`}
-                      className="flex flex-wrap items-baseline justify-between gap-2 text-sm text-cream-100 underline-offset-4 hover:underline"
+                      className="flex flex-wrap items-baseline justify-between gap-2 text-ui text-cream-100 underline-offset-4 hover:underline"
                     >
                       <span className="min-w-0 truncate">
                         {visit.restaurantName || 'Unnamed restaurant'}
                       </span>
-                      <span className="tabular shrink-0 text-xs text-cream-500">
+                      <span className="tabular shrink-0 text-caption text-cream-500">
                         {formatRecordedAt(visit.recordedAt)} ·{' '}
                         {formatPercent(visit.recoveryPercent)}
                       </span>
@@ -244,6 +251,7 @@ export function DinerDetail({ id }: { id: string }) {
         title="Remove this person?"
         body={`This removes ${diner.displayName} from the people saved on this device. Every meal you filed with them keeps its own roster exactly as it was recorded — no history is rewritten and no plate is reassigned.`}
         confirmLabel="Remove them"
+        destructive
         cancelLabel="Keep them"
         onConfirm={() => {
           remove(diner.id);
@@ -254,15 +262,6 @@ export function DinerDetail({ id }: { id: string }) {
       />
 
       <StatusToast message={message} />
-    </div>
-  );
-}
-
-function Figure({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="well px-3 py-2">
-      <dt className="micro-label">{label}</dt>
-      <dd className="tabular mt-0.5 text-sm font-semibold text-cream-50">{value}</dd>
     </div>
   );
 }

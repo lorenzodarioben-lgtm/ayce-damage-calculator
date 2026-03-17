@@ -25,16 +25,15 @@ interface SiteHeaderProps {
  * "hovered" in the same language it said "you are here".
  */
 const LINK_BASE =
-  'relative flex min-h-11 items-center rounded-[10px] px-3 text-xs font-semibold uppercase ' +
-  'tracking-[0.1em] transition-colors duration-200 ' +
+  'relative flex min-h-11 items-center rounded-surface px-3 text-caption font-semibold uppercase ' +
+  'tracking-caps transition-colors duration-160 ' +
   "after:absolute after:inset-x-3 after:bottom-1.5 after:h-px after:rounded-full after:content-['']";
 
 const LINK_IDLE =
   'text-cream-300 hover:bg-ash-800/70 hover:text-cream-50 after:bg-transparent ' +
   'hover:after:bg-line-ember';
 
-const LINK_CURRENT =
-  'text-ember-300 after:bg-ember-400 after:shadow-[0_0_10px_0_var(--color-ember-500)]';
+const LINK_CURRENT = 'text-cream-100 after:bg-ember-400';
 
 /**
  * Tailwind's own small breakpoint, in pixels. The menu and its toggle are
@@ -137,8 +136,8 @@ export function SiteHeader({ onBrandClick, brandActionLabel }: SiteHeaderProps) 
   }
 
   return (
-    <header className="sticky top-0 z-30 border-b border-line/80 bg-ash-950/72 shadow-[0_1px_0_0_rgb(255_250_240/0.04),0_10px_30px_-22px_rgb(0_0_0/0.9)] backdrop-blur-xl backdrop-saturate-150">
-      <div className="mx-auto flex h-14 max-w-[1280px] items-center justify-between gap-3 px-4 sm:px-6">
+    <header className="sticky top-0 z-30 border-b border-line/80 bg-ash-950/72 elevate-panel backdrop-blur-xl backdrop-saturate-150">
+      <div className="mx-auto flex h-14 max-w-page items-center justify-between gap-3 px-4 sm:px-6">
         {/* An explicit label rather than one derived from the child text: it keeps
             the name identical across engines, and still opens with the visible
             wordmark so speech input can target what the user actually sees. */}
@@ -147,7 +146,7 @@ export function SiteHeader({ onBrandClick, brandActionLabel }: SiteHeaderProps) 
             type="button"
             onClick={onBrandClick}
             aria-label={`${BRAND_NAME} — ${brandActionLabel ?? 'Back to the top of the page'}`}
-            className="-mx-2 flex min-h-11 cursor-pointer items-center rounded-[10px] px-2 transition-colors duration-200 hover:bg-ash-800"
+            className="-mx-2 flex min-h-11 cursor-pointer items-center rounded-surface px-2 transition-colors duration-160 hover:bg-ash-800"
           >
             <BrandMark />
           </button>
@@ -155,7 +154,7 @@ export function SiteHeader({ onBrandClick, brandActionLabel }: SiteHeaderProps) 
           <Link
             href="/"
             aria-label={`${BRAND_NAME} — back to the calculator`}
-            className="-mx-2 flex min-h-11 items-center rounded-[10px] px-2 transition-colors duration-200 hover:bg-ash-800"
+            className="-mx-2 flex min-h-11 items-center rounded-surface px-2 transition-colors duration-160 hover:bg-ash-800"
           >
             <BrandMark />
           </Link>
@@ -187,7 +186,7 @@ export function SiteHeader({ onBrandClick, brandActionLabel }: SiteHeaderProps) 
           aria-expanded={menuOpen}
           aria-controls={menuId}
           aria-label={menuOpen ? 'Close the menu' : 'Open the menu'}
-          className="-mr-2 flex size-11 cursor-pointer items-center justify-center rounded-[10px] text-cream-300 transition-colors duration-200 hover:bg-ash-800 hover:text-cream-50 sm:hidden"
+          className="-mr-2 flex size-11 cursor-pointer items-center justify-center rounded-surface text-cream-300 transition-colors duration-160 hover:bg-ash-800 hover:text-cream-50 sm:hidden"
         >
           {menuOpen ? <X size={20} aria-hidden="true" /> : <Menu size={20} aria-hidden="true" />}
         </button>
@@ -197,7 +196,7 @@ export function SiteHeader({ onBrandClick, brandActionLabel }: SiteHeaderProps) 
         <nav
           id={menuId}
           aria-label="Primary"
-          className="border-t border-line-soft bg-ash-900/95 px-4 py-3 shadow-[0_18px_40px_-20px_rgb(0_0_0/0.85)] backdrop-blur-xl sm:hidden"
+          className="border-t border-line-soft bg-ash-900/95 px-4 py-3 elevate-float backdrop-blur-xl sm:hidden"
         >
           <ul className="space-y-1">
             {DESTINATIONS.map((destination) => {

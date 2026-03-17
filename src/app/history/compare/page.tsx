@@ -22,11 +22,11 @@ export default function ComparePage() {
           recorded meals, so the comparison is like for like.
         </RouteHeader>
 
-        <div className="mx-auto max-w-[900px] px-4 sm:px-6">
+        <div className="mx-auto max-w-page px-4 sm:px-6">
           <div className="mt-8">
             <Suspense
               fallback={
-                <p role="status" className="text-sm text-cream-700">
+                <p role="status" className="text-ui text-cream-600">
                   Retrieving comparison…
                 </p>
               }
