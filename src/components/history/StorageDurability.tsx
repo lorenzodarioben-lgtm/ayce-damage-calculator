@@ -80,14 +80,17 @@ export function StorageDurability() {
   return (
     <section aria-labelledby="storage-durability-heading" className="panel p-4 sm:p-5">
       <div className="flex items-start gap-3">
-        <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-ash-800 text-ember-400">
+        <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-surface bg-ash-800 text-cream-100">
           <ShieldCheck size={18} aria-hidden="true" />
         </div>
         <div>
-          <h2 id="storage-durability-heading" className="micro-label mb-1">
+          <h2
+            id="storage-durability-heading"
+            className="display-type text-title text-cream-100 mb-1"
+          >
             Local data protection
           </h2>
-          <p className="max-w-[58ch] text-sm leading-relaxed text-cream-300">
+          <p className="max-w-[62ch] text-ui leading-relaxed text-cream-300">
             Your meal data remains on this device. Browser storage controls can reduce eviction
             risk, but a backup is still the durable copy you can move elsewhere.
           </p>
@@ -95,13 +98,13 @@ export function StorageDurability() {
       </div>
 
       {status === 'loading' && (
-        <p role="status" className="mt-4 text-sm text-cream-500">
+        <p role="status" className="mt-4 text-ui text-cream-500">
           Checking this browser’s storage controls…
         </p>
       )}
 
       {status === 'unavailable' && (
-        <p className="mt-4 text-sm leading-relaxed text-cream-500">
+        <p className="mt-4 text-ui leading-relaxed text-cream-500">
           This browser does not expose storage durability details here. The calculator remains
           local-first; download a backup when the records matter.
         </p>
@@ -109,7 +112,7 @@ export function StorageDurability() {
 
       {status === 'ready' && durability && (
         <div className="mt-4 space-y-4">
-          <dl className="grid gap-3 text-sm sm:grid-cols-3">
+          <dl className="grid gap-3 text-ui sm:grid-cols-3">
             <div>
               <dt className="text-cream-500">Persistent storage</dt>
               <dd className="mt-0.5 font-semibold text-cream-100">
@@ -151,7 +154,7 @@ export function StorageDurability() {
       )}
 
       {message && (
-        <p role="status" className="mt-3 max-w-[60ch] text-sm leading-relaxed text-sesame-400">
+        <p role="status" className="mt-3 max-w-[62ch] text-ui leading-relaxed text-sesame-400">
           {message}
         </p>
       )}

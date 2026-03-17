@@ -34,8 +34,11 @@ export function MealBreakdown({
   const total = lines.reduce((sum, line) => sum + line.retailValue, 0);
 
   return (
-    <section aria-labelledby={headingId} className="panel p-4 sm:p-5">
-      <h3 id={headingId} className="micro-label mb-3">
+    <section
+      aria-labelledby={headingId}
+      className="border-t border-line pt-5 first:border-t-0 first:pt-0"
+    >
+      <h3 id={headingId} className="display-type text-lead text-cream-100 mb-3">
         {heading}
       </h3>
 
@@ -46,18 +49,18 @@ export function MealBreakdown({
             className="flex items-start justify-between gap-3 border-b border-line-soft py-3 first:pt-0"
           >
             <div className="min-w-0">
-              <p className="text-sm font-bold text-cream-50">{line.food.name}</p>
-              <p className="text-xs text-cream-500">
+              <p className="text-ui font-bold text-cream-50">{line.food.name}</p>
+              <p className="text-caption text-cream-500">
                 {getQualityMeta(line.item.quality).label} ·{' '}
                 {getPlateSizeMeta(line.item.plateSize).label}
               </p>
-              <p className="tabular mt-0.5 text-xs text-cream-700">
+              <p className="tabular mt-0.5 text-caption text-cream-600">
                 {formatUnits(line)}
                 {line.hasWeight ? ` · ${formatWeight(line.weightG)}` : ' · not weighed'}
                 {line.uneatenPlates > 0 && <> · {formatPlateQuantity(line.uneatenPlates)} left</>}
               </p>
             </div>
-            <p className="tabular shrink-0 text-sm font-bold text-ember-400">
+            <p className="tabular shrink-0 text-ui font-bold text-cream-100">
               {formatMoney(line.retailValue, pricingProfile.money)}
             </p>
           </li>
@@ -68,8 +71,8 @@ export function MealBreakdown({
           repeating the headline metric's own label here would give the report
           two things called the same thing. */}
       <div className="flex items-baseline justify-between gap-3 pt-3">
-        <p className="micro-label">Total</p>
-        <p className="tabular text-base font-bold text-cream-50">
+        <p className="micro-label text-cream-500">Total</p>
+        <p className="tabular text-body font-bold text-cream-50">
           {formatMoney(total, pricingProfile.money)}
         </p>
       </div>

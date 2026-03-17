@@ -68,19 +68,19 @@ export function Dialog({ open, onClose, title, children, labelledById }: DialogP
         }
       }}
       onKeyDown={handleKeyDown}
-      className="m-auto max-h-[85dvh] w-[min(38rem,calc(100vw-2rem))] overflow-y-auto rounded-panel border border-line-ember bg-ash-850 bg-[image:var(--fill-panel)] p-0 text-cream-100 shadow-[var(--shadow-float)] backdrop:bg-black/75 backdrop:backdrop-blur-sm"
+      className="m-auto max-h-[85dvh] w-[min(38rem,calc(100vw-2rem))] overflow-y-auto rounded-surface border border-line-ember bg-ash-850 bg-[image:var(--fill-panel)] p-0 text-cream-100 elevate-float backdrop:bg-black/75 backdrop:backdrop-blur-sm"
     >
       {/* The header stays put while the body scrolls under it, so it needs to
           be opaque and to cast a little shade over what passes beneath. */}
-      <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-line bg-ash-850/95 px-5 py-4 shadow-[0_10px_20px_-18px_#000] backdrop-blur-sm">
-        <h2 id={labelledById} className="display-type text-2xl text-cream-50">
+      <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-line bg-ash-850/95 px-5 py-4 backdrop-blur-sm">
+        <h2 id={labelledById} className="display-type text-title text-cream-50">
           {title}
         </h2>
         <button
           type="button"
           onClick={onClose}
           aria-label="Close dialog"
-          className="-mr-1 -mt-1 flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-[10px] text-cream-500 transition-colors hover:bg-ash-800 hover:text-cream-100"
+          className="-mr-1 -mt-1 flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-surface text-cream-500 transition-colors hover:bg-ash-800 hover:text-cream-100"
         >
           <X size={18} aria-hidden="true" />
         </button>

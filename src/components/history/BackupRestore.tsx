@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft, Download, FileSpreadsheet, Lock, Upload } from 'lucide-react';
 import { VaultPasswordDialog } from '@/components/history/VaultPasswordDialog';
 import { RestoreImpactSummary } from '@/components/history/RestoreImpactSummary';
-import { Button } from '@/components/ui/Button';
+import { Button, buttonClasses } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import {
   BACKUP_ERROR_MESSAGES,
@@ -56,9 +56,7 @@ interface PendingReplace {
   readonly impact: RestoreImpact;
 }
 
-const BACK_LINK =
-  '-ml-2 inline-flex min-h-11 items-center gap-1.5 rounded-[10px] px-2 text-xs font-semibold ' +
-  'uppercase tracking-[0.1em] text-cream-500 transition-colors duration-200 hover:bg-ash-850 hover:text-cream-100';
+const BACK_LINK = buttonClasses('ghost', 'sm', '-ml-2');
 
 /** Hands the browser a file built in memory, and never leaks the object URL. */
 function download(contents: string, type: string, filename: string): void {
@@ -312,10 +310,10 @@ export function BackupRestore() {
       </Link>
 
       <section aria-labelledby="export-heading" className="panel p-4 sm:p-5">
-        <h2 id="export-heading" className="micro-label mb-2">
+        <h2 id="export-heading" className="display-type text-title text-cream-100 mb-2">
           Export
         </h2>
-        <p className="mb-4 max-w-[56ch] text-sm leading-relaxed text-cream-300">
+        <p className="mb-4 max-w-[62ch] text-ui leading-relaxed text-cream-300">
           Writes every filed session, saved order and personal menu setting to a single JSON file.
           Keep it somewhere safe — it is the only copy of data that otherwise never leaves this
           browser.
@@ -343,7 +341,7 @@ export function BackupRestore() {
             Download spreadsheet
           </Button>
         </div>
-        <p className="mt-3 text-xs leading-relaxed text-cream-700">
+        <p className="mt-3 text-caption leading-relaxed text-cream-600">
           The spreadsheet is history only, one row per plate, and cannot be restored from. Saved
           orders, menu settings and the ability to restore live in the JSON backup. The encrypted
           backup holds exactly the same contents, sealed with a key this browser derives from your
@@ -353,16 +351,16 @@ export function BackupRestore() {
       </section>
 
       <section aria-labelledby="import-heading" className="panel p-4 sm:p-5">
-        <h2 id="import-heading" className="micro-label mb-2">
+        <h2 id="import-heading" className="display-type text-title text-cream-100 mb-2">
           Restore
         </h2>
-        <p className="mb-4 max-w-[56ch] text-sm leading-relaxed text-cream-300">
+        <p className="mb-4 max-w-[62ch] text-ui leading-relaxed text-cream-300">
           Choose a backup file, plain or encrypted. An encrypted one asks for its password first.
           Either way, nothing is written until you have seen what it contains and chosen how to
           apply it.
         </p>
 
-        <label htmlFor="backup-file" className="mb-1.5 block text-sm font-semibold text-cream-300">
+        <label htmlFor="backup-file" className="mb-1.5 block text-ui font-semibold text-cream-300">
           Backup file
         </label>
         <input
@@ -377,31 +375,31 @@ export function BackupRestore() {
               void handleFile(file);
             }
           }}
-          className="block w-full cursor-pointer rounded-[10px] border border-line bg-ash-900 p-3 text-sm text-cream-300 file:mr-3 file:cursor-pointer file:rounded-[8px] file:border-0 file:bg-ash-800 file:px-3 file:py-2 file:text-xs file:font-semibold file:uppercase file:tracking-[0.1em] file:text-cream-100"
+          className="block w-full cursor-pointer rounded-surface border border-line bg-ash-900 p-3 text-ui text-cream-300 file:mr-3 file:cursor-pointer file:rounded-surface file:border-0 file:bg-ash-800 file:px-3 file:py-2 file:text-caption file:font-semibold file:uppercase file:tracking-caps file:text-cream-100"
         />
 
         {stage.kind === 'error' && (
-          <p role="alert" className="mt-4 text-sm font-semibold text-char-500">
+          <p role="alert" className="mt-4 text-ui font-semibold text-char-400">
             {stage.message}
           </p>
         )}
 
         {stage.kind === 'done' && (
-          <p role="status" className="mt-4 text-sm text-sesame-400">
+          <p role="status" className="mt-4 text-ui text-sesame-400">
             {stage.message}
           </p>
         )}
 
         {stage.kind === 'preview' && (
-          <div className="mt-4 rounded-[10px] border border-line-ember bg-ash-900 p-4">
-            <p className="micro-label">In this file</p>
-            <ul className="tabular mt-2 space-y-1 text-sm text-cream-100">
+          <div className="mt-4 rounded-surface border border-line-ember bg-ash-900 p-4">
+            <p className="micro-label text-cream-500">In this file</p>
+            <ul className="tabular mt-2 space-y-1 text-ui text-cream-100">
               <li>{stage.contents.history.length} filed sessions</li>
               <li>{stage.contents.favorites.length} saved orders</li>
               <li>{stage.contents.configuration.pricingProfiles.length} pricing profiles</li>
               <li>{stage.contents.configuration.customFoods.length} custom foods</li>
               <li>{stage.contents.configuration.restaurants.length} saved restaurants</li>
-              <li className="text-xs text-cream-700">
+              <li className="text-caption text-cream-600">
                 Exported {formatRecordedAt(stage.contents.exportedAt)}
               </li>
             </ul>
@@ -411,7 +409,7 @@ export function BackupRestore() {
               stage.summary.skippedPricingProfiles > 0 ||
               stage.summary.skippedCustomFoods > 0 ||
               stage.summary.skippedRestaurants > 0) && (
-              <p className="mt-3 text-xs text-ember-400">
+              <p className="mt-3 text-caption text-cream-100">
                 {stage.summary.skippedHistory} sessions and {stage.summary.skippedFavorites} saved
                 orders, {stage.summary.skippedPricingProfiles} pricing profiles,{' '}
                 {stage.summary.skippedCustomFoods} custom foods and{' '}
@@ -442,7 +440,7 @@ export function BackupRestore() {
               </Button>
             </div>
 
-            <p className="mt-3 text-xs leading-relaxed text-cream-700">
+            <p className="mt-3 text-caption leading-relaxed text-cream-600">
               Merging keeps everything already on this device and adds anything new. Replacing
               discards the current history, saved orders and menu settings first.
             </p>
@@ -471,6 +469,7 @@ export function BackupRestore() {
       />
 
       <ConfirmDialog
+        destructive
         open={pendingReplace !== null}
         title="Replace everything on this device?"
         body={
