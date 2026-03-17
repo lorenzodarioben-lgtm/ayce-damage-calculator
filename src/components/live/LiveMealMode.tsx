@@ -3,6 +3,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Plus, Receipt } from 'lucide-react';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { FavoriteQuickAdd } from '@/components/favorites/FavoriteQuickAdd';
 import { AddCutDialog } from '@/components/live/AddCutDialog';
 import { MealPacing } from '@/components/live/MealPacing';
@@ -23,6 +24,7 @@ import { useMealSession, type AddItemPayload } from '@/hooks/useMealSession';
 import { usePricingProfiles } from '@/hooks/usePricingProfiles';
 import { useCustomFoods } from '@/hooks/useCustomFoods';
 import { useStatusMessage } from '@/hooks/useStatusMessage';
+import { useUndoableRemove } from '@/hooks/useUndoableRemove';
 import { REPORT_STAGE, STAGE_PARAM } from '@/hooks/useStageHistory';
 import { findFoodInCatalogue, foodCatalogue } from '@/lib/foodCatalogue';
 import { formatKg, formatMoney, formatPlates } from '@/lib/formatting';
@@ -52,6 +54,7 @@ export function LiveMealMode() {
     decrementItem,
     setItemConsumption,
     removeItem,
+    restoreItem,
     canUndo,
     canRedo,
     undo,
@@ -70,6 +73,17 @@ export function LiveMealMode() {
   const [addOpen, setAddOpen] = useState(false);
   const [activeDinerId, setActiveDinerId] = useState<string | null>(null);
   const [status, announce] = useStatusMessage();
+
+  // Removing a line drops a quality, a plate size and a running count, so it
+  // is offered back rather than simply confirmed. The hook for this existed,
+  // and was wired to nothing.
+  const removeItemWithUndo = useUndoableRemove({
+    items: session.items,
+    removeItem,
+    restoreItem,
+    announce,
+    location: 'the meal',
+  });
 
   const handleAdd = useCallback(
     (payload: AddItemPayload) => {
@@ -124,7 +138,7 @@ export function LiveMealMode() {
 
         <main
           id={MAIN_CONTENT_ID}
-          className="relative z-10 mx-auto max-w-[640px] px-4 pt-4 pb-28 sm:px-6"
+          className="relative z-10 mx-auto max-w-narrow px-4 pt-4 pb-28 sm:px-6"
         >
           {sessionConflict && (
             <div className="mb-4">
@@ -146,10 +160,10 @@ export function LiveMealMode() {
             className="panel sticky top-[3.5rem] z-20 mb-4 bg-ash-850/95 p-4 backdrop-blur-md"
           >
             <div className="flex items-baseline justify-between gap-3">
-              <h1 id="live-damage-heading" className="display-type text-2xl text-cream-50">
+              <h1 id="live-damage-heading" className="display-type text-title text-cream-50">
                 Live damage
               </h1>
-              <p className="tabular text-xs text-cream-700">
+              <p className="tabular text-caption text-cream-600">
                 {formatPlates(report.totalPlates)} · {formatKg(report.totalWeightKg)}
               </p>
             </div>
@@ -194,23 +208,23 @@ export function LiveMealMode() {
                   onIncrement={handleIncrement}
                   onDecrement={decrementItem}
                   onConsumptionChange={setItemConsumption}
-                  onRemove={removeItem}
+                  onRemove={removeItemWithUndo}
                 />
               ))}
             </ul>
           ) : (
-            <div className="panel border-dashed px-6 py-12 text-center">
-              <p className="display-type text-2xl text-cream-300">Nothing on the grill yet.</p>
-              <p className="mx-auto mt-3 max-w-[40ch] text-sm leading-relaxed text-cream-700">
-                Add the cuts you are ordering. Each one gets its own button, so logging a plate is a
-                single tap for the rest of the meal.
-              </p>
-            </div>
+            <EmptyState title="Nothing on the grill yet.">
+              Add the cuts you are ordering. Each one gets its own button, so logging a plate is a
+              single tap for the rest of the meal.
+            </EmptyState>
           )}
 
           {favorites.length > 0 && (
             <section aria-labelledby="live-saved-orders-heading" className="mt-4">
-              <h2 id="live-saved-orders-heading" className="micro-label mb-2">
+              <h2
+                id="live-saved-orders-heading"
+                className="display-type text-title text-cream-100 mb-2"
+              >
                 Saved orders
               </h2>
               <FavoriteQuickAdd
@@ -225,10 +239,15 @@ export function LiveMealMode() {
 
           {quickPicks.length > 0 && (
             <section aria-labelledby="live-history-picks-heading" className="mt-4">
-              <h2 id="live-history-picks-heading" className="micro-label mb-1">
+              <h2
+                id="live-history-picks-heading"
+                className="display-type text-title text-cream-100 mb-1"
+              >
                 Frequently logged on this device
               </h2>
-              <p className="mb-2 text-xs text-cream-700">Based only on your filed local history.</p>
+              <p className="mb-2 text-caption text-cream-600">
+                Based only on your filed local history.
+              </p>
               <div className="flex flex-wrap gap-2">
                 {quickPicks.map(({ payload, count }) => {
                   const food = findFoodInCatalogue(catalogue, payload.foodId);
@@ -237,10 +256,10 @@ export function LiveMealMode() {
                       key={`${payload.foodId}-${payload.quality}-${payload.plateSize}`}
                       type="button"
                       onClick={() => handleAdd(payload)}
-                      className="rounded-[10px] border border-line px-3 py-2 text-sm text-cream-100 hover:border-ember-700"
+                      className="rounded-surface border border-line px-3 py-2 text-ui text-cream-100 hover:border-line-strong"
                     >
                       {food?.name ?? 'Saved cut'}{' '}
-                      <span className="text-xs text-cream-700">· {count} plates</span>
+                      <span className="text-caption text-cream-600">· {count} plates</span>
                     </button>
                   );
                 })}
@@ -266,18 +285,18 @@ export function LiveMealMode() {
               tabIndex={hasItems ? undefined : -1}
               className={
                 hasItems
-                  ? 'flex min-h-14 w-full items-center justify-center gap-2 rounded-[10px] bg-ember-500 px-6 text-base font-bold uppercase tracking-[0.1em] text-ash-950 transition-colors duration-200 hover:bg-ember-400'
-                  : 'pointer-events-none flex min-h-14 w-full items-center justify-center gap-2 rounded-[10px] bg-ash-700 px-6 text-base font-bold uppercase tracking-[0.1em] text-cream-700'
+                  ? 'flex min-h-14 w-full items-center justify-center gap-2 rounded-surface bg-ember-500 px-6 text-body font-bold uppercase tracking-caps text-ash-950 transition-colors duration-160 hover:bg-ember-400'
+                  : 'pointer-events-none flex min-h-14 w-full items-center justify-center gap-2 rounded-surface bg-ash-700 px-6 text-body font-bold uppercase tracking-caps text-cream-600'
               }
             >
               <Receipt size={18} aria-hidden="true" />
               Calculate the damage
             </Link>
 
-            <p className="text-center text-xs text-cream-700">
+            <p className="text-center text-caption text-cream-600">
               {formatMoney(session.pricePerDiner, pricingProfile.money)} per diner ×{' '}
               {session.dinerCount}.{' '}
-              <Link href="/" className="text-ember-500 underline-offset-4 hover:underline">
+              <Link href="/" className="text-cream-100 underline-offset-4 hover:underline">
                 Change in the full builder
               </Link>
               .

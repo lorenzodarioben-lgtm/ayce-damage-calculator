@@ -32,7 +32,7 @@ export function QrCode({ value, label }: QrCodeProps) {
       viewBox={`0 0 ${extent} ${extent}`}
       role="img"
       aria-label={label}
-      className="h-auto w-full max-w-[220px] rounded-[10px] bg-cream-50 p-1"
+      className="h-auto w-full max-w-[220px] rounded-surface bg-cream-50 p-1"
       shapeRendering="crispEdges"
     >
       <path

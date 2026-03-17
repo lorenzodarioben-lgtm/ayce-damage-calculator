@@ -24,14 +24,18 @@ export function FoodCard({ food, selected, onSelect }: FoodCardProps) {
       aria-pressed={selected}
       onClick={() => onSelect(food.id)}
       className={cn(
-        'group relative flex h-full cursor-pointer flex-col gap-2 overflow-hidden rounded-panel border p-3 text-left',
-        'transition-[border-color,background-color,transform,box-shadow] duration-200 ease-out-soft',
+        // A row on a phone and a card above it. Seven cuts as tall two-column
+        // cards was most of a screen of scrolling before the first plate could
+        // be added; as rows they are a list you can thumb down.
+        'group relative flex h-full cursor-pointer items-center gap-3 overflow-hidden rounded-surface border p-3 text-left',
+        'sm:flex-col sm:items-stretch sm:gap-2',
+        'transition-[border-color,background-color,transform,box-shadow] duration-160 ease-out-soft',
         // Lifts a pixel under the pointer and settles back under the press, so
         // the card behaves like something on the page rather than a hit area.
         'hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] sm:p-4',
         selected
-          ? 'border-ember-500 bg-ash-800 shadow-[inset_0_1px_0_rgb(255_250_240/0.08),0_0_0_1px_var(--color-ember-500),0_14px_34px_-16px_#000,0_0_26px_-10px_var(--color-ember-500)]'
-          : 'border-line bg-ash-850 shadow-[var(--shadow-panel)] hover:border-ember-700 hover:bg-ash-800 hover:shadow-[var(--shadow-raised)]',
+          ? 'border-ember-500 bg-ash-800 elevate-selected'
+          : 'border-line bg-ash-850 elevate-panel hover:border-line-strong hover:bg-ash-800 hover:elevate-raised',
       )}
     >
       {/* The light the cut is sitting under. Warms on hover and stays warm
@@ -40,7 +44,7 @@ export function FoodCard({ food, selected, onSelect }: FoodCardProps) {
       <span
         aria-hidden="true"
         className={cn(
-          'pointer-events-none absolute -top-10 left-1/2 h-32 w-40 -translate-x-1/2 rounded-full blur-2xl transition-opacity duration-300',
+          'pointer-events-none absolute -top-10 left-1/2 h-32 w-40 -translate-x-1/2 rounded-full blur-2xl transition-opacity duration-160',
           'bg-[radial-gradient(circle,var(--color-ember-500)_0%,transparent_70%)]',
           selected ? 'opacity-25' : 'opacity-0 group-hover:opacity-15',
         )}
@@ -48,7 +52,7 @@ export function FoodCard({ food, selected, onSelect }: FoodCardProps) {
       <span
         aria-hidden="true"
         className={cn(
-          'absolute right-2.5 top-2.5 flex size-6 items-center justify-center rounded-full border transition-opacity duration-200',
+          'absolute right-2.5 top-2.5 flex size-6 items-center justify-center rounded-full border transition-opacity duration-160',
           selected
             ? 'border-ember-500 bg-ember-500 text-ash-950 opacity-100'
             : 'border-line bg-ash-900 text-transparent opacity-0 group-hover:opacity-60',
@@ -59,21 +63,19 @@ export function FoodCard({ food, selected, onSelect }: FoodCardProps) {
 
       <FoodIllustration
         food={food}
-        className="relative h-24 w-24 shrink-0 drop-shadow-[0_6px_14px_rgb(0_0_0/0.55)] transition-transform duration-300 ease-out-soft group-hover:scale-[1.05] sm:h-28 sm:w-28"
+        className="relative h-16 w-16 shrink-0 elevate-illustration transition-transform duration-160 ease-out-soft group-hover:scale-[1.05] sm:h-28 sm:w-28"
       />
 
-      <span className="display-type relative text-[1.1rem] leading-tight text-cream-50 sm:text-[1.3rem]">
-        {food.name}
-      </span>
+      <span className="relative flex min-w-0 flex-1 flex-col gap-0.5 sm:flex-none sm:gap-2">
+        <span className="display-type text-lead leading-tight text-cream-50">{food.name}</span>
 
-      <span className="relative text-[0.78rem] leading-snug text-cream-500 sm:text-[0.82rem]">
-        {food.description}
-      </span>
+        <span className="line-clamp-2 text-ui leading-snug text-cream-500 sm:line-clamp-none">
+          {food.description}
+        </span>
 
-      {/* A badge rather than a line of text: it is the one figure worth
-          comparing between two cards, and it should be findable at a glance. */}
-      <span className="relative mt-auto pt-2">
-        <span className="tabular inline-flex items-center rounded-full border border-line-ember bg-ash-950/70 px-2.5 py-1 text-[0.72rem] font-semibold tracking-wide text-ember-300">
+        {/* The one figure worth comparing between two cuts, so it is findable
+            at a glance rather than read out of a sentence. */}
+        <span className="tabular mt-0.5 text-caption font-semibold text-cream-100 sm:mt-auto sm:pt-2">
           ~{formatUnitPrice(pricing, pricingProfile.money)} retail
         </span>
       </span>

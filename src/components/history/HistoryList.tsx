@@ -108,7 +108,7 @@ export function HistoryList() {
 
   if (status === 'loading') {
     return (
-      <p role="status" className="py-16 text-center text-sm text-cream-700">
+      <p role="status" className="py-16 text-center text-ui text-cream-600">
         Retrieving the file…
       </p>
     );
@@ -123,14 +123,14 @@ export function HistoryList() {
           <div className="mt-6 flex flex-wrap justify-center gap-2">
             <Link
               href="/"
-              className="inline-flex min-h-12 items-center justify-center rounded-[10px] border border-line-ember bg-ash-850 px-5 text-sm font-semibold uppercase tracking-[0.1em] text-ember-400 transition-colors duration-200 hover:bg-ash-800"
+              className="inline-flex min-h-12 items-center justify-center rounded-surface border border-line-ember bg-ash-850 px-5 text-ui font-semibold uppercase tracking-caps text-cream-100 transition-colors duration-160 hover:bg-ash-800"
             >
               Start a session
             </Link>
             {/* An empty file is exactly when someone arrives with a backup. */}
             <Link
               href="/history/data"
-              className="inline-flex min-h-12 items-center justify-center rounded-[10px] border border-line bg-ash-850 px-5 text-sm font-semibold uppercase tracking-[0.1em] text-cream-300 transition-colors duration-200 hover:bg-ash-800 hover:text-cream-50"
+              className="inline-flex min-h-12 items-center justify-center rounded-surface border border-line-strong bg-ash-850 px-5 text-ui font-semibold uppercase tracking-caps text-cream-300 transition-colors duration-160 hover:bg-ash-800 hover:text-cream-50"
             >
               Restore a backup
             </Link>
@@ -148,14 +148,14 @@ export function HistoryList() {
       {/* Worth its space only once the file is long enough to lose things in. */}
       {records.length >= 3 && (
         <div className="mb-4">
-          <label htmlFor={searchId} className="micro-label mb-2 block">
+          <label htmlFor={searchId} className="text-ui font-semibold text-cream-300 mb-2 block">
             Find a session
           </label>
           <div className="relative">
             <Search
               size={16}
               aria-hidden="true"
-              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-cream-700"
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-cream-600"
             />
             <input
               id={searchId}
@@ -164,20 +164,20 @@ export function HistoryList() {
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Restaurant name, or anything in a note…"
               autoComplete="off"
-              className="min-h-11 w-full rounded-[10px] border border-line bg-ash-900 pl-9 pr-11 text-sm text-cream-100 placeholder:text-cream-700"
+              className="min-h-11 w-full rounded-surface border border-line-strong bg-ash-900 pl-9 pr-11 text-ui text-cream-100 placeholder:text-cream-600"
             />
             {query.length > 0 && (
               <button
                 type="button"
                 onClick={() => setQuery('')}
                 aria-label="Clear the search"
-                className="absolute right-1.5 top-1/2 flex size-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-[8px] text-cream-500 transition-colors duration-200 hover:bg-ash-800 hover:text-cream-100"
+                className="absolute right-1.5 top-1/2 flex size-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-inner text-cream-500 transition-colors duration-160 hover:bg-ash-800 hover:text-cream-100"
               >
                 <X size={15} aria-hidden="true" />
               </button>
             )}
           </div>
-          <p role="status" className="tabular mt-1.5 min-h-4 text-xs text-cream-700">
+          <p role="status" className="tabular mt-1.5 min-h-4 text-caption text-cream-600">
             {query.trim().length === 0 && !hasFilters
               ? ''
               : `${ordered.length} of ${records.length} sessions match`}
@@ -186,34 +186,34 @@ export function HistoryList() {
       )}
 
       <details className="panel mb-4 px-4 py-3">
-        <summary className="cursor-pointer text-sm font-semibold text-cream-300">
+        <summary className="cursor-pointer text-ui font-semibold text-cream-300">
           Filter history
         </summary>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          <label className="text-sm text-cream-300">
+          <label className="text-ui text-cream-300">
             From date
             <input
               type="date"
               value={fromDate}
               onChange={(event) => setFromDate(event.target.value)}
-              className="mt-1 min-h-11 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-cream-100"
+              className="mt-1 min-h-11 w-full rounded-surface border border-line-strong bg-ash-900 px-3 text-cream-100"
             />
           </label>
-          <label className="text-sm text-cream-300">
+          <label className="text-ui text-cream-300">
             To date
             <input
               type="date"
               value={toDate}
               onChange={(event) => setToDate(event.target.value)}
-              className="mt-1 min-h-11 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-cream-100"
+              className="mt-1 min-h-11 w-full rounded-surface border border-line-strong bg-ash-900 px-3 text-cream-100"
             />
           </label>
-          <label className="text-sm text-cream-300">
+          <label className="text-ui text-cream-300">
             Restaurant
             <select
               value={restaurant}
               onChange={(event) => setRestaurant(event.target.value)}
-              className="mt-1 min-h-11 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-cream-100"
+              className="mt-1 min-h-11 w-full rounded-surface border border-line-strong bg-ash-900 px-3 text-cream-100"
             >
               <option value="">All restaurants</option>
               {restaurants.map((name) => (
@@ -223,12 +223,12 @@ export function HistoryList() {
               ))}
             </select>
           </label>
-          <label className="text-sm text-cream-300">
+          <label className="text-ui text-cream-300">
             Outcome
             <select
               value={verdict}
               onChange={(event) => setVerdict(event.target.value)}
-              className="mt-1 min-h-11 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-cream-100"
+              className="mt-1 min-h-11 w-full rounded-surface border border-line-strong bg-ash-900 px-3 text-cream-100"
             >
               <option value="">All outcomes</option>
               {VERDICTS.map((option) => (
@@ -238,12 +238,12 @@ export function HistoryList() {
               ))}
             </select>
           </label>
-          <label className="text-sm text-cream-300">
+          <label className="text-ui text-cream-300">
             Tag
             <select
               value={tag}
               onChange={(event) => setTag(event.target.value)}
-              className="mt-1 min-h-11 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-cream-100"
+              className="mt-1 min-h-11 w-full rounded-surface border border-line-strong bg-ash-900 px-3 text-cream-100"
             >
               <option value="">All tags</option>
               {tags.map((value) => (
@@ -258,7 +258,7 @@ export function HistoryList() {
           <button
             type="button"
             onClick={clearFilters}
-            className="mt-4 text-sm font-semibold text-ember-400 hover:text-ember-300"
+            className="mt-4 text-ui font-semibold text-cream-100 hover:text-cream-50"
           >
             Clear all filters
           </button>
@@ -273,17 +273,17 @@ export function HistoryList() {
               setSelectionMode((current) => !current);
               setSelectedIds(new Set());
             }}
-            className="min-h-11 rounded-[10px] border border-line px-3 text-xs font-semibold uppercase tracking-[0.1em] text-cream-300 hover:bg-ash-800"
+            className="min-h-11 rounded-surface border border-line-strong px-3 text-caption font-semibold uppercase tracking-caps text-cream-300 hover:bg-ash-800"
           >
             {selectionMode ? 'Done selecting' : 'Select'}
           </button>
-          <span id="history-sort-label" className="micro-label">
+          <span id="history-sort-label" className="micro-label text-cream-500">
             Order by
           </span>
           <div
             role="group"
             aria-labelledby="history-sort-label"
-            className="flex gap-1 rounded-[10px] border border-line bg-ash-900 p-1"
+            className="segmented-track flex gap-1 p-1"
           >
             {SORTS.map((option) => {
               const selected = option.key === sort;
@@ -294,9 +294,9 @@ export function HistoryList() {
                   aria-pressed={selected}
                   onClick={() => setSort(option.key)}
                   className={cn(
-                    'min-h-9 cursor-pointer rounded-[7px] px-3 text-xs font-semibold uppercase tracking-[0.08em] transition-colors duration-200',
+                    'min-h-11 cursor-pointer rounded-inner px-3 text-caption font-semibold uppercase tracking-caps transition-colors duration-160',
                     selected
-                      ? 'bg-ember-500 text-ash-950'
+                      ? 'segmented-thumb'
                       : 'text-cream-500 hover:bg-ash-800 hover:text-cream-100',
                   )}
                 >
@@ -313,21 +313,21 @@ export function HistoryList() {
           {records.length >= 2 && (
             <Link
               href="/history/compare"
-              className="flex min-h-11 items-center rounded-[10px] border border-line-ember px-3 text-xs font-semibold uppercase tracking-[0.1em] text-ember-400 transition-colors duration-200 hover:bg-ash-800"
+              className="flex min-h-11 items-center rounded-surface border border-line-ember px-3 text-caption font-semibold uppercase tracking-caps text-cream-100 transition-colors duration-160 hover:bg-ash-800"
             >
               Compare
             </Link>
           )}
           <Link
             href="/history/data"
-            className="flex min-h-11 items-center rounded-[10px] border border-line px-3 text-xs font-semibold uppercase tracking-[0.1em] text-cream-300 transition-colors duration-200 hover:bg-ash-800 hover:text-cream-50"
+            className="flex min-h-11 items-center rounded-surface border border-line-strong px-3 text-caption font-semibold uppercase tracking-caps text-cream-300 transition-colors duration-160 hover:bg-ash-800 hover:text-cream-50"
           >
             Backup
           </Link>
           <button
             type="button"
             onClick={() => setPending({ kind: 'all' })}
-            className="min-h-11 cursor-pointer rounded-[10px] border border-char-700 px-3 text-xs font-semibold uppercase tracking-[0.1em] text-char-500 transition-colors duration-200 hover:bg-char-700/25 hover:text-cream-100"
+            className="min-h-11 cursor-pointer rounded-surface border border-char-700 px-3 text-caption font-semibold uppercase tracking-caps text-char-400 transition-colors duration-160 hover:bg-char-700/25 hover:text-cream-100"
           >
             Clear history
           </button>
@@ -335,7 +335,7 @@ export function HistoryList() {
       </div>
 
       {ordered.length === 0 ? (
-        <p className="panel border-dashed px-6 py-12 text-center text-sm text-cream-700">
+        <p className="panel border-dashed px-6 py-12 text-center text-ui text-cream-600">
           No session on file matches that. The records are still there — only the current filters
           are narrowing them.
         </p>
@@ -347,25 +347,25 @@ export function HistoryList() {
               role="toolbar"
               aria-label="Selected records actions"
             >
-              <span className="text-sm text-cream-300">{selectedRecords.length} selected</span>
+              <span className="text-ui text-cream-300">{selectedRecords.length} selected</span>
               <button
                 type="button"
                 onClick={() => setSelectedIds(new Set(ordered.map(({ record }) => record.id)))}
-                className="text-sm font-semibold text-ember-400"
+                className="text-ui font-semibold text-cream-100"
               >
                 Select filtered
               </button>
               <button
                 type="button"
                 onClick={() => setSelectedIds(new Set())}
-                className="text-sm font-semibold text-cream-300"
+                className="text-ui font-semibold text-cream-300"
               >
                 Clear selection
               </button>
               {selectedRecords.length === 2 && (
                 <Link
                   href={`/history/compare?left=${selectedRecords[0]?.record.id}&right=${selectedRecords[1]?.record.id}`}
-                  className="text-sm font-semibold text-ember-400"
+                  className="text-ui font-semibold text-cream-100"
                 >
                   Compare selected
                 </Link>
@@ -374,7 +374,7 @@ export function HistoryList() {
                 <button
                   type="button"
                   onClick={() => downloadSubset(selectedRecords.map(({ record }) => record))}
-                  className="text-sm font-semibold text-ember-400"
+                  className="text-ui font-semibold text-cream-100"
                 >
                   Export selected
                 </button>
@@ -383,7 +383,7 @@ export function HistoryList() {
                 <button
                   type="button"
                   onClick={() => setPending({ kind: 'all' })}
-                  className="text-sm font-semibold text-char-500"
+                  className="text-ui font-semibold text-char-400"
                 >
                   Delete selected
                 </button>
@@ -405,6 +405,7 @@ export function HistoryList() {
       )}
 
       <ConfirmDialog
+        destructive
         open={pending !== null}
         title={
           pending?.kind === 'all'
