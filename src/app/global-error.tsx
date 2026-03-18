@@ -24,8 +24,15 @@ interface GlobalErrorProps {
 export default function GlobalError({ error: _error, retry }: GlobalErrorProps) {
   return (
     <html lang="en-AU">
-      <body>
+      <head>
+        {/* The root viewport export is unavailable when this boundary replaces
+            the layout. Without this, a phone renders the recovery surface at
+            a desktop-width viewport exactly when the app most needs to be
+            readable. */}
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <title>Service interrupted — AYCE Damage Calculator</title>
+      </head>
+      <body>
         <main className="relative z-10 mx-auto flex min-h-dvh max-w-narrow flex-col justify-center px-4 py-16 sm:px-6">
           <p className="micro-label text-cream-500">Service interrupted</p>
           <h1 className="display-type mt-4 text-figure text-cream-50 sm:text-reading">
