@@ -23,6 +23,7 @@ const nextConfig: NextConfig = {
           // device-local data to appear inside someone else's frame.
           { key: 'X-Frame-Options', value: 'DENY' },
           { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
+          { key: 'Cross-Origin-Resource-Policy', value: 'same-origin' },
           {
             key: 'Permissions-Policy',
             value: 'camera=(), geolocation=(), microphone=(), payment=(), usb=()',
