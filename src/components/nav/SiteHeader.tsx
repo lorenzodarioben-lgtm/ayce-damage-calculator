@@ -47,6 +47,13 @@ export function SiteHeader({ onBrandClick, brandActionLabel }: SiteHeaderProps) 
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuPathname, setMenuPathname] = useState(pathname);
   const menuToggleRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (menuOpen) {
+      menuRef.current?.querySelector<HTMLElement>('a, button')?.focus();
+    }
+  }, [menuOpen]);
 
   /*
    * Escape dismisses the menu, and focus goes back to the control that opened
@@ -194,6 +201,7 @@ export function SiteHeader({ onBrandClick, brandActionLabel }: SiteHeaderProps) 
 
       {menuOpen && (
         <nav
+          ref={menuRef}
           id={menuId}
           aria-label="Primary"
           className="border-t border-line-soft bg-ash-900/95 px-4 py-3 elevate-float backdrop-blur-xl sm:hidden"

@@ -26,6 +26,15 @@ test.describe('Mobile navigation', () => {
     await expect(toggle).toBeFocused();
   });
 
+  test('moves keyboard focus into the menu it opens', async ({ page }) => {
+    await page.goto('/');
+
+    await page.getByRole('button', { name: 'Open the menu' }).click();
+    await expect(
+      page.getByRole('navigation', { name: 'Primary' }).last().getByRole('link').first(),
+    ).toBeFocused();
+  });
+
   test('a dialog opened from the menu keeps Escape for itself', async ({ page }) => {
     await page.goto('/');
 
