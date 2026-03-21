@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Search, X } from 'lucide-react';
 import { HistoryEntry } from '@/components/history/HistoryEntry';
@@ -71,6 +71,11 @@ export function HistoryList() {
   );
   const hasFilters = Boolean(fromDate || toDate || restaurant || verdict || tag);
   const invalidDateRange = Boolean(fromDate && toDate && fromDate > toDate);
+
+  // A bulk action must never include records hidden by a newly applied filter.
+  useEffect(() => {
+    setSelectedIds(new Set());
+  }, [fromDate, query, restaurant, tag, toDate, verdict]);
 
   function clearFilters() {
     setFromDate('');
