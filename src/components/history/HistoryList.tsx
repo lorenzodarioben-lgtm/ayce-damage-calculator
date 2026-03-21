@@ -280,6 +280,7 @@ export function HistoryList() {
         <div className="flex items-center gap-2">
           <button
             type="button"
+            aria-pressed={selectionMode}
             onClick={() => {
               setSelectionMode((current) => !current);
               setSelectedIds(new Set());
