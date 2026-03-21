@@ -70,6 +70,7 @@ export function HistoryList() {
     [records],
   );
   const hasFilters = Boolean(fromDate || toDate || restaurant || verdict || tag);
+  const invalidDateRange = Boolean(fromDate && toDate && fromDate > toDate);
 
   function clearFilters() {
     setFromDate('');
@@ -254,6 +255,11 @@ export function HistoryList() {
             </select>
           </label>
         </div>
+        {invalidDateRange && (
+          <p role="alert" className="mt-3 text-caption font-semibold text-char-400">
+            The start date needs to be on or before the end date.
+          </p>
+        )}
         {hasFilters && (
           <button
             type="button"
