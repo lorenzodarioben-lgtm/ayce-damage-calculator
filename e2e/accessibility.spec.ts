@@ -117,6 +117,17 @@ test.describe('Keyboard operation', () => {
   });
 });
 
+test.describe('Motion preferences', () => {
+  test('keeps the report visible when reduced motion is requested', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await openCalculator(page);
+    await addPlate(page, 'Ribeye');
+    await calculateDamage(page);
+
+    await expect(page.getByRole('heading', { name: 'AYCE Damage Report' })).toBeVisible();
+  });
+});
+
 test.describe('Resilience', () => {
   test('a very long restaurant name cannot break the report layout', async ({ page }) => {
     await openCalculator(page);
