@@ -5,6 +5,9 @@ import { addPlate, calculateDamage, horizontalOverflow, openCalculator } from '.
 const ROUTES = [
   '/',
   '/live',
+  '/plan',
+  '/restaurants',
+  '/diners',
   '/history',
   '/history/compare',
   '/history/data',
