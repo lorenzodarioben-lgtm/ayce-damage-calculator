@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Search, X } from 'lucide-react';
 import { HistoryEntry } from '@/components/history/HistoryEntry';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { buttonClasses } from '@/components/ui/Button';
 import { useMealHistory } from '@/hooks/useMealHistory';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { cn } from '@/lib/cn';
@@ -127,17 +128,11 @@ export function HistoryList() {
         title="No prior incidents on record."
         action={
           <div className="mt-6 flex flex-wrap justify-center gap-2">
-            <Link
-              href="/"
-              className="inline-flex min-h-12 items-center justify-center rounded-surface border border-line-ember bg-ash-850 px-5 text-ui font-semibold uppercase tracking-caps text-cream-100 transition-colors duration-160 hover:bg-ash-800"
-            >
+            <Link href="/" className={buttonClasses('primary', 'md')}>
               Start a session
             </Link>
             {/* An empty file is exactly when someone arrives with a backup. */}
-            <Link
-              href="/history/data"
-              className="inline-flex min-h-12 items-center justify-center rounded-surface border border-line-strong bg-ash-850 px-5 text-ui font-semibold uppercase tracking-caps text-cream-300 transition-colors duration-160 hover:bg-ash-800 hover:text-cream-50"
-            >
+            <Link href="/history/data" className={buttonClasses('secondary', 'md')}>
               Restore a backup
             </Link>
           </div>
