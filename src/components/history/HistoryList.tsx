@@ -359,7 +359,9 @@ export function HistoryList() {
               role="toolbar"
               aria-label="Selected records actions"
             >
-              <span className="text-ui text-cream-300">{selectedRecords.length} selected</span>
+              <span role="status" aria-live="polite" className="text-ui text-cream-300">
+                {selectedRecords.length} selected
+              </span>
               <button
                 type="button"
                 onClick={() => setSelectedIds(new Set(ordered.map(({ record }) => record.id)))}
