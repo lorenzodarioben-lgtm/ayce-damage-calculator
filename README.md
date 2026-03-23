@@ -198,7 +198,7 @@ keys, and nothing you record ever leaves your device.
   self-hosted typefaces that are checked in rather than fetched
 - Skip link, keyboard-operable throughout, labelled controls, live-region confirmations,
   reduced-motion support, and AA contrast across the palette
-- 2100 unit and component tests, plus 273 end-to-end cases across desktop and mobile viewports
+- More than 2,100 unit and component tests, plus end-to-end coverage across desktop and mobile viewports
 
 ## Tech stack
 
@@ -586,7 +586,7 @@ src/
 └── types/        domain types
 
 e2e/              36 Playwright specs plus shared journey helpers
-tests/            123 Vitest suites
+tests/            124 Vitest suites
 public/           service worker and PWA icons
 .github/          CI workflow, issue and pull request templates
 ```
