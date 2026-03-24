@@ -539,7 +539,7 @@ Requires Node.js 20.9 or newer.
 ```bash
 git clone https://github.com/lorenzodarioben-lgtm/ayce-damage-calculator.git
 cd ayce-damage-calculator
-npm install
+npm ci
 npm run dev
 ```
 
