@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useId, useMemo, useState } from 'react';
+import { useId, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Search, X } from 'lucide-react';
 import { HistoryEntry } from '@/components/history/HistoryEntry';
@@ -73,10 +73,9 @@ export function HistoryList() {
   const hasFilters = Boolean(fromDate || toDate || restaurant || verdict || tag);
   const invalidDateRange = Boolean(fromDate && toDate && fromDate > toDate);
 
-  // A bulk action must never include records hidden by a newly applied filter.
-  useEffect(() => {
+  function resetSelection() {
     setSelectedIds(new Set());
-  }, [fromDate, query, restaurant, tag, toDate, verdict]);
+  }
 
   function clearFilters() {
     setFromDate('');
@@ -84,6 +83,7 @@ export function HistoryList() {
     setRestaurant('');
     setVerdict('');
     setTag('');
+    resetSelection();
   }
 
   const selectedRecords = ordered.filter(({ record }) => selectedIds.has(record.id));
@@ -162,7 +162,10 @@ export function HistoryList() {
               id={searchId}
               type="search"
               value={query}
-              onChange={(event) => setQuery(event.target.value)}
+              onChange={(event) => {
+                setQuery(event.target.value);
+                resetSelection();
+              }}
               placeholder="Restaurant name, or anything in a note…"
               autoComplete="off"
               className="min-h-11 w-full rounded-surface border border-line-strong bg-ash-900 pl-9 pr-11 text-ui text-cream-100 placeholder:text-cream-600"
@@ -196,7 +199,10 @@ export function HistoryList() {
             <input
               type="date"
               value={fromDate}
-              onChange={(event) => setFromDate(event.target.value)}
+              onChange={(event) => {
+                setFromDate(event.target.value);
+                resetSelection();
+              }}
               className="mt-1 min-h-11 w-full rounded-surface border border-line-strong bg-ash-900 px-3 text-cream-100"
             />
           </label>
@@ -205,7 +211,10 @@ export function HistoryList() {
             <input
               type="date"
               value={toDate}
-              onChange={(event) => setToDate(event.target.value)}
+              onChange={(event) => {
+                setToDate(event.target.value);
+                resetSelection();
+              }}
               className="mt-1 min-h-11 w-full rounded-surface border border-line-strong bg-ash-900 px-3 text-cream-100"
             />
           </label>
@@ -213,7 +222,10 @@ export function HistoryList() {
             Restaurant
             <select
               value={restaurant}
-              onChange={(event) => setRestaurant(event.target.value)}
+              onChange={(event) => {
+                setRestaurant(event.target.value);
+                resetSelection();
+              }}
               className="mt-1 min-h-11 w-full rounded-surface border border-line-strong bg-ash-900 px-3 text-cream-100"
             >
               <option value="">All restaurants</option>
@@ -228,7 +240,10 @@ export function HistoryList() {
             Outcome
             <select
               value={verdict}
-              onChange={(event) => setVerdict(event.target.value)}
+              onChange={(event) => {
+                setVerdict(event.target.value);
+                resetSelection();
+              }}
               className="mt-1 min-h-11 w-full rounded-surface border border-line-strong bg-ash-900 px-3 text-cream-100"
             >
               <option value="">All outcomes</option>
@@ -243,7 +258,10 @@ export function HistoryList() {
             Tag
             <select
               value={tag}
-              onChange={(event) => setTag(event.target.value)}
+              onChange={(event) => {
+                setTag(event.target.value);
+                resetSelection();
+              }}
               className="mt-1 min-h-11 w-full rounded-surface border border-line-strong bg-ash-900 px-3 text-cream-100"
             >
               <option value="">All tags</option>
