@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { BrandMark } from '@/components/BrandMark';
 import { MAIN_CONTENT_ID } from '@/components/nav/destinations';
+import { buttonClasses } from '@/components/ui/Button';
 
 export const metadata: Metadata = {
   title: 'Offline — AYCE Damage Calculator',
@@ -36,10 +37,7 @@ export default function OfflinePage() {
         Your meal, history and favourites are stored on this device and are unaffected.
       </p>
 
-      <Link
-        href="/"
-        className="mt-8 inline-flex min-h-12 items-center justify-center rounded-surface border border-line-ember bg-ash-850 px-5 text-ui font-semibold uppercase tracking-caps text-cream-100 transition-colors duration-160 hover:bg-ash-800"
-      >
+      <Link href="/" className={buttonClasses('primary', 'md', 'mt-8 w-fit')}>
         Return to the calculator
       </Link>
     </main>

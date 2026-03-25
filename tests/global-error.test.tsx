@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import GlobalError from '@/app/global-error';
@@ -34,5 +35,14 @@ describe('GlobalError', () => {
     render(<GlobalError error={new Error('boom')} retry={vi.fn()} />);
 
     expect(screen.getByText(/still there/i)).toBeInTheDocument();
+  });
+
+  it('owns the document details the missing root layout would normally provide', () => {
+    const markup = renderToStaticMarkup(<GlobalError error={new Error('boom')} retry={vi.fn()} />);
+
+    expect(markup).toContain('<title>Service interrupted — AYCE Damage Calculator</title>');
+    expect(markup).toContain(
+      '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>',
+    );
   });
 });
