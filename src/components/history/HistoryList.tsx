@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Search, X } from 'lucide-react';
 import { HistoryEntry } from '@/components/history/HistoryEntry';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { buttonClasses } from '@/components/ui/Button';
 import { useMealHistory } from '@/hooks/useMealHistory';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { cn } from '@/lib/cn';
@@ -70,6 +71,11 @@ export function HistoryList() {
     [records],
   );
   const hasFilters = Boolean(fromDate || toDate || restaurant || verdict || tag);
+  const invalidDateRange = Boolean(fromDate && toDate && fromDate > toDate);
+
+  function resetSelection() {
+    setSelectedIds(new Set());
+  }
 
   function clearFilters() {
     setFromDate('');
@@ -77,6 +83,7 @@ export function HistoryList() {
     setRestaurant('');
     setVerdict('');
     setTag('');
+    resetSelection();
   }
 
   const selectedRecords = ordered.filter(({ record }) => selectedIds.has(record.id));
@@ -121,17 +128,11 @@ export function HistoryList() {
         title="No prior incidents on record."
         action={
           <div className="mt-6 flex flex-wrap justify-center gap-2">
-            <Link
-              href="/"
-              className="inline-flex min-h-12 items-center justify-center rounded-surface border border-line-ember bg-ash-850 px-5 text-ui font-semibold uppercase tracking-caps text-cream-100 transition-colors duration-160 hover:bg-ash-800"
-            >
+            <Link href="/" className={buttonClasses('primary', 'md')}>
               Start a session
             </Link>
             {/* An empty file is exactly when someone arrives with a backup. */}
-            <Link
-              href="/history/data"
-              className="inline-flex min-h-12 items-center justify-center rounded-surface border border-line-strong bg-ash-850 px-5 text-ui font-semibold uppercase tracking-caps text-cream-300 transition-colors duration-160 hover:bg-ash-800 hover:text-cream-50"
-            >
+            <Link href="/history/data" className={buttonClasses('secondary', 'md')}>
               Restore a backup
             </Link>
           </div>
@@ -161,7 +162,10 @@ export function HistoryList() {
               id={searchId}
               type="search"
               value={query}
-              onChange={(event) => setQuery(event.target.value)}
+              onChange={(event) => {
+                setQuery(event.target.value);
+                resetSelection();
+              }}
               placeholder="Restaurant name, or anything in a note…"
               autoComplete="off"
               className="min-h-11 w-full rounded-surface border border-line-strong bg-ash-900 pl-9 pr-11 text-ui text-cream-100 placeholder:text-cream-600"
@@ -186,7 +190,7 @@ export function HistoryList() {
       )}
 
       <details className="panel mb-4 px-4 py-3">
-        <summary className="cursor-pointer text-ui font-semibold text-cream-300">
+        <summary className="flex min-h-11 cursor-pointer items-center text-ui font-semibold text-cream-300">
           Filter history
         </summary>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -195,7 +199,10 @@ export function HistoryList() {
             <input
               type="date"
               value={fromDate}
-              onChange={(event) => setFromDate(event.target.value)}
+              onChange={(event) => {
+                setFromDate(event.target.value);
+                resetSelection();
+              }}
               className="mt-1 min-h-11 w-full rounded-surface border border-line-strong bg-ash-900 px-3 text-cream-100"
             />
           </label>
@@ -204,7 +211,10 @@ export function HistoryList() {
             <input
               type="date"
               value={toDate}
-              onChange={(event) => setToDate(event.target.value)}
+              onChange={(event) => {
+                setToDate(event.target.value);
+                resetSelection();
+              }}
               className="mt-1 min-h-11 w-full rounded-surface border border-line-strong bg-ash-900 px-3 text-cream-100"
             />
           </label>
@@ -212,7 +222,10 @@ export function HistoryList() {
             Restaurant
             <select
               value={restaurant}
-              onChange={(event) => setRestaurant(event.target.value)}
+              onChange={(event) => {
+                setRestaurant(event.target.value);
+                resetSelection();
+              }}
               className="mt-1 min-h-11 w-full rounded-surface border border-line-strong bg-ash-900 px-3 text-cream-100"
             >
               <option value="">All restaurants</option>
@@ -227,7 +240,10 @@ export function HistoryList() {
             Outcome
             <select
               value={verdict}
-              onChange={(event) => setVerdict(event.target.value)}
+              onChange={(event) => {
+                setVerdict(event.target.value);
+                resetSelection();
+              }}
               className="mt-1 min-h-11 w-full rounded-surface border border-line-strong bg-ash-900 px-3 text-cream-100"
             >
               <option value="">All outcomes</option>
@@ -242,7 +258,10 @@ export function HistoryList() {
             Tag
             <select
               value={tag}
-              onChange={(event) => setTag(event.target.value)}
+              onChange={(event) => {
+                setTag(event.target.value);
+                resetSelection();
+              }}
               className="mt-1 min-h-11 w-full rounded-surface border border-line-strong bg-ash-900 px-3 text-cream-100"
             >
               <option value="">All tags</option>
@@ -254,6 +273,11 @@ export function HistoryList() {
             </select>
           </label>
         </div>
+        {invalidDateRange && (
+          <p role="alert" className="mt-3 text-caption font-semibold text-char-400">
+            The start date needs to be on or before the end date.
+          </p>
+        )}
         {hasFilters && (
           <button
             type="button"
@@ -269,6 +293,7 @@ export function HistoryList() {
         <div className="flex items-center gap-2">
           <button
             type="button"
+            aria-pressed={selectionMode}
             onClick={() => {
               setSelectionMode((current) => !current);
               setSelectedIds(new Set());
@@ -347,7 +372,9 @@ export function HistoryList() {
               role="toolbar"
               aria-label="Selected records actions"
             >
-              <span className="text-ui text-cream-300">{selectedRecords.length} selected</span>
+              <span role="status" aria-live="polite" className="text-ui text-cream-300">
+                {selectedRecords.length} selected
+              </span>
               <button
                 type="button"
                 onClick={() => setSelectedIds(new Set(ordered.map(({ record }) => record.id)))}

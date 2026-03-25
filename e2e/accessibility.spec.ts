@@ -5,6 +5,9 @@ import { addPlate, calculateDamage, horizontalOverflow, openCalculator } from '.
 const ROUTES = [
   '/',
   '/live',
+  '/plan',
+  '/restaurants',
+  '/diners',
   '/history',
   '/history/compare',
   '/history/data',
@@ -111,6 +114,17 @@ test.describe('Keyboard operation', () => {
       return label ? getComputedStyle(label).outlineWidth : '0px';
     });
     expect(outlineWidth).not.toBe('0px');
+  });
+});
+
+test.describe('Motion preferences', () => {
+  test('keeps the report visible when reduced motion is requested', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await openCalculator(page);
+    await addPlate(page, 'Ribeye');
+    await calculateDamage(page);
+
+    await expect(page.getByRole('heading', { name: 'AYCE Damage Report' })).toBeVisible();
   });
 });
 
