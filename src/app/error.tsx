@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { SiteFooter } from '@/components/nav/SiteFooter';
 import { SiteHeader } from '@/components/nav/SiteHeader';
 import { MAIN_CONTENT_ID } from '@/components/nav/destinations';
-import { Button } from '@/components/ui/Button';
+import { Button, buttonClasses } from '@/components/ui/Button';
 
 interface ErrorPageProps {
   readonly error: Error & { digest?: string };
@@ -36,10 +36,7 @@ export default function ErrorPage({ error: _error, retry }: ErrorPageProps) {
           <Button size="lg" onClick={retry}>
             Try again
           </Button>
-          <Link
-            href="/"
-            className="inline-flex min-h-14 items-center justify-center rounded-surface border border-line-ember bg-ash-850 px-6 text-body font-bold uppercase tracking-caps text-cream-100 transition-colors duration-160 hover:bg-ash-800"
-          >
+          <Link href="/" className={buttonClasses('secondary', 'lg')}>
             Return to calculator
           </Link>
         </div>
