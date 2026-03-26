@@ -18,6 +18,9 @@ const nextConfig: NextConfig = {
         source: '/(.*)',
         headers: [
           { key: 'X-Content-Type-Options', value: 'nosniff' },
+          // The app does not benefit from speculative DNS lookups, and it has
+          // no third-party hosts to discover through them.
+          { key: 'X-DNS-Prefetch-Control', value: 'off' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           // The calculator neither embeds third-party pages nor needs its own
           // device-local data to appear inside someone else's frame.
