@@ -30,7 +30,10 @@ export function QuantityStepper({
   decrementLabel,
   incrementLabel,
 }: QuantityStepperProps) {
-  const buttonSize = size === 'sm' ? 'size-9' : 'size-12';
+  // The compact variant reduces the visual density, never the tap target.
+  // Forty-four pixels is the project-wide floor for a control someone may use
+  // repeatedly while holding a phone at the table.
+  const buttonSize = size === 'sm' ? 'size-11' : 'size-12';
   const valueSize = size === 'sm' ? 'min-w-8 text-body' : 'min-w-14 text-title';
   const iconSize = size === 'sm' ? 14 : 18;
 
