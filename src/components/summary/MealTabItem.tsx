@@ -123,7 +123,7 @@ export function MealTabItem({
           aria-pressed={extra}
           aria-label={`Charge ${descriptor} separately from the buffet price`}
           className={[
-            'flex size-9 cursor-pointer items-center justify-center rounded-surface border transition-colors duration-160',
+            'flex size-11 cursor-pointer items-center justify-center rounded-surface border transition-colors duration-160',
             extra
               ? 'border-line-ember bg-ash-800 text-cream-100'
               : 'border-transparent text-cream-600 hover:border-line hover:bg-ash-800 hover:text-cream-300',
@@ -169,7 +169,7 @@ export function MealTabItem({
                   aria-pressed={sharedBy.includes(diner.id)}
                   onClick={() => toggleSharer(diner.id)}
                   className={[
-                    'min-h-9 cursor-pointer rounded-full border px-3 text-caption font-semibold transition-colors duration-160',
+                    'min-h-11 cursor-pointer rounded-full border px-3 text-caption font-semibold transition-colors duration-160',
                     sharing
                       ? 'border-ember-600 bg-ash-800 text-cream-100'
                       : 'border-line bg-ash-950 text-cream-600 hover:border-line-strong',
@@ -208,7 +208,7 @@ export function MealTabItem({
                   event.target.value === '' ? undefined : Number(event.target.value),
                 )
               }
-              className="tabular h-9 w-28 rounded-surface border border-line-strong bg-ash-950 px-2 text-right text-ui font-normal text-cream-50"
+          className="tabular h-11 w-28 rounded-surface border border-line-strong bg-ash-950 px-2 text-right text-ui font-normal text-cream-50"
             />
           </label>
           <p className="mt-1.5 text-caption leading-relaxed text-cream-600">
