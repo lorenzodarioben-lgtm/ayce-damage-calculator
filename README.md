@@ -585,7 +585,7 @@ src/
 │                 social cards, backup, CSV, formatting, storage, card rendering
 └── types/        domain types
 
-e2e/              36 Playwright specs plus shared journey helpers
+e2e/              37 Playwright specs plus shared journey helpers
 tests/            124 Vitest suites
 public/           service worker and PWA icons
 .github/          CI workflow, issue and pull request templates
