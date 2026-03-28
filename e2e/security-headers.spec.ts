@@ -5,10 +5,15 @@ test('serves the application hardening headers in production', async ({ request 
 
   expect(response.ok()).toBe(true);
   expect(response.headers()['x-content-type-options']).toBe('nosniff');
+  expect(response.headers()['x-dns-prefetch-control']).toBe('off');
+  expect(response.headers()['x-permitted-cross-domain-policies']).toBe('none');
   expect(response.headers()['referrer-policy']).toBe('strict-origin-when-cross-origin');
   expect(response.headers()['x-frame-options']).toBe('DENY');
   expect(response.headers()['cross-origin-opener-policy']).toBe('same-origin');
   expect(response.headers()['cross-origin-resource-policy']).toBe('same-origin');
+  expect(response.headers()['permissions-policy']).toBe(
+    'camera=(), geolocation=(), microphone=(), payment=(), usb=()',
+  );
 });
 
 test('does not cache pages carrying data in their address', async ({ request }) => {
