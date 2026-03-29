@@ -253,7 +253,12 @@ function ProfileEditor({
             <span className="micro-label text-cream-500">Retail</span>
             <span className="micro-label text-cream-500">Cost</span>
           </div>
-          <div className="max-h-[40dvh] overflow-y-auto rounded-surface border border-line-soft bg-ash-900/50">
+          <div
+            role="group"
+            aria-label="Per-cut price overrides"
+            tabIndex={0}
+            className="max-h-[40dvh] overflow-y-auto rounded-surface border border-line-soft bg-ash-900/50"
+          >
             {FOODS.map((food) => {
               const fields = prices[food.id];
               return (
