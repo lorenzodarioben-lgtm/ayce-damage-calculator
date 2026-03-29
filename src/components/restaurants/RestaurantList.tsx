@@ -67,22 +67,36 @@ export function RestaurantList() {
   return (
     <div className="space-y-5">
       {restaurants.length > 1 && (
-        <p className="text-ui text-cream-600">
+        <p id="restaurant-comparison-help" className="text-ui text-cream-600">
           Select two saved places to compare their explicitly linked local visits.
         </p>
       )}
       {comparison && <RestaurantComparison comparison={comparison} />}
+      <div
+        {...(restaurants.length > 1
+          ? {
+              role: 'group',
+              'aria-label': 'Restaurants to compare',
+              'aria-describedby': 'restaurant-comparison-help',
+            }
+          : {})}
+      >
       <ul className="space-y-3">
         {summaries.map((summary) => (
           <li key={summary.profile.id} className="flex gap-3">
-            <input
-              id={`compare-${summary.profile.id}`}
-              type="checkbox"
-              checked={selected.includes(summary.profile.id)}
-              onChange={() => toggle(summary.profile.id)}
-              aria-label={`Compare ${summary.profile.name}`}
-              className="mt-5 size-5 accent-ember-500"
-            />
+            <label
+              htmlFor={`compare-${summary.profile.id}`}
+              className="mt-3 flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-surface"
+            >
+              <input
+                id={`compare-${summary.profile.id}`}
+                type="checkbox"
+                checked={selected.includes(summary.profile.id)}
+                onChange={() => toggle(summary.profile.id)}
+                aria-label={`Compare ${summary.profile.name}`}
+                className="size-5 accent-ember-500"
+              />
+            </label>
             <Link
               href={`/restaurants/${summary.profile.id}`}
               className="panel lift-on-hover flex flex-wrap items-baseline justify-between gap-3 p-4 hover:border-line-strong hover:bg-ash-800 hover:elevate-raised sm:p-5"
@@ -113,6 +127,7 @@ export function RestaurantList() {
           </li>
         ))}
       </ul>
+      </div>
     </div>
   );
 }
