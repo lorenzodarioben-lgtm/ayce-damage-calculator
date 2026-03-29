@@ -226,7 +226,7 @@ function ProfileEditor({
                 type="number"
                 step="0.1"
                 placeholder="e.g. 10"
-                className="h-10 w-28 rounded-surface border border-line-strong bg-ash-850 px-2 text-ui text-cream-50"
+                className="h-11 w-28 rounded-surface border border-line-strong bg-ash-850 px-2 text-ui text-cream-50"
               />
               <button
                 type="button"

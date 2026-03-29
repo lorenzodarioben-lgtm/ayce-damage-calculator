@@ -177,7 +177,7 @@ export function TableRoster({
                 value={diner.displayName}
                 onChange={(event) => onRename(diner.id, event.target.value)}
                 autoComplete="off"
-                className="h-9 min-w-0 flex-1 rounded-surface border border-line-strong bg-ash-850 px-2 text-ui text-cream-100"
+                className="h-11 min-w-0 flex-1 rounded-surface border border-line-strong bg-ash-850 px-2 text-ui text-cream-100"
               />
               <label className="sr-only" htmlFor={`diner-admission-${diner.id}`}>
                 {diner.displayName} admission price
