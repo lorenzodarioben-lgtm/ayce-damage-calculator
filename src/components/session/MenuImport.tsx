@@ -203,7 +203,11 @@ export function MenuImport({ foods, onApply, onStatus }: MenuImportProps) {
           {stage.plan.accepted.length > 0 && (
             <div>
               <h4 className="text-body font-semibold text-cream-200 mb-2">Ready to import</h4>
-              <ul className="max-h-40 overflow-y-auto">
+              <ul
+                aria-label="Foods ready to import"
+                tabIndex={0}
+                className="max-h-40 overflow-y-auto"
+              >
                 {stage.plan.accepted.map((food) => (
                   <li
                     key={food.id}
@@ -276,7 +280,11 @@ export function MenuImport({ foods, onApply, onStatus }: MenuImportProps) {
           {stage.plan.rejected.length > 0 && (
             <div>
               <h4 className="text-body font-semibold text-cream-200 mb-2">Could not be read</h4>
-              <ul className="max-h-40 overflow-y-auto">
+              <ul
+                aria-label="Rows that could not be imported"
+                tabIndex={0}
+                className="max-h-40 overflow-y-auto"
+              >
                 {stage.plan.rejected.map((row) => (
                   <li
                     key={`${row.line}-${row.problem}`}
