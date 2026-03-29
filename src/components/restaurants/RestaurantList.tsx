@@ -170,7 +170,12 @@ function RestaurantComparison({
       <h2 id="restaurant-comparison" className="display-type text-title text-cream-100 mb-3">
         Restaurant comparison
       </h2>
-      <div className="overflow-x-auto">
+      <div
+        role="group"
+        aria-label="Restaurant comparison table"
+        tabIndex={0}
+        className="overflow-x-auto"
+      >
         <table className="w-full text-left text-ui">
           {/* Every cell here is read against two headers at once — a measure and
               a place — so both axes have to be declared for a cell to mean
