@@ -503,7 +503,7 @@ export function DamagePlanner() {
                                   ),
                                 )
                               }
-                              className="h-9 w-16 rounded-surface border border-line-strong bg-ash-900 px-2 text-ui text-cream-50"
+                              className="h-11 w-16 rounded-surface border border-line-strong bg-ash-900 px-2 text-ui text-cream-50"
                             />
                             plates
                           </label>
