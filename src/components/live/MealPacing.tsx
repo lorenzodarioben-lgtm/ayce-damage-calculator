@@ -4,6 +4,7 @@ import { useId, useMemo, useState } from 'react';
 import { Flag, Pause, Play, Timer } from 'lucide-react';
 import { usePricingProfile } from '@/components/session/PricingContext';
 import { Button } from '@/components/ui/Button';
+import { Figure } from '@/components/ui/Figure';
 import { useNow } from '@/hooks/useNow';
 import { cn } from '@/lib/cn';
 import {
@@ -274,14 +275,20 @@ export function MealPacing({
 
       {started && (
         <dl className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
-          <Figure label="Plates per hour" value={formatPerHour(forecast.platesPerHour)} />
+          <Figure
+            label="Plates per hour"
+            value={formatPerHour(forecast.platesPerHour)}
+            className="px-3 py-2"
+          />
           <Figure
             label="Retail per minute"
             value={formatMoneyPerMinute(forecast.retailValuePerMinute, money)}
+            className="px-3 py-2"
           />
           <Figure
             label="Recovery per minute"
             value={`${formatPercent(forecast.recoveryPointsPerMinute)} pts`}
+            className="px-3 py-2"
           />
           <Figure
             label="Projected recovery"
@@ -290,7 +297,8 @@ export function MealPacing({
                 ? 'Too early'
                 : formatPercent(forecast.projectedRecoveryPercent)
             }
-            accent={forecast.projectedToBreakEven}
+            tone={forecast.projectedToBreakEven ? 'recovered' : 'neutral'}
+            className="px-3 py-2"
           />
           <Figure
             label="Pace to break even"
@@ -301,8 +309,13 @@ export function MealPacing({
                   ? '—'
                   : formatMoneyPerMinute(forecast.requiredRetailValuePerMinute, money)
             }
+            className="px-3 py-2"
           />
-          <Figure label="Time eaten" value={formatDurationLabel(forecast.elapsedMs)} />
+          <Figure
+            label="Time eaten"
+            value={formatDurationLabel(forecast.elapsedMs)}
+            className="px-3 py-2"
+          />
         </dl>
       )}
 
@@ -326,21 +339,5 @@ export function MealPacing({
         {announcement}
       </p>
     </section>
-  );
-}
-
-function Figure({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
-  return (
-    <div className="well px-3 py-2">
-      <dt className="micro-label text-cream-500">{label}</dt>
-      <dd
-        className={cn(
-          'tabular mt-0.5 text-ui font-semibold',
-          accent ? 'text-sesame-400' : 'text-cream-50',
-        )}
-      >
-        {value}
-      </dd>
-    </div>
   );
 }
