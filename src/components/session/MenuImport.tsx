@@ -4,6 +4,7 @@ import { useRef, useState } from 'react';
 import { Download, FileSpreadsheet, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { MAX_CUSTOM_FOODS } from '@/lib/customFoods';
+import { downloadText } from '@/lib/download';
 import {
   IMPORT_TEMPLATE_FILENAME,
   MAX_IMPORT_BYTES,
@@ -55,19 +56,6 @@ function readAsText(file: File): Promise<string | null> {
       resolve(null);
     }
   });
-}
-
-/** Hands the browser a file built in memory, and never leaks the object URL. */
-function download(contents: string, filename: string): void {
-  const url = URL.createObjectURL(new Blob([contents], { type: 'text/csv;charset=utf-8' }));
-  try {
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    link.click();
-  } finally {
-    URL.revokeObjectURL(url);
-  }
 }
 
 /**
@@ -143,7 +131,7 @@ export function MenuImport({ foods, onApply, onStatus }: MenuImportProps) {
           variant="ghost"
           size="md"
           onClick={() => {
-            download(importTemplateCsv(), IMPORT_TEMPLATE_FILENAME);
+            downloadText(importTemplateCsv(), 'text/csv;charset=utf-8', IMPORT_TEMPLATE_FILENAME);
             onStatus('Template downloaded.');
           }}
         >

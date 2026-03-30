@@ -23,6 +23,7 @@ import {
   type RestoreMode,
 } from '@/lib/backup';
 import { csvFilename, historyToCsv } from '@/lib/csv';
+import { downloadText } from '@/lib/download';
 import {
   MAX_VAULT_BYTES,
   VAULT_ERROR_MESSAGES,
@@ -57,19 +58,6 @@ interface PendingReplace {
 }
 
 const BACK_LINK = buttonClasses('ghost', 'sm', '-ml-2');
-
-/** Hands the browser a file built in memory, and never leaks the object URL. */
-function download(contents: string, type: string, filename: string): void {
-  const url = URL.createObjectURL(new Blob([contents], { type }));
-  try {
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    link.click();
-  } finally {
-    URL.revokeObjectURL(url);
-  }
-}
 
 function configurationCount(contents: BackupContents): number {
   return (
@@ -123,7 +111,7 @@ export function BackupRestore() {
         },
       );
 
-      download(serialiseBackup(backup), 'application/json', backupFilename(now));
+      downloadText(serialiseBackup(backup), 'application/json', backupFilename(now));
 
       setStage({
         kind: 'done',
@@ -163,7 +151,7 @@ export function BackupRestore() {
         return;
       }
 
-      download(sealed.file, 'application/json', vaultFilename(now));
+      downloadText(sealed.file, 'application/json', vaultFilename(now));
       setPrompt({ kind: 'none' });
       setStage({
         kind: 'done',
@@ -180,7 +168,7 @@ export function BackupRestore() {
       const now = new Date();
       const history = await listSessions();
 
-      download(historyToCsv(history), 'text/csv;charset=utf-8', csvFilename(now));
+      downloadText(historyToCsv(history), 'text/csv;charset=utf-8', csvFilename(now));
 
       setStage({
         kind: 'done',
