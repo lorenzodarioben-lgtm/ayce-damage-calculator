@@ -9,6 +9,7 @@ import { buttonClasses } from '@/components/ui/Button';
 import { useMealHistory } from '@/hooks/useMealHistory';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { cn } from '@/lib/cn';
+import { downloadText } from '@/lib/download';
 import { backupFilename, buildBackup, serialiseBackup } from '@/lib/backup';
 import { formatRecordedAt } from '@/lib/formatting';
 import { filterSessions, sortResolvedSessions } from '@/lib/history';
@@ -24,11 +25,7 @@ const SORTS: ReadonlyArray<{ key: HistorySortKey; label: string }> = [
 function downloadSubset(records: readonly SavedMealSession[]) {
   const now = new Date();
   const contents = serialiseBackup(buildBackup(records, [], now.toISOString()));
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(new Blob([contents], { type: 'application/json' }));
-  link.download = backupFilename(now);
-  link.click();
-  URL.revokeObjectURL(link.href);
+  downloadText(contents, 'application/json', backupFilename(now));
 }
 
 type PendingDeletion = { kind: 'one'; record: SavedMealSession } | { kind: 'all' } | null;
