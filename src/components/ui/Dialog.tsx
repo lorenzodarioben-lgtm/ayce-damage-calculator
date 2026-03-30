@@ -20,6 +20,7 @@ const FOCUSABLE =
  */
 export function Dialog({ open, onClose, title, children, labelledById }: DialogProps) {
   const ref = useRef<HTMLDialogElement>(null);
+  const openerRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     const node = ref.current;
@@ -27,10 +28,16 @@ export function Dialog({ open, onClose, title, children, labelledById }: DialogP
       return;
     }
     if (open && !node.open) {
+      openerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
       node.showModal();
-      node.querySelector<HTMLElement>(FOCUSABLE)?.focus();
+      // A destructive confirmation marks its safe action with `autoFocus`.
+      // Honour that intent before falling back to the first usable control.
+      (node.querySelector<HTMLElement>('[autofocus]') ??
+        node.querySelector<HTMLElement>(FOCUSABLE))?.focus();
     } else if (!open && node.open) {
       node.close();
+      openerRef.current?.focus();
+      openerRef.current = null;
     }
   }, [open]);
 
