@@ -1,9 +1,9 @@
 'use client';
 
-import { useId, useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useState } from 'react';
 import { Flame } from 'lucide-react';
 import { FavoriteQuickAdd, FavoriteToggle } from '@/components/favorites/FavoriteQuickAdd';
-import { CategoryTabs } from '@/components/meal/CategoryTabs';
+import { CategoryTabs, visibleCategories } from '@/components/meal/CategoryTabs';
 import { FoodCard } from '@/components/meal/FoodCard';
 import { DinerAttribution } from '@/components/meal/DinerAttribution';
 import { FoodSearch } from '@/components/meal/FoodSearch';
@@ -55,6 +55,7 @@ export function MealBuilder({
   const panelId = useId();
   const pricingProfile = usePricingProfile();
   const catalogue = useMemo(() => foodCatalogue(customFoods), [customFoods]);
+  const categories = useMemo(() => visibleCategories(catalogue), [catalogue]);
   const { favorites, toggle, remove, has } = useFavorites(catalogue);
 
   const [category, setCategory] = useState<FoodCategory>('beef');
@@ -64,6 +65,16 @@ export function MealBuilder({
   const [quality, setQuality] = useState<QualityTier>(DEFAULT_QUALITY);
   const [plateSize, setPlateSize] = useState<PlateSize>(DEFAULT_PLATE_SIZE);
   const [quantity, setQuantity] = useState(1);
+
+  // Removing the final custom item in a category also removes its tab. Keep the
+  // picker on a real tab instead of leaving its labelled panel orphaned.
+  useEffect(() => {
+    if (categories.some((entry) => entry.id === category)) {
+      return;
+    }
+    setCategory(categories[0]?.id ?? 'beef');
+    setSelectedFoodId(null);
+  }, [categories, category]);
 
   const trimmedQuery = query.trim();
   const searching = trimmedQuery.length > 0;
