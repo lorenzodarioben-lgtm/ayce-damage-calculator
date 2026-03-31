@@ -57,7 +57,7 @@ describe('buildShareText', () => {
     const { report, verdict } = reportFor(bigMeal);
     const text = buildShareText(report, verdict, 'Seoul Garden');
 
-    expect(text).toContain('AYCE Damage Report — Seoul Garden');
+    expect(text).toContain('AYCE Damage Report — Seoul Garden (AUD)');
     expect(text).toContain('8 plates');
     expect(text).toContain('$59.90 admission');
     expect(text).toContain('value extracted');
@@ -69,7 +69,7 @@ describe('buildShareText', () => {
     const { report, verdict } = reportFor(smallMeal);
     const text = buildShareText(report, verdict, '');
 
-    expect(text.startsWith('AYCE Damage Report\n')).toBe(true);
+    expect(text.startsWith('AYCE Damage Report (AUD)\n')).toBe(true);
     expect(text).toContain('value gap');
   });
 
