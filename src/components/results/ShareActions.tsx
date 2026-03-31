@@ -32,7 +32,7 @@ export function ShareActions({ report, verdict, session, cardModel, onStatus }: 
   // and the real capability is read on the client after hydration.
   const shareSupported = useSyncExternalStore(subscribeNever, canWebShare, () => false);
 
-  const shareText = buildShareText(report, verdict, restaurantName);
+  const shareText = buildShareText(report, verdict, restaurantName, pricingProfile.money);
 
   async function handleCopy() {
     const copied = await copyToClipboard(shareText);

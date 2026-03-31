@@ -7,23 +7,26 @@ import {
   formatSignedMoney,
 } from '@/lib/formatting';
 import type { Verdict } from '@/lib/verdicts';
+import { DEFAULT_MONEY_CONTEXT, type MoneyContext } from '@/lib/money';
 import type { DamageReport } from '@/types/meal';
 
 export function buildShareText(
   report: DamageReport,
   verdict: Verdict,
   restaurantName: string,
+  money: MoneyContext = DEFAULT_MONEY_CONTEXT,
 ): string {
-  const heading = restaurantName ? `AYCE Damage Report — ${restaurantName}` : 'AYCE Damage Report';
+  const title = restaurantName ? `AYCE Damage Report — ${restaurantName}` : 'AYCE Damage Report';
+  const heading = `${title} (${money.currency})`;
   const difference = report.retailValueDifference >= 0 ? 'value extracted' : 'value gap';
 
   return [
     heading,
     '',
     `${formatPlates(report.totalPlates)} • ${formatKg(report.totalWeightKg)}`,
-    `${formatMoney(report.totalRetailValue)} estimated retail value`,
-    `${formatMoney(report.totalAdmission)} admission`,
-    `${formatSignedMoney(report.retailValueDifference)} ${difference}`,
+    `${formatMoney(report.totalRetailValue, money)} estimated retail value`,
+    `${formatMoney(report.totalAdmission, money)} admission`,
+    `${formatSignedMoney(report.retailValueDifference, money)} ${difference}`,
     `${formatCalories(report.nutrition.calories)} • ${formatGrams(report.nutrition.protein)} protein`,
     '',
     `Verdict: ${verdict.title.toUpperCase()}`,
