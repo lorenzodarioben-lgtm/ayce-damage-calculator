@@ -11,6 +11,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { cn } from '@/lib/cn';
 import { downloadText } from '@/lib/download';
 import { backupFilename, buildBackup, serialiseBackup } from '@/lib/backup';
+import { csvFilename, historyToCsv } from '@/lib/csv';
 import { formatRecordedAt } from '@/lib/formatting';
 import { filterSessions, sortResolvedSessions } from '@/lib/history';
 import { VERDICTS } from '@/lib/verdicts';
@@ -26,6 +27,11 @@ function downloadSubset(records: readonly SavedMealSession[]) {
   const now = new Date();
   const contents = serialiseBackup(buildBackup(records, [], now.toISOString()));
   downloadText(contents, 'application/json', backupFilename(now));
+}
+
+function downloadCsvSubset(records: readonly SavedMealSession[]) {
+  const now = new Date();
+  downloadText(historyToCsv(records), 'text/csv;charset=utf-8', csvFilename(now));
 }
 
 type PendingDeletion = { kind: 'one'; record: SavedMealSession } | { kind: 'all' } | null;
@@ -401,6 +407,15 @@ export function HistoryList() {
                   className="text-ui font-semibold text-cream-100"
                 >
                   Export selected
+                </button>
+              )}
+              {selectedRecords.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => downloadCsvSubset(selectedRecords.map(({ record }) => record))}
+                  className="text-ui font-semibold text-cream-100"
+                >
+                  Export CSV
                 </button>
               )}
               {selectedRecords.length > 0 && (
