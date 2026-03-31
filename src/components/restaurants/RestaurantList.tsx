@@ -20,7 +20,11 @@ export function RestaurantList() {
   const { restaurants, hydrated } = useRestaurants();
   const { records, status } = useMealHistory();
   const [selected, setSelected] = useState<readonly string[]>([]);
+  const [query, setQuery] = useState('');
   const summaries = summariseRestaurants(restaurants, records);
+  const visibleSummaries = summaries.filter((summary) =>
+    summary.profile.name.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()),
+  );
   const comparison = useMemo(() => {
     if (selected.length !== 2) return null;
     const [left, right] = selected.map((id) =>
@@ -67,6 +71,18 @@ export function RestaurantList() {
   return (
     <div className="space-y-5">
       {restaurants.length > 1 && (
+        <label className="block max-w-md">
+          <span className="mb-2 block text-ui font-semibold text-cream-300">Find a saved place</span>
+          <input
+            type="search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search by name"
+            className="min-h-11 w-full rounded-surface border border-line-strong bg-ash-900 px-3 text-ui text-cream-50 placeholder:text-cream-600"
+          />
+        </label>
+      )}
+      {restaurants.length > 1 && (
         <p id="restaurant-comparison-help" className="text-ui text-cream-600">
           Select two saved places to compare their explicitly linked local visits.
         </p>
@@ -82,7 +98,7 @@ export function RestaurantList() {
           : {})}
       >
       <ul className="space-y-3">
-        {summaries.map((summary) => (
+        {visibleSummaries.map((summary) => (
           <li key={summary.profile.id} className="flex gap-3">
             <label
               htmlFor={`compare-${summary.profile.id}`}
@@ -128,6 +144,11 @@ export function RestaurantList() {
         ))}
       </ul>
       </div>
+      {visibleSummaries.length === 0 && (
+        <p className="panel border-dashed p-4 text-ui text-cream-600">
+          No saved places match “{query.trim()}”.
+        </p>
+      )}
     </div>
   );
 }
