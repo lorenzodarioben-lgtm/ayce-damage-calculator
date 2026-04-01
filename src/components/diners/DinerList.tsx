@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { EMPTY_STATE_LINK } from '@/components/ui/Button';
@@ -18,6 +19,7 @@ import { formatMoney, formatPlates, formatRecordedAt } from '@/lib/formatting';
 export function DinerList() {
   const { diners, hydrated } = useRegularDiners();
   const { records, status } = useMealHistory();
+  const [query, setQuery] = useState('');
 
   if (!hydrated || status === 'loading') {
     return (
@@ -29,6 +31,9 @@ export function DinerList() {
 
   const summaries = summariseDiners(diners, records);
   const unsaved = unsavedDinerNames(records, diners);
+  const visibleSummaries = summaries.filter((summary) =>
+    summary.diner.displayName.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()),
+  );
 
   if (summaries.length === 0) {
     return (
@@ -53,8 +58,20 @@ export function DinerList() {
 
   return (
     <div className="space-y-3">
+      {summaries.length > 1 && (
+        <label className="block max-w-md">
+          <span className="mb-2 block text-ui font-semibold text-cream-300">Find a diner</span>
+          <input
+            type="search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search by name"
+            className="min-h-11 w-full rounded-surface border border-line-strong bg-ash-900 px-3 text-ui text-cream-50 placeholder:text-cream-600"
+          />
+        </label>
+      )}
       <ul className="space-y-2">
-        {summaries.map((summary) => (
+        {visibleSummaries.map((summary) => (
           <li key={summary.diner.id}>
             <Link
               href={`/diners/${summary.diner.id}`}
@@ -82,6 +99,12 @@ export function DinerList() {
           </li>
         ))}
       </ul>
+
+      {visibleSummaries.length === 0 && (
+        <p className="panel border-dashed p-4 text-ui text-cream-600">
+          No diners match “{query.trim()}”.
+        </p>
+      )}
 
       {unsaved.length > 0 && <UnsavedNote names={unsaved} />}
     </div>
