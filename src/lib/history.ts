@@ -628,9 +628,17 @@ export function sortResolvedSessions(
 
   const compare: Record<typeof key, (a: ResolvedSavedSession, b: ResolvedSavedSession) => number> =
     {
-      newest: (a, b) => Date.parse(b.record.createdAt) - Date.parse(a.record.createdAt),
-      recovery: (a, b) => b.report.retailRecoveryPercent - a.report.retailRecoveryPercent,
-      plates: (a, b) => b.report.totalPlates - a.report.totalPlates,
+      newest: (a, b) =>
+        Date.parse(b.record.createdAt) - Date.parse(a.record.createdAt) ||
+        b.record.id.localeCompare(a.record.id),
+      recovery: (a, b) =>
+        b.report.retailRecoveryPercent - a.report.retailRecoveryPercent ||
+        Date.parse(b.record.createdAt) - Date.parse(a.record.createdAt) ||
+        b.record.id.localeCompare(a.record.id),
+      plates: (a, b) =>
+        b.report.totalPlates - a.report.totalPlates ||
+        Date.parse(b.record.createdAt) - Date.parse(a.record.createdAt) ||
+        b.record.id.localeCompare(a.record.id),
     };
 
   return resolved.sort(compare[key]);
