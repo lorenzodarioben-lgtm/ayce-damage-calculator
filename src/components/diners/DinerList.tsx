@@ -76,6 +76,11 @@ export function DinerList() {
           />
         </label>
       )}
+      {query.trim() && (
+        <p role="status" className="text-caption text-cream-600">
+          {visibleSummaries.length} {visibleSummaries.length === 1 ? 'diner' : 'diners'} found.
+        </p>
+      )}
       <ul className="space-y-2">
         {visibleSummaries.map((summary) => (
           <li key={summary.diner.id}>
