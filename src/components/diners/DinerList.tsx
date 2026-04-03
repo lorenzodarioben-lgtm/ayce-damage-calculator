@@ -65,6 +65,12 @@ export function DinerList() {
             type="search"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Escape' && query.length > 0) {
+                event.preventDefault();
+                setQuery('');
+              }
+            }}
             placeholder="Search by name"
             className="min-h-11 w-full rounded-surface border border-line-strong bg-ash-900 px-3 text-ui text-cream-50 placeholder:text-cream-600"
           />
