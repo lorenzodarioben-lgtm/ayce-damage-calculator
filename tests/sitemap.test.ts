@@ -9,7 +9,12 @@ describe('public sitemap', () => {
 
   it('uses one build timestamp across every listed page', () => {
     const entries = sitemap();
-    const timestamps = new Set(entries.map((entry) => entry.lastModified?.getTime()));
+    const timestamps = new Set(
+      entries.map(({ lastModified }) => {
+        if (lastModified instanceof Date) return lastModified.getTime();
+        return lastModified ? Date.parse(lastModified) : undefined;
+      }),
+    );
 
     expect(timestamps.size).toBe(1);
   });

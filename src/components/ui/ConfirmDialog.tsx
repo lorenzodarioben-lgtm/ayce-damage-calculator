@@ -71,6 +71,7 @@ export function ConfirmDialog({
           onClick={onCancel}
           disabled={busy}
           autoFocus={destructive}
+          data-dialog-initial-focus={destructive || undefined}
         >
           {cancelLabel}
         </Button>
