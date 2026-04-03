@@ -36,3 +36,7 @@ describe('cn', () => {
     expect(cn(undefined, 'centre', false)).toBe('centre');
   });
 });
+
+it('returns a single class without adding spaces', () => {
+  expect(cn('block')).toBe('block');
+});
