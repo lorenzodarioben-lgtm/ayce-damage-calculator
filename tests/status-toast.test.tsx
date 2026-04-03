@@ -8,7 +8,9 @@ describe('StatusToast', () => {
     const user = userEvent.setup();
     const undo = vi.fn();
     const { container } = render(
-      <StatusToast message={{ text: 'Ribeye removed.', action: { label: 'Undo', onAction: undo } }} />,
+      <StatusToast
+        message={{ text: 'Ribeye removed.', action: { label: 'Undo', onAction: undo } }}
+      />,
     );
 
     await user.click(screen.getByRole('button', { name: 'Undo' }));

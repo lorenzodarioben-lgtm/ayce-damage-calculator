@@ -5,11 +5,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 describe('EmptyState', () => {
   it('keeps its plate artwork decorative while exposing the recovery action', () => {
     const { container } = render(
-      <EmptyState
-        mark="record"
-        title="No meals on file."
-        action={<a href="/">Start a meal</a>}
-      >
+      <EmptyState mark="record" title="No meals on file." action={<a href="/">Start a meal</a>}>
         Saved meals appear here after you file them.
       </EmptyState>,
     );

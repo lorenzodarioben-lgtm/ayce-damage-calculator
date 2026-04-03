@@ -279,11 +279,7 @@ export function ServiceWorkerManager() {
         </button>
       )}
       {hasUpdate && (
-        <button
-          type="button"
-          onClick={applyUpdate}
-          className={buttonClasses('secondary', 'sm')}
-        >
+        <button type="button" onClick={applyUpdate} className={buttonClasses('secondary', 'sm')}>
           Reload to update
         </button>
       )}
