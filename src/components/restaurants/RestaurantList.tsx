@@ -88,6 +88,11 @@ export function RestaurantList() {
           />
         </label>
       )}
+      {query.trim() && (
+        <p role="status" className="text-caption text-cream-600">
+          {visibleSummaries.length} {visibleSummaries.length === 1 ? 'place' : 'places'} found.
+        </p>
+      )}
       {restaurants.length > 1 && (
         <p id="restaurant-comparison-help" className="text-ui text-cream-600">
           Select two saved places to compare their explicitly linked local visits.
