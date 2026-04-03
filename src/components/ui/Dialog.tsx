@@ -28,12 +28,15 @@ export function Dialog({ open, onClose, title, children, labelledById }: DialogP
       return;
     }
     if (open && !node.open) {
-      openerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      openerRef.current =
+        document.activeElement instanceof HTMLElement ? document.activeElement : null;
       node.showModal();
       // A destructive confirmation marks its safe action with `autoFocus`.
       // Honour that intent before falling back to the first usable control.
-      (node.querySelector<HTMLElement>('[autofocus]') ??
-        node.querySelector<HTMLElement>(FOCUSABLE))?.focus();
+      (
+        node.querySelector<HTMLElement>('[data-dialog-initial-focus], [autofocus]') ??
+        node.querySelector<HTMLElement>(FOCUSABLE)
+      )?.focus();
     } else if (!open && node.open) {
       node.close();
       openerRef.current?.focus();

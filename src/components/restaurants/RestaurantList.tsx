@@ -72,7 +72,9 @@ export function RestaurantList() {
     <div className="space-y-5">
       {restaurants.length > 1 && (
         <label className="block max-w-md">
-          <span className="mb-2 block text-ui font-semibold text-cream-300">Find a saved place</span>
+          <span className="mb-2 block text-ui font-semibold text-cream-300">
+            Find a saved place
+          </span>
           <input
             type="search"
             value={query}
@@ -108,52 +110,52 @@ export function RestaurantList() {
             }
           : {})}
       >
-      <ul className="space-y-3">
-        {visibleSummaries.map((summary) => (
-          <li key={summary.profile.id} className="flex gap-3">
-            <label
-              htmlFor={`compare-${summary.profile.id}`}
-              className="mt-3 flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-surface"
-            >
-              <input
-                id={`compare-${summary.profile.id}`}
-                type="checkbox"
-                checked={selected.includes(summary.profile.id)}
-                onChange={() => toggle(summary.profile.id)}
-                aria-label={`Compare ${summary.profile.name}`}
-                className="size-5 accent-ember-500"
-              />
-            </label>
-            <Link
-              href={`/restaurants/${summary.profile.id}`}
-              className="panel lift-on-hover flex flex-wrap items-baseline justify-between gap-3 p-4 hover:border-line-strong hover:bg-ash-800 hover:elevate-raised sm:p-5"
-            >
-              <span className="min-w-0">
-                <span className="block truncate text-body font-bold text-cream-50">
-                  {summary.profile.name}
+        <ul className="space-y-3">
+          {visibleSummaries.map((summary) => (
+            <li key={summary.profile.id} className="flex gap-3">
+              <label
+                htmlFor={`compare-${summary.profile.id}`}
+                className="mt-3 flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-surface"
+              >
+                <input
+                  id={`compare-${summary.profile.id}`}
+                  type="checkbox"
+                  checked={selected.includes(summary.profile.id)}
+                  onChange={() => toggle(summary.profile.id)}
+                  aria-label={`Compare ${summary.profile.name}`}
+                  className="size-5 accent-ember-500"
+                />
+              </label>
+              <Link
+                href={`/restaurants/${summary.profile.id}`}
+                className="panel lift-on-hover flex flex-wrap items-baseline justify-between gap-3 p-4 hover:border-line-strong hover:bg-ash-800 hover:elevate-raised sm:p-5"
+              >
+                <span className="min-w-0">
+                  <span className="block truncate text-body font-bold text-cream-50">
+                    {summary.profile.name}
+                  </span>
+                  <span className="tabular block text-caption text-cream-500">
+                    {formatMoney(summary.profile.pricePerDiner, summary.money)} per diner ·{' '}
+                    {summary.profile.dinerCount}{' '}
+                    {summary.profile.dinerCount === 1 ? 'diner' : 'diners'}
+                  </span>
                 </span>
-                <span className="tabular block text-caption text-cream-500">
-                  {formatMoney(summary.profile.pricePerDiner, summary.money)} per diner ·{' '}
-                  {summary.profile.dinerCount}{' '}
-                  {summary.profile.dinerCount === 1 ? 'diner' : 'diners'}
+                <span className="text-right">
+                  <span className="tabular block text-ui font-bold text-cream-100">
+                    {summary.visits === 0
+                      ? 'No visits filed'
+                      : `${summary.visits} ${summary.visits === 1 ? 'visit' : 'visits'}`}
+                  </span>
+                  <span className="tabular block text-caption text-cream-600">
+                    {summary.visits === 0
+                      ? 'Saved setup only'
+                      : `${formatPercent(summary.averageRecoveryPercent)} average · last ${formatRecordedAt(summary.latestVisitAt ?? '')}`}
+                  </span>
                 </span>
-              </span>
-              <span className="text-right">
-                <span className="tabular block text-ui font-bold text-cream-100">
-                  {summary.visits === 0
-                    ? 'No visits filed'
-                    : `${summary.visits} ${summary.visits === 1 ? 'visit' : 'visits'}`}
-                </span>
-                <span className="tabular block text-caption text-cream-600">
-                  {summary.visits === 0
-                    ? 'Saved setup only'
-                    : `${formatPercent(summary.averageRecoveryPercent)} average · last ${formatRecordedAt(summary.latestVisitAt ?? '')}`}
-                </span>
-              </span>
-            </Link>
-          </li>
-        ))}
-      </ul>
+              </Link>
+            </li>
+          ))}
+        </ul>
       </div>
       {visibleSummaries.length === 0 && (
         <p className="panel border-dashed p-4 text-ui text-cream-600">
