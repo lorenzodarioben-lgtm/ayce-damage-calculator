@@ -22,3 +22,7 @@ describe('isIsoTimestamp', () => {
 it('accepts leap day in a leap year', () => {
   expect(isIsoTimestamp('2024-02-29T23:59:59.999Z')).toBe(true);
 });
+
+it('rejects leap day in a non-leap year', () => {
+  expect(isIsoTimestamp('2025-02-29T12:00:00.000Z')).toBe(false);
+});
