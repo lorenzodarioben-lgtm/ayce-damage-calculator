@@ -26,3 +26,8 @@ it('accepts leap day in a leap year', () => {
 it('rejects leap day in a non-leap year', () => {
   expect(isIsoTimestamp('2025-02-29T12:00:00.000Z')).toBe(false);
 });
+
+it('rejects impossible month and hour fields', () => {
+  expect(isIsoTimestamp('2026-13-01T12:00:00.000Z')).toBe(false);
+  expect(isIsoTimestamp('2026-09-27T25:00:00.000Z')).toBe(false);
+});
