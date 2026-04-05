@@ -65,3 +65,8 @@ describe('the clamps built on it', () => {
     expect(clampPlanQuantity(Number.NaN)).toBe(1);
   });
 });
+
+it('honours fractional limits without rounding', () => {
+  expect(clampToRange(0.1, 0.25, 1.75, 1)).toBe(0.25);
+  expect(clampToRange(2, 0.25, 1.75, 1)).toBe(1.75);
+});
