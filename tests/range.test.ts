@@ -70,3 +70,8 @@ it('honours fractional limits without rounding', () => {
   expect(clampToRange(0.1, 0.25, 1.75, 1)).toBe(0.25);
   expect(clampToRange(2, 0.25, 1.75, 1)).toBe(1.75);
 });
+
+it('works when both bounds are negative', () => {
+  expect(clampToRange(-20, -10, -2, -5)).toBe(-10);
+  expect(clampToRange(0, -10, -2, -5)).toBe(-2);
+});
