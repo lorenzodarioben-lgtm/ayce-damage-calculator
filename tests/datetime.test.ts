@@ -31,3 +31,8 @@ it('rejects impossible month and hour fields', () => {
   expect(isIsoTimestamp('2026-13-01T12:00:00.000Z')).toBe(false);
   expect(isIsoTimestamp('2026-09-27T25:00:00.000Z')).toBe(false);
 });
+
+it('rejects surrounding whitespace on a timestamp', () => {
+  expect(isIsoTimestamp(' 2026-09-27T12:00:00.000Z')).toBe(false);
+  expect(isIsoTimestamp('2026-09-27T12:00:00.000Z ')).toBe(false);
+});
