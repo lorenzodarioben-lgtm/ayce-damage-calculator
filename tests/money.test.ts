@@ -134,3 +134,10 @@ it('rejects underscore-separated locale input', () => {
     locale: 'en-GB',
   });
 });
+
+it('retains a valid language and script locale', () => {
+  expect(resolveMoneyContext({ currency: 'USD', locale: 'zh-Hant-TW' })).toEqual({
+    currency: 'USD',
+    locale: 'zh-Hant-TW',
+  });
+});
