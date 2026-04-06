@@ -120,3 +120,10 @@ describe('defaultLocaleForCurrency', () => {
     );
   });
 });
+
+it('uses the currency default for an empty locale', () => {
+  expect(resolveMoneyContext({ currency: 'USD', locale: '' })).toEqual({
+    currency: 'USD',
+    locale: 'en-US',
+  });
+});
