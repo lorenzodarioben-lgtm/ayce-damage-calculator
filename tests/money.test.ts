@@ -127,3 +127,10 @@ it('uses the currency default for an empty locale', () => {
     locale: 'en-US',
   });
 });
+
+it('rejects underscore-separated locale input', () => {
+  expect(resolveMoneyContext({ currency: 'GBP', locale: 'en_GB' })).toEqual({
+    currency: 'GBP',
+    locale: 'en-GB',
+  });
+});
