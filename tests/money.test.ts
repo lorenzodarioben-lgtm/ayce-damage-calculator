@@ -141,3 +141,10 @@ it('retains a valid language and script locale', () => {
     locale: 'zh-Hant-TW',
   });
 });
+
+it('does not silently trim a padded locale', () => {
+  expect(resolveMoneyContext({ currency: 'EUR', locale: ' fr-FR ' })).toEqual({
+    currency: 'EUR',
+    locale: 'de-DE',
+  });
+});
