@@ -120,3 +120,31 @@ describe('defaultLocaleForCurrency', () => {
     );
   });
 });
+
+it('uses the currency default for an empty locale', () => {
+  expect(resolveMoneyContext({ currency: 'USD', locale: '' })).toEqual({
+    currency: 'USD',
+    locale: 'en-US',
+  });
+});
+
+it('rejects underscore-separated locale input', () => {
+  expect(resolveMoneyContext({ currency: 'GBP', locale: 'en_GB' })).toEqual({
+    currency: 'GBP',
+    locale: 'en-GB',
+  });
+});
+
+it('retains a valid language and script locale', () => {
+  expect(resolveMoneyContext({ currency: 'USD', locale: 'zh-Hant-TW' })).toEqual({
+    currency: 'USD',
+    locale: 'zh-Hant-TW',
+  });
+});
+
+it('does not silently trim a padded locale', () => {
+  expect(resolveMoneyContext({ currency: 'EUR', locale: ' fr-FR ' })).toEqual({
+    currency: 'EUR',
+    locale: 'de-DE',
+  });
+});
