@@ -65,3 +65,18 @@ describe('the clamps built on it', () => {
     expect(clampPlanQuantity(Number.NaN)).toBe(1);
   });
 });
+
+it('honours fractional limits without rounding', () => {
+  expect(clampToRange(0.1, 0.25, 1.75, 1)).toBe(0.25);
+  expect(clampToRange(2, 0.25, 1.75, 1)).toBe(1.75);
+});
+
+it('works when both bounds are negative', () => {
+  expect(clampToRange(-20, -10, -2, -5)).toBe(-10);
+  expect(clampToRange(0, -10, -2, -5)).toBe(-2);
+});
+
+it('returns the only available value when the bounds coincide', () => {
+  expect(clampToRange(999, 4, 4, 0)).toBe(4);
+  expect(clampToRange(-999, 4, 4, 0)).toBe(4);
+});

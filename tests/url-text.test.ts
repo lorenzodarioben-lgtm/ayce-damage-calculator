@@ -92,3 +92,11 @@ describe('encodeBase64 and decodeBase64', () => {
     }
   });
 });
+
+it('substitutes both URL-unsafe base64 characters', () => {
+  expect(encodeUrlBytes(new Uint8Array([251, 255]))).toBe('-_8');
+});
+
+it('decodes both URL-safe substitutions back to bytes', () => {
+  expect(decodeUrlBytes('-_8')).toEqual(new Uint8Array([251, 255]));
+});
