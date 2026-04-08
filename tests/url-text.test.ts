@@ -100,3 +100,8 @@ it('substitutes both URL-unsafe base64 characters', () => {
 it('decodes both URL-safe substitutions back to bytes', () => {
   expect(decodeUrlBytes('-_8')).toEqual(new Uint8Array([251, 255]));
 });
+
+it('round-trips emoji and control characters', () => {
+  const value = '🍖\nsecond line\tend';
+  expect(decodeUrlText(encodeUrlText(value))).toBe(value);
+});
