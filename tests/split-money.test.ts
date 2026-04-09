@@ -104,3 +104,7 @@ it('gives one remaining cent to the larger weight', () => {
 it('resolves a negative one-cent tie in seat order', () => {
   expect(distributeCents(-1, [1, 1])).toEqual([0, -1]);
 });
+
+it('truncates fractional cents before dividing them', () => {
+  expect(distributeCents(2.9, [1, 1])).toEqual([1, 1]);
+});
