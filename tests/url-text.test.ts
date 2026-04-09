@@ -109,3 +109,7 @@ it('round-trips emoji and control characters', () => {
 it('rejects a truncated multi-byte UTF-8 sequence', () => {
   expect(decodeUrlText(encodeUrlBytes(new Uint8Array([0xe2, 0x82])))).toBeNull();
 });
+
+it('rejects padding before the end of standard base64', () => {
+  expect(decodeBase64('Y=Q=')).toBeNull();
+});
