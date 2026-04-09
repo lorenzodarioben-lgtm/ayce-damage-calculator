@@ -100,3 +100,7 @@ it('gives every seat zero when the total is zero', () => {
 it('gives one remaining cent to the larger weight', () => {
   expect(distributeCents(1, [1, 2])).toEqual([0, 1]);
 });
+
+it('resolves a negative one-cent tie in seat order', () => {
+  expect(distributeCents(-1, [1, 1])).toEqual([0, -1]);
+});
