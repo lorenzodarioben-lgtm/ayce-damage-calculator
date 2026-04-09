@@ -92,3 +92,7 @@ describe('Dividing a total so the parts add back up to it', () => {
     expect(splitMoneyEvenly(50, Number.NaN)).toEqual([]);
   });
 });
+
+it('gives every seat zero when the total is zero', () => {
+  expect(distributeCents(0, [1, 2, 3])).toEqual([0, 0, 0]);
+});
