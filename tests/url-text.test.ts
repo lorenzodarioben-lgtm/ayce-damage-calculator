@@ -105,3 +105,7 @@ it('round-trips emoji and control characters', () => {
   const value = '🍖\nsecond line\tend';
   expect(decodeUrlText(encodeUrlText(value))).toBe(value);
 });
+
+it('rejects a truncated multi-byte UTF-8 sequence', () => {
+  expect(decodeUrlText(encodeUrlBytes(new Uint8Array([0xe2, 0x82])))).toBeNull();
+});
