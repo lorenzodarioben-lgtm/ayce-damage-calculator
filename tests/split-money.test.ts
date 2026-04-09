@@ -96,3 +96,7 @@ describe('Dividing a total so the parts add back up to it', () => {
 it('gives every seat zero when the total is zero', () => {
   expect(distributeCents(0, [1, 2, 3])).toEqual([0, 0, 0]);
 });
+
+it('gives one remaining cent to the larger weight', () => {
+  expect(distributeCents(1, [1, 2])).toEqual([0, 1]);
+});
