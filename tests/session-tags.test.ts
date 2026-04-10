@@ -120,3 +120,7 @@ describe('parseSessionTags', () => {
 it('lowercases accented letters in a label', () => {
   expect(normaliseSessionTag('CAFÉ')).toBe('café');
 });
+
+it('collapses a nonbreaking space like ordinary whitespace', () => {
+  expect(normaliseSessionTag('Dinner\u00a0Party')).toBe('dinner party');
+});
