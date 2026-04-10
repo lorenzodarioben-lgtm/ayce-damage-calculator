@@ -124,3 +124,8 @@ it('lowercases accented letters in a label', () => {
 it('collapses a nonbreaking space like ordinary whitespace', () => {
   expect(normaliseSessionTag('Dinner\u00a0Party')).toBe('dinner party');
 });
+
+it('does not spend a cap slot on a duplicate', () => {
+  const tags = ['A', 'a', 'b', 'c', 'd', 'e', 'f'];
+  expect(parseSessionTags(tags)).toEqual(['a', 'b', 'c', 'd', 'e']);
+});
