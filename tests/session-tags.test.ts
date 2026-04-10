@@ -116,3 +116,7 @@ describe('parseSessionTags', () => {
     expect(value).toEqual(['Lunch', 'lunch', 'friends']);
   });
 });
+
+it('lowercases accented letters in a label', () => {
+  expect(normaliseSessionTag('CAFÉ')).toBe('café');
+});
