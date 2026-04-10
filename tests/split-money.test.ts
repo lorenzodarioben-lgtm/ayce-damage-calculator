@@ -108,3 +108,7 @@ it('resolves a negative one-cent tie in seat order', () => {
 it('truncates fractional cents before dividing them', () => {
   expect(distributeCents(2.9, [1, 1])).toEqual([1, 1]);
 });
+
+it('does not charge a seat with zero weight when another has a claim', () => {
+  expect(distributeCents(101, [0, 1])).toEqual([0, 101]);
+});
