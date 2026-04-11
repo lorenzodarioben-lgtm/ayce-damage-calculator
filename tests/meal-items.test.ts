@@ -64,3 +64,21 @@ it('adds an extra suffix only to separately charged lines', () => {
   );
   expect(mealItemId(base)).toBe('beef-ribeye__standard__regular');
 });
+
+it('does not merge buffet food with the same separately charged food', () => {
+  const base = {
+    foodId: 'beef-ribeye',
+    quality: 'standard' as const,
+    plateSize: 'regular' as const,
+    quantity: 1,
+  };
+  const merged = mergeMealItems([
+    { ...base, id: 'included' },
+    { ...base, id: 'extra', separatelyCharged: true },
+  ]);
+  expect(merged).toHaveLength(2);
+  expect(merged.map((line) => line.id)).toEqual([
+    'beef-ribeye__standard__regular',
+    'beef-ribeye__standard__regular__extra',
+  ]);
+});
