@@ -98,3 +98,20 @@ it('adds stated charges when two identical extras merge', () => {
   expect(merged[0]?.separateCharge).toBe(21);
   expect(merged[0]?.quantity).toBe(2);
 });
+
+it('concatenates diner allocations on a merged line', () => {
+  const base = {
+    foodId: 'beef-ribeye',
+    quality: 'standard' as const,
+    plateSize: 'regular' as const,
+    quantity: 1,
+  };
+  const merged = mergeMealItems([
+    { ...base, id: 'first', allocations: [{ dinerId: 'a', quantity: 1 }] },
+    { ...base, id: 'second', allocations: [{ dinerId: 'b', quantity: 1 }] },
+  ]);
+  expect(merged[0]?.allocations).toEqual([
+    { dinerId: 'a', quantity: 1 },
+    { dinerId: 'b', quantity: 1 },
+  ]);
+});
