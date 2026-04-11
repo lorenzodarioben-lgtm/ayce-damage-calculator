@@ -52,3 +52,15 @@ describe('mergeMealItems', () => {
     ]);
   });
 });
+
+it('adds an extra suffix only to separately charged lines', () => {
+  const base = {
+    foodId: 'beef-ribeye',
+    quality: 'standard' as const,
+    plateSize: 'regular' as const,
+  };
+  expect(mealItemId({ ...base, separatelyCharged: true })).toBe(
+    'beef-ribeye__standard__regular__extra',
+  );
+  expect(mealItemId(base)).toBe('beef-ribeye__standard__regular');
+});
