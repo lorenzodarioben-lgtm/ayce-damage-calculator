@@ -82,3 +82,19 @@ it('does not merge buffet food with the same separately charged food', () => {
     'beef-ribeye__standard__regular__extra',
   ]);
 });
+
+it('adds stated charges when two identical extras merge', () => {
+  const base = {
+    foodId: 'beef-ribeye',
+    quality: 'standard' as const,
+    plateSize: 'regular' as const,
+    quantity: 1,
+    separatelyCharged: true as const,
+  };
+  const merged = mergeMealItems([
+    { ...base, id: 'first', separateCharge: 9 },
+    { ...base, id: 'second', separateCharge: 12 },
+  ]);
+  expect(merged[0]?.separateCharge).toBe(21);
+  expect(merged[0]?.quantity).toBe(2);
+});
