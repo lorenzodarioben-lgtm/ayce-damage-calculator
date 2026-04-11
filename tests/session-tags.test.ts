@@ -129,3 +129,7 @@ it('does not spend a cap slot on a duplicate', () => {
   const tags = ['A', 'a', 'b', 'c', 'd', 'e', 'f'];
   expect(parseSessionTags(tags)).toEqual(['a', 'b', 'c', 'd', 'e']);
 });
+
+it('preserves useful punctuation and digits', () => {
+  expect(normaliseSessionTag('#1 BBQ!')).toBe('#1 bbq!');
+});
