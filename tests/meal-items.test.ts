@@ -115,3 +115,21 @@ it('concatenates diner allocations on a merged line', () => {
     { dinerId: 'b', quantity: 1 },
   ]);
 });
+
+it('does not mutate input lines while merging them', () => {
+  const base = {
+    foodId: 'beef-ribeye',
+    quality: 'standard' as const,
+    plateSize: 'regular' as const,
+    quantity: 1,
+  };
+  const lines = [
+    { ...base, id: 'first' },
+    { ...base, id: 'second' },
+  ];
+  mergeMealItems(lines);
+  expect(lines.map((line) => [line.id, line.quantity])).toEqual([
+    ['first', 1],
+    ['second', 1],
+  ]);
+});
