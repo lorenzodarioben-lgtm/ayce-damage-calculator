@@ -176,3 +176,7 @@ describe('searchFoodCatalogue', () => {
     expect(given).toEqual(catalogue);
   });
 });
+
+it('matches a food id exactly, including its case', () => {
+  expect(findFoodInCatalogue([KIMCHI], KIMCHI.id.toUpperCase())).toBeUndefined();
+});
