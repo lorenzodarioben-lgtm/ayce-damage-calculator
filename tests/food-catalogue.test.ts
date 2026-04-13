@@ -180,3 +180,7 @@ describe('searchFoodCatalogue', () => {
 it('matches a food id exactly, including its case', () => {
   expect(findFoodInCatalogue([KIMCHI], KIMCHI.id.toUpperCase())).toBeUndefined();
 });
+
+it('finds a local food by a word in its description', () => {
+  expect(searchFoodCatalogue([KIMCHI], 'sharp')).toEqual([KIMCHI]);
+});
