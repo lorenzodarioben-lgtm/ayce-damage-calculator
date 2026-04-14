@@ -139,3 +139,8 @@ describe('rate formatting', () => {
     expect(formatMoneyPerMinute(Number.POSITIVE_INFINITY)).toBe('$0.00/min');
   });
 });
+
+it('switches weight units at exactly one kilogram', () => {
+  expect(formatWeight(999)).toBe('999 g');
+  expect(formatWeight(1000)).toBe('1.00 kg');
+});
