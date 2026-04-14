@@ -188,3 +188,7 @@ it('finds a local food by a word in its description', () => {
 it('finds a local food by its category name', () => {
   expect(searchFoodCatalogue([LAGER], 'drinks')).toEqual([LAGER]);
 });
+
+it('matches all query words regardless of their order', () => {
+  expect(searchFoodCatalogue([KIMCHI, LAGER], 'lager house')).toEqual([LAGER]);
+});
