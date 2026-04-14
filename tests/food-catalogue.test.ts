@@ -184,3 +184,7 @@ it('matches a food id exactly, including its case', () => {
 it('finds a local food by a word in its description', () => {
   expect(searchFoodCatalogue([KIMCHI], 'sharp')).toEqual([KIMCHI]);
 });
+
+it('finds a local food by its category name', () => {
+  expect(searchFoodCatalogue([LAGER], 'drinks')).toEqual([LAGER]);
+});
