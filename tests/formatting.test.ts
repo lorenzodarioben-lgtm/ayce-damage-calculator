@@ -144,3 +144,8 @@ it('switches weight units at exactly one kilogram', () => {
   expect(formatWeight(999)).toBe('999 g');
   expect(formatWeight(1000)).toBe('1.00 kg');
 });
+
+it('speaks invalid durations as under a minute', () => {
+  expect(formatDurationLabel(-60_000)).toBe('under a minute');
+  expect(formatDurationLabel(Number.POSITIVE_INFINITY)).toBe('under a minute');
+});
