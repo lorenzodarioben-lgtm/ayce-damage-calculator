@@ -52,3 +52,84 @@ describe('mergeMealItems', () => {
     ]);
   });
 });
+
+it('adds an extra suffix only to separately charged lines', () => {
+  const base = {
+    foodId: 'beef-ribeye',
+    quality: 'standard' as const,
+    plateSize: 'regular' as const,
+  };
+  expect(mealItemId({ ...base, separatelyCharged: true })).toBe(
+    'beef-ribeye__standard__regular__extra',
+  );
+  expect(mealItemId(base)).toBe('beef-ribeye__standard__regular');
+});
+
+it('does not merge buffet food with the same separately charged food', () => {
+  const base = {
+    foodId: 'beef-ribeye',
+    quality: 'standard' as const,
+    plateSize: 'regular' as const,
+    quantity: 1,
+  };
+  const merged = mergeMealItems([
+    { ...base, id: 'included' },
+    { ...base, id: 'extra', separatelyCharged: true },
+  ]);
+  expect(merged).toHaveLength(2);
+  expect(merged.map((line) => line.id)).toEqual([
+    'beef-ribeye__standard__regular',
+    'beef-ribeye__standard__regular__extra',
+  ]);
+});
+
+it('adds stated charges when two identical extras merge', () => {
+  const base = {
+    foodId: 'beef-ribeye',
+    quality: 'standard' as const,
+    plateSize: 'regular' as const,
+    quantity: 1,
+    separatelyCharged: true as const,
+  };
+  const merged = mergeMealItems([
+    { ...base, id: 'first', separateCharge: 9 },
+    { ...base, id: 'second', separateCharge: 12 },
+  ]);
+  expect(merged[0]?.separateCharge).toBe(21);
+  expect(merged[0]?.quantity).toBe(2);
+});
+
+it('concatenates diner allocations on a merged line', () => {
+  const base = {
+    foodId: 'beef-ribeye',
+    quality: 'standard' as const,
+    plateSize: 'regular' as const,
+    quantity: 1,
+  };
+  const merged = mergeMealItems([
+    { ...base, id: 'first', allocations: [{ dinerId: 'a', quantity: 1 }] },
+    { ...base, id: 'second', allocations: [{ dinerId: 'b', quantity: 1 }] },
+  ]);
+  expect(merged[0]?.allocations).toEqual([
+    { dinerId: 'a', quantity: 1 },
+    { dinerId: 'b', quantity: 1 },
+  ]);
+});
+
+it('does not mutate input lines while merging them', () => {
+  const base = {
+    foodId: 'beef-ribeye',
+    quality: 'standard' as const,
+    plateSize: 'regular' as const,
+    quantity: 1,
+  };
+  const lines = [
+    { ...base, id: 'first' },
+    { ...base, id: 'second' },
+  ];
+  mergeMealItems(lines);
+  expect(lines.map((line) => [line.id, line.quantity])).toEqual([
+    ['first', 1],
+    ['second', 1],
+  ]);
+});

@@ -139,3 +139,23 @@ describe('rate formatting', () => {
     expect(formatMoneyPerMinute(Number.POSITIVE_INFINITY)).toBe('$0.00/min');
   });
 });
+
+it('switches weight units at exactly one kilogram', () => {
+  expect(formatWeight(999)).toBe('999 g');
+  expect(formatWeight(1000)).toBe('1.00 kg');
+});
+
+it('speaks invalid durations as under a minute', () => {
+  expect(formatDurationLabel(-60_000)).toBe('under a minute');
+  expect(formatDurationLabel(Number.POSITIVE_INFINITY)).toBe('under a minute');
+});
+
+it('does not round partial seconds up on the clock', () => {
+  expect(formatClock(59_999)).toBe('0:59');
+  expect(formatClock(60_999)).toBe('1:00');
+});
+
+it('pluralises after rounding and clamping a plate count', () => {
+  expect(formatPlates(0.6)).toBe('1 plate');
+  expect(formatPlates(-5)).toBe('0 plates');
+});
