@@ -149,3 +149,8 @@ it('speaks invalid durations as under a minute', () => {
   expect(formatDurationLabel(-60_000)).toBe('under a minute');
   expect(formatDurationLabel(Number.POSITIVE_INFINITY)).toBe('under a minute');
 });
+
+it('does not round partial seconds up on the clock', () => {
+  expect(formatClock(59_999)).toBe('0:59');
+  expect(formatClock(60_999)).toBe('1:00');
+});
