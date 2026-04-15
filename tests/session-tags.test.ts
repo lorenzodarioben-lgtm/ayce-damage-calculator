@@ -116,3 +116,20 @@ describe('parseSessionTags', () => {
     expect(value).toEqual(['Lunch', 'lunch', 'friends']);
   });
 });
+
+it('lowercases accented letters in a label', () => {
+  expect(normaliseSessionTag('CAFÉ')).toBe('café');
+});
+
+it('collapses a nonbreaking space like ordinary whitespace', () => {
+  expect(normaliseSessionTag('Dinner\u00a0Party')).toBe('dinner party');
+});
+
+it('does not spend a cap slot on a duplicate', () => {
+  const tags = ['A', 'a', 'b', 'c', 'd', 'e', 'f'];
+  expect(parseSessionTags(tags)).toEqual(['a', 'b', 'c', 'd', 'e']);
+});
+
+it('preserves useful punctuation and digits', () => {
+  expect(normaliseSessionTag('#1 BBQ!')).toBe('#1 bbq!');
+});
