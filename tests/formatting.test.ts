@@ -154,3 +154,8 @@ it('does not round partial seconds up on the clock', () => {
   expect(formatClock(59_999)).toBe('0:59');
   expect(formatClock(60_999)).toBe('1:00');
 });
+
+it('pluralises after rounding and clamping a plate count', () => {
+  expect(formatPlates(0.6)).toBe('1 plate');
+  expect(formatPlates(-5)).toBe('0 plates');
+});
