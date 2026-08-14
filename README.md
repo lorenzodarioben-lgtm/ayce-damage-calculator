@@ -51,7 +51,7 @@ not. Everything runs in the browser — no accounts, no backend, no API keys.
 
 - Responsive from 320 px phones to desktop, with original SVG food illustrations
 - Keyboard-operable tabs, labelled controls, live-region confirmations, reduced-motion support
-- 107 automated tests
+- 110 automated tests
 
 ## Tech stack
 
@@ -137,7 +137,7 @@ comfortably lose the retail-value comparison and still have had a perfectly good
 npm run test:run
 ```
 
-107 tests across seven files, covering:
+110 tests across seven files, covering:
 
 - the calculation engine — weights, pricing, quality multipliers, nutrition scaling, aggregation
 - verdict boundaries, tested just below and exactly at every threshold
