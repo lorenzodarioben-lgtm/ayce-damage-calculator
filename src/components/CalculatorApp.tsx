@@ -74,6 +74,16 @@ export function CalculatorApp() {
     setStage('builder');
   }, []);
 
+  // From the report the brand acts as a way back; from the builder it behaves
+  // like an ordinary home link and returns to the top. Neither touches session data.
+  const handleBrandClick = useCallback(() => {
+    if (stage === 'report') {
+      setStage('builder');
+      return;
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [stage]);
+
   const handleConfirmReset = useCallback(() => {
     resetSession();
     setResetOpen(false);
@@ -83,7 +93,13 @@ export function CalculatorApp() {
 
   return (
     <>
-      <Header onOpenMethodology={() => setMethodologyOpen(true)} />
+      <Header
+        onBrandClick={handleBrandClick}
+        brandActionLabel={
+          stage === 'report' ? 'Back to the meal builder' : 'Back to the top of the page'
+        }
+        onOpenMethodology={() => setMethodologyOpen(true)}
+      />
 
       <main className="relative z-10">
         {stage === 'builder' && <Hero />}
