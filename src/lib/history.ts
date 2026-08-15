@@ -1,4 +1,11 @@
 import { findFood } from '@/data/foods';
+import {
+  evaluateAchievementIds,
+  isAchievementId,
+  resolveAchievementIds,
+  type Achievement,
+  type AchievementId,
+} from '@/lib/achievements';
 import { buildDamageReport, clampDinerCount, clampPricePerDiner } from '@/lib/calculations';
 import { MAX_LINE_QUANTITY, MIN_QUANTITY, isPlateSize, isQualityTier } from '@/lib/constants';
 import { sanitiseRestaurantName } from '@/lib/storage';
@@ -6,8 +13,16 @@ import { getVerdict, isVerdictId, type Verdict } from '@/lib/verdicts';
 import type { SavedMealSession, SavedSessionSnapshot } from '@/types/history';
 import type { DamageReport, MealItem, MealSession, Nutrition } from '@/types/meal';
 
-/** Bumped whenever the shape of a stored record changes. */
-export const SAVED_SESSION_VERSION = 1;
+/**
+ * Bumped whenever the shape of a stored record changes.
+ *
+ * 1 — original.
+ * 2 — snapshots carry the achievements the session earned.
+ */
+export const SAVED_SESSION_VERSION = 2;
+
+/** Versions `parseSavedSession` knows how to read, current one included. */
+export const SUPPORTED_SESSION_VERSIONS = [1, 2] as const;
 
 /** Beyond this the oldest records are pruned, so storage cannot grow forever. */
 export const MAX_HISTORY_RECORDS = 200;
@@ -44,8 +59,13 @@ export function fingerprintSession(session: MealSession): string {
   ].join('#');
 }
 
-export function buildSnapshot(report: DamageReport, verdict: Verdict): SavedSessionSnapshot {
+export function buildSnapshot(
+  report: DamageReport,
+  verdict: Verdict,
+  dinerCount: number,
+): SavedSessionSnapshot {
   return {
+    achievementIds: evaluateAchievementIds(report, dinerCount),
     totalAdmission: report.totalAdmission,
     totalRetailValue: report.totalRetailValue,
     totalRestaurantCost: report.totalRestaurantCost,
@@ -77,7 +97,7 @@ export function createSavedSession(
     dinerCount: clampDinerCount(session.dinerCount),
     items: session.items.map((item) => ({ ...item })),
     fingerprint: fingerprintSession(session),
-    snapshot: buildSnapshot(report, verdict),
+    snapshot: buildSnapshot(report, verdict, clampDinerCount(session.dinerCount)),
   };
 }
 
@@ -121,7 +141,18 @@ function parseNutrition(value: unknown): Nutrition {
   };
 }
 
-function parseSnapshot(value: unknown): SavedSessionSnapshot | null {
+function parseAchievementIds(value: unknown): readonly AchievementId[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  // Ids retired from the engine are dropped rather than rendered as blanks.
+  return value.filter(isAchievementId);
+}
+
+function parseSnapshot(
+  value: unknown,
+  achievementIds: readonly AchievementId[],
+): SavedSessionSnapshot | null {
   if (!isRecord(value)) {
     return null;
   }
@@ -130,6 +161,7 @@ function parseSnapshot(value: unknown): SavedSessionSnapshot | null {
   }
 
   return {
+    achievementIds,
     totalAdmission: finiteOrNull(value.totalAdmission) ?? 0,
     totalRetailValue: finiteOrNull(value.totalRetailValue) ?? 0,
     totalRestaurantCost: finiteOrNull(value.totalRestaurantCost) ?? 0,
@@ -150,9 +182,15 @@ export function parseSavedSession(value: unknown): SavedMealSession | null {
   if (!isRecord(value)) {
     return null;
   }
-  if (value.version !== SAVED_SESSION_VERSION) {
+
+  const version = value.version;
+  if (
+    typeof version !== 'number' ||
+    !SUPPORTED_SESSION_VERSIONS.some((supported) => supported === version)
+  ) {
     return null;
   }
+
   if (typeof value.id !== 'string' || value.id.length === 0) {
     return null;
   }
@@ -168,11 +206,6 @@ export function parseSavedSession(value: unknown): SavedMealSession | null {
     return null;
   }
 
-  const snapshot = parseSnapshot(value.snapshot);
-  if (snapshot === null) {
-    return null;
-  }
-
   const rawItems = Array.isArray(value.items) ? value.items : [];
   const items = rawItems
     .map((item, index) => parseItem(item, index))
@@ -183,6 +216,27 @@ export function parseSavedSession(value: unknown): SavedMealSession | null {
     return null;
   }
 
+  const safePrice = clampPricePerDiner(pricePerDiner);
+  const safeDiners = clampDinerCount(dinerCount);
+
+  /*
+   * Version 1 predates recorded achievements. Because they are derived purely
+   * from the meal, an old record can be brought forward exactly rather than
+   * being discarded or left with an empty list.
+   */
+  const achievementIds =
+    version >= 2
+      ? parseAchievementIds(isRecord(value.snapshot) ? value.snapshot.achievementIds : undefined)
+      : evaluateAchievementIds(
+          buildDamageReport(items, { pricePerDiner: safePrice, dinerCount: safeDiners }),
+          safeDiners,
+        );
+
+  const snapshot = parseSnapshot(value.snapshot, achievementIds);
+  if (snapshot === null) {
+    return null;
+  }
+
   const restaurantName = sanitiseRestaurantName(value.restaurantName);
 
   return {
@@ -190,16 +244,16 @@ export function parseSavedSession(value: unknown): SavedMealSession | null {
     version: SAVED_SESSION_VERSION,
     createdAt,
     restaurantName,
-    pricePerDiner: clampPricePerDiner(pricePerDiner),
-    dinerCount: clampDinerCount(dinerCount),
+    pricePerDiner: safePrice,
+    dinerCount: safeDiners,
     items,
     fingerprint:
       typeof value.fingerprint === 'string' && value.fingerprint.length > 0
         ? value.fingerprint
         : fingerprintSession({
             restaurantName,
-            pricePerDiner: clampPricePerDiner(pricePerDiner),
-            dinerCount: clampDinerCount(dinerCount),
+            pricePerDiner: safePrice,
+            dinerCount: safeDiners,
             items,
           }),
     snapshot,
@@ -235,11 +289,18 @@ export interface ResolvedSavedSession {
   readonly record: SavedMealSession;
   readonly report: DamageReport;
   readonly verdict: Verdict;
+  /** What was earned when the session was filed, not what it would earn now. */
+  readonly achievements: readonly Achievement[];
 }
 
 export function resolveSavedSession(record: SavedMealSession): ResolvedSavedSession {
   const report = reportFromSaved(record);
-  return { record, report, verdict: getVerdict(report.totalRetailValue, report.totalAdmission) };
+  return {
+    record,
+    report,
+    verdict: getVerdict(report.totalRetailValue, report.totalAdmission),
+    achievements: resolveAchievementIds(record.snapshot.achievementIds),
+  };
 }
 
 export function sortSavedSessions(

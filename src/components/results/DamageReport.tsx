@@ -2,11 +2,13 @@
 
 import { useMemo } from 'react';
 import { ArrowLeft, PencilLine } from 'lucide-react';
+import { AchievementList } from '@/components/results/AchievementList';
 import { ReportSummary } from '@/components/results/ReportSummary';
 import { ResultCard } from '@/components/results/ResultCard';
 import { SaveToHistory } from '@/components/results/SaveToHistory';
 import { ShareActions } from '@/components/results/ShareActions';
 import { Button } from '@/components/ui/Button';
+import { evaluateAchievements } from '@/lib/achievements';
 import { buildResultCardModel } from '@/lib/resultCard';
 import { getVerdict } from '@/lib/verdicts';
 import type { DamageReport as DamageReportTotals, MealSession } from '@/types/meal';
@@ -32,6 +34,11 @@ export function DamageReport({ report, session, onEditMeal, onStatus }: DamageRe
     [report, verdict, restaurantName],
   );
 
+  const achievements = useMemo(
+    () => evaluateAchievements(report, session.dinerCount),
+    [report, session.dinerCount],
+  );
+
   return (
     <div className="animate-fade-up space-y-6">
       {/* Escape hatch. The same action exists at the foot of the report, but the
@@ -52,6 +59,8 @@ export function DamageReport({ report, session, onEditMeal, onStatus }: DamageRe
         heading="AYCE Damage Report"
         headingId="report-heading"
       />
+
+      <AchievementList achievements={achievements} headingId="achievements-heading" />
 
       {/* Shareable card + actions */}
       <section aria-labelledby="share-heading" className="panel p-4 sm:p-5">
