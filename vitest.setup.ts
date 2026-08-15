@@ -2,6 +2,25 @@ import '@testing-library/jest-dom/vitest';
 import { cleanup } from '@testing-library/react';
 import { afterEach, vi } from 'vitest';
 
+/**
+ * Components are rendered directly rather than inside the App Router, so the
+ * navigation hooks have no context to read and would return null. Standing them
+ * up here keeps every suite from having to repeat the same mock.
+ */
+vi.mock('next/navigation', () => ({
+  usePathname: () => '/',
+  useSearchParams: () => new URLSearchParams(),
+  useParams: () => ({}),
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+    refresh: vi.fn(),
+    prefetch: vi.fn(),
+  }),
+}));
+
 // Suites that exercise non-DOM code (the service worker, for one) opt into the
 // node environment, where none of the browser setup below applies.
 const isDomEnvironment = typeof window !== 'undefined';

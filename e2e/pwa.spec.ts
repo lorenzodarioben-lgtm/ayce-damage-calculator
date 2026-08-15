@@ -32,6 +32,10 @@ async function waitForServiceWorker(page: Page) {
   );
 }
 
+function controlsPage(page: Page): Promise<boolean> {
+  return page.evaluate(() => Boolean(navigator.serviceWorker.controller));
+}
+
 async function cachedUrls(page: Page, cacheName: string): Promise<string[]> {
   return page.evaluate(async (name) => {
     const cache = await caches.open(name);
@@ -90,11 +94,10 @@ test.describe('Service worker', () => {
     await openCalculator(page);
     await waitForServiceWorker(page);
 
-    await page.reload();
-    // Claiming a client is asynchronous, so this is polled rather than sampled.
-    await expect
-      .poll(() => page.evaluate(() => Boolean(navigator.serviceWorker.controller)))
-      .toBe(true);
+    // The worker calls clients.claim(), so the page it registered from becomes
+    // controlled without a reload. Polled because claiming is asynchronous, and
+    // generously so: a suite-wide parallel run makes activation contended.
+    await expect.poll(() => controlsPage(page), { timeout: 30_000 }).toBe(true);
   });
 
   test('precaches the calculator shell and the offline page', async ({ page }) => {
@@ -110,15 +113,19 @@ test.describe('Service worker', () => {
     await openCalculator(page);
     await waitForServiceWorker(page);
 
-    // Only a controlled load routes asset requests through the worker.
+    // Only a controlled load routes asset requests through the worker, so
+    // control is established before reloading rather than assumed after it.
+    await expect.poll(() => controlsPage(page), { timeout: 30_000 }).toBe(true);
     await page.reload();
     await expect(page.getByRole('heading', { name: 'Build the meal' })).toBeVisible();
 
+    // Generous, because asset caching competes with every other worker's traffic.
     await expect
       .poll(
         async () =>
           (await cachedUrls(page, CACHE_NAME)).filter((url) => url.startsWith('/_next/static/'))
             .length,
+        { timeout: 20_000 },
       )
       .toBeGreaterThan(0);
   });
