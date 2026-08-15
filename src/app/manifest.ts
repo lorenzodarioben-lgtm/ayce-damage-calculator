@@ -20,5 +20,19 @@ export default function manifest(): MetadataRoute.Manifest {
       // Cropped to the platform's own shape, so it carries its own safe area.
       { src: '/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
     ],
+    shortcuts: [
+      {
+        name: 'Live meal mode',
+        short_name: 'Live',
+        description: 'Log plates one tap at a time while at the table.',
+        url: '/live',
+      },
+      {
+        name: 'Meal history',
+        short_name: 'History',
+        description: 'Review previously recorded sessions.',
+        url: '/history',
+      },
+    ],
   };
 }

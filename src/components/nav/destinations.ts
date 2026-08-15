@@ -9,6 +9,7 @@ export interface Destination {
  */
 export const DESTINATIONS: readonly Destination[] = [
   { href: '/', label: 'Calculator' },
+  { href: '/live', label: 'Live' },
   { href: '/history', label: 'History' },
 ];
 
