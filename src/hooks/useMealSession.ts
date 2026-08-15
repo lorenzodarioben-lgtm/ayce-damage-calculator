@@ -9,7 +9,14 @@ import {
   MIN_QUANTITY,
 } from '@/lib/constants';
 import { clearSession, loadSession, sanitiseRestaurantName, saveSession } from '@/lib/storage';
-import type { DamageReport, MealItem, MealSession, PlateSize, QualityTier } from '@/types/meal';
+import type {
+  DamageReport,
+  MealItem,
+  MealSession,
+  PlateSize,
+  QualityTier,
+  SessionConfig,
+} from '@/types/meal';
 
 export const INITIAL_SESSION: MealSession = {
   restaurantName: '',
@@ -30,6 +37,7 @@ export type SessionAction =
   | { type: 'set-restaurant-name'; value: string }
   | { type: 'set-price-per-diner'; value: number }
   | { type: 'adjust-diner-count'; delta: number }
+  | { type: 'apply-setup'; setup: SessionConfig }
   | { type: 'add-item'; payload: AddItemPayload }
   | { type: 'increment-item'; id: string }
   | { type: 'decrement-item'; id: string }
@@ -60,6 +68,16 @@ export function sessionReducer(state: MealSession, action: SessionAction): MealS
 
     case 'adjust-diner-count':
       return { ...state, dinerCount: clampDinerCount(state.dinerCount + action.delta) };
+
+    case 'apply-setup':
+      // Replaces the session configuration only. The tab is deliberately
+      // untouched: applying a preset must never cost the user their plates.
+      return {
+        ...state,
+        restaurantName: sanitiseRestaurantName(action.setup.restaurantName),
+        pricePerDiner: clampPricePerDiner(action.setup.pricePerDiner),
+        dinerCount: clampDinerCount(action.setup.dinerCount),
+      };
 
     case 'add-item': {
       const quantity = clampQuantity(action.payload.quantity);
@@ -117,6 +135,7 @@ export interface UseMealSessionResult {
   setRestaurantName: (value: string) => void;
   setPricePerDiner: (value: number) => void;
   adjustDinerCount: (delta: number) => void;
+  applySetup: (setup: SessionConfig) => void;
   addItem: (payload: AddItemPayload) => void;
   incrementItem: (id: string) => void;
   decrementItem: (id: string) => void;
@@ -179,6 +198,10 @@ export function useMealSession(): UseMealSessionResult {
     dispatch({ type: 'adjust-diner-count', delta });
   }, []);
 
+  const applySetup = useCallback((setup: SessionConfig) => {
+    dispatch({ type: 'apply-setup', setup });
+  }, []);
+
   const addItem = useCallback((payload: AddItemPayload) => {
     dispatch({ type: 'add-item', payload });
   }, []);
@@ -207,6 +230,7 @@ export function useMealSession(): UseMealSessionResult {
     setRestaurantName,
     setPricePerDiner,
     adjustDinerCount,
+    applySetup,
     addItem,
     incrementItem,
     decrementItem,
