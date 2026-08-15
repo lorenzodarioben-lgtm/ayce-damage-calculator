@@ -11,6 +11,7 @@ export const DESTINATIONS: readonly Destination[] = [
   { href: '/', label: 'Calculator' },
   { href: '/live', label: 'Live' },
   { href: '/history', label: 'History' },
+  { href: '/stats', label: 'Stats' },
 ];
 
 /** Treats nested paths as belonging to their section, but keeps `/` exact. */
