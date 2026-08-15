@@ -1,3 +1,5 @@
+import type { DeltaUnit } from '@/lib/comparison';
+
 const AUD = new Intl.NumberFormat('en-AU', {
   style: 'currency',
   currency: 'AUD',
@@ -87,4 +89,53 @@ export function formatPricePerKg(value: number): string {
   const safe = finite(value);
   const digits = Number.isInteger(safe) ? 0 : 2;
   return `$${DECIMAL(digits).format(safe)}/kg`;
+}
+
+function signOf(value: number): string {
+  // -0 would otherwise render with a minus.
+  return (Object.is(value, -0) ? 0 : value) < 0 ? '-' : '+';
+}
+
+/**
+ * Renders a difference with an explicit sign and its own unit.
+ *
+ * Percentage-point differences are labelled as such rather than with a "%",
+ * because "+38%" and "+38 percentage points" are different claims and only one
+ * of them is true of a recovery figure moving from 134% to 172%.
+ */
+export function formatDelta(value: number, unit: DeltaUnit): string {
+  const safe = finite(value);
+  const magnitude = Math.abs(safe);
+  const sign = signOf(safe);
+
+  switch (unit) {
+    case 'currency':
+      return `${sign}${AUD.format(magnitude)}`;
+    case 'kilograms':
+      return `${sign}${KG.format(magnitude)} kg`;
+    case 'grams':
+      return `${sign}${INTEGER.format(Math.round(magnitude))} g`;
+    case 'percentagePoints': {
+      const points = Math.round(magnitude);
+      return `${sign}${INTEGER.format(points)} percentage ${points === 1 ? 'point' : 'points'}`;
+    }
+    case 'count':
+      return `${sign}${INTEGER.format(Math.round(magnitude))}`;
+  }
+}
+
+/** Renders a metric's own value in the unit it is measured in. */
+export function formatMetricValue(value: number, unit: DeltaUnit): string {
+  switch (unit) {
+    case 'currency':
+      return formatMoney(value);
+    case 'kilograms':
+      return formatKg(value);
+    case 'grams':
+      return formatGrams(value);
+    case 'percentagePoints':
+      return formatPercent(value);
+    case 'count':
+      return formatCount(value);
+  }
 }

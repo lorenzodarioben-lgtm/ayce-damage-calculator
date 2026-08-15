@@ -94,13 +94,25 @@ export function HistoryList() {
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setPending({ kind: 'all' })}
-          className="min-h-11 cursor-pointer rounded-[10px] border border-char-700 px-3 text-xs font-semibold uppercase tracking-[0.1em] text-char-500 transition-colors duration-200 hover:bg-char-700/25 hover:text-cream-100"
-        >
-          Clear history
-        </button>
+        <div className="flex items-center gap-2">
+          {/* A comparison needs two sides, so the entry point only appears once
+              there is something to compare against. */}
+          {records.length >= 2 && (
+            <Link
+              href="/history/compare"
+              className="flex min-h-11 items-center rounded-[10px] border border-line-ember px-3 text-xs font-semibold uppercase tracking-[0.1em] text-ember-400 transition-colors duration-200 hover:bg-ash-800"
+            >
+              Compare
+            </Link>
+          )}
+          <button
+            type="button"
+            onClick={() => setPending({ kind: 'all' })}
+            className="min-h-11 cursor-pointer rounded-[10px] border border-char-700 px-3 text-xs font-semibold uppercase tracking-[0.1em] text-char-500 transition-colors duration-200 hover:bg-char-700/25 hover:text-cream-100"
+          >
+            Clear history
+          </button>
+        </div>
       </div>
 
       <ul className="space-y-3">
