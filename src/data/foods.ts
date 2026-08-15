@@ -18,7 +18,7 @@ export const FOODS: readonly FoodItem[] = [
     proteinPer100g: 19,
     fatPer100g: 24,
     carbsPer100g: 0,
-    visualVariant: 'slices-fanned',
+    visualVariant: 'brisket-slices',
   },
   {
     id: 'beef-short-rib',
@@ -32,7 +32,7 @@ export const FOODS: readonly FoodItem[] = [
     proteinPer100g: 20,
     fatPer100g: 28,
     carbsPer100g: 2,
-    visualVariant: 'ribs-stacked',
+    visualVariant: 'short-rib-blocks',
   },
   {
     id: 'beef-ribeye',
@@ -46,7 +46,7 @@ export const FOODS: readonly FoodItem[] = [
     proteinPer100g: 24,
     fatPer100g: 22,
     carbsPer100g: 0,
-    visualVariant: 'steak-marbled',
+    visualVariant: 'ribeye-steak',
   },
   {
     id: 'beef-bulgogi',
@@ -60,7 +60,7 @@ export const FOODS: readonly FoodItem[] = [
     proteinPer100g: 18,
     fatPer100g: 13,
     carbsPer100g: 9,
-    visualVariant: 'strips-marinated',
+    visualVariant: 'bulgogi-tangle',
   },
   {
     id: 'beef-belly',
@@ -74,7 +74,7 @@ export const FOODS: readonly FoodItem[] = [
     proteinPer100g: 14,
     fatPer100g: 41,
     carbsPer100g: 0,
-    visualVariant: 'belly-rolled',
+    visualVariant: 'beef-belly-strips',
   },
   {
     id: 'beef-tongue',
@@ -88,7 +88,7 @@ export const FOODS: readonly FoodItem[] = [
     proteinPer100g: 16,
     fatPer100g: 17,
     carbsPer100g: 0,
-    visualVariant: 'tongue-rounds',
+    visualVariant: 'tongue-ovals',
   },
   {
     id: 'beef-wagyu-short-rib',
@@ -102,7 +102,7 @@ export const FOODS: readonly FoodItem[] = [
     proteinPer100g: 18,
     fatPer100g: 32,
     carbsPer100g: 0,
-    visualVariant: 'ribs-stacked',
+    visualVariant: 'wagyu-blocks',
   },
 
   // ---------------------------------------------------------------- pork ---
@@ -118,7 +118,7 @@ export const FOODS: readonly FoodItem[] = [
     proteinPer100g: 13,
     fatPer100g: 44,
     carbsPer100g: 0,
-    visualVariant: 'belly-rolled',
+    visualVariant: 'pork-belly-layers',
   },
   {
     id: 'pork-spicy',
@@ -132,7 +132,7 @@ export const FOODS: readonly FoodItem[] = [
     proteinPer100g: 17,
     fatPer100g: 17,
     carbsPer100g: 8,
-    visualVariant: 'strips-marinated',
+    visualVariant: 'spicy-pork',
   },
   {
     id: 'pork-jowl',
@@ -146,7 +146,7 @@ export const FOODS: readonly FoodItem[] = [
     proteinPer100g: 12,
     fatPer100g: 40,
     carbsPer100g: 0,
-    visualVariant: 'jowl-curled',
+    visualVariant: 'jowl-rounds',
   },
   {
     id: 'pork-shoulder',
@@ -160,7 +160,7 @@ export const FOODS: readonly FoodItem[] = [
     proteinPer100g: 23,
     fatPer100g: 19,
     carbsPer100g: 0,
-    visualVariant: 'slices-fanned',
+    visualVariant: 'shoulder-cuts',
   },
 
   // ------------------------------------------------------------- chicken ---
@@ -176,7 +176,7 @@ export const FOODS: readonly FoodItem[] = [
     proteinPer100g: 26,
     fatPer100g: 11,
     carbsPer100g: 0,
-    visualVariant: 'cubes-scattered',
+    visualVariant: 'chicken-thigh-pieces',
   },
   {
     id: 'chicken-spicy',
@@ -190,7 +190,7 @@ export const FOODS: readonly FoodItem[] = [
     proteinPer100g: 22,
     fatPer100g: 8,
     carbsPer100g: 9,
-    visualVariant: 'strips-marinated',
+    visualVariant: 'spicy-chicken',
   },
   {
     id: 'chicken-garlic',
@@ -204,7 +204,7 @@ export const FOODS: readonly FoodItem[] = [
     proteinPer100g: 24,
     fatPer100g: 8,
     carbsPer100g: 4,
-    visualVariant: 'fillets-layered',
+    visualVariant: 'chicken-fillets',
   },
 
   // ------------------------------------------------------------- seafood ---
@@ -220,7 +220,7 @@ export const FOODS: readonly FoodItem[] = [
     proteinPer100g: 24,
     fatPer100g: 0.3,
     carbsPer100g: 0.2,
-    visualVariant: 'prawns-curled',
+    visualVariant: 'prawns',
   },
   {
     id: 'seafood-squid',
@@ -262,7 +262,7 @@ export const FOODS: readonly FoodItem[] = [
     proteinPer100g: 20.5,
     fatPer100g: 0.8,
     carbsPer100g: 5.4,
-    visualVariant: 'scallops-round',
+    visualVariant: 'scallops',
   },
 ];
 
