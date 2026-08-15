@@ -1,5 +1,7 @@
 # AYCE Damage Calculator
 
+[![CI](https://github.com/lorenzodarioben-lgtm/ayce-damage-calculator/actions/workflows/ci.yml/badge.svg)](https://github.com/lorenzodarioben-lgtm/ayce-damage-calculator/actions/workflows/ci.yml)
+
 **Did you beat the buffet, or fund their next renovation?**
 
 **Live demo → [ayce-damage-calculator.vercel.app](https://ayce-damage-calculator.vercel.app)**
