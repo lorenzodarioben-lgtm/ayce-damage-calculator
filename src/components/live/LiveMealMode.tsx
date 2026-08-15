@@ -3,6 +3,7 @@
 import { useCallback, useState } from 'react';
 import Link from 'next/link';
 import { Plus, Receipt } from 'lucide-react';
+import { FavoriteQuickAdd } from '@/components/favorites/FavoriteQuickAdd';
 import { AddCutDialog } from '@/components/live/AddCutDialog';
 import { QuickLogRow } from '@/components/live/QuickLogRow';
 import { SiteFooter } from '@/components/nav/SiteFooter';
@@ -10,6 +11,7 @@ import { SiteHeader } from '@/components/nav/SiteHeader';
 import { DamageMeter } from '@/components/summary/DamageMeter';
 import { Button } from '@/components/ui/Button';
 import { StatusToast } from '@/components/ui/StatusToast';
+import { useFavorites } from '@/hooks/useFavorites';
 import { useMealSession, type AddItemPayload } from '@/hooks/useMealSession';
 import { useStatusMessage } from '@/hooks/useStatusMessage';
 import { REPORT_STAGE, STAGE_PARAM } from '@/hooks/useStageHistory';
@@ -29,6 +31,7 @@ const REPORT_HREF = `/?${STAGE_PARAM}=${REPORT_STAGE}`;
  */
 export function LiveMealMode() {
   const { session, report, addItem, incrementItem, decrementItem, removeItem } = useMealSession();
+  const { favorites, remove: removeFavorite } = useFavorites();
 
   const [addOpen, setAddOpen] = useState(false);
   const [status, announce] = useStatusMessage();
@@ -37,6 +40,14 @@ export function LiveMealMode() {
     (payload: AddItemPayload) => {
       addItem(payload);
       announce(`${findFood(payload.foodId)?.name ?? 'Item'} added to the quick log.`);
+    },
+    [addItem, announce],
+  );
+
+  const handleFavoriteAdd = useCallback(
+    (payload: AddItemPayload, confirmation: string) => {
+      addItem(payload);
+      announce(confirmation);
     },
     [addItem, announce],
   );
@@ -100,6 +111,20 @@ export function LiveMealMode() {
               single tap for the rest of the meal.
             </p>
           </div>
+        )}
+
+        {favorites.length > 0 && (
+          <section aria-labelledby="live-saved-orders-heading" className="mt-4">
+            <h2 id="live-saved-orders-heading" className="micro-label mb-2">
+              Saved orders
+            </h2>
+            <FavoriteQuickAdd
+              favorites={favorites}
+              onAdd={handleFavoriteAdd}
+              onRemove={removeFavorite}
+              size="large"
+            />
+          </section>
         )}
 
         <Button
