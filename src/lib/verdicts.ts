@@ -72,6 +72,15 @@ export const VERDICTS: readonly Verdict[] = [
 
 const FALLBACK_VERDICT = VERDICTS[VERDICTS.length - 1] as Verdict;
 
+export function isVerdictId(value: unknown): value is VerdictId {
+  return typeof value === 'string' && VERDICTS.some((verdict) => verdict.id === value);
+}
+
+/** Returns the verdict for a stored id, or the fallback if it is unknown. */
+export function getVerdictById(id: VerdictId): Verdict {
+  return VERDICTS.find((verdict) => verdict.id === id) ?? FALLBACK_VERDICT;
+}
+
 export function getVerdict(retailValue: number, totalAdmission: number): Verdict {
   if (!Number.isFinite(retailValue) || !Number.isFinite(totalAdmission) || totalAdmission <= 0) {
     return FALLBACK_VERDICT;

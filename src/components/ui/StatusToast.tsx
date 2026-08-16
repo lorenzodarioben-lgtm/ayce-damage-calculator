@@ -2,15 +2,18 @@
 
 interface StatusToastProps {
   message: string | null;
-  /** Raised above the mobile sticky bar so the two never overlap. */
-  offset: boolean;
+  /**
+   * Raised above the mobile sticky bar so the two never overlap. Defaults to
+   * false, which is right for every screen that has no such bar.
+   */
+  offset?: boolean;
 }
 
 /**
  * The live region always exists so assistive technology announces updates;
  * only the visual bubble mounts and unmounts.
  */
-export function StatusToast({ message, offset }: StatusToastProps) {
+export function StatusToast({ message, offset = false }: StatusToastProps) {
   return (
     <div
       role="status"

@@ -1,10 +1,11 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Header } from '@/components/Header';
 import { Hero } from '@/components/Hero';
 import { MealBuilder } from '@/components/meal/MealBuilder';
-import { Methodology } from '@/components/methodology/Methodology';
+import { SiteFooter } from '@/components/nav/SiteFooter';
+import { SiteHeader } from '@/components/nav/SiteHeader';
+import { MAIN_CONTENT_ID } from '@/components/nav/destinations';
 import { DamageReport } from '@/components/results/DamageReport';
 import { SessionSetup } from '@/components/session/SessionSetup';
 import { LiveSummary } from '@/components/summary/LiveSummary';
@@ -12,17 +13,18 @@ import { StickySummaryBar } from '@/components/summary/StickySummaryBar';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { StatusToast } from '@/components/ui/StatusToast';
 import { useMealSession, type AddItemPayload } from '@/hooks/useMealSession';
+import { useStageHistory } from '@/hooks/useStageHistory';
 import { useStatusMessage } from '@/hooks/useStatusMessage';
-
-type Stage = 'builder' | 'report';
 
 export function CalculatorApp() {
   const {
     session,
     report,
+    hydrated,
     setRestaurantName,
     setPricePerDiner,
     adjustDinerCount,
+    applySetup,
     addItem,
     incrementItem,
     decrementItem,
@@ -30,8 +32,11 @@ export function CalculatorApp() {
     resetSession,
   } = useMealSession();
 
-  const [stage, setStage] = useState<Stage>('builder');
-  const [methodologyOpen, setMethodologyOpen] = useState(false);
+  const { stage, showReport, showBuilder } = useStageHistory({
+    ready: hydrated,
+    canShowReport: report.lines.length > 0,
+  });
+
   const [resetOpen, setResetOpen] = useState(false);
   const [status, announce] = useStatusMessage();
 
@@ -67,41 +72,40 @@ export function CalculatorApp() {
     if (report.lines.length === 0) {
       return;
     }
-    setStage('report');
-  }, [report.lines.length]);
+    showReport();
+  }, [report.lines.length, showReport]);
 
   const handleEditMeal = useCallback(() => {
-    setStage('builder');
-  }, []);
+    showBuilder();
+  }, [showBuilder]);
 
   // From the report the brand acts as a way back; from the builder it behaves
   // like an ordinary home link and returns to the top. Neither touches session data.
   const handleBrandClick = useCallback(() => {
     if (stage === 'report') {
-      setStage('builder');
+      showBuilder();
       return;
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [stage]);
+  }, [stage, showBuilder]);
 
   const handleConfirmReset = useCallback(() => {
     resetSession();
     setResetOpen(false);
-    setStage('builder');
+    showBuilder();
     announce('Session reset. The buffet remembers nothing.');
-  }, [resetSession, announce]);
+  }, [resetSession, showBuilder, announce]);
 
   return (
     <>
-      <Header
+      <SiteHeader
         onBrandClick={handleBrandClick}
         brandActionLabel={
           stage === 'report' ? 'Back to the meal builder' : 'Back to the top of the page'
         }
-        onOpenMethodology={() => setMethodologyOpen(true)}
       />
 
-      <main className="relative z-10">
+      <main id={MAIN_CONTENT_ID} className="relative z-10">
         {stage === 'builder' && <Hero />}
 
         <div className="mx-auto max-w-[1280px] px-4 pb-32 pt-6 sm:px-6 lg:pb-16">
@@ -109,7 +113,7 @@ export function CalculatorApp() {
             <div ref={reportRef} tabIndex={-1} className="outline-none">
               <DamageReport
                 report={report}
-                restaurantName={session.restaurantName}
+                session={session}
                 onEditMeal={handleEditMeal}
                 onStatus={announce}
               />
@@ -126,6 +130,8 @@ export function CalculatorApp() {
                   onRestaurantNameChange={setRestaurantName}
                   onPricePerDinerChange={setPricePerDiner}
                   onDinerCountChange={adjustDinerCount}
+                  onApplySetup={applySetup}
+                  onStatus={announce}
                 />
                 <MealBuilder onAdd={handleAdd} />
               </div>
@@ -145,27 +151,16 @@ export function CalculatorApp() {
         </div>
       </main>
 
-      <footer className="relative z-10 border-t border-line px-4 pb-24 pt-6 sm:px-6 lg:pb-8">
-        <div className="mx-auto flex max-w-[1280px] flex-wrap items-center justify-between gap-3">
-          <p className="max-w-[52ch] text-xs leading-relaxed text-cream-700">
-            Estimates only. Prices, portions and nutrition vary by supplier, restaurant and
-            preparation. Estimated ingredient margin is not restaurant profit.
-          </p>
-          <button
-            type="button"
-            onClick={() => setMethodologyOpen(true)}
-            className="min-h-11 cursor-pointer px-1 text-xs font-semibold uppercase tracking-[0.1em] text-ember-500 underline-offset-4 hover:underline"
-          >
-            How we calculate it
-          </button>
-        </div>
-      </footer>
+      {/* The sticky summary bar overlays the foot of the page on small screens,
+          so the footer reserves room for it there. */}
+      <SiteFooter className="pb-24 lg:pb-8">
+        Estimates only. Prices, portions and nutrition vary by supplier, restaurant and preparation.
+        Estimated ingredient margin is not restaurant profit.
+      </SiteFooter>
 
       {stage === 'builder' && <StickySummaryBar report={report} onCalculate={handleCalculate} />}
 
       <StatusToast message={status} offset={stage === 'builder' && report.lines.length > 0} />
-
-      <Methodology open={methodologyOpen} onClose={() => setMethodologyOpen(false)} />
 
       <ConfirmDialog
         open={resetOpen}
