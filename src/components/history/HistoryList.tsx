@@ -7,7 +7,7 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useMealHistory } from '@/hooks/useMealHistory';
 import { cn } from '@/lib/cn';
 import { formatRecordedAt } from '@/lib/formatting';
-import { sortSavedSessions } from '@/lib/history';
+import { sortResolvedSessions } from '@/lib/history';
 import type { HistorySortKey, SavedMealSession } from '@/types/history';
 
 const SORTS: ReadonlyArray<{ key: HistorySortKey; label: string }> = [
@@ -23,7 +23,7 @@ export function HistoryList() {
   const [sort, setSort] = useState<HistorySortKey>('newest');
   const [pending, setPending] = useState<PendingDeletion>(null);
 
-  const ordered = useMemo(() => sortSavedSessions(records, sort), [records, sort]);
+  const ordered = useMemo(() => sortResolvedSessions(records, sort), [records, sort]);
 
   async function confirmPending() {
     if (pending?.kind === 'one') {
@@ -131,11 +131,11 @@ export function HistoryList() {
       </div>
 
       <ul className="space-y-3">
-        {ordered.map((record) => (
+        {ordered.map((session) => (
           <HistoryEntry
-            key={record.id}
-            record={record}
-            onDelete={(r) => setPending({ kind: 'one', record: r })}
+            key={session.record.id}
+            session={session}
+            onDelete={(record) => setPending({ kind: 'one', record })}
           />
         ))}
       </ul>

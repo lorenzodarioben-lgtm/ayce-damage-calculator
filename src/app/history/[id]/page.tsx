@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { HistoryDetail } from '@/components/history/HistoryDetail';
 import { SiteFooter } from '@/components/nav/SiteFooter';
 import { SiteHeader } from '@/components/nav/SiteHeader';
+import { MAIN_CONTENT_ID } from '@/components/nav/destinations';
 
 export const metadata: Metadata = {
   title: 'Filed session — AYCE Damage Calculator',
@@ -17,7 +18,10 @@ export default async function HistoryDetailPage({ params }: { params: Promise<{ 
     <>
       <SiteHeader />
 
-      <main className="relative z-10 mx-auto max-w-[900px] px-4 pt-6 pb-16 sm:px-6">
+      <main
+        id={MAIN_CONTENT_ID}
+        className="relative z-10 mx-auto max-w-[900px] px-4 pt-6 pb-16 sm:px-6"
+      >
         <HistoryDetail id={id} />
       </main>
 

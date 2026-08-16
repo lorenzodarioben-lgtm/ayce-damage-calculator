@@ -303,10 +303,18 @@ export function resolveSavedSession(record: SavedMealSession): ResolvedSavedSess
   };
 }
 
-export function sortSavedSessions(
+/**
+ * Sorts and resolves in one pass.
+ *
+ * Returning the resolved sessions rather than the bare records matters: every
+ * comparison key is derived from a recalculated report, so handing back only
+ * the records would force the caller to recompute all of them a second time
+ * just to render what was already worked out here.
+ */
+export function sortResolvedSessions(
   records: readonly SavedMealSession[],
   key: 'newest' | 'recovery' | 'plates',
-): SavedMealSession[] {
+): ResolvedSavedSession[] {
   const resolved = records.map(resolveSavedSession);
 
   const compare: Record<typeof key, (a: ResolvedSavedSession, b: ResolvedSavedSession) => number> =
@@ -316,5 +324,5 @@ export function sortSavedSessions(
       plates: (a, b) => b.report.totalPlates - a.report.totalPlates,
     };
 
-  return [...resolved].sort(compare[key]).map((entry) => entry.record);
+  return resolved.sort(compare[key]);
 }

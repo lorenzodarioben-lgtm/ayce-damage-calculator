@@ -10,11 +10,12 @@ import {
   formatPlates,
   formatRecordedAt,
 } from '@/lib/formatting';
-import { resolveSavedSession } from '@/lib/history';
+import type { ResolvedSavedSession } from '@/lib/history';
 import type { SavedMealSession } from '@/types/history';
 
 interface HistoryEntryProps {
-  record: SavedMealSession;
+  /** Already resolved by the list, which had to compute it to sort anyway. */
+  session: ResolvedSavedSession;
   onDelete: (record: SavedMealSession) => void;
 }
 
@@ -24,8 +25,8 @@ const TONE = {
   house: 'text-cream-100',
 } as const;
 
-export function HistoryEntry({ record, onDelete }: HistoryEntryProps) {
-  const { report, verdict } = resolveSavedSession(record);
+export function HistoryEntry({ session, onDelete }: HistoryEntryProps) {
+  const { record, report, verdict } = session;
 
   const label = record.restaurantName || 'Unnamed restaurant';
 

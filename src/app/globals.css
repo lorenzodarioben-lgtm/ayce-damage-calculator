@@ -77,6 +77,12 @@ body {
   font-feature-settings: 'cv11', 'ss01';
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+
+  /* The viewport is declared `cover`, so on a notched phone held sideways the
+     display area extends under the cutout. Individual bottom-anchored elements
+     handle their own inset; these keep body text off the notch itself. */
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
 }
 
 /* Warm ambient light from above, as if from a restaurant pendant lamp. */

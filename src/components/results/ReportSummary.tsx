@@ -20,6 +20,12 @@ interface ReportSummaryProps {
   /** Names the verdict panel. Varies by context; the layout does not. */
   heading: string;
   headingId: string;
+  /**
+   * 1 where the report *is* the page — a shared link, a filed record, the
+   * calculator once it has switched to the report. 2 where something else
+   * already owns the page's title. Subsections follow one level below.
+   */
+  headingLevel?: 1 | 2;
   /** Rendered under the verdict copy, for context-specific detail. */
   subheading?: string;
 }
@@ -50,19 +56,23 @@ export function ReportSummary({
   restaurantName,
   heading,
   headingId,
+  headingLevel = 2,
   subheading,
 }: ReportSummaryProps) {
   const houseStatus = getHouseStatus(report.totalRestaurantCost, report.totalAdmission);
   const extracted = report.retailValueDifference >= 0;
+
+  const Heading = (headingLevel === 1 ? 'h1' : 'h2') as 'h1' | 'h2';
+  const SubHeading = (headingLevel === 1 ? 'h2' : 'h3') as 'h2' | 'h3';
 
   return (
     <div className="space-y-6">
       {/* 1 — Verdict */}
       <section aria-labelledby={headingId} className="panel overflow-hidden">
         <div className="grill-texture border-b border-line px-5 py-4 text-center">
-          <h2 id={headingId} className="micro-label !text-ember-400">
+          <Heading id={headingId} className="micro-label !text-ember-400">
             {heading}
-          </h2>
+          </Heading>
           {restaurantName && (
             <p className="mt-1 break-words text-sm text-cream-300">{restaurantName}</p>
           )}
@@ -125,9 +135,9 @@ export function ReportSummary({
 
       {/* 4 — Nutrition */}
       <section aria-labelledby={`${headingId}-nutrition`}>
-        <h3 id={`${headingId}-nutrition`} className="micro-label mb-2">
+        <SubHeading id={`${headingId}-nutrition`} className="micro-label mb-2">
           Approximate nutrition
-        </h3>
+        </SubHeading>
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           <ResultMetric label="Calories" value={formatCalories(report.nutrition.calories)} />
           <ResultMetric label="Protein" value={formatGrams(report.nutrition.protein)} />
@@ -138,9 +148,9 @@ export function ReportSummary({
 
       {/* 5 — The house side of the ledger */}
       <section aria-labelledby={`${headingId}-house`} className="panel p-4 sm:p-5">
-        <h3 id={`${headingId}-house`} className="micro-label mb-3">
+        <SubHeading id={`${headingId}-house`} className="micro-label mb-3">
           The house side of the ledger
-        </h3>
+        </SubHeading>
         <div className="grid gap-3 sm:grid-cols-2">
           <ResultMetric
             label="Est. ingredient cost"
