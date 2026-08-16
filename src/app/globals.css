@@ -189,6 +189,47 @@ input[type='number']::-webkit-inner-spin-button {
   animation: ayce-toast-in 200ms var(--ease-out-soft) both;
 }
 
+/* Printing yields the receipt and nothing else.
+   Visibility rather than display, so the receipt keeps its place in the layout
+   tree while every ancestor stops painting — the reliable way to lift one deeply
+   nested subtree onto the page without moving it in the DOM. */
+@media print {
+  html,
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  body::before {
+    display: none !important;
+  }
+
+  body * {
+    visibility: hidden;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  .print-receipt,
+  .print-receipt * {
+    visibility: visible;
+  }
+
+  .print-receipt {
+    display: block !important;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+  }
+
+  @page {
+    margin: 14mm;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

@@ -72,10 +72,14 @@ test.describe('Report behaviour', () => {
 
     // $82/kg x 0.22 kg x 1.35 = $24.35 against $20 admission, so the diner wins.
     await expect(page.getByText('Break-Even Bandit').first()).toBeVisible();
-    await expect(page.getByText('Est. retail value')).toBeVisible();
-    await expect(page.getByText('Admission', { exact: true })).toBeVisible();
-    await expect(page.getByText('Retail value recovered')).toBeVisible();
-    await expect(page.getByText('1 plate', { exact: true })).toBeVisible();
+
+    // Scoped to the on-screen report: the print-only receipt repeats these
+    // same labels in its own wording.
+    const report = page.getByRole('main');
+    await expect(report.getByText('Est. retail value', { exact: true })).toBeVisible();
+    await expect(report.getByText('Admission', { exact: true })).toBeVisible();
+    await expect(report.getByText('Retail value recovered', { exact: true })).toBeVisible();
+    await expect(report.getByText('1 plate', { exact: true })).toBeVisible();
   });
 });
 

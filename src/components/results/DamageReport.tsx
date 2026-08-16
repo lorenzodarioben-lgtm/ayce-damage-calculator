@@ -1,8 +1,9 @@
 'use client';
 
-import { useMemo } from 'react';
-import { ArrowLeft, PencilLine } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { ArrowLeft, PencilLine, Printer } from 'lucide-react';
 import { AchievementList } from '@/components/results/AchievementList';
+import { DamageReceipt } from '@/components/results/DamageReceipt';
 import { ReportSummary } from '@/components/results/ReportSummary';
 import { ResultCard } from '@/components/results/ResultCard';
 import { SaveToHistory } from '@/components/results/SaveToHistory';
@@ -38,6 +39,11 @@ export function DamageReport({ report, session, onEditMeal, onStatus }: DamageRe
     () => evaluateAchievements(report, session.dinerCount),
     [report, session.dinerCount],
   );
+
+  // Fixed when the report opens, so the printed docket carries the time the
+  // meal was assessed rather than the time the paper came out. Safe to read the
+  // clock here: the report is only ever reached on the client.
+  const [issuedAt] = useState(() => new Date().toISOString());
 
   return (
     <div className="animate-fade-up space-y-6">
@@ -82,10 +88,25 @@ export function DamageReport({ report, session, onEditMeal, onStatus }: DamageRe
         </div>
       </section>
 
-      <Button variant="secondary" size="lg" fullWidth onClick={onEditMeal}>
-        <PencilLine size={18} aria-hidden="true" />
-        Edit meal
-      </Button>
+      <div className="grid gap-2 sm:grid-cols-2">
+        <Button variant="secondary" size="lg" fullWidth onClick={onEditMeal}>
+          <PencilLine size={18} aria-hidden="true" />
+          Edit meal
+        </Button>
+        <Button variant="secondary" size="lg" fullWidth onClick={() => window.print()}>
+          <Printer size={18} aria-hidden="true" />
+          Print damage receipt
+        </Button>
+      </div>
+
+      {/* Present in the DOM but only painted by the print stylesheet. */}
+      <DamageReceipt
+        report={report}
+        session={session}
+        verdict={verdict}
+        achievements={achievements}
+        issuedAt={issuedAt}
+      />
     </div>
   );
 }

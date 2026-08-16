@@ -100,8 +100,9 @@ describe('CalculatorApp', () => {
     await user.click(screen.getByRole('button', { name: /calculate the damage/i }));
 
     expect(screen.getByRole('heading', { name: /ayce damage report/i })).toBeInTheDocument();
-    // Rendered once in the report and once on the shareable card.
-    expect(screen.getAllByText(/corporate sponsor/i)).toHaveLength(2);
+    // Three times over: the verdict panel, the shareable card, and the
+    // print-only receipt that sits in the DOM waiting for a print stylesheet.
+    expect(screen.getAllByText(/corporate sponsor/i)).toHaveLength(3);
 
     await user.click(screen.getByRole('button', { name: /edit meal/i }));
 
