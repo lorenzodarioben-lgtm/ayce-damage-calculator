@@ -1,7 +1,9 @@
 import { ResultMetric } from '@/components/results/ResultMetric';
+import { perDinerTotals } from '@/lib/calculations';
 import { cn } from '@/lib/cn';
 import {
   formatCalories,
+  formatCount,
   formatGrams,
   formatKg,
   formatLb,
@@ -9,6 +11,7 @@ import {
   formatPercent,
   formatPlates,
   formatSignedMoney,
+  formatWeight,
 } from '@/lib/formatting';
 import { getHouseStatus, type Verdict } from '@/lib/verdicts';
 import type { DamageReport } from '@/types/meal';
@@ -61,6 +64,10 @@ export function ReportSummary({
 }: ReportSummaryProps) {
   const houseStatus = getHouseStatus(report.totalRestaurantCost, report.totalAdmission);
   const extracted = report.retailValueDifference >= 0;
+
+  // A table of one is already reading per-diner figures, so the split is only
+  // shown when there is something to split.
+  const perDiner = report.dinerCount > 1 ? perDinerTotals(report) : null;
 
   const Heading = (headingLevel === 1 ? 'h1' : 'h2') as 'h1' | 'h2';
   const SubHeading = (headingLevel === 1 ? 'h2' : 'h3') as 'h2' | 'h3';
@@ -133,7 +140,33 @@ export function ReportSummary({
         />
       </div>
 
-      {/* 4 — Nutrition */}
+      {/* 4 — The even split */}
+      {perDiner && (
+        <section aria-labelledby={`${headingId}-per-diner`} className="panel p-4 sm:p-5">
+          <SubHeading id={`${headingId}-per-diner`} className="micro-label mb-1">
+            Split {formatCount(perDiner.dinerCount)} ways
+          </SubHeading>
+          <p className="mb-3 text-xs text-cream-700">
+            An even split of the table&rsquo;s totals. The calculator records one shared tab, so it
+            cannot know who reached for what.
+          </p>
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <ResultMetric label="Admission each" value={formatMoney(perDiner.admission)} />
+            <ResultMetric
+              label="Retail value each"
+              value={formatMoney(perDiner.retailValue)}
+              tone="accent"
+            />
+            <ResultMetric label="Food each" value={formatWeight(perDiner.weightG)} />
+            <ResultMetric
+              label="Calories each"
+              value={formatCalories(perDiner.nutrition.calories)}
+            />
+          </div>
+        </section>
+      )}
+
+      {/* 5 — Nutrition */}
       <section aria-labelledby={`${headingId}-nutrition`}>
         <SubHeading id={`${headingId}-nutrition`} className="micro-label mb-2">
           Approximate nutrition
@@ -146,7 +179,7 @@ export function ReportSummary({
         </div>
       </section>
 
-      {/* 5 — The house side of the ledger */}
+      {/* 6 — The house side of the ledger */}
       <section aria-labelledby={`${headingId}-house`} className="panel p-4 sm:p-5">
         <SubHeading id={`${headingId}-house`} className="micro-label mb-3">
           The house side of the ledger
