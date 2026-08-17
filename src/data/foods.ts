@@ -283,3 +283,32 @@ export function findFood(foodId: string): FoodItem | undefined {
 export function foodsInCategory(category: FoodCategory): readonly FoodItem[] {
   return FOODS.filter((food) => food.category === category);
 }
+
+/** Everything about a cut that a diner might reasonably type. */
+function haystack(food: FoodItem): string {
+  return `${food.name} ${food.shortName} ${food.category} ${food.description}`.toLowerCase();
+}
+
+const SEARCHABLE: ReadonlyMap<string, string> = new Map(
+  FOODS.map((food) => [food.id, haystack(food)]),
+);
+
+/**
+ * Finds cuts across every category.
+ *
+ * Each whitespace-separated word must appear somewhere in the record, so
+ * "premium pork" narrows rather than widens, and the dataset's own order is
+ * preserved — relevance ranking over eighteen items would be theatre. An empty
+ * or whitespace-only query matches nothing, because a search box that silently
+ * returns the entire menu is indistinguishable from a broken one.
+ */
+export function searchFoods(query: string): readonly FoodItem[] {
+  const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
+  if (terms.length === 0) {
+    return [];
+  }
+  return FOODS.filter((food) => {
+    const searchable = SEARCHABLE.get(food.id) ?? '';
+    return terms.every((term) => searchable.includes(term));
+  });
+}
