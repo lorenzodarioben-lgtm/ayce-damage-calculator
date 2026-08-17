@@ -13,7 +13,7 @@ got through. Then it delivers a verdict on whether you beat the buffet or quietl
 investors.
 
 The premise is a joke. The calculation engine, the verdict thresholds, the offline support and the
-528-test suite are not. Everything runs in the browser — no accounts, no backend, no API keys, and
+686-test suite are not. Everything runs in the browser — no accounts, no backend, no API keys, and
 nothing you record ever leaves your device.
 
 ---
@@ -23,10 +23,12 @@ nothing you record ever leaves your device.
 **Meal building**
 
 - Beef, pork, chicken and seafood categories over an 18-item typed food dataset
+- Search across every category at once, by cut, category or description
+- Order the picker by menu or by retail value per kilogram
 - House / Standard / Premium quality tiers, which change estimated pricing but never nutrition
 - Small (100 g), Regular (155 g) and Large (220 g) serving sizes
 - Adjustable plate counts, with identical selections merged into a single tab line
-- Editable running tab — adjust quantities or remove a line at any point
+- Editable running tab — adjust quantities or remove a line at any point, with undo
 - Saved orders: star a configured cut and re-add it in one tap
 
 **Session setup**
@@ -50,23 +52,29 @@ nothing you record ever leaves your device.
 - Calories, protein, fat and carbohydrates
 - Total food weight in grams, kilograms and pounds
 - Retail break-even estimate — how many more average plates it would take
+- An even split across the table, stated as the assumption it is, whenever there is more than one
+  diner
 
 **The payoff**
 
 - A deterministic verdict system, from _Corporate Sponsor_ up to _Do Not Return_
 - Twelve deterministic commendations that reward breadth and precision rather than sheer volume
-- A final AYCE Damage Report with the full breakdown
+- A final AYCE Damage Report with the full breakdown, itemised line by line
 - Copy Result, Web Share where supported, a downloadable PNG result card, and a printable receipt
 
 **History** (`/history`)
 
 - File a completed report and keep it, in IndexedDB, on this device
-- Sort by recency, retail recovery or plates; open any record read-only; delete one or all
+- Write a note against a session — who was there, what was worth ordering again
+- Sort by recency, retail recovery or plates; search by restaurant or note; open any record
+  read-only; delete one or all
+- Load a filed meal back into the calculator to order it again, asking first if a tab is open
 - Compare any two sessions (`/history/compare`), stated in percentage points where that is what
   the difference actually is
 - Local analytics (`/stats`) — totals, averages, bests, category and grade mix, and a recovery
   trend chart drawn in plain SVG
 - Backup and restore (`/history/data`) — versioned JSON export, validated import, merge or replace
+- Spreadsheet export — history as CSV, one row per plate, for taking the numbers elsewhere
 
 **Sharing**
 
@@ -80,7 +88,7 @@ nothing you record ever leaves your device.
 - Responsive from 320 px phones to desktop, with original SVG food illustrations
 - Skip link, keyboard-operable throughout, labelled controls, live-region confirmations,
   reduced-motion support, and AA contrast across the palette
-- 528 automated tests
+- 686 automated tests
 
 ## Tech stack
 
@@ -207,16 +215,17 @@ Everything is local by default and stays that way.
 ## Testing
 
 ```bash
-npm run test:run    # 410 unit and component tests across 20 files
+npm run test:run    # 568 unit and component tests across 25 files
 npm run test:e2e    # 118 end-to-end tests across 15 files, on two viewports
 ```
 
-**Unit and component tests (Vitest + React Testing Library)** cover the calculation engine, verdict
-boundaries tested on both sides of every threshold, number and currency formatting, the session
-reducer, storage recovery from corrupt or stale data, the IndexedDB repository against
-`fake-indexeddb`, saved-session migration, session comparison, the achievement engine, favourites,
-restaurant presets, share-token encoding and decoding, backup import and export, local analytics,
-browser-stage history, and the service worker's caching policy.
+**Unit and component tests (Vitest + React Testing Library)** cover the calculation engine, the food
+dataset's own integrity, cut search and ordering, verdict boundaries tested on both sides of every
+threshold, number and currency formatting, the session reducer including undo, storage recovery from
+corrupt or stale data, the IndexedDB repository against `fake-indexeddb`, saved-session migration
+across all three schema versions, session comparison, the achievement engine, favourites, restaurant
+presets, share-token encoding and decoding, backup import and export, CSV escaping, local analytics,
+browser-stage history, the sitemap and crawling rules, and the service worker's caching policy.
 
 **End-to-end tests (Playwright)** run against a production build on a 1440×900 desktop viewport and a
 390×844 mobile one, covering the full meal journey, report navigation, real browser Back and Forward,
@@ -264,21 +273,22 @@ npm run verify       # format check, lint, typecheck, tests and build in sequenc
 ```text
 src/
 ├── app/          routes: calculator, live, history, compare, backup, stats,
-│                 share/[token] with its generated OG image, offline, manifest
+│                 share/[token] with its generated OG image, offline, manifest,
+│                 sitemap, robots
 ├── components/   meal builder, live mode, session setup, summary, results,
 │                 history, stats, favourites, navigation, methodology, PWA, UI
-├── data/         the 18-item food dataset
+├── data/         the 18-item food dataset, with search and ordering
 ├── hooks/        session reducer, stage history, meal history, favourites,
-│                 presets, status messaging
+│                 presets, status messaging, undoable removal
 ├── lib/          calculations, verdicts, achievements, comparison, analytics,
 │                 history and its repository, favourites, presets, share tokens,
-│                 social cards, backup, formatting, storage, card rendering
+│                 social cards, backup, CSV, formatting, storage, card rendering
 └── types/        domain types
 
 e2e/              15 Playwright specs plus shared journey helpers
-tests/            20 Vitest suites
+tests/            25 Vitest suites
 public/           service worker and PWA icons
-.github/          CI workflow
+.github/          CI workflow, Dependabot, issue and pull request templates
 ```
 
 ## About the data
@@ -302,6 +312,11 @@ Not implemented — possible directions for later versions:
 - Other buffet formats such as hotpot or sushi
 - An optional, opt-in cloud sync adapter behind the existing storage interface
 - Anonymous public leaderboards
+
+## Contributing
+
+Setup, the conventions the code follows, and what is deliberately out of scope are all in
+[CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
