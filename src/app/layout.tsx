@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Anton, Archivo } from 'next/font/google';
 import { ServiceWorkerManager } from '@/components/pwa/ServiceWorkerManager';
 import { THEME_COLOUR } from '@/lib/constants';
+import { siteUrl } from '@/lib/site';
 import './globals.css';
 
 const archivo = Archivo({
@@ -18,24 +19,9 @@ const anton = Anton({
   weight: '400',
 });
 
-/**
- * Absolute base for generated social image URLs.
- *
- * Vercel supplies its own host at build time, so a deployment needs no
- * configuration; the explicit variable is only there for a custom domain, and
- * local development falls back to the dev server.
- */
-function resolveSiteUrl(): URL {
-  const configured = process.env.NEXT_PUBLIC_SITE_URL;
-  if (configured) {
-    return new URL(configured);
-  }
-  const vercelHost = process.env.VERCEL_PROJECT_PRODUCTION_URL;
-  return new URL(vercelHost ? `https://${vercelHost}` : 'http://localhost:3000');
-}
-
 export const metadata: Metadata = {
-  metadataBase: resolveSiteUrl(),
+  // Absolute base for generated social image URLs.
+  metadataBase: siteUrl(),
   title: 'AYCE Damage Calculator',
   description:
     'Did you beat the buffet, or fund their next renovation? Track your Korean BBQ meal and calculate the damage.',
