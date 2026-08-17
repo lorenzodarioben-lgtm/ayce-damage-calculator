@@ -8,10 +8,11 @@ import {
   isQualityTier,
 } from '@/lib/constants';
 import { mealItemId, mergeMealItems } from '@/lib/mealItems';
+import { DEFAULT_PRICING_PROFILE_ID, isPricingProfileId } from '@/lib/pricing';
 import type { MealItem, MealSession } from '@/types/meal';
 
 export const STORAGE_KEY = 'ayce-damage-calculator';
-export const STORAGE_VERSION = 1;
+export const STORAGE_VERSION = 2;
 
 /** A normal tab is tiny; refuse an edited storage entry before parsing it. */
 export const MAX_STORED_SESSION_LENGTH = 64 * 1024;
@@ -83,7 +84,11 @@ export function parseStoredSession(raw: string | null): MealSession | null {
     return null;
   }
 
-  if (!isRecord(parsed) || parsed.version !== STORAGE_VERSION || !isRecord(parsed.session)) {
+  if (
+    !isRecord(parsed) ||
+    (parsed.version !== 1 && parsed.version !== STORAGE_VERSION) ||
+    !isRecord(parsed.session)
+  ) {
     return null;
   }
 
@@ -107,6 +112,9 @@ export function parseStoredSession(raw: string | null): MealSession | null {
     restaurantName: sanitiseRestaurantName(session.restaurantName),
     pricePerDiner,
     dinerCount,
+    pricingProfileId: isPricingProfileId(session.pricingProfileId)
+      ? session.pricingProfileId
+      : DEFAULT_PRICING_PROFILE_ID,
     items,
   };
 }
