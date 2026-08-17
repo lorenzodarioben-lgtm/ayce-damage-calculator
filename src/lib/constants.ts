@@ -84,6 +84,9 @@ export const MAX_LINE_QUANTITY = 99;
 
 export const MAX_RESTAURANT_NAME_LENGTH = 60;
 
+/** Long enough for who was there and what happened; short enough to render. */
+export const MAX_SESSION_NOTE_LENGTH = 280;
+
 export function getQualityMeta(tier: QualityTier): QualityMeta {
   const meta = QUALITY_TIERS.find((entry) => entry.id === tier);
   if (!meta) {

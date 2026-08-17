@@ -9,6 +9,7 @@ import {
   reportFromSaved,
   sortResolvedSessions,
 } from '@/lib/history';
+import { MAX_SESSION_NOTE_LENGTH } from '@/lib/constants';
 import { getVerdict } from '@/lib/verdicts';
 import type { SavedMealSession } from '@/types/history';
 import type { MealItem, MealSession } from '@/types/meal';
@@ -210,6 +211,70 @@ describe('schema migration', () => {
     });
 
     expect(parsed?.snapshot.achievementIds).toEqual([]);
+  });
+
+  it('gives a record written before notes existed an empty one', () => {
+    const record = saved();
+    const { note: _dropped, ...withoutNote } = asVersion1(record);
+
+    const parsed = parseSavedSession(withoutNote);
+    expect(parsed?.version).toBe(SAVED_SESSION_VERSION);
+    expect(parsed?.note).toBe('');
+  });
+});
+
+describe('session notes', () => {
+  it('files a note alongside the meal', () => {
+    const meal = session();
+    const report = buildDamageReport(meal.items, meal);
+    const record = createSavedSession(meal, report, getVerdict(report.totalRetailValue, 59.9), {
+      id: 'noted',
+      createdAt: '2026-08-16T12:00:00.000Z',
+      note: 'Birthday dinner. The short rib was the whole argument.',
+    });
+
+    expect(record.note).toBe('Birthday dinner. The short rib was the whole argument.');
+    expect(parseSavedSession(record)?.note).toBe(record.note);
+  });
+
+  it('records an empty note when none was written', () => {
+    expect(saved().note).toBe('');
+  });
+
+  it('collapses whitespace so a pasted note cannot stretch the layout', () => {
+    expect(parseSavedSession({ ...saved(), note: '  a\n\n\tlong   night  ' })?.note).toBe(
+      'a long night',
+    );
+  });
+
+  it('caps an over-long note rather than rejecting the record', () => {
+    const parsed = parseSavedSession({ ...saved(), note: 'x'.repeat(1000) });
+    expect(parsed).not.toBeNull();
+    expect(parsed?.note).toHaveLength(MAX_SESSION_NOTE_LENGTH);
+  });
+
+  it('treats a note that is not a string as no note at all', () => {
+    expect(parseSavedSession({ ...saved(), note: { text: 'hi' } })?.note).toBe('');
+    expect(parseSavedSession({ ...saved(), note: 42 })?.note).toBe('');
+  });
+
+  it('keeps the note out of the meal fingerprint', () => {
+    const meal = session();
+    const report = buildDamageReport(meal.items, meal);
+    const verdict = getVerdict(report.totalRetailValue, report.totalAdmission);
+
+    const withNote = createSavedSession(meal, report, verdict, {
+      id: 'a',
+      createdAt: '2026-08-16T12:00:00.000Z',
+      note: 'Something happened.',
+    });
+    const without = createSavedSession(meal, report, verdict, {
+      id: 'b',
+      createdAt: '2026-08-16T12:00:00.000Z',
+    });
+
+    // Writing a note does not make it a different meal.
+    expect(withNote.fingerprint).toBe(without.fingerprint);
   });
 });
 
