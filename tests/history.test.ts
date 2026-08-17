@@ -4,6 +4,7 @@ import {
   MAX_HISTORY_RECORDS,
   SAVED_SESSION_VERSION,
   createSavedSession,
+  filterSessions,
   fingerprintSession,
   parseSavedSession,
   reportFromSaved,
@@ -275,6 +276,44 @@ describe('session notes', () => {
 
     // Writing a note does not make it a different meal.
     expect(withNote.fingerprint).toBe(without.fingerprint);
+  });
+});
+
+describe('filterSessions', () => {
+  const records: SavedMealSession[] = [
+    { ...saved({ restaurantName: 'Seoul Garden' }, 'a'), note: 'Birthday, four of us' },
+    { ...saved({ restaurantName: 'Wagyu House' }, 'b'), note: '' },
+    { ...saved({ restaurantName: 'Little Seoul' }, 'c'), note: 'Quiet Tuesday' },
+  ];
+
+  function ids(query: string): string[] {
+    return filterSessions(records, query).map((record) => record.id);
+  }
+
+  it('returns everything for an empty or whitespace-only query', () => {
+    expect(filterSessions(records, '')).toBe(records);
+    expect(filterSessions(records, '   ')).toBe(records);
+  });
+
+  it('matches a restaurant name regardless of case', () => {
+    expect(ids('SEOUL')).toEqual(['a', 'c']);
+  });
+
+  it('matches inside a note', () => {
+    expect(ids('birthday')).toEqual(['a']);
+    expect(ids('tuesday')).toEqual(['c']);
+  });
+
+  it('narrows as words are added', () => {
+    expect(ids('seoul garden')).toEqual(['a']);
+  });
+
+  it('returns nothing rather than everything when no record matches', () => {
+    expect(ids('tiramisu')).toEqual([]);
+  });
+
+  it('preserves the order it was given', () => {
+    expect(ids('seoul')).toEqual(['a', 'c']);
   });
 });
 

@@ -1,13 +1,14 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useId, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { Search, X } from 'lucide-react';
 import { HistoryEntry } from '@/components/history/HistoryEntry';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useMealHistory } from '@/hooks/useMealHistory';
 import { cn } from '@/lib/cn';
 import { formatRecordedAt } from '@/lib/formatting';
-import { sortResolvedSessions } from '@/lib/history';
+import { filterSessions, sortResolvedSessions } from '@/lib/history';
 import type { HistorySortKey, SavedMealSession } from '@/types/history';
 
 const SORTS: ReadonlyArray<{ key: HistorySortKey; label: string }> = [
@@ -21,9 +22,14 @@ type PendingDeletion = { kind: 'one'; record: SavedMealSession } | { kind: 'all'
 export function HistoryList() {
   const { status, records, remove, clear } = useMealHistory();
   const [sort, setSort] = useState<HistorySortKey>('newest');
+  const [query, setQuery] = useState('');
   const [pending, setPending] = useState<PendingDeletion>(null);
+  const searchId = useId();
 
-  const ordered = useMemo(() => sortResolvedSessions(records, sort), [records, sort]);
+  const ordered = useMemo(
+    () => sortResolvedSessions(filterSessions(records, query), sort),
+    [records, query, sort],
+  );
 
   async function confirmPending() {
     if (pending?.kind === 'one') {
@@ -71,6 +77,46 @@ export function HistoryList() {
 
   return (
     <>
+      {/* Worth its space only once the file is long enough to lose things in. */}
+      {records.length >= 3 && (
+        <div className="mb-4">
+          <label htmlFor={searchId} className="micro-label mb-2 block">
+            Find a session
+          </label>
+          <div className="relative">
+            <Search
+              size={16}
+              aria-hidden="true"
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-cream-700"
+            />
+            <input
+              id={searchId}
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Restaurant name, or anything in a note…"
+              autoComplete="off"
+              className="min-h-11 w-full rounded-[10px] border border-line bg-ash-900 pl-9 pr-11 text-sm text-cream-100 placeholder:text-cream-700 focus:border-ember-600 focus:outline-none"
+            />
+            {query.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setQuery('')}
+                aria-label="Clear the search"
+                className="absolute right-1.5 top-1/2 flex size-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-[8px] text-cream-500 transition-colors duration-200 hover:bg-ash-800 hover:text-cream-100"
+              >
+                <X size={15} aria-hidden="true" />
+              </button>
+            )}
+          </div>
+          <p role="status" className="tabular mt-1.5 min-h-4 text-xs text-cream-700">
+            {query.trim().length === 0
+              ? ''
+              : `${ordered.length} of ${records.length} sessions match`}
+          </p>
+        </div>
+      )}
+
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <span id="history-sort-label" className="micro-label">
@@ -130,15 +176,22 @@ export function HistoryList() {
         </div>
       </div>
 
-      <ul className="space-y-3">
-        {ordered.map((session) => (
-          <HistoryEntry
-            key={session.record.id}
-            session={session}
-            onDelete={(record) => setPending({ kind: 'one', record })}
-          />
-        ))}
-      </ul>
+      {ordered.length === 0 ? (
+        <p className="panel border-dashed px-6 py-12 text-center text-sm text-cream-700">
+          No session on file matches that. The records are still there — only the search is
+          narrowing them.
+        </p>
+      ) : (
+        <ul className="space-y-3">
+          {ordered.map((session) => (
+            <HistoryEntry
+              key={session.record.id}
+              session={session}
+              onDelete={(record) => setPending({ kind: 'one', record })}
+            />
+          ))}
+        </ul>
+      )}
 
       <ConfirmDialog
         open={pending !== null}

@@ -329,6 +329,29 @@ export function resolveSavedSession(record: SavedMealSession): ResolvedSavedSess
 }
 
 /**
+ * Narrows the file to records that answer a query.
+ *
+ * Only what the diner wrote is searched — the restaurant name and the note.
+ * Matching on derived figures would mean "60" quietly selecting every session
+ * whose recovery happened to round there, which is not what anyone typing a
+ * number into a search box means.
+ */
+export function filterSessions(
+  records: readonly SavedMealSession[],
+  query: string,
+): readonly SavedMealSession[] {
+  const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
+  if (terms.length === 0) {
+    return records;
+  }
+
+  return records.filter((record) => {
+    const searchable = `${record.restaurantName} ${record.note}`.toLowerCase();
+    return terms.every((term) => searchable.includes(term));
+  });
+}
+
+/**
  * Sorts and resolves in one pass.
  *
  * Returning the resolved sessions rather than the bare records matters: every
