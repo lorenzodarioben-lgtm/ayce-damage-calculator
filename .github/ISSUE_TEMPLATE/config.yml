@@ -1,0 +1,10 @@
+blank_issues_enabled: true
+contact_links:
+  - name: How the numbers work
+    url: https://github.com/lorenzodarioben-lgtm/ayce-damage-calculator#how-the-calculations-work
+    about: >
+      Retail value, ingredient cost, recovery and break-even are all explained
+      in the README, including what the figures deliberately do not claim.
+  - name: Contributing
+    url: https://github.com/lorenzodarioben-lgtm/ayce-damage-calculator/blob/main/CONTRIBUTING.md
+    about: Setting up, the conventions the code follows, and what gets merged.

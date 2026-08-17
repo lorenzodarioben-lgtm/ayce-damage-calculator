@@ -1,0 +1,61 @@
+name: Bug report
+description: Something in the calculator does not behave the way it should.
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Everything this app stores lives in your own browser, so please do not
+        paste a backup file or a share link you would rather keep private.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What did you do, and what did the app do in response?
+      placeholder: I added four plates of brisket, and the running total stayed at zero.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected instead
+    validations:
+      required: true
+
+  - type: input
+    id: where
+    attributes:
+      label: Where in the app
+      description: The page or screen, if it is specific to one.
+      placeholder: /live, or the damage report
+
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and version
+      placeholder: Firefox 131 on Android
+    validations:
+      required: true
+
+  - type: dropdown
+    id: persistence
+    attributes:
+      label: Does it survive a reload?
+      description: >
+        Much of this app is stored state, so this usually locates the problem
+        straight away.
+      options:
+        - Still happens after a reload
+        - Goes away after a reload
+        - Goes away in a fresh browser profile
+        - Not applicable
+    validations:
+      required: true
+
+  - type: textarea
+    id: anything-else
+    attributes:
+      label: Anything else
+      description: Console errors, screenshots, or the steps that led up to it.
