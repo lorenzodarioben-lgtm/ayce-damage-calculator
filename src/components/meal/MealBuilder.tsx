@@ -6,11 +6,19 @@ import { FavoriteQuickAdd, FavoriteToggle } from '@/components/favorites/Favorit
 import { CategoryTabs } from '@/components/meal/CategoryTabs';
 import { FoodCard } from '@/components/meal/FoodCard';
 import { FoodSearch } from '@/components/meal/FoodSearch';
+import { FoodSort } from '@/components/meal/FoodSort';
 import { PlateSizeSelector } from '@/components/meal/PlateSizeSelector';
 import { QualitySelector } from '@/components/meal/QualitySelector';
 import { QuantityStepper } from '@/components/meal/QuantityStepper';
 import { Button } from '@/components/ui/Button';
-import { FOOD_COUNT, findFood, foodsInCategory, searchFoods } from '@/data/foods';
+import {
+  FOOD_COUNT,
+  findFood,
+  foodsInCategory,
+  searchFoods,
+  sortFoods,
+  type FoodSortKey,
+} from '@/data/foods';
 import { calculateLineItem } from '@/lib/calculations';
 import {
   DEFAULT_PLATE_SIZE,
@@ -37,6 +45,7 @@ export function MealBuilder({ onAdd }: MealBuilderProps) {
 
   const [category, setCategory] = useState<FoodCategory>('beef');
   const [query, setQuery] = useState('');
+  const [sort, setSort] = useState<FoodSortKey>('menu');
   const [selectedFoodId, setSelectedFoodId] = useState<string | null>(null);
   const [quality, setQuality] = useState<QualityTier>(DEFAULT_QUALITY);
   const [plateSize, setPlateSize] = useState<PlateSize>(DEFAULT_PLATE_SIZE);
@@ -46,8 +55,8 @@ export function MealBuilder({ onAdd }: MealBuilderProps) {
   const searching = trimmedQuery.length > 0;
 
   const foods = useMemo(
-    () => (searching ? searchFoods(trimmedQuery) : foodsInCategory(category)),
-    [searching, trimmedQuery, category],
+    () => sortFoods(searching ? searchFoods(trimmedQuery) : foodsInCategory(category), sort),
+    [searching, trimmedQuery, category, sort],
   );
 
   // Resolved from the whole dataset rather than the visible list: a cut chosen
@@ -109,6 +118,10 @@ export function MealBuilder({ onAdd }: MealBuilderProps) {
       </section>
 
       <FoodSearch value={query} onChange={setQuery} resultCount={searching ? foods.length : null} />
+
+      <div className="mb-3 flex justify-end">
+        <FoodSort value={sort} onChange={setSort} />
+      </div>
 
       {/* Search results span every category, so the tablist steps aside rather
           than claiming to describe what is on show. */}
