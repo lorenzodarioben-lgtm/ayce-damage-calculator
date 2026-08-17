@@ -4,9 +4,9 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { AchievementList } from '@/components/results/AchievementList';
+import { MealBreakdown } from '@/components/results/MealBreakdown';
 import { ReportSummary } from '@/components/results/ReportSummary';
-import { getPlateSizeMeta, getQualityMeta } from '@/lib/constants';
-import { formatMoney, formatPlates, formatRecordedAt, formatWeight } from '@/lib/formatting';
+import { formatRecordedAt } from '@/lib/formatting';
 import { resolveSavedSession, type ResolvedSavedSession } from '@/lib/history';
 import { getSession } from '@/lib/historyRepository';
 
@@ -93,33 +93,7 @@ export function HistoryDetail({ id }: { id: string }) {
       {/* Read from the record, so a session shows what it earned at the time. */}
       <AchievementList achievements={achievements} headingId="saved-achievements-heading" />
 
-      <section aria-labelledby="recorded-plates-heading" className="panel p-4 sm:p-5">
-        <h3 id="recorded-plates-heading" className="micro-label mb-3">
-          What was recorded
-        </h3>
-        <ul>
-          {report.lines.map((line) => (
-            <li
-              key={line.item.id}
-              className="flex items-start justify-between gap-3 border-b border-line-soft py-3 last:border-b-0"
-            >
-              <div className="min-w-0">
-                <p className="text-sm font-bold text-cream-50">{line.food.name}</p>
-                <p className="text-xs text-cream-500">
-                  {getQualityMeta(line.item.quality).label} ·{' '}
-                  {getPlateSizeMeta(line.item.plateSize).label}
-                </p>
-                <p className="tabular mt-0.5 text-xs text-cream-700">
-                  {formatPlates(line.plates)} · {formatWeight(line.weightG)}
-                </p>
-              </div>
-              <p className="tabular shrink-0 text-sm font-bold text-ember-400">
-                {formatMoney(line.retailValue)}
-              </p>
-            </li>
-          ))}
-        </ul>
-      </section>
+      <MealBreakdown lines={report.lines} headingId="recorded-plates-heading" />
     </div>
   );
 }

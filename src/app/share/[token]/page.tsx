@@ -4,6 +4,7 @@ import { SiteFooter } from '@/components/nav/SiteFooter';
 import { SiteHeader } from '@/components/nav/SiteHeader';
 import { MAIN_CONTENT_ID } from '@/components/nav/destinations';
 import { AchievementList } from '@/components/results/AchievementList';
+import { MealBreakdown } from '@/components/results/MealBreakdown';
 import { ReportSummary } from '@/components/results/ReportSummary';
 import { ResultCard } from '@/components/results/ResultCard';
 import { evaluateAchievements } from '@/lib/achievements';
@@ -118,6 +119,14 @@ export default async function SharePage({ params }: SharePageProps) {
           headingId="shared-report-heading"
           headingLevel={1}
         />
+
+        <div className="mt-6">
+          <MealBreakdown
+            lines={report.lines}
+            headingId="shared-breakdown-heading"
+            heading="What was eaten"
+          />
+        </div>
 
         <div className="mt-6">
           <AchievementList achievements={achievements} headingId="shared-achievements-heading" />
