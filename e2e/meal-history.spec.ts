@@ -123,9 +123,13 @@ test.describe('The history page', () => {
     await expect(page.getByRole('heading', { name: 'Filed Damage Report' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'What was recorded' })).toBeVisible();
     // 220 g x $52/kg x 1.35 premium = $15.44, recomputed from the stored meal.
-    // Scoped, because the same figure is both the total and the only line.
+    // Scoped to the line itself: with one plate on the tab, the breakdown's
+    // total carries the same figure.
     await expect(
-      page.getByRole('region', { name: 'What was recorded' }).getByText('$15.44'),
+      page
+        .getByRole('region', { name: 'What was recorded' })
+        .getByRole('listitem')
+        .getByText('$15.44'),
     ).toBeVisible();
     // Read-only: none of the editing affordances belong here.
     await expect(page.getByRole('button', { name: 'Save to history' })).toBeHidden();
