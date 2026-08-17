@@ -42,6 +42,7 @@ export type SessionAction =
   | { type: 'increment-item'; id: string }
   | { type: 'decrement-item'; id: string }
   | { type: 'remove-item'; id: string }
+  | { type: 'restore-item'; item: MealItem; index: number }
   | { type: 'reset' };
 
 function clampQuantity(value: number): number {
@@ -122,6 +123,23 @@ export function sessionReducer(state: MealSession, action: SessionAction): MealS
     case 'remove-item':
       return { ...state, items: state.items.filter((item) => item.id !== action.id) };
 
+    case 'restore-item': {
+      // Undoing a removal has to be a no-op if the same line is already back —
+      // the tab is keyed by configuration, so re-adding it by hand first and
+      // then taking the undo must not produce a duplicate.
+      if (state.items.some((item) => item.id === action.item.id)) {
+        return state;
+      }
+      const items = [...state.items];
+      // The index is where the line used to be. Anything outside the current
+      // bounds simply lands at the end rather than being rejected.
+      items.splice(Math.min(Math.max(0, action.index), items.length), 0, {
+        ...action.item,
+        quantity: clampQuantity(action.item.quantity),
+      });
+      return { ...state, items };
+    }
+
     case 'reset':
       return INITIAL_SESSION;
   }
@@ -140,6 +158,8 @@ export interface UseMealSessionResult {
   incrementItem: (id: string) => void;
   decrementItem: (id: string) => void;
   removeItem: (id: string) => void;
+  /** Puts a removed line back where it was, so a removal can be undone. */
+  restoreItem: (item: MealItem, index: number) => void;
   resetSession: () => void;
 }
 
@@ -218,6 +238,10 @@ export function useMealSession(): UseMealSessionResult {
     dispatch({ type: 'remove-item', id });
   }, []);
 
+  const restoreItem = useCallback((item: MealItem, index: number) => {
+    dispatch({ type: 'restore-item', item, index });
+  }, []);
+
   const resetSession = useCallback(() => {
     clearSession();
     dispatch({ type: 'reset' });
@@ -235,6 +259,7 @@ export function useMealSession(): UseMealSessionResult {
     incrementItem,
     decrementItem,
     removeItem,
+    restoreItem,
     resetSession,
   };
 }
