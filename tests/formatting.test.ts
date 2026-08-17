@@ -11,12 +11,31 @@ import {
   formatSignedMoney,
   formatWeight,
 } from '@/lib/formatting';
+import { DEFAULT_MONEY_CONTEXT, resolveMoneyContext } from '@/lib/money';
 
 describe('currency formatting', () => {
   it('renders AUD with two decimals', () => {
     expect(formatMoney(59.9)).toBe('$59.90');
     expect(formatMoney(104.2)).toBe('$104.20');
     expect(formatMoney(1234.5)).toBe('$1,234.50');
+  });
+
+  it('keeps AUD/en-AU as the default money context', () => {
+    expect(DEFAULT_MONEY_CONTEXT).toEqual({ currency: 'AUD', locale: 'en-AU' });
+    expect(formatMoney(59.9, DEFAULT_MONEY_CONTEXT)).toBe('$59.90');
+  });
+
+  it('formats alternate supported currencies through the supplied context', () => {
+    const gbp = { currency: 'GBP', locale: 'en-GB' } as const;
+    expect(formatMoney(59.9, gbp)).toBe('£59.90');
+    expect(formatSignedMoney(-17.2, gbp)).toBe('-£17.20');
+  });
+
+  it('falls back safely from malformed money context', () => {
+    expect(resolveMoneyContext({ currency: 'AUD', locale: 42 })).toEqual(DEFAULT_MONEY_CONTEXT);
+    expect(resolveMoneyContext({ currency: 'DOGE', locale: 'en-AU' })).toEqual(
+      DEFAULT_MONEY_CONTEXT,
+    );
   });
 
   it('renders explicit signs for differences', () => {
