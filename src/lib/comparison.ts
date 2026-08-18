@@ -2,6 +2,7 @@ import { CATEGORY_META } from '@/lib/constants';
 import { resolveSavedSession, type ResolvedSavedSession } from '@/lib/history';
 import type { SavedMealSession } from '@/types/history';
 import type { FoodCategory } from '@/types/meal';
+import type { MoneyContext } from '@/lib/money';
 
 /**
  * How a metric's difference should be read.
@@ -20,8 +21,8 @@ export interface MetricComparison {
   readonly label: string;
   readonly previous: number;
   readonly current: number;
-  /** current − previous. Always in the metric's own unit. */
-  readonly delta: number;
+  /** current − previous, unavailable where two currency values cannot compare. */
+  readonly delta: number | null;
   readonly unit: DeltaUnit;
   readonly bias: DeltaBias;
   /**
@@ -32,6 +33,10 @@ export interface MetricComparison {
    * invites exactly the misreading this module is trying to prevent.
    */
   readonly relativeChange: number | null;
+  /** Currency metrics only compare across matching currency codes. */
+  readonly comparable: boolean;
+  readonly previousMoney?: MoneyContext;
+  readonly currentMoney?: MoneyContext;
 }
 
 export interface CategoryComparison {
@@ -52,7 +57,15 @@ export interface SessionComparison {
   readonly summary: string;
 }
 
-function relativeChange(previous: number, current: number, unit: DeltaUnit): number | null {
+function relativeChange(
+  previous: number,
+  current: number,
+  unit: DeltaUnit,
+  comparable: boolean,
+): number | null {
+  if (!comparable) {
+    return null;
+  }
   if (unit === 'percentagePoints') {
     return null;
   }
@@ -69,19 +82,23 @@ function metric(
   current: number,
   unit: DeltaUnit,
   bias: DeltaBias,
+  money?: { readonly previous: MoneyContext; readonly current: MoneyContext },
 ): MetricComparison {
   const safePrevious = Number.isFinite(previous) ? previous : 0;
   const safeCurrent = Number.isFinite(current) ? current : 0;
+  const comparable = unit !== 'currency' || money?.previous.currency === money?.current.currency;
 
   return {
     id,
     label,
     previous: safePrevious,
     current: safeCurrent,
-    delta: safeCurrent - safePrevious,
+    delta: comparable ? safeCurrent - safePrevious : null,
     unit,
     bias,
-    relativeChange: relativeChange(safePrevious, safeCurrent, unit),
+    relativeChange: relativeChange(safePrevious, safeCurrent, unit, comparable),
+    comparable,
+    ...(money ? { previousMoney: money.previous, currentMoney: money.current } : {}),
   };
 }
 
@@ -152,6 +169,10 @@ export function compareSessions(
       current.report.totalRetailValue,
       'currency',
       'diner',
+      {
+        previous: previous.record.pricingProfile.money,
+        current: current.record.pricingProfile.money,
+      },
     ),
     metric(
       'admission',
@@ -160,6 +181,10 @@ export function compareSessions(
       current.report.totalAdmission,
       'currency',
       'neutral',
+      {
+        previous: previous.record.pricingProfile.money,
+        current: current.record.pricingProfile.money,
+      },
     ),
     metric(
       'ingredientCost',
@@ -168,6 +193,10 @@ export function compareSessions(
       current.report.totalRestaurantCost,
       'currency',
       'diner',
+      {
+        previous: previous.record.pricingProfile.money,
+        current: current.record.pricingProfile.money,
+      },
     ),
     metric(
       'protein',

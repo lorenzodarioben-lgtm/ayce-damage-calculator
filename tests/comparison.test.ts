@@ -3,6 +3,7 @@ import { buildDamageReport } from '@/lib/calculations';
 import { compareSessions, orderByRecordedAt, summariseRecoveryShift } from '@/lib/comparison';
 import { formatDelta, formatMetricValue } from '@/lib/formatting';
 import { createSavedSession } from '@/lib/history';
+import { DEFAULT_PRICING_PROFILE } from '@/lib/pricing';
 import { getVerdict } from '@/lib/verdicts';
 import type { SavedMealSession } from '@/types/history';
 import type { MealItem, MealSession } from '@/types/meal';
@@ -143,6 +144,42 @@ describe('compareSessions', () => {
 
     expect(metricOf(same, 'retail').relativeChange).toBe(0);
     expect(metricOf(same, 'plates').relativeChange).toBe(0);
+  });
+
+  it('keeps money values separate when the filed visits use different currencies', () => {
+    const usdProfile = {
+      ...DEFAULT_PRICING_PROFILE,
+      id: 'custom-usd',
+      name: 'USD menu',
+      money: { currency: 'USD' as const, locale: 'en-US' },
+      overrides: { 'beef-ribeye': { retailPricePerKg: 80, restaurantCostPerKg: 45 } },
+      builtIn: false,
+    };
+    const session: MealSession = {
+      restaurantName: 'Seoul Garden',
+      pricePerDiner: 59.9,
+      dinerCount: 1,
+      pricingProfileId: usdProfile.id,
+      items: [line('beef-ribeye', 4)],
+    };
+    const report = buildDamageReport(session.items, session, usdProfile);
+    const usdVisit = createSavedSession(
+      session,
+      report,
+      getVerdict(report.totalRetailValue, report.totalAdmission),
+      { id: 'usd', createdAt: '2026-08-16T12:00:00.000Z', pricingProfile: usdProfile },
+    );
+    const comparison = compareSessions(LAST_VISIT, usdVisit);
+    const retail = metricOf(comparison, 'retail');
+
+    expect(retail.comparable).toBe(false);
+    expect(retail.delta).toBeNull();
+    expect(retail.relativeChange).toBeNull();
+    expect(retail.previousMoney?.currency).toBe('AUD');
+    expect(retail.currentMoney?.currency).toBe('USD');
+    // Recovery still compares cleanly because each visit has its own matched
+    // retail and admission contexts.
+    expect(metricOf(comparison, 'recovery').comparable).toBe(true);
   });
 });
 
