@@ -3,11 +3,13 @@
 import { useState, useSyncExternalStore } from 'react';
 import { Copy, Download, Link2, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { usePricingProfile } from '@/components/session/PricingContext';
 import type { ResultCardModel } from '@/lib/resultCard';
 import { renderResultCardBlob } from '@/lib/resultCardImage';
 import { buildShareText, canWebShare, copyToClipboard } from '@/lib/share';
 import { shareLinkPath } from '@/lib/shareLink';
 import type { Verdict } from '@/lib/verdicts';
+import type { CustomFood } from '@/types/customFoods';
 import type { DamageReport, MealSession } from '@/types/meal';
 
 /** Share capability cannot change within a page lifetime, so nothing to subscribe to. */
@@ -23,6 +25,7 @@ interface ShareActionsProps {
 
 export function ShareActions({ report, verdict, session, cardModel, onStatus }: ShareActionsProps) {
   const restaurantName = session.restaurantName;
+  const pricingProfile = usePricingProfile();
   const [isExporting, setIsExporting] = useState(false);
 
   // navigator.share is unavailable during SSR, so the server snapshot is false
@@ -48,7 +51,10 @@ export function ShareActions({ report, verdict, session, cardModel, onStatus }: 
   }
 
   async function handleCopyLink() {
-    const path = shareLinkPath(session);
+    const customFoods = report.lines.flatMap((line) =>
+      line.food.isCustom ? [line.food as CustomFood] : [],
+    );
+    const path = shareLinkPath(session, { pricingProfile, customFoods });
     if (!path) {
       onStatus('There is nothing on the tab to share yet.');
       return;
