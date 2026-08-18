@@ -1,7 +1,13 @@
 import { parseStoredFavorites, type MealFavorite } from '@/lib/favorites';
+import { parseStoredCustomFoods } from '@/lib/customFoods';
 import { isIsoTimestamp } from '@/lib/datetime';
+import { foodCatalogue } from '@/lib/foodCatalogue';
 import { parseSavedSession } from '@/lib/history';
+import { parseStoredPresets, type RestaurantPreset } from '@/lib/presets';
+import { parseStoredPricingProfiles } from '@/lib/pricingProfiles';
+import type { CustomFood } from '@/types/customFoods';
 import type { SavedMealSession } from '@/types/history';
+import type { PricingProfile } from '@/types/pricing';
 
 /**
  * Export and import of everything this device holds.
@@ -14,7 +20,7 @@ import type { SavedMealSession } from '@/types/history';
  */
 
 export const BACKUP_FORMAT = 'ayce-damage-backup';
-export const BACKUP_VERSION = 1;
+export const BACKUP_VERSION = 2;
 
 /** Roughly 8 MB of JSON; far beyond any real backup, but bounded. */
 export const MAX_BACKUP_BYTES = 8 * 1024 * 1024;
@@ -25,6 +31,14 @@ export interface BackupFile {
   readonly exportedAt: string;
   readonly history: readonly SavedMealSession[];
   readonly favorites: readonly MealFavorite[];
+  readonly configuration: BackupConfiguration;
+}
+
+/** Personal menu assumptions required for a complete local-first restore. */
+export interface BackupConfiguration {
+  readonly pricingProfiles: readonly PricingProfile[];
+  readonly customFoods: readonly CustomFood[];
+  readonly presets: readonly RestaurantPreset[];
 }
 
 export type BackupError =
@@ -46,12 +60,16 @@ export interface BackupContents {
   readonly exportedAt: string;
   readonly history: readonly SavedMealSession[];
   readonly favorites: readonly MealFavorite[];
+  readonly configuration: BackupConfiguration;
 }
 
 export interface BackupSummary {
   /** Records that failed validation and were left out. */
   readonly skippedHistory: number;
   readonly skippedFavorites: number;
+  readonly skippedPricingProfiles: number;
+  readonly skippedCustomFoods: number;
+  readonly skippedPresets: number;
 }
 
 export type BackupParseResult =
@@ -66,6 +84,11 @@ export function buildBackup(
   history: readonly SavedMealSession[],
   favorites: readonly MealFavorite[],
   exportedAt: string,
+  configuration: BackupConfiguration = {
+    pricingProfiles: [],
+    customFoods: [],
+    presets: [],
+  },
 ): BackupFile {
   return {
     format: BACKUP_FORMAT,
@@ -73,6 +96,7 @@ export function buildBackup(
     exportedAt,
     history,
     favorites,
+    configuration,
   };
 }
 
@@ -103,7 +127,7 @@ export function parseBackup(raw: string): BackupParseResult {
   if (!isRecord(parsed) || parsed.format !== BACKUP_FORMAT) {
     return { ok: false, error: 'not-a-backup' };
   }
-  if (typeof parsed.version !== 'number' || parsed.version > BACKUP_VERSION) {
+  if (typeof parsed.version !== 'number' || parsed.version < 1 || parsed.version > BACKUP_VERSION) {
     return { ok: false, error: 'unsupported-version' };
   }
 
@@ -120,16 +144,38 @@ export function parseBackup(raw: string): BackupParseResult {
     }
   }
 
+  const rawConfiguration = isRecord(parsed.configuration) ? parsed.configuration : {};
+  const rawPricingProfiles = Array.isArray(rawConfiguration.pricingProfiles)
+    ? rawConfiguration.pricingProfiles
+    : [];
+  const pricingProfiles = parseStoredPricingProfiles(
+    JSON.stringify({ version: 1, profiles: rawPricingProfiles }),
+  );
+  const rawCustomFoods = Array.isArray(rawConfiguration.customFoods)
+    ? rawConfiguration.customFoods
+    : [];
+  const customFoods = parseStoredCustomFoods(JSON.stringify({ version: 1, foods: rawCustomFoods }));
+  const rawPresets = Array.isArray(rawConfiguration.presets) ? rawConfiguration.presets : [];
+  const presets = parseStoredPresets(JSON.stringify({ version: 2, presets: rawPresets }));
+
   // Favourites reuse the storage parser, so exactly the same rules apply to a
-  // restored list as to one written by the app itself.
+  // restored list as to one written by the app itself. Custom foods are parsed
+  // first so favourite configurations can keep referring to the diner menu.
   const favorites = parseStoredFavorites(
     JSON.stringify({
       version: 1,
       favorites: Array.isArray(parsed.favorites) ? parsed.favorites : [],
     }),
+    foodCatalogue(customFoods),
   );
 
-  if (history.length === 0 && favorites.length === 0) {
+  if (
+    history.length === 0 &&
+    favorites.length === 0 &&
+    pricingProfiles.length === 0 &&
+    customFoods.length === 0 &&
+    presets.length === 0
+  ) {
     return { ok: false, error: 'nothing-usable' };
   }
 
@@ -139,11 +185,19 @@ export function parseBackup(raw: string): BackupParseResult {
 
   return {
     ok: true,
-    contents: { exportedAt, history, favorites },
+    contents: {
+      exportedAt,
+      history,
+      favorites,
+      configuration: { pricingProfiles, customFoods, presets },
+    },
     summary: {
       skippedHistory: rawHistory.length - history.length,
       skippedFavorites:
         (Array.isArray(parsed.favorites) ? parsed.favorites.length : 0) - favorites.length,
+      skippedPricingProfiles: rawPricingProfiles.length - pricingProfiles.length,
+      skippedCustomFoods: rawCustomFoods.length - customFoods.length,
+      skippedPresets: rawPresets.length - presets.length,
     },
   };
 }
