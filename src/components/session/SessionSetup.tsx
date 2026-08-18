@@ -13,7 +13,6 @@ import { RestaurantPresets } from '@/components/session/RestaurantPresets';
 import { PricingProfileManager } from '@/components/session/PricingProfileManager';
 import { usePricingProfile } from '@/components/session/PricingContext';
 import { formatMoney } from '@/lib/formatting';
-import { DEFAULT_PRICING_PROFILE_ID } from '@/lib/pricing';
 import type { MealSession, SessionConfig } from '@/types/meal';
 import type { PricingProfile, PricingProfileId } from '@/types/pricing';
 
@@ -218,6 +217,7 @@ export function SessionSetup({
           name: session.restaurantName,
           pricePerDiner: session.pricePerDiner,
           dinerCount: session.dinerCount,
+          pricingProfileId: pricingProfile.id,
         }}
         hasMealInProgress={session.items.length > 0}
         onApply={(preset) =>
@@ -225,7 +225,7 @@ export function SessionSetup({
             restaurantName: preset.name,
             pricePerDiner: preset.pricePerDiner,
             dinerCount: preset.dinerCount,
-            pricingProfileId: DEFAULT_PRICING_PROFILE_ID,
+            pricingProfileId: preset.pricingProfileId,
           })
         }
         onStatus={onStatus}
