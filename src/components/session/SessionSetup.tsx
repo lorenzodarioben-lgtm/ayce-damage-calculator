@@ -10,6 +10,7 @@ import {
   MIN_PRICE_PER_DINER,
 } from '@/lib/constants';
 import { RestaurantPresets } from '@/components/session/RestaurantPresets';
+import { PricingProfileManager } from '@/components/session/PricingProfileManager';
 import { formatMoney } from '@/lib/formatting';
 import { DEFAULT_PRICING_PROFILE_ID } from '@/lib/pricing';
 import type { MealSession, SessionConfig } from '@/types/meal';
@@ -188,6 +189,8 @@ export function SessionSetup({
         }
         onStatus={onStatus}
       />
+
+      <PricingProfileManager onStatus={onStatus} />
     </section>
   );
 }
