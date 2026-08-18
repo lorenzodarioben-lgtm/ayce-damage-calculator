@@ -14,6 +14,7 @@ import { StickySummaryBar } from '@/components/summary/StickySummaryBar';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { StatusToast } from '@/components/ui/StatusToast';
 import { useMealSession, type AddItemPayload } from '@/hooks/useMealSession';
+import { useCustomFoods } from '@/hooks/useCustomFoods';
 import { usePricingProfiles } from '@/hooks/usePricingProfiles';
 import { useStageHistory } from '@/hooks/useStageHistory';
 import { useStatusMessage } from '@/hooks/useStatusMessage';
@@ -22,6 +23,7 @@ import { DEFAULT_PRICING_PROFILE_ID } from '@/lib/pricing';
 
 export function CalculatorApp() {
   const pricingProfiles = usePricingProfiles();
+  const customFoods = useCustomFoods();
   const {
     session,
     report,
@@ -38,7 +40,7 @@ export function CalculatorApp() {
     restoreItem,
     resetSession,
     pricingProfile,
-  } = useMealSession(pricingProfiles.profiles);
+  } = useMealSession(pricingProfiles.profiles, customFoods.foods);
 
   const { stage, showReport, showBuilder } = useStageHistory({
     ready: hydrated,
@@ -161,11 +163,14 @@ export function CalculatorApp() {
                     pricingProfiles={pricingProfiles.profiles}
                     onSavePricingProfile={pricingProfiles.save}
                     onRemovePricingProfile={handleRemovePricingProfile}
+                    customFoods={customFoods.foods}
+                    onSaveCustomFood={customFoods.save}
+                    onRemoveCustomFood={customFoods.remove}
                     onDinerCountChange={adjustDinerCount}
                     onApplySetup={applySetup}
                     onStatus={announce}
                   />
-                  <MealBuilder onAdd={handleAdd} />
+                  <MealBuilder onAdd={handleAdd} customFoods={customFoods.foods} />
                 </div>
 
                 <div className="lg:sticky lg:top-[4.5rem]">

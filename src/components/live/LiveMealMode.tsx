@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Plus, Receipt } from 'lucide-react';
 import { FavoriteQuickAdd } from '@/components/favorites/FavoriteQuickAdd';
@@ -16,10 +16,11 @@ import { StatusToast } from '@/components/ui/StatusToast';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useMealSession, type AddItemPayload } from '@/hooks/useMealSession';
 import { usePricingProfiles } from '@/hooks/usePricingProfiles';
+import { useCustomFoods } from '@/hooks/useCustomFoods';
 import { useStatusMessage } from '@/hooks/useStatusMessage';
 import { useUndoableRemove } from '@/hooks/useUndoableRemove';
 import { REPORT_STAGE, STAGE_PARAM } from '@/hooks/useStageHistory';
-import { findFood } from '@/data/foods';
+import { findFoodInCatalogue, foodCatalogue } from '@/lib/foodCatalogue';
 import { formatKg, formatMoney, formatPlates } from '@/lib/formatting';
 
 /** Hands the meal back to the calculator, already on the report. */
@@ -35,6 +36,8 @@ const REPORT_HREF = `/?${STAGE_PARAM}=${REPORT_STAGE}`;
  */
 export function LiveMealMode() {
   const pricingProfiles = usePricingProfiles();
+  const customFoods = useCustomFoods();
+  const catalogue = useMemo(() => foodCatalogue(customFoods.foods), [customFoods.foods]);
   const {
     session,
     report,
@@ -44,7 +47,7 @@ export function LiveMealMode() {
     decrementItem,
     removeItem,
     restoreItem,
-  } = useMealSession(pricingProfiles.profiles);
+  } = useMealSession(pricingProfiles.profiles, customFoods.foods);
   const { favorites, remove: removeFavorite } = useFavorites();
 
   const [addOpen, setAddOpen] = useState(false);
@@ -53,9 +56,11 @@ export function LiveMealMode() {
   const handleAdd = useCallback(
     (payload: AddItemPayload) => {
       addItem(payload);
-      announce(`${findFood(payload.foodId)?.name ?? 'Item'} added to the quick log.`);
+      announce(
+        `${findFoodInCatalogue(catalogue, payload.foodId)?.name ?? 'Item'} added to the quick log.`,
+      );
     },
-    [addItem, announce],
+    [addItem, announce, catalogue],
   );
 
   const handleFavoriteAdd = useCallback(
@@ -197,7 +202,12 @@ export function LiveMealMode() {
 
         <StatusToast message={status} />
 
-        <AddCutDialog open={addOpen} onClose={() => setAddOpen(false)} onAdd={handleAdd} />
+        <AddCutDialog
+          open={addOpen}
+          onClose={() => setAddOpen(false)}
+          onAdd={handleAdd}
+          foods={catalogue}
+        />
       </>
     </PricingProfileProvider>
   );

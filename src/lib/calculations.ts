@@ -1,4 +1,4 @@
-import { findFood } from '@/data/foods';
+import { FOODS } from '@/data/foods';
 import {
   KG_TO_LB,
   MAX_DINERS,
@@ -9,6 +9,7 @@ import {
   getQualityMeta,
 } from '@/lib/constants';
 import { DEFAULT_PRICING_PROFILE, resolveFoodPricing } from '@/lib/pricing';
+import { findFoodInCatalogue } from '@/lib/foodCatalogue';
 import type { PricingProfile } from '@/types/pricing';
 import type {
   DamageReport,
@@ -100,11 +101,12 @@ export function calculateLineItem(
 export function calculateSessionTotals(
   items: readonly MealItem[],
   pricingProfile: PricingProfile = DEFAULT_PRICING_PROFILE,
+  foods = FOODS,
 ): SessionTotals {
   const lines: LineItemTotals[] = [];
 
   for (const item of items) {
-    const food = findFood(item.foodId);
+    const food = findFoodInCatalogue(foods, item.foodId);
     // Items referencing foods that no longer exist are skipped rather than
     // poisoning the totals; this can only happen via stale persisted state.
     if (food) {
@@ -189,8 +191,9 @@ export function buildDamageReport(
   items: readonly MealItem[],
   config: Pick<SessionConfig, 'pricePerDiner' | 'dinerCount'>,
   pricingProfile: PricingProfile = DEFAULT_PRICING_PROFILE,
+  foods = FOODS,
 ): DamageReport {
-  const totals = calculateSessionTotals(items, pricingProfile);
+  const totals = calculateSessionTotals(items, pricingProfile, foods);
   const dinerCount = clampDinerCount(config.dinerCount);
   const totalAdmission = calculateAdmission(config);
 
