@@ -1,3 +1,5 @@
+'use client';
+
 import { getPlateSizeMeta, getQualityMeta } from '@/lib/constants';
 import { formatMoney, formatPlates, formatWeight } from '@/lib/formatting';
 import { usePricingProfile } from '@/components/session/PricingContext';

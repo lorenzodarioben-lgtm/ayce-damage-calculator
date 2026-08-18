@@ -1,3 +1,5 @@
+'use client';
+
 import { getPlateSizeMeta, getQualityMeta } from '@/lib/constants';
 import { usePricingProfile } from '@/components/session/PricingContext';
 import {
