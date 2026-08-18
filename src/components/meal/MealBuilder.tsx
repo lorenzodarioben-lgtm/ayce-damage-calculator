@@ -11,6 +11,7 @@ import { PlateSizeSelector } from '@/components/meal/PlateSizeSelector';
 import { QualitySelector } from '@/components/meal/QualitySelector';
 import { QuantityStepper } from '@/components/meal/QuantityStepper';
 import { Button } from '@/components/ui/Button';
+import { usePricingProfile } from '@/components/session/PricingContext';
 import {
   FOOD_COUNT,
   findFood,
@@ -42,6 +43,7 @@ const GRID_CLASS = 'grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-3';
 export function MealBuilder({ onAdd }: MealBuilderProps) {
   const panelId = useId();
   const { favorites, toggle, remove, has } = useFavorites();
+  const pricingProfile = usePricingProfile();
 
   const [category, setCategory] = useState<FoodCategory>('beef');
   const [query, setQuery] = useState('');
@@ -55,8 +57,13 @@ export function MealBuilder({ onAdd }: MealBuilderProps) {
   const searching = trimmedQuery.length > 0;
 
   const foods = useMemo(
-    () => sortFoods(searching ? searchFoods(trimmedQuery) : foodsInCategory(category), sort),
-    [searching, trimmedQuery, category, sort],
+    () =>
+      sortFoods(
+        searching ? searchFoods(trimmedQuery) : foodsInCategory(category),
+        sort,
+        pricingProfile,
+      ),
+    [searching, trimmedQuery, category, sort, pricingProfile],
   );
 
   // Resolved from the whole dataset rather than the visible list: a cut chosen
@@ -70,8 +77,9 @@ export function MealBuilder({ onAdd }: MealBuilderProps) {
     return calculateLineItem(
       { id: 'preview', foodId: selectedFood.id, quality, plateSize, quantity },
       selectedFood,
+      pricingProfile,
     );
-  }, [selectedFood, quality, plateSize, quantity]);
+  }, [selectedFood, quality, plateSize, quantity, pricingProfile]);
 
   function handleCategoryChange(next: FoodCategory) {
     setCategory(next);
@@ -187,7 +195,7 @@ export function MealBuilder({ onAdd }: MealBuilderProps) {
                   <div className="flex items-baseline justify-end gap-2">
                     <dt className="text-cream-700">Retail value</dt>
                     <dd className="font-semibold text-ember-400">
-                      {formatMoney(preview.retailValue)}
+                      {formatMoney(preview.retailValue, pricingProfile.money)}
                     </dd>
                   </div>
                 </dl>

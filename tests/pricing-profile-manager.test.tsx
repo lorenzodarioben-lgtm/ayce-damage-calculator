@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { PricingProfileManager } from '@/components/session/PricingProfileManager';
+import { usePricingProfiles } from '@/hooks/usePricingProfiles';
 import { PRICING_PROFILES_STORAGE_KEY } from '@/lib/pricingProfiles';
 
 beforeEach(() => {
@@ -13,11 +14,23 @@ beforeEach(() => {
   });
 });
 
+function ManagerHarness({ onStatus = vi.fn() }: { onStatus?: (message: string) => void }) {
+  const profiles = usePricingProfiles();
+  return (
+    <PricingProfileManager
+      profiles={profiles.profiles}
+      onSave={profiles.save}
+      onRemove={profiles.remove}
+      onStatus={onStatus}
+    />
+  );
+}
+
 describe('PricingProfileManager', () => {
   it('keeps the built-in profile visible and lets a diner save a local profile', async () => {
     const user = userEvent.setup();
     const onStatus = vi.fn();
-    render(<PricingProfileManager onStatus={onStatus} />);
+    render(<ManagerHarness onStatus={onStatus} />);
 
     expect(screen.getByText('Australian KBBQ estimates')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /new profile/i }));
@@ -51,7 +64,7 @@ describe('PricingProfileManager', () => {
       }),
     );
     const user = userEvent.setup();
-    render(<PricingProfileManager onStatus={vi.fn()} />);
+    render(<ManagerHarness />);
 
     expect(screen.queryByRole('button', { name: /delete australian/i })).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /delete downtown lunch/i }));
