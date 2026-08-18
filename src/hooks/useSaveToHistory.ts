@@ -6,6 +6,7 @@ import { saveSession } from '@/lib/historyRepository';
 import { createId } from '@/lib/id';
 import type { Verdict } from '@/lib/verdicts';
 import type { DamageReport, MealSession } from '@/types/meal';
+import type { CustomFood } from '@/types/customFoods';
 import type { PricingProfile } from '@/types/pricing';
 
 export type SaveState = 'idle' | 'saving' | 'inserted' | 'updated' | 'unavailable';
@@ -13,6 +14,10 @@ export type SaveState = 'idle' | 'saving' | 'inserted' | 'updated' | 'unavailabl
 export interface UseSaveToHistoryResult {
   state: SaveState;
   save: (note?: string) => Promise<void>;
+}
+
+function customFoodsOnTab(report: DamageReport): readonly CustomFood[] {
+  return report.lines.flatMap((line) => (line.food.isCustom ? [line.food as CustomFood] : []));
 }
 
 /**
@@ -48,6 +53,7 @@ export function useSaveToHistory(
           createdAt: new Date().toISOString(),
           ...(note === undefined ? {} : { note }),
           pricingProfile,
+          customFoods: customFoodsOnTab(report),
         }),
       );
 

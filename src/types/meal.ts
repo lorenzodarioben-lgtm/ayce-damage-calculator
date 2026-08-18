@@ -46,6 +46,8 @@ export interface FoodItem {
   readonly carbsPer100g: number;
 
   readonly visualVariant: VisualVariant;
+  /** Present only for diner-authored catalogue entries. */
+  readonly isCustom?: boolean;
 }
 
 export interface MealItem {

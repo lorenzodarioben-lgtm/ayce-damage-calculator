@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildDamageReport } from '@/lib/calculations';
+import { createCustomFood } from '@/lib/customFoods';
+import { foodCatalogue } from '@/lib/foodCatalogue';
 import {
   MAX_HISTORY_RECORDS,
   MAX_SAVED_SESSION_ID_LENGTH,
@@ -119,6 +121,38 @@ describe('createSavedSession', () => {
 
     expect(record.pricingProfile).toEqual(pricingProfile);
     expect(reportFromSaved(record).totalRetailValue).toBeCloseTo(0.31 * 80, 10);
+  });
+
+  it('snapshots a custom menu item so the filed report can resolve it later', () => {
+    const custom = createCustomFood(
+      { name: 'Cheese corn', category: 'chicken', retailPricePerKg: 18, restaurantCostPerKg: 7 },
+      'custom-food-cheese-corn',
+    )!;
+    const meal = session({
+      items: [
+        {
+          id: 'custom-food-cheese-corn__standard__regular',
+          foodId: custom.id,
+          quality: 'standard',
+          plateSize: 'regular',
+          quantity: 2,
+        },
+      ],
+    });
+    const report = buildDamageReport(meal.items, meal, undefined, foodCatalogue([custom]));
+    const record = createSavedSession(
+      meal,
+      report,
+      getVerdict(report.totalRetailValue, report.totalAdmission),
+      {
+        id: 'custom-record',
+        createdAt: '2026-08-16T12:00:00.000Z',
+        customFoods: [custom],
+      },
+    );
+
+    expect(parseSavedSession(JSON.parse(JSON.stringify(record)))?.customFoods).toEqual([custom]);
+    expect(reportFromSaved(record).lines[0]?.food.name).toBe('Cheese corn');
   });
 });
 
@@ -289,6 +323,12 @@ describe('schema migration', () => {
     const parsed = parseSavedSession({ ...versionThree, version: 3 });
 
     expect(parsed?.pricingProfile).toEqual(DEFAULT_PRICING_PROFILE);
+  });
+
+  it('gives a record written before custom snapshots an empty custom menu', () => {
+    const record = saved();
+    const { customFoods: _dropped, ...versionFour } = record;
+    expect(parseSavedSession({ ...versionFour, version: 4 })?.customFoods).toEqual([]);
   });
 });
 
