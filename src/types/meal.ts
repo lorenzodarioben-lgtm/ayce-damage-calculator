@@ -56,6 +56,26 @@ export interface MealItem {
   readonly quality: QualityTier;
   readonly plateSize: PlateSize;
   readonly quantity: number;
+  /**
+   * Known ownership within this canonical line. Omitted means the whole line
+   * remains shared-table food, preserving every session recorded before Table
+   * Mode existed.
+   */
+  readonly allocations?: readonly DinerAllocation[];
+}
+
+/** A diner is a snapshot for this meal, never a link to device contacts. */
+export interface Diner {
+  readonly id: string;
+  readonly displayName: string;
+  /** Optional entry-price override in the session's existing currency context. */
+  readonly admissionPrice?: number;
+}
+
+/** A positive, whole number of plates explicitly attributed to one diner. */
+export interface DinerAllocation {
+  readonly dinerId: string;
+  readonly quantity: number;
 }
 
 export interface SessionConfig {
@@ -71,6 +91,8 @@ export interface SessionConfig {
 
 export interface MealSession extends SessionConfig {
   readonly items: readonly MealItem[];
+  /** Optional so an ordinary shared-table session remains zero-setup. */
+  readonly diners?: readonly Diner[];
 }
 
 export interface Nutrition {

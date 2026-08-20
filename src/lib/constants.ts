@@ -77,6 +77,8 @@ export const MAX_PRICE_PER_DINER = 500;
 export const DEFAULT_DINER_COUNT = 1;
 export const MIN_DINERS = 1;
 export const MAX_DINERS = 12;
+export const MAX_DINER_NAME_LENGTH = 40;
+export const MAX_DINER_ID_LENGTH = 80;
 
 export const MIN_QUANTITY = 1;
 export const MAX_QUANTITY_PER_ADD = 20;
