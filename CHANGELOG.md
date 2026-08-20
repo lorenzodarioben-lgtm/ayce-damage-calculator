@@ -5,6 +5,39 @@ All notable changes to this project are recorded here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project uses
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0]
+
+The calculator can now follow the menu in front of you as well as the built-in
+Australian KBBQ estimates. The default meal journey is unchanged: a diner can
+still open the app and start adding plates immediately.
+
+### Added
+
+- **Pricing profiles** — local, currency-aware menu assumptions with explicit
+  currency and locale choices. Profiles can change the retail and illustrative
+  restaurant ingredient prices for individual cuts without claiming live
+  exchange-rate accuracy.
+- **Custom foods** — diner-authored menu items with the same pricing,
+  nutrition, serving-size and quality controls as built-in foods, including
+  category-matched artwork.
+- **Personal-menu management** — optional editors for local pricing profiles
+  and custom foods, alongside the existing restaurant setup.
+
+### Changed
+
+- The selected pricing context now flows through meal building, Live Meal Mode,
+  reports, saved history, comparisons, result cards and shared reports.
+- Filed and shared meals include the menu context they need, so later personal
+  menu edits cannot silently change a historical or received report.
+- Backup and restore now carry pricing profiles and custom foods, validating
+  each record independently while preserving the merge and replace workflows.
+
+### Privacy
+
+- Personal menu data stays in browser storage. Share links contain only the
+  active pricing profile and custom foods used by the shared meal; no account,
+  sync service or external menu database was added.
+
 ## [2.1.0]
 
 A follow-up release. Nothing here changes how a number is calculated; everything here is about
@@ -166,3 +199,4 @@ Initial public release.
 
 [2.0.0]: https://github.com/lorenzodarioben-lgtm/ayce-damage-calculator/releases/tag/v2.0.0
 [1.0.0]: https://github.com/lorenzodarioben-lgtm/ayce-damage-calculator/releases/tag/v1.0.0
+[3.0.0]: https://github.com/lorenzodarioben-lgtm/ayce-damage-calculator/releases/tag/v3.0.0
