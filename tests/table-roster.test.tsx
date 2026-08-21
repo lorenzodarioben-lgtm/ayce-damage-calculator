@@ -17,6 +17,7 @@ function renderRoster(session: MealSession, callbacks = {}) {
   const defaults = {
     onAdd: vi.fn(),
     onRename: vi.fn(),
+    onAdmissionPriceChange: vi.fn(),
     onRemove: vi.fn(),
     onMove: vi.fn(),
     onClear: vi.fn(),
