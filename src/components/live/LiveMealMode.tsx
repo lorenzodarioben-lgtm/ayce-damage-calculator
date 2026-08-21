@@ -6,6 +6,7 @@ import { Plus, Receipt } from 'lucide-react';
 import { FavoriteQuickAdd } from '@/components/favorites/FavoriteQuickAdd';
 import { AddCutDialog } from '@/components/live/AddCutDialog';
 import { QuickLogRow } from '@/components/live/QuickLogRow';
+import { DinerAttribution } from '@/components/meal/DinerAttribution';
 import { SiteFooter } from '@/components/nav/SiteFooter';
 import { SiteHeader } from '@/components/nav/SiteHeader';
 import { MAIN_CONTENT_ID } from '@/components/nav/destinations';
@@ -51,24 +52,25 @@ export function LiveMealMode() {
   const { favorites, remove: removeFavorite } = useFavorites(catalogue);
 
   const [addOpen, setAddOpen] = useState(false);
+  const [activeDinerId, setActiveDinerId] = useState<string | null>(null);
   const [status, announce] = useStatusMessage();
 
   const handleAdd = useCallback(
     (payload: AddItemPayload) => {
-      addItem(payload);
+      addItem({ ...payload, ...(activeDinerId ? { dinerId: activeDinerId } : {}) });
       announce(
         `${findFoodInCatalogue(catalogue, payload.foodId)?.name ?? 'Item'} added to the quick log.`,
       );
     },
-    [addItem, announce, catalogue],
+    [activeDinerId, addItem, announce, catalogue],
   );
 
   const handleFavoriteAdd = useCallback(
     (payload: AddItemPayload, confirmation: string) => {
-      addItem(payload);
+      addItem({ ...payload, ...(activeDinerId ? { dinerId: activeDinerId } : {}) });
       announce(confirmation);
     },
-    [addItem, announce],
+    [activeDinerId, addItem, announce],
   );
 
   const handleIncrement = useCallback(
@@ -121,6 +123,16 @@ export function LiveMealMode() {
               />
             </div>
           </section>
+
+          <DinerAttribution
+            diners={session.diners ?? []}
+            activeDinerId={
+              activeDinerId && session.diners?.some((diner) => diner.id === activeDinerId)
+                ? activeDinerId
+                : null
+            }
+            onChange={setActiveDinerId}
+          />
 
           {hasItems ? (
             <ul className="space-y-3">
