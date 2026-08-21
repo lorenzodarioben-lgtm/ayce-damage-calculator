@@ -23,6 +23,7 @@ import { foodCatalogue } from '@/lib/foodCatalogue';
 import type {
   DamageReport,
   Diner,
+  DinerAllocation,
   MealItem,
   MealSession,
   PlateSize,
@@ -64,6 +65,7 @@ export type SessionAction =
   | { type: 'add-item'; payload: AddItemPayload }
   | { type: 'increment-item'; id: string }
   | { type: 'decrement-item'; id: string }
+  | { type: 'set-item-allocations'; id: string; allocations: readonly DinerAllocation[] }
   | { type: 'remove-item'; id: string }
   | { type: 'restore-item'; item: MealItem; index: number }
   | { type: 'reset' };
@@ -270,7 +272,22 @@ export function sessionReducer(state: MealSession, action: SessionAction): MealS
       return {
         ...state,
         items: state.items.map((item) =>
-          item.id === action.id ? { ...item, quantity: clampQuantity(item.quantity - 1) } : item,
+          item.id === action.id
+            ? reconcileItemAllocations(
+                { ...item, quantity: clampQuantity(item.quantity - 1) },
+                state.diners,
+              )
+            : item,
+        ),
+      };
+
+    case 'set-item-allocations':
+      return {
+        ...state,
+        items: state.items.map((item) =>
+          item.id === action.id
+            ? reconcileItemAllocations({ ...item, allocations: action.allocations }, state.diners)
+            : item,
         ),
       };
 
@@ -325,6 +342,7 @@ export interface UseMealSessionResult {
   addItem: (payload: AddItemPayload) => void;
   incrementItem: (id: string) => void;
   decrementItem: (id: string) => void;
+  setItemAllocations: (id: string, allocations: readonly DinerAllocation[]) => void;
   removeItem: (id: string) => void;
   /** Puts a removed line back where it was, so a removal can be undone. */
   restoreItem: (item: MealItem, index: number) => void;
@@ -446,6 +464,10 @@ export function useMealSession(
     dispatch({ type: 'decrement-item', id });
   }, []);
 
+  const setItemAllocations = useCallback((id: string, allocations: readonly DinerAllocation[]) => {
+    dispatch({ type: 'set-item-allocations', id, allocations });
+  }, []);
+
   const removeItem = useCallback((id: string) => {
     dispatch({ type: 'remove-item', id });
   }, []);
@@ -477,6 +499,7 @@ export function useMealSession(
     addItem,
     incrementItem,
     decrementItem,
+    setItemAllocations,
     removeItem,
     restoreItem,
     resetSession,

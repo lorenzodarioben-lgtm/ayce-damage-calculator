@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { INITIAL_SESSION, sessionReducer } from '@/hooks/useMealSession';
 import { DEFAULT_PRICING_PROFILE_ID } from '@/lib/pricing';
+import { sharedQuantity } from '@/lib/diners';
 import type { MealSession } from '@/types/meal';
 
 const addRibeye = {
@@ -155,6 +156,34 @@ describe('sessionReducer', () => {
       value: undefined,
     });
     expect(state.diners?.[0]?.admissionPrice).toBeUndefined();
+  });
+
+  it('reassigns and splits a line without changing its table quantity', () => {
+    let state = sessionReducer(INITIAL_SESSION, {
+      type: 'add-diner',
+      diner: { id: 'lorenzo', displayName: 'Lorenzo' },
+    });
+    state = sessionReducer(state, {
+      type: 'add-diner',
+      diner: { id: 'omar', displayName: 'Omar' },
+    });
+    state = sessionReducer(state, { ...addRibeye, payload: { ...addRibeye.payload, quantity: 3 } });
+    const id = state.items[0]!.id;
+    state = sessionReducer(state, {
+      type: 'set-item-allocations',
+      id,
+      allocations: [
+        { dinerId: 'lorenzo', quantity: 1 },
+        { dinerId: 'omar', quantity: 1 },
+      ],
+    });
+
+    expect(state.items[0]?.quantity).toBe(3);
+    expect(state.items[0]?.allocations).toEqual([
+      { dinerId: 'lorenzo', quantity: 1 },
+      { dinerId: 'omar', quantity: 1 },
+    ]);
+    expect(sharedQuantity(state.items[0]!)).toBe(1);
   });
 
   it('removes a line', () => {
