@@ -5,6 +5,7 @@ import { Flame } from 'lucide-react';
 import { FavoriteQuickAdd, FavoriteToggle } from '@/components/favorites/FavoriteQuickAdd';
 import { CategoryTabs } from '@/components/meal/CategoryTabs';
 import { FoodCard } from '@/components/meal/FoodCard';
+import { DinerAttribution } from '@/components/meal/DinerAttribution';
 import { FoodSearch } from '@/components/meal/FoodSearch';
 import { FoodSort } from '@/components/meal/FoodSort';
 import { PlateSizeSelector } from '@/components/meal/PlateSizeSelector';
@@ -31,17 +32,26 @@ import { describeFavorite } from '@/lib/favorites';
 import { formatGrams, formatMoney } from '@/lib/formatting';
 import { useFavorites } from '@/hooks/useFavorites';
 import type { AddItemPayload } from '@/hooks/useMealSession';
-import type { FoodCategory, PlateSize, QualityTier } from '@/types/meal';
+import type { Diner, FoodCategory, PlateSize, QualityTier } from '@/types/meal';
 import type { CustomFood } from '@/types/customFoods';
 
 interface MealBuilderProps {
   onAdd: (payload: AddItemPayload, confirmation: string) => void;
   customFoods?: readonly CustomFood[];
+  diners?: readonly Diner[];
+  activeDinerId?: string | null;
+  onActiveDinerChange?: (id: string | null) => void;
 }
 
 const GRID_CLASS = 'grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-3';
 
-export function MealBuilder({ onAdd, customFoods = [] }: MealBuilderProps) {
+export function MealBuilder({
+  onAdd,
+  customFoods = [],
+  diners = [],
+  activeDinerId = null,
+  onActiveDinerChange,
+}: MealBuilderProps) {
   const panelId = useId();
   const pricingProfile = usePricingProfile();
   const catalogue = useMemo(() => foodCatalogue(customFoods), [customFoods]);
@@ -106,7 +116,13 @@ export function MealBuilder({ onAdd, customFoods = [] }: MealBuilderProps) {
     }
     const plateLabel = quantity === 1 ? 'plate' : 'plates';
     onAdd(
-      { foodId: selectedFood.id, quality, plateSize, quantity },
+      {
+        foodId: selectedFood.id,
+        quality,
+        plateSize,
+        quantity,
+        ...(activeDinerId ? { dinerId: activeDinerId } : {}),
+      },
       `${quantity} ${plateLabel} of ${selectedFood.name} added to your tab.`,
     );
     setQuantity(1);
@@ -129,6 +145,14 @@ export function MealBuilder({ onAdd, customFoods = [] }: MealBuilderProps) {
         </h3>
         <FavoriteQuickAdd favorites={favorites} foods={catalogue} onAdd={onAdd} onRemove={remove} />
       </section>
+
+      {onActiveDinerChange && (
+        <DinerAttribution
+          diners={diners}
+          activeDinerId={activeDinerId}
+          onChange={onActiveDinerChange}
+        />
+      )}
 
       <FoodSearch value={query} onChange={setQuery} resultCount={searching ? foods.length : null} />
 

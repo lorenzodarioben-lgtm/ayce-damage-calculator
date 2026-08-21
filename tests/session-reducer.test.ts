@@ -30,6 +30,21 @@ describe('sessionReducer', () => {
     expect(twice.items[0]?.quantity).toBe(4);
   });
 
+  it('attributes added plates to the selected diner while Table additions remain shared', () => {
+    let state = sessionReducer(INITIAL_SESSION, {
+      type: 'add-diner',
+      diner: { id: 'lorenzo', displayName: 'Lorenzo' },
+    });
+    state = sessionReducer(state, {
+      ...addRibeye,
+      payload: { ...addRibeye.payload, dinerId: 'lorenzo' },
+    });
+    state = sessionReducer(state, addRibeye);
+
+    expect(state.items[0]?.quantity).toBe(4);
+    expect(state.items[0]?.allocations).toEqual([{ dinerId: 'lorenzo', quantity: 2 }]);
+  });
+
   it('keeps separate lines when configuration differs', () => {
     const once = sessionReducer(INITIAL_SESSION, addRibeye);
     const twice = sessionReducer(once, {

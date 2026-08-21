@@ -56,6 +56,7 @@ export function CalculatorApp() {
   });
 
   const [resetOpen, setResetOpen] = useState(false);
+  const [activeDinerId, setActiveDinerId] = useState<string | null>(null);
   const [status, announce] = useStatusMessage();
 
   const reportRef = useRef<HTMLDivElement>(null);
@@ -133,6 +134,11 @@ export function CalculatorApp() {
     [pricingProfiles, session.pricingProfileId, setPricingProfile, announce],
   );
 
+  const selectedDinerId =
+    activeDinerId && session.diners?.some((diner) => diner.id === activeDinerId)
+      ? activeDinerId
+      : null;
+
   return (
     <PricingProfileProvider profile={pricingProfile}>
       <>
@@ -186,7 +192,13 @@ export function CalculatorApp() {
                     onSaveRegularDiner={regularDiners.save}
                     onStatus={announce}
                   />
-                  <MealBuilder onAdd={handleAdd} customFoods={customFoods.foods} />
+                  <MealBuilder
+                    onAdd={handleAdd}
+                    customFoods={customFoods.foods}
+                    diners={session.diners ?? []}
+                    activeDinerId={selectedDinerId}
+                    onActiveDinerChange={setActiveDinerId}
+                  />
                 </div>
 
                 <div className="lg:sticky lg:top-[4.5rem]">
