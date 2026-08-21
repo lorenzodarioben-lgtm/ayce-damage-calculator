@@ -28,6 +28,7 @@ export const CSV_COLUMNS = [
   'plates',
   'weight_g',
   'line_retail_value',
+  'attribution',
 ] as const;
 
 /** Characters a spreadsheet may read as the start of a formula. */
@@ -82,6 +83,16 @@ export function historyToCsv(records: readonly SavedMealSession[]): string {
           String(line.plates),
           whole(line.weightG),
           money(line.retailValue),
+          line.item.allocations?.length
+            ? line.item.allocations
+                .map((allocation) => {
+                  const name = record.diners?.find(
+                    (diner) => diner.id === allocation.dinerId,
+                  )?.displayName;
+                  return `${name ?? 'Table'}: ${allocation.quantity}`;
+                })
+                .join('; ')
+            : 'Table',
         ]
           .map(escapeCsvField)
           .join(','),
