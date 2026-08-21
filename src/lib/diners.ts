@@ -1,4 +1,4 @@
-import { MAX_DINER_ID_LENGTH, MAX_LINE_QUANTITY } from '@/lib/constants';
+import { MAX_DINER_ID_LENGTH, MAX_DINER_NAME_LENGTH, MAX_LINE_QUANTITY } from '@/lib/constants';
 import type { Diner, DinerAllocation, MealItem } from '@/types/meal';
 
 /** IDs are local opaque identifiers, never display names or contact details. */
@@ -12,6 +12,12 @@ function safeWhole(value: unknown): number {
 
 export function isDinerId(value: unknown): value is string {
   return typeof value === 'string' && value.length <= MAX_DINER_ID_LENGTH && DINER_ID.test(value);
+}
+
+export function normaliseDinerName(value: unknown): string {
+  return typeof value === 'string'
+    ? value.replace(/\s+/g, ' ').trim().slice(0, MAX_DINER_NAME_LENGTH)
+    : '';
 }
 
 /**

@@ -20,10 +20,17 @@ export function mergeMealItems(items: readonly MealItem[]): readonly MealItem[] 
   for (const item of items) {
     const id = mealItemId(item);
     const existing = byId.get(id);
+    const allocations = existing
+      ? [...(existing.allocations ?? []), ...(item.allocations ?? [])]
+      : item.allocations;
     byId.set(
       id,
       existing
-        ? { ...existing, quantity: Math.min(MAX_LINE_QUANTITY, existing.quantity + item.quantity) }
+        ? {
+            ...existing,
+            quantity: Math.min(MAX_LINE_QUANTITY, existing.quantity + item.quantity),
+            ...(allocations?.length ? { allocations } : {}),
+          }
         : { ...item, id },
     );
   }
