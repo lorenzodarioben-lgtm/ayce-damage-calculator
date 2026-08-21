@@ -12,11 +12,14 @@ import {
 import { RestaurantPresets } from '@/components/session/RestaurantPresets';
 import { PricingProfileManager } from '@/components/session/PricingProfileManager';
 import { CustomFoodManager } from '@/components/session/CustomFoodManager';
+import { TableRoster } from '@/components/session/TableRoster';
 import { usePricingProfile } from '@/components/session/PricingContext';
 import { formatMoney } from '@/lib/formatting';
 import type { MealSession, SessionConfig } from '@/types/meal';
 import type { CustomFood } from '@/types/customFoods';
 import type { PricingProfile, PricingProfileId } from '@/types/pricing';
+import type { RegularDiner } from '@/lib/regularDiners';
+import type { Diner } from '@/types/meal';
 
 interface SessionSetupProps {
   session: MealSession;
@@ -32,6 +35,13 @@ interface SessionSetupProps {
   onRemoveCustomFood: (id: string) => void;
   onDinerCountChange: (delta: number) => void;
   onApplySetup: (setup: SessionConfig) => void;
+  regularDiners: readonly RegularDiner[];
+  onAddDiner: (diner: Diner) => void;
+  onRenameDiner: (id: string, displayName: string) => void;
+  onRemoveDiner: (id: string) => void;
+  onMoveDiner: (id: string, direction: -1 | 1) => void;
+  onClearDiners: () => void;
+  onSaveRegularDiner: (diner: RegularDiner) => void;
   onStatus: (message: string) => void;
 }
 
@@ -49,6 +59,13 @@ export function SessionSetup({
   onRemoveCustomFood,
   onDinerCountChange,
   onApplySetup,
+  regularDiners,
+  onAddDiner,
+  onRenameDiner,
+  onRemoveDiner,
+  onMoveDiner,
+  onClearDiners,
+  onSaveRegularDiner,
   onStatus,
 }: SessionSetupProps) {
   const pricingProfile = usePricingProfile();
@@ -206,6 +223,18 @@ export function SessionSetup({
           />
         </div>
       </div>
+
+      <TableRoster
+        session={session}
+        regularDiners={regularDiners}
+        onAdd={onAddDiner}
+        onRename={onRenameDiner}
+        onRemove={onRemoveDiner}
+        onMove={onMoveDiner}
+        onClear={onClearDiners}
+        onSaveRegular={onSaveRegularDiner}
+        onStatus={onStatus}
+      />
 
       <div className="mt-4 flex flex-wrap items-end justify-between gap-2 rounded-[10px] border border-line-soft bg-ash-900 px-4 py-3">
         <div>
