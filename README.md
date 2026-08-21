@@ -36,6 +36,7 @@ keys, and nothing you record ever leaves your device.
 - Optional restaurant name, printed on the final report
 - Configurable AYCE price per diner and diner count, validated and clamped
 - Restaurant presets you write yourself — save a setup, apply it on the next visit
+- Optional Table Mode: record a local diner roster and attribute plates without changing the shared table total
 
 **Personal menus**
 
@@ -64,6 +65,7 @@ keys, and nothing you record ever leaves your device.
 - Retail break-even estimate — how many more average plates it would take
 - An even split across the table, stated as the assumption it is, whenever there is more than one
   diner
+- Table Mode preserves explicit plate ownership; remaining shared plates are estimated evenly across the active roster
 
 **The payoff**
 
@@ -221,6 +223,7 @@ Everything is local by default and stays that way.
   custom foods live in this browser
 - Analytics are derived on the device from your own records; no usage is tracked or transmitted
 - There is no account system, no backend and no third-party service of any kind
+- Diner names stay local. Shared links anonymise roster names by default, while an exported backup may include names because it is a deliberate local export.
 - Shared report links carry the meal snapshot **inside the URL itself** — the plates, entry price,
   pricing context and any custom foods used. Nothing is uploaded, and nothing else travels with the
   link. Shared pages are marked `noindex`, and opening one never touches the recipient's own session.

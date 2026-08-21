@@ -5,6 +5,18 @@ All notable changes to this project are recorded here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project uses
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.0]
+
+### Added
+
+- **Optional Table Mode** — a local diner roster, reusable local diner directory, per-diner admission overrides and plate attribution in the regular builder and Live Meal Mode.
+- **Shared-table estimates** — each diner sees known plates plus an even share of Table plates, while the table report remains the primary calculation and its totals never change.
+- **Diner-aware reports and portability** — filed roster snapshots, anonymised share rosters and CSV attribution columns.
+
+### Privacy
+
+- No contacts, sync service or backend was added. Diner names stay on-device unless included in a deliberate local export; share links anonymise them by default.
+
 ## [3.0.0]
 
 The calculator can now follow the menu in front of you as well as the built-in
@@ -200,3 +212,4 @@ Initial public release.
 [2.0.0]: https://github.com/lorenzodarioben-lgtm/ayce-damage-calculator/releases/tag/v2.0.0
 [1.0.0]: https://github.com/lorenzodarioben-lgtm/ayce-damage-calculator/releases/tag/v1.0.0
 [3.0.0]: https://github.com/lorenzodarioben-lgtm/ayce-damage-calculator/releases/tag/v3.0.0
+[3.1.0]: https://github.com/lorenzodarioben-lgtm/ayce-damage-calculator/releases/tag/v3.1.0
