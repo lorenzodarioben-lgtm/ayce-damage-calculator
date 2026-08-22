@@ -10,14 +10,26 @@ import {
   MIN_PRICE_PER_DINER,
 } from '@/lib/constants';
 import { RestaurantPresets } from '@/components/session/RestaurantPresets';
+import { PricingProfileManager } from '@/components/session/PricingProfileManager';
+import { CustomFoodManager } from '@/components/session/CustomFoodManager';
+import { usePricingProfile } from '@/components/session/PricingContext';
 import { formatMoney } from '@/lib/formatting';
 import type { MealSession, SessionConfig } from '@/types/meal';
+import type { CustomFood } from '@/types/customFoods';
+import type { PricingProfile, PricingProfileId } from '@/types/pricing';
 
 interface SessionSetupProps {
   session: MealSession;
   totalAdmission: number;
   onRestaurantNameChange: (value: string) => void;
   onPricePerDinerChange: (value: number) => void;
+  onPricingProfileChange: (id: PricingProfileId) => void;
+  pricingProfiles: readonly PricingProfile[];
+  onSavePricingProfile: (profile: PricingProfile) => void;
+  onRemovePricingProfile: (id: PricingProfileId) => void;
+  customFoods: readonly CustomFood[];
+  onSaveCustomFood: (food: CustomFood) => void;
+  onRemoveCustomFood: (id: string) => void;
   onDinerCountChange: (delta: number) => void;
   onApplySetup: (setup: SessionConfig) => void;
   onStatus: (message: string) => void;
@@ -28,10 +40,18 @@ export function SessionSetup({
   totalAdmission,
   onRestaurantNameChange,
   onPricePerDinerChange,
+  onPricingProfileChange,
+  pricingProfiles,
+  onSavePricingProfile,
+  onRemovePricingProfile,
+  customFoods,
+  onSaveCustomFood,
+  onRemoveCustomFood,
   onDinerCountChange,
   onApplySetup,
   onStatus,
 }: SessionSetupProps) {
+  const pricingProfile = usePricingProfile();
   const nameId = useId();
   const priceId = useId();
   const priceHintId = useId();
@@ -142,6 +162,36 @@ export function SessionSetup({
           </p>
         </div>
 
+        <div className="sm:col-span-2">
+          <label
+            htmlFor="pricing-profile"
+            className="mb-1.5 block text-sm font-semibold text-cream-300"
+          >
+            Menu pricing
+          </label>
+          <select
+            id="pricing-profile"
+            value={pricingProfile.id}
+            onChange={(event) => {
+              onPricingProfileChange(event.target.value);
+              const next = pricingProfiles.find((profile) => profile.id === event.target.value);
+              if (next) {
+                onStatus(`${next.name} pricing applied to this table.`);
+              }
+            }}
+            className="h-12 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-base text-cream-50 focus:border-ember-600"
+          >
+            {pricingProfiles.map((profile) => (
+              <option key={profile.id} value={profile.id}>
+                {profile.name} · {profile.money.currency}
+              </option>
+            ))}
+          </select>
+          <p className="mt-1.5 text-xs text-cream-700">
+            Switching profiles recalculates the whole tab with that menu&rsquo;s assumptions.
+          </p>
+        </div>
+
         <div>
           <span className="mb-1.5 block text-sm font-semibold text-cream-300">Diners</span>
           <QuantityStepper
@@ -161,12 +211,12 @@ export function SessionSetup({
         <div>
           <p className="micro-label">Total entry</p>
           <p className="tabular text-xs text-cream-500">
-            {formatMoney(session.pricePerDiner)} per person × {session.dinerCount}{' '}
-            {session.dinerCount === 1 ? 'diner' : 'diners'}
+            {formatMoney(session.pricePerDiner, pricingProfile.money)} per person ×{' '}
+            {session.dinerCount} {session.dinerCount === 1 ? 'diner' : 'diners'}
           </p>
         </div>
         <p className="tabular display-type text-3xl text-ember-400">
-          {formatMoney(totalAdmission)}
+          {formatMoney(totalAdmission, pricingProfile.money)}
         </p>
       </div>
 
@@ -175,6 +225,7 @@ export function SessionSetup({
           name: session.restaurantName,
           pricePerDiner: session.pricePerDiner,
           dinerCount: session.dinerCount,
+          pricingProfileId: pricingProfile.id,
         }}
         hasMealInProgress={session.items.length > 0}
         onApply={(preset) =>
@@ -182,8 +233,23 @@ export function SessionSetup({
             restaurantName: preset.name,
             pricePerDiner: preset.pricePerDiner,
             dinerCount: preset.dinerCount,
+            pricingProfileId: preset.pricingProfileId,
           })
         }
+        onStatus={onStatus}
+      />
+
+      <PricingProfileManager
+        profiles={pricingProfiles}
+        onSave={onSavePricingProfile}
+        onRemove={onRemovePricingProfile}
+        onStatus={onStatus}
+      />
+
+      <CustomFoodManager
+        foods={customFoods}
+        onSave={onSaveCustomFood}
+        onRemove={onRemoveCustomFood}
         onStatus={onStatus}
       />
     </section>

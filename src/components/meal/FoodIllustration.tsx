@@ -820,8 +820,36 @@ function renderVariant(variant: VisualVariant, paint: Paint) {
   }
 }
 
+/**
+ * A deliberately neutral plate for diner-authored menu items.
+ *
+ * It keeps the ceramic, light and food scale of the illustrated menu without
+ * pretending a handwritten description tells us exactly how the dish looks.
+ */
+function CustomFoodArtwork({ flesh, gloss, tone }: Paint) {
+  return (
+    <g data-custom-food-artwork="true">
+      <ellipse cx="64" cy="72" rx="31" ry="12" fill="#050403" opacity="0.45" />
+      <path
+        d="M34 70c5-23 18-34 30-34s25 11 30 34c-6 13-15 20-30 20S40 83 34 70Z"
+        fill={flesh}
+        stroke={tone.accent}
+        strokeWidth="2"
+      />
+      <path
+        d="M42 62c11-10 33-10 44 0M40 72c13 9 35 9 48 0"
+        fill="none"
+        stroke={gloss}
+        strokeWidth="4"
+      />
+      <circle cx="64" cy="64" r="9" fill={tone.accent} opacity="0.85" />
+      <path d="M64 57v14M57 64h14" stroke="#F3E8D0" strokeWidth="2.4" strokeLinecap="round" />
+    </g>
+  );
+}
+
 interface FoodIllustrationProps {
-  food: FoodItem;
+  food: FoodItem & { readonly isCustom?: boolean };
   className?: string;
 }
 
@@ -836,7 +864,7 @@ export function FoodIllustration({ food, className }: FoodIllustrationProps) {
   const glossId = `gloss-${uid}`;
   const clipId = `clip-${uid}`;
 
-  const tone = TONES[VARIANT_TONE[food.visualVariant]];
+  const tone = food.isCustom ? TONES.beefMarinated : TONES[VARIANT_TONE[food.visualVariant]];
   const paint: Paint = { tone, flesh: `url(#${fleshId})`, gloss: `url(#${glossId})` };
 
   return (
@@ -890,7 +918,13 @@ export function FoodIllustration({ food, className }: FoodIllustrationProps) {
       />
       <circle cx="64" cy="64" r="50" fill="#0F0C0A" opacity="0.35" />
 
-      <g clipPath={`url(#${clipId})`}>{renderVariant(food.visualVariant, paint)}</g>
+      <g clipPath={`url(#${clipId})`}>
+        {food.isCustom ? (
+          <CustomFoodArtwork {...paint} />
+        ) : (
+          renderVariant(food.visualVariant, paint)
+        )}
+      </g>
 
       {/* Specular arc: the pendant-lamp highlight the rest of the page uses. */}
       <path

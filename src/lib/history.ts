@@ -1,4 +1,3 @@
-import { findFood } from '@/data/foods';
 import {
   evaluateAchievementIds,
   isAchievementId,
@@ -16,10 +15,16 @@ import {
 } from '@/lib/constants';
 import { sanitiseRestaurantName } from '@/lib/storage';
 import { isIsoTimestamp } from '@/lib/datetime';
+import { findFoodInCatalogue, foodCatalogue } from '@/lib/foodCatalogue';
 import { mealItemId, mergeMealItems } from '@/lib/mealItems';
+import { DEFAULT_PRICING_PROFILE, DEFAULT_PRICING_PROFILE_ID } from '@/lib/pricing';
+import { parseCustomPricingProfile } from '@/lib/pricingProfiles';
+import { MAX_CUSTOM_FOODS, parseCustomFood } from '@/lib/customFoods';
 import { getVerdict, isVerdictId, type Verdict } from '@/lib/verdicts';
 import type { SavedMealSession, SavedSessionSnapshot } from '@/types/history';
-import type { DamageReport, MealItem, MealSession, Nutrition } from '@/types/meal';
+import type { DamageReport, FoodItem, MealItem, MealSession, Nutrition } from '@/types/meal';
+import type { CustomFood } from '@/types/customFoods';
+import type { PricingProfile } from '@/types/pricing';
 
 /**
  * Bumped whenever the shape of a stored record changes.
@@ -27,11 +32,13 @@ import type { DamageReport, MealItem, MealSession, Nutrition } from '@/types/mea
  * 1 — original.
  * 2 — snapshots carry the achievements the session earned.
  * 3 — records carry a free-text note.
+ * 4 — records retain a complete pricing context.
+ * 5 — records retain custom food entries used by the meal.
  */
-export const SAVED_SESSION_VERSION = 3;
+export const SAVED_SESSION_VERSION = 5;
 
 /** Versions `parseSavedSession` knows how to read, current one included. */
-export const SUPPORTED_SESSION_VERSIONS = [1, 2, 3] as const;
+export const SUPPORTED_SESSION_VERSIONS = [1, 2, 3, 4, 5] as const;
 
 /** Beyond this the oldest records are pruned, so storage cannot grow forever. */
 export const MAX_HISTORY_RECORDS = 200;
@@ -76,6 +83,7 @@ export function fingerprintSession(session: MealSession): string {
   return [
     clampPricePerDiner(session.pricePerDiner).toFixed(2),
     clampDinerCount(session.dinerCount),
+    session.pricingProfileId ?? DEFAULT_PRICING_PROFILE_ID,
     items,
   ].join('#');
 }
@@ -116,6 +124,10 @@ export interface CreateSavedSessionOptions {
   readonly createdAt: string;
   /** What the diner wrote about the meal, if anything. */
   readonly note?: string;
+  /** The resolved profile, copied rather than merely referenced. */
+  readonly pricingProfile?: PricingProfile;
+  /** The custom catalogue at filing time; only entries used by this meal are stored. */
+  readonly customFoods?: readonly CustomFood[];
 }
 
 export function createSavedSession(
@@ -131,6 +143,10 @@ export function createSavedSession(
     restaurantName: sanitiseRestaurantName(session.restaurantName),
     pricePerDiner: clampPricePerDiner(session.pricePerDiner),
     dinerCount: clampDinerCount(session.dinerCount),
+    pricingProfile: options.pricingProfile ?? DEFAULT_PRICING_PROFILE,
+    customFoods: (options.customFoods ?? [])
+      .filter((food) => session.items.some((item) => item.foodId === food.id))
+      .map((food) => ({ ...food })),
     note: sanitiseSessionNote(options.note),
     items: session.items.map((item) => ({ ...item })),
     fingerprint: fingerprintSession(session),
@@ -138,13 +154,13 @@ export function createSavedSession(
   };
 }
 
-function parseItem(value: unknown): MealItem | null {
+function parseItem(value: unknown, foods: readonly FoodItem[]): MealItem | null {
   if (!isRecord(value)) {
     return null;
   }
   const { foodId, quality, plateSize, quantity } = value;
 
-  if (typeof foodId !== 'string' || !findFood(foodId)) {
+  if (typeof foodId !== 'string' || !findFoodInCatalogue(foods, foodId)) {
     return null;
   }
   if (!isQualityTier(quality) || !isPlateSize(plateSize)) {
@@ -210,6 +226,32 @@ function parseSnapshot(
   };
 }
 
+function parsePricingSnapshot(value: unknown): PricingProfile {
+  if (isRecord(value) && value.id === DEFAULT_PRICING_PROFILE.id) {
+    return DEFAULT_PRICING_PROFILE;
+  }
+  return parseCustomPricingProfile(value) ?? DEFAULT_PRICING_PROFILE;
+}
+
+function parseCustomFoodSnapshots(value: unknown): readonly CustomFood[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  const foods: CustomFood[] = [];
+  const ids = new Set<string>();
+  for (const entry of value) {
+    const food = parseCustomFood(entry);
+    if (food && !ids.has(food.id)) {
+      ids.add(food.id);
+      foods.push(food);
+    }
+    if (foods.length >= MAX_CUSTOM_FOODS) {
+      break;
+    }
+  }
+  return foods;
+}
+
 /**
  * Validates one stored record. Everything read back from the database is
  * untrusted: it may predate a schema change, have been edited by hand in
@@ -243,9 +285,13 @@ export function parseSavedSession(value: unknown): SavedMealSession | null {
     return null;
   }
 
+  const customFoods = version >= 5 ? parseCustomFoodSnapshots(value.customFoods) : [];
+  const foods = foodCatalogue(customFoods);
   const rawItems = Array.isArray(value.items) ? value.items : [];
   const items = mergeMealItems(
-    rawItems.map(parseItem).filter((item): item is MealItem => item !== null),
+    rawItems
+      .map((item) => parseItem(item, foods))
+      .filter((item): item is MealItem => item !== null),
   );
 
   // A record whose every line was rejected describes nothing.
@@ -275,6 +321,8 @@ export function parseSavedSession(value: unknown): SavedMealSession | null {
   }
 
   const restaurantName = sanitiseRestaurantName(value.restaurantName);
+  const pricingProfile =
+    version >= 4 ? parsePricingSnapshot(value.pricingProfile) : DEFAULT_PRICING_PROFILE;
 
   return {
     id: value.id,
@@ -283,6 +331,8 @@ export function parseSavedSession(value: unknown): SavedMealSession | null {
     restaurantName,
     pricePerDiner: safePrice,
     dinerCount: safeDiners,
+    pricingProfile,
+    customFoods,
     // Records written before version 3 simply have nothing to say.
     note: sanitiseSessionNote(value.note),
     items,
@@ -290,6 +340,7 @@ export function parseSavedSession(value: unknown): SavedMealSession | null {
       restaurantName,
       pricePerDiner: safePrice,
       dinerCount: safeDiners,
+      pricingProfileId: pricingProfile.id,
       items,
     }),
     snapshot,
@@ -301,10 +352,15 @@ export function parseSavedSession(value: unknown): SavedMealSession | null {
  * agrees with the engine rather than with whatever was cached at save time.
  */
 export function reportFromSaved(record: SavedMealSession): DamageReport {
-  return buildDamageReport(record.items, {
-    pricePerDiner: record.pricePerDiner,
-    dinerCount: record.dinerCount,
-  });
+  return buildDamageReport(
+    record.items,
+    {
+      pricePerDiner: record.pricePerDiner,
+      dinerCount: record.dinerCount,
+    },
+    record.pricingProfile,
+    foodCatalogue(record.customFoods),
+  );
 }
 
 export function verdictFromSaved(record: SavedMealSession): Verdict {
@@ -317,6 +373,7 @@ export function sessionFromSaved(record: SavedMealSession): MealSession {
     restaurantName: record.restaurantName,
     pricePerDiner: record.pricePerDiner,
     dinerCount: record.dinerCount,
+    pricingProfileId: record.pricingProfile.id,
     items: record.items,
   };
 }

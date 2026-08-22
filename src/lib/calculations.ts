@@ -1,4 +1,4 @@
-import { findFood } from '@/data/foods';
+import { FOODS } from '@/data/foods';
 import {
   KG_TO_LB,
   MAX_DINERS,
@@ -8,6 +8,9 @@ import {
   getPlateSizeMeta,
   getQualityMeta,
 } from '@/lib/constants';
+import { DEFAULT_PRICING_PROFILE, resolveFoodPricing } from '@/lib/pricing';
+import { findFoodInCatalogue } from '@/lib/foodCatalogue';
+import type { PricingProfile } from '@/types/pricing';
 import type {
   DamageReport,
   FoodItem,
@@ -46,15 +49,33 @@ export function calculateAdmission(config: Pick<SessionConfig, 'pricePerDiner' |
   return clampPricePerDiner(config.pricePerDiner) * clampDinerCount(config.dinerCount);
 }
 
-export function adjustedRetailPricePerKg(food: FoodItem, quality: MealItem['quality']): number {
-  return food.retailPricePerKg * getQualityMeta(quality).retailMultiplier;
+export function adjustedRetailPricePerKg(
+  food: FoodItem,
+  quality: MealItem['quality'],
+  pricingProfile: PricingProfile = DEFAULT_PRICING_PROFILE,
+): number {
+  return (
+    resolveFoodPricing(food, pricingProfile).retailPricePerKg *
+    getQualityMeta(quality).retailMultiplier
+  );
 }
 
-export function adjustedRestaurantCostPerKg(food: FoodItem, quality: MealItem['quality']): number {
-  return food.restaurantCostPerKg * getQualityMeta(quality).restaurantMultiplier;
+export function adjustedRestaurantCostPerKg(
+  food: FoodItem,
+  quality: MealItem['quality'],
+  pricingProfile: PricingProfile = DEFAULT_PRICING_PROFILE,
+): number {
+  return (
+    resolveFoodPricing(food, pricingProfile).restaurantCostPerKg *
+    getQualityMeta(quality).restaurantMultiplier
+  );
 }
 
-export function calculateLineItem(item: MealItem, food: FoodItem): LineItemTotals {
+export function calculateLineItem(
+  item: MealItem,
+  food: FoodItem,
+  pricingProfile: PricingProfile = DEFAULT_PRICING_PROFILE,
+): LineItemTotals {
   const plates = Math.max(0, Math.floor(item.quantity));
   const weightG = getPlateSizeMeta(item.plateSize).grams * plates;
   const weightKg = weightG / 1000;
@@ -66,8 +87,8 @@ export function calculateLineItem(item: MealItem, food: FoodItem): LineItemTotal
     plates,
     weightG,
     weightKg,
-    retailValue: weightKg * adjustedRetailPricePerKg(food, item.quality),
-    restaurantCost: weightKg * adjustedRestaurantCostPerKg(food, item.quality),
+    retailValue: weightKg * adjustedRetailPricePerKg(food, item.quality, pricingProfile),
+    restaurantCost: weightKg * adjustedRestaurantCostPerKg(food, item.quality, pricingProfile),
     nutrition: {
       calories: per100g * food.caloriesPer100g,
       protein: per100g * food.proteinPer100g,
@@ -77,15 +98,19 @@ export function calculateLineItem(item: MealItem, food: FoodItem): LineItemTotal
   };
 }
 
-export function calculateSessionTotals(items: readonly MealItem[]): SessionTotals {
+export function calculateSessionTotals(
+  items: readonly MealItem[],
+  pricingProfile: PricingProfile = DEFAULT_PRICING_PROFILE,
+  foods = FOODS,
+): SessionTotals {
   const lines: LineItemTotals[] = [];
 
   for (const item of items) {
-    const food = findFood(item.foodId);
+    const food = findFoodInCatalogue(foods, item.foodId);
     // Items referencing foods that no longer exist are skipped rather than
     // poisoning the totals; this can only happen via stale persisted state.
     if (food) {
-      lines.push(calculateLineItem(item, food));
+      lines.push(calculateLineItem(item, food, pricingProfile));
     }
   }
 
@@ -165,8 +190,10 @@ export function perDinerTotals(report: DamageReport): PerDinerTotals {
 export function buildDamageReport(
   items: readonly MealItem[],
   config: Pick<SessionConfig, 'pricePerDiner' | 'dinerCount'>,
+  pricingProfile: PricingProfile = DEFAULT_PRICING_PROFILE,
+  foods = FOODS,
 ): DamageReport {
-  const totals = calculateSessionTotals(items);
+  const totals = calculateSessionTotals(items, pricingProfile, foods);
   const dinerCount = clampDinerCount(config.dinerCount);
   const totalAdmission = calculateAdmission(config);
 

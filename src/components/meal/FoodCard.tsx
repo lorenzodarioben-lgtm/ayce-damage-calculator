@@ -2,8 +2,10 @@
 
 import { Check } from 'lucide-react';
 import { FoodIllustration } from '@/components/meal/FoodIllustration';
+import { usePricingProfile } from '@/components/session/PricingContext';
 import { cn } from '@/lib/cn';
 import { formatPricePerKg } from '@/lib/formatting';
+import { resolveFoodPricing } from '@/lib/pricing';
 import type { FoodItem } from '@/types/meal';
 
 interface FoodCardProps {
@@ -13,6 +15,9 @@ interface FoodCardProps {
 }
 
 export function FoodCard({ food, selected, onSelect }: FoodCardProps) {
+  const pricingProfile = usePricingProfile();
+  const pricing = resolveFoodPricing(food, pricingProfile);
+
   return (
     <button
       type="button"
@@ -50,7 +55,7 @@ export function FoodCard({ food, selected, onSelect }: FoodCardProps) {
       </span>
 
       <span className="tabular mt-auto pt-1 text-[0.72rem] font-semibold tracking-wide text-ember-400">
-        ~{formatPricePerKg(food.retailPricePerKg)} retail
+        ~{formatPricePerKg(pricing.retailPricePerKg, pricingProfile.money)} retail
       </span>
     </button>
   );

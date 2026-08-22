@@ -5,6 +5,7 @@ import { DamageMeter } from '@/components/summary/DamageMeter';
 import { MealTab } from '@/components/summary/MealTab';
 import { Button } from '@/components/ui/Button';
 import { formatCount, formatKg, formatMoney, formatPlates } from '@/lib/formatting';
+import { usePricingProfile } from '@/components/session/PricingContext';
 import type { DamageReport } from '@/types/meal';
 
 interface LiveSummaryProps {
@@ -24,6 +25,7 @@ export function LiveSummary({
   onCalculate,
   onReset,
 }: LiveSummaryProps) {
+  const pricingProfile = usePricingProfile();
   const hasItems = report.lines.length > 0;
 
   return (
@@ -58,7 +60,9 @@ export function LiveSummary({
         </div>
         <div>
           <dt className="micro-label">Admission</dt>
-          <dd className="text-lg font-bold text-cream-50">{formatMoney(report.totalAdmission)}</dd>
+          <dd className="text-lg font-bold text-cream-50">
+            {formatMoney(report.totalAdmission, pricingProfile.money)}
+          </dd>
         </div>
       </dl>
 

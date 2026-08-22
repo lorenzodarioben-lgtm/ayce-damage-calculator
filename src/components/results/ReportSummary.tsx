@@ -1,4 +1,7 @@
+'use client';
+
 import { ResultMetric } from '@/components/results/ResultMetric';
+import { usePricingProfile } from '@/components/session/PricingContext';
 import { perDinerTotals } from '@/lib/calculations';
 import { cn } from '@/lib/cn';
 import {
@@ -62,6 +65,7 @@ export function ReportSummary({
   headingLevel = 2,
   subheading,
 }: ReportSummaryProps) {
+  const pricingProfile = usePricingProfile();
   const houseStatus = getHouseStatus(report.totalRestaurantCost, report.totalAdmission);
   const extracted = report.retailValueDifference >= 0;
 
@@ -105,20 +109,20 @@ export function ReportSummary({
       <div className="grid gap-3 sm:grid-cols-2">
         <ResultMetric
           label="Est. retail value"
-          value={formatMoney(report.totalRetailValue)}
+          value={formatMoney(report.totalRetailValue, pricingProfile.money)}
           detail="What a similar quantity might cost at retail."
           emphasis="major"
           tone="accent"
         />
         <ResultMetric
           label="Admission"
-          value={formatMoney(report.totalAdmission)}
+          value={formatMoney(report.totalAdmission, pricingProfile.money)}
           detail="What the table paid to walk in."
           emphasis="major"
         />
         <ResultMetric
           label={extracted ? 'Value extracted' : 'Value gap'}
-          value={formatSignedMoney(report.retailValueDifference)}
+          value={formatSignedMoney(report.retailValueDifference, pricingProfile.money)}
           detail="Estimated retail value minus admission."
           tone={extracted ? 'positive' : 'negative'}
         />
@@ -151,10 +155,13 @@ export function ReportSummary({
             cannot know who reached for what.
           </p>
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <ResultMetric label="Admission each" value={formatMoney(perDiner.admission)} />
+            <ResultMetric
+              label="Admission each"
+              value={formatMoney(perDiner.admission, pricingProfile.money)}
+            />
             <ResultMetric
               label="Retail value each"
-              value={formatMoney(perDiner.retailValue)}
+              value={formatMoney(perDiner.retailValue, pricingProfile.money)}
               tone="accent"
             />
             <ResultMetric label="Food each" value={formatWeight(perDiner.weightG)} />
@@ -187,12 +194,12 @@ export function ReportSummary({
         <div className="grid gap-3 sm:grid-cols-2">
           <ResultMetric
             label="Est. ingredient cost"
-            value={formatMoney(report.totalRestaurantCost)}
+            value={formatMoney(report.totalRestaurantCost, pricingProfile.money)}
             detail="What the restaurant may have spent on the raw ingredient."
           />
           <ResultMetric
             label="Est. ingredient margin"
-            value={formatMoney(report.estimatedIngredientMargin)}
+            value={formatMoney(report.estimatedIngredientMargin, pricingProfile.money)}
             detail="Before rent, wages, utilities, tax, waste, sides and overhead."
           />
         </div>

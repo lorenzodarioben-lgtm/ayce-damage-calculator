@@ -2,6 +2,8 @@ import { describe, expect, it, beforeEach, vi } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { CalculatorApp } from '@/components/CalculatorApp';
+import { PRICING_PROFILES_STORAGE_KEY } from '@/lib/pricingProfiles';
+import { CUSTOM_FOODS_STORAGE_KEY } from '@/lib/customFoods';
 import { STORAGE_KEY } from '@/lib/storage';
 
 // jsdom implements none of these, and all run on the stage transitions.
@@ -97,6 +99,77 @@ describe('CalculatorApp', () => {
 
     const setup = screen.getByRole('region', { name: /session setup/i });
     expect(within(setup).getByText('$119.80')).toBeInTheDocument();
+  });
+
+  it('recalculates a live tab when a different menu pricing profile is selected', async () => {
+    window.localStorage.setItem(
+      PRICING_PROFILES_STORAGE_KEY,
+      JSON.stringify({
+        version: 1,
+        profiles: [
+          {
+            id: 'custom-downtown-lunch',
+            name: 'Downtown lunch',
+            money: { currency: 'USD', locale: 'en-US' },
+            overrides: {
+              'beef-ribeye': { retailPricePerKg: 80, restaurantCostPerKg: 45 },
+            },
+            builtIn: false,
+          },
+        ],
+      }),
+    );
+    const user = userEvent.setup();
+    render(<CalculatorApp />);
+
+    await user.selectOptions(
+      screen.getByRole('combobox', { name: /^menu pricing$/i }),
+      'custom-downtown-lunch',
+    );
+    await addPlates(user, 'Ribeye');
+
+    const tab = screen.getByRole('region', { name: /your tab/i });
+    expect(within(tab).getAllByText('$12.40')).toHaveLength(2);
+    expect(window.localStorage.getItem(STORAGE_KEY)).toContain('custom-downtown-lunch');
+  });
+
+  it('offers locally authored foods in the same builder and tab as built-in cuts', async () => {
+    window.localStorage.setItem(
+      CUSTOM_FOODS_STORAGE_KEY,
+      JSON.stringify({
+        version: 1,
+        foods: [
+          {
+            id: 'custom-food-cheese-corn',
+            name: 'Cheese corn',
+            shortName: 'Cheese corn',
+            category: 'chicken',
+            description: 'A custom side.',
+            retailPricePerKg: 18,
+            restaurantCostPerKg: 7,
+            caloriesPer100g: 200,
+            proteinPer100g: 6,
+            fatPer100g: 10,
+            carbsPer100g: 20,
+            isCustom: true,
+          },
+        ],
+      }),
+    );
+    const user = userEvent.setup();
+    render(<CalculatorApp />);
+
+    await user.click(screen.getByRole('tab', { name: /chicken/i }));
+    const customCard = screen
+      .getAllByRole('button', { name: /cheese corn/i })
+      .find((button) => button.hasAttribute('aria-pressed'));
+    expect(customCard).toBeDefined();
+    await user.click(customCard!);
+    await user.click(screen.getByRole('button', { name: /add to my damage/i }));
+
+    const tab = screen.getByRole('region', { name: /your tab/i });
+    expect(within(tab).getByText('Cheese corn')).toBeInTheDocument();
+    expect(within(tab).getAllByText('$2.79')).toHaveLength(2);
   });
 
   it('clamps an absurd price rather than poisoning totals', async () => {

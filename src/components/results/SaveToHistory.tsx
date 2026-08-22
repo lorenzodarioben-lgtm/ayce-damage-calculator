@@ -3,6 +3,7 @@
 import { useId, useState } from 'react';
 import { Archive, Check } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { usePricingProfile } from '@/components/session/PricingContext';
 import { useSaveToHistory } from '@/hooks/useSaveToHistory';
 import { MAX_SESSION_NOTE_LENGTH } from '@/lib/constants';
 import type { Verdict } from '@/lib/verdicts';
@@ -21,7 +22,8 @@ const CONFIRMATION = {
 } as const;
 
 export function SaveToHistory({ session, report, verdict }: SaveToHistoryProps) {
-  const { state, save } = useSaveToHistory(session, report, verdict);
+  const pricingProfile = usePricingProfile();
+  const { state, save } = useSaveToHistory(session, report, verdict, pricingProfile);
   const noteId = useId();
   const [note, setNote] = useState('');
 

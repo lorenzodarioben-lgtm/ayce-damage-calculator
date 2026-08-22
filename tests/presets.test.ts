@@ -15,6 +15,7 @@ import {
   upsertPreset,
   type RestaurantPreset,
 } from '@/lib/presets';
+import { DEFAULT_PRICING_PROFILE_ID } from '@/lib/pricing';
 
 const AT = '2026-08-16T12:00:00.000Z';
 
@@ -49,6 +50,19 @@ describe('createPreset', () => {
     const created = preset('Friday KBBQ', 59.9, 2);
 
     expect(created).toMatchObject({ name: 'Friday KBBQ', pricePerDiner: 59.9, dinerCount: 2 });
+  });
+
+  it('keeps the selected pricing profile with a restaurant setup', () => {
+    const created = createPreset(
+      {
+        name: 'Seoul Garden',
+        pricePerDiner: 59.9,
+        dinerCount: 2,
+        pricingProfileId: 'custom-city',
+      },
+      AT,
+    );
+    expect(created?.pricingProfileId).toBe('custom-city');
   });
 
   it('refuses a preset with no name to identify it by', () => {
@@ -149,6 +163,22 @@ describe('parseStoredPresets', () => {
     const presets = [preset('Little Seoul'), preset('Wagyu House', 75, 3)];
 
     expect(parseStoredPresets(stored(presets))).toEqual(presets);
+  });
+
+  it('migrates a version-one preset to the Australian pricing context', () => {
+    const legacy = JSON.stringify({
+      version: 1,
+      presets: [
+        {
+          id: 'seoul-garden',
+          name: 'Seoul Garden',
+          pricePerDiner: 59.9,
+          dinerCount: 2,
+          createdAt: AT,
+        },
+      ],
+    });
+    expect(parseStoredPresets(legacy)[0]?.pricingProfileId).toBe(DEFAULT_PRICING_PROFILE_ID);
   });
 
   it.each([

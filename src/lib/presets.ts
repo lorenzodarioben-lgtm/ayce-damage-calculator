@@ -1,9 +1,11 @@
 import { clampDinerCount, clampPricePerDiner } from '@/lib/calculations';
 import { isIsoTimestamp } from '@/lib/datetime';
+import { DEFAULT_PRICING_PROFILE_ID, isPricingProfileId } from '@/lib/pricing';
 import { sanitiseRestaurantName } from '@/lib/storage';
+import type { PricingProfileId } from '@/types/pricing';
 
 export const PRESETS_STORAGE_KEY = 'ayce-damage-presets';
-export const PRESETS_VERSION = 1;
+export const PRESETS_VERSION = 2;
 
 /** Presets are a short personal list, not an unbounded JSON document. */
 export const MAX_STORED_PRESETS_LENGTH = 32 * 1024;
@@ -23,6 +25,7 @@ export interface RestaurantPreset {
   readonly name: string;
   readonly pricePerDiner: number;
   readonly dinerCount: number;
+  readonly pricingProfileId: PricingProfileId;
   readonly createdAt: string;
 }
 
@@ -30,6 +33,7 @@ export interface PresetDraft {
   readonly name: string;
   readonly pricePerDiner: number;
   readonly dinerCount: number;
+  readonly pricingProfileId?: PricingProfileId;
 }
 
 interface StoredEnvelope {
@@ -60,6 +64,7 @@ export function createPreset(draft: PresetDraft, createdAt: string): RestaurantP
     name,
     pricePerDiner: clampPricePerDiner(draft.pricePerDiner),
     dinerCount: clampDinerCount(draft.dinerCount),
+    pricingProfileId: draft.pricingProfileId ?? DEFAULT_PRICING_PROFILE_ID,
     createdAt,
   };
 }
@@ -92,7 +97,8 @@ export function presetMatchesSetup(preset: RestaurantPreset, setup: PresetDraft)
   return (
     presetId(setup.name) === preset.id &&
     Math.abs(clampPricePerDiner(setup.pricePerDiner) - preset.pricePerDiner) < 0.005 &&
-    clampDinerCount(setup.dinerCount) === preset.dinerCount
+    clampDinerCount(setup.dinerCount) === preset.dinerCount &&
+    (setup.pricingProfileId ?? DEFAULT_PRICING_PROFILE_ID) === preset.pricingProfileId
   );
 }
 
@@ -121,6 +127,9 @@ function parsePreset(value: unknown): RestaurantPreset | null {
     name,
     pricePerDiner: clampPricePerDiner(value.pricePerDiner),
     dinerCount: clampDinerCount(value.dinerCount),
+    pricingProfileId: isPricingProfileId(value.pricingProfileId)
+      ? value.pricingProfileId
+      : DEFAULT_PRICING_PROFILE_ID,
     createdAt: isIsoTimestamp(value.createdAt) ? value.createdAt : new Date(0).toISOString(),
   };
 }
@@ -137,7 +146,7 @@ export function parseStoredPresets(raw: string | null): readonly RestaurantPrese
     return [];
   }
 
-  if (!isRecord(parsed) || parsed.version !== PRESETS_VERSION) {
+  if (!isRecord(parsed) || (parsed.version !== 1 && parsed.version !== PRESETS_VERSION)) {
     return [];
   }
 
