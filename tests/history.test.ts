@@ -174,6 +174,13 @@ describe('parseSavedSession', () => {
     expect(parsed?.fingerprint).toBe(record.fingerprint);
   });
 
+  it('rebuilds a supplied fingerprint from the validated meal', () => {
+    const record = saved();
+    const parsed = parseSavedSession({ ...record, fingerprint: 'hand-edited' });
+
+    expect(parsed?.fingerprint).toBe(record.fingerprint);
+  });
+
   it('never lets a corrupt snapshot emit NaN', () => {
     const record = saved();
     const parsed = parseSavedSession({

@@ -286,15 +286,12 @@ export function parseSavedSession(value: unknown): SavedMealSession | null {
     // Records written before version 3 simply have nothing to say.
     note: sanitiseSessionNote(value.note),
     items,
-    fingerprint:
-      typeof value.fingerprint === 'string' && value.fingerprint.length > 0
-        ? value.fingerprint
-        : fingerprintSession({
-            restaurantName,
-            pricePerDiner: safePrice,
-            dinerCount: safeDiners,
-            items,
-          }),
+    fingerprint: fingerprintSession({
+      restaurantName,
+      pricePerDiner: safePrice,
+      dinerCount: safeDiners,
+      items,
+    }),
     snapshot,
   };
 }
