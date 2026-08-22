@@ -70,6 +70,23 @@ function parseMealItem(value: unknown): MealItem | null {
   };
 }
 
+/** A hand-edited storage entry can repeat a configuration; the tab cannot. */
+function mergeDuplicateItems(items: readonly MealItem[]): readonly MealItem[] {
+  const byId = new Map<string, MealItem>();
+
+  for (const item of items) {
+    const existing = byId.get(item.id);
+    byId.set(
+      item.id,
+      existing
+        ? { ...existing, quantity: Math.min(MAX_LINE_QUANTITY, existing.quantity + item.quantity) }
+        : item,
+    );
+  }
+
+  return [...byId.values()];
+}
+
 /** Returns null whenever stored data is absent, stale or untrustworthy. */
 export function parseStoredSession(raw: string | null): MealSession | null {
   if (!raw || raw.length > MAX_STORED_SESSION_LENGTH) {
@@ -90,9 +107,9 @@ export function parseStoredSession(raw: string | null): MealSession | null {
   const session = parsed.session;
   const rawItems = Array.isArray(session.items) ? session.items : [];
 
-  const items = rawItems
-    .map(parseMealItem)
-    .filter((item): item is MealItem => item !== null);
+  const items = mergeDuplicateItems(
+    rawItems.map(parseMealItem).filter((item): item is MealItem => item !== null),
+  );
 
   const pricePerDiner =
     typeof session.pricePerDiner === 'number' ? clampPricePerDiner(session.pricePerDiner) : null;
