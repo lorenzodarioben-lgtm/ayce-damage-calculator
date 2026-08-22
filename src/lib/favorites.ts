@@ -6,6 +6,9 @@ import type { PlateSize, QualityTier } from '@/types/meal';
 export const FAVORITES_STORAGE_KEY = 'ayce-damage-favorites';
 export const FAVORITES_VERSION = 1;
 
+/** Enough for every valid favourite, without parsing an edited multi-megabyte value. */
+export const MAX_STORED_FAVORITES_LENGTH = 32 * 1024;
+
 /** A cap, so a stuck control cannot fill storage with near-identical entries. */
 export const MAX_FAVORITES = 24;
 
@@ -106,7 +109,7 @@ function parseFavorite(value: unknown): MealFavorite | null {
 
 /** Returns an empty list whenever stored data is absent, stale or unusable. */
 export function parseStoredFavorites(raw: string | null): readonly MealFavorite[] {
-  if (!raw) {
+  if (!raw || raw.length > MAX_STORED_FAVORITES_LENGTH) {
     return [];
   }
 
