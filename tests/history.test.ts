@@ -148,6 +148,15 @@ describe('parseSavedSession', () => {
     expect(parsed?.items[0]?.quantity).toBe(99);
   });
 
+  it('rebuilds a stored line id from its configuration', () => {
+    const parsed = parseSavedSession({
+      ...saved(),
+      items: [{ ...item(), id: 'hand-edited-id' }],
+    });
+
+    expect(parsed?.items[0]?.id).toBe('beef-ribeye__standard__regular');
+  });
+
   it('rebuilds a missing fingerprint so old records still deduplicate', () => {
     const record = saved();
     const parsed = parseSavedSession({ ...record, fingerprint: undefined });
