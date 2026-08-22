@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
   MAX_PRESETS,
+  MAX_STORED_PRESETS_LENGTH,
   PRESETS_STORAGE_KEY,
   PRESETS_VERSION,
   createPreset,
@@ -157,6 +158,10 @@ describe('parseStoredPresets', () => {
     ['a bare array', '[]'],
   ])('returns an empty list for %s', (_label, raw) => {
     expect(parseStoredPresets(raw)).toEqual([]);
+  });
+
+  it('refuses an oversized storage entry before parsing it', () => {
+    expect(parseStoredPresets('x'.repeat(MAX_STORED_PRESETS_LENGTH + 1))).toEqual([]);
   });
 
   it('rejects a payload from a different schema version', () => {
