@@ -16,7 +16,7 @@ import {
 } from '@/lib/constants';
 import { sanitiseRestaurantName } from '@/lib/storage';
 import { isIsoTimestamp } from '@/lib/datetime';
-import { mealItemId } from '@/lib/mealItems';
+import { mealItemId, mergeMealItems } from '@/lib/mealItems';
 import { getVerdict, isVerdictId, type Verdict } from '@/lib/verdicts';
 import type { SavedMealSession, SavedSessionSnapshot } from '@/types/history';
 import type { DamageReport, MealItem, MealSession, Nutrition } from '@/types/meal';
@@ -244,9 +244,9 @@ export function parseSavedSession(value: unknown): SavedMealSession | null {
   }
 
   const rawItems = Array.isArray(value.items) ? value.items : [];
-  const items = rawItems
-    .map(parseItem)
-    .filter((item): item is MealItem => item !== null);
+  const items = mergeMealItems(
+    rawItems.map(parseItem).filter((item): item is MealItem => item !== null),
+  );
 
   // A record whose every line was rejected describes nothing.
   if (items.length === 0) {
