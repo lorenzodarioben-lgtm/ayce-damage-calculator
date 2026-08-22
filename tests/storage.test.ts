@@ -4,6 +4,7 @@ import {
   STORAGE_VERSION,
   clearSession,
   loadSession,
+  normaliseRestaurantNameInput,
   parseStoredSession,
   sanitiseRestaurantName,
   saveSession,
@@ -126,13 +127,19 @@ describe('parseStoredSession', () => {
 
 describe('sanitiseRestaurantName', () => {
   it('collapses whitespace and caps length', () => {
-    expect(sanitiseRestaurantName('  Seoul   Garden ')).toBe('Seoul Garden ');
+    expect(sanitiseRestaurantName('  Seoul   Garden ')).toBe('Seoul Garden');
     expect(sanitiseRestaurantName('a'.repeat(200))).toHaveLength(60);
   });
 
   it('returns an empty string for non-strings', () => {
     expect(sanitiseRestaurantName(undefined)).toBe('');
     expect(sanitiseRestaurantName({ name: 'x' })).toBe('');
+  });
+});
+
+describe('normaliseRestaurantNameInput', () => {
+  it('keeps a trailing space while the diner is typing the next word', () => {
+    expect(normaliseRestaurantNameInput('  Seoul   ')).toBe('Seoul ');
   });
 });
 

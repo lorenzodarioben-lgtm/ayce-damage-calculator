@@ -90,7 +90,7 @@ describe('createSavedSession', () => {
   it('trims and collapses the restaurant name', () => {
     const record = saved({ restaurantName: '  Seoul    Garden  ' });
 
-    expect(record.restaurantName).toBe('Seoul Garden ');
+    expect(record.restaurantName).toBe('Seoul Garden');
   });
 });
 

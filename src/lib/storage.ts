@@ -26,6 +26,15 @@ export function sanitiseRestaurantName(value: unknown): string {
     return '';
   }
   // Collapse whitespace so pasted names cannot break the report layout.
+  return value.replace(/\s+/g, ' ').trim().slice(0, MAX_RESTAURANT_NAME_LENGTH);
+}
+
+/**
+ * Normalises an in-progress field without swallowing the space a diner has
+ * just typed before the next word. Completed and persisted names use the
+ * fully trimmed form above.
+ */
+export function normaliseRestaurantNameInput(value: string): string {
   return value.replace(/\s+/g, ' ').trimStart().slice(0, MAX_RESTAURANT_NAME_LENGTH);
 }
 
