@@ -108,6 +108,7 @@ describe('parseSavedSession', () => {
     ['a record with no id', { ...saved(), id: '' }],
     ['a record from a future schema', { ...saved(), version: 99 }],
     ['a record with an unparseable timestamp', { ...saved(), createdAt: 'whenever' }],
+    ['a record with a non-canonical timestamp', { ...saved(), createdAt: '2026-08-16' }],
     ['a record with a non-finite price', { ...saved(), pricePerDiner: Number.POSITIVE_INFINITY }],
     ['a record with no snapshot', { ...saved(), snapshot: undefined }],
     ['a record with an unknown verdict', { ...saved(), snapshot: { verdictId: 'invented' } }],

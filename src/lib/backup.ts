@@ -1,4 +1,5 @@
 import { parseStoredFavorites, type MealFavorite } from '@/lib/favorites';
+import { isIsoTimestamp } from '@/lib/datetime';
 import { parseSavedSession } from '@/lib/history';
 import type { SavedMealSession } from '@/types/history';
 
@@ -132,10 +133,9 @@ export function parseBackup(raw: string): BackupParseResult {
     return { ok: false, error: 'nothing-usable' };
   }
 
-  const exportedAt =
-    typeof parsed.exportedAt === 'string' && !Number.isNaN(Date.parse(parsed.exportedAt))
-      ? parsed.exportedAt
-      : new Date(0).toISOString();
+  const exportedAt = isIsoTimestamp(parsed.exportedAt)
+    ? parsed.exportedAt
+    : new Date(0).toISOString();
 
   return {
     ok: true,
