@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   STORAGE_KEY,
   STORAGE_VERSION,
+  MAX_STORED_SESSION_LENGTH,
   clearSession,
   loadSession,
   normaliseRestaurantNameInput,
@@ -38,6 +39,10 @@ describe('parseStoredSession', () => {
     expect(parseStoredSession('{ not json')).toBeNull();
     expect(parseStoredSession('"a string"')).toBeNull();
     expect(parseStoredSession('[1,2,3]')).toBeNull();
+  });
+
+  it('refuses an oversized storage entry before parsing it', () => {
+    expect(parseStoredSession('x'.repeat(MAX_STORED_SESSION_LENGTH + 1))).toBeNull();
   });
 
   it('rejects an incompatible version', () => {

@@ -12,6 +12,9 @@ import type { MealItem, MealSession } from '@/types/meal';
 export const STORAGE_KEY = 'ayce-damage-calculator';
 export const STORAGE_VERSION = 1;
 
+/** A normal tab is tiny; refuse an edited storage entry before parsing it. */
+export const MAX_STORED_SESSION_LENGTH = 64 * 1024;
+
 interface StoredEnvelope {
   version: number;
   session: MealSession;
@@ -68,7 +71,7 @@ function parseMealItem(value: unknown, index: number): MealItem | null {
 
 /** Returns null whenever stored data is absent, stale or untrustworthy. */
 export function parseStoredSession(raw: string | null): MealSession | null {
-  if (!raw) {
+  if (!raw || raw.length > MAX_STORED_SESSION_LENGTH) {
     return null;
   }
 
