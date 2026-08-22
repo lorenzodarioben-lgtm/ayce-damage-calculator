@@ -1,23 +1,8 @@
 import type { Metadata, Viewport } from 'next';
-import { Anton, Archivo } from 'next/font/google';
 import { ServiceWorkerManager } from '@/components/pwa/ServiceWorkerManager';
 import { THEME_COLOUR } from '@/lib/constants';
 import { siteUrl } from '@/lib/site';
 import './globals.css';
-
-const archivo = Archivo({
-  subsets: ['latin'],
-  variable: '--font-archivo',
-  display: 'swap',
-  weight: ['400', '500', '600', '700', '800'],
-});
-
-const anton = Anton({
-  subsets: ['latin'],
-  variable: '--font-anton',
-  display: 'swap',
-  weight: '400',
-});
 
 export const metadata: Metadata = {
   // Absolute base for generated social image URLs.
@@ -46,7 +31,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en-AU" className={`${archivo.variable} ${anton.variable}`}>
+    <html lang="en-AU">
       <body>
         <ServiceWorkerManager />
         {children}

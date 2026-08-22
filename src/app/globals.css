@@ -33,12 +33,13 @@
   --color-line-soft: #221d17;
   --color-line-ember: #5c452a;
 
-  /* The --font-* variables are supplied by next/font; the stacks after them
-     keep the layout intact if font loading fails. */
+  /* System stacks keep the app available without a build-time font download,
+     including on an offline development machine or a restricted CI runner. */
   --font-display:
-    var(--font-anton), 'Haettenschweiler', 'Arial Narrow', ui-sans-serif, system-ui, sans-serif;
+    Impact, Haettenschweiler, 'Arial Narrow Bold', 'Arial Black', ui-sans-serif, system-ui,
+    sans-serif;
   --font-sans:
-    var(--font-archivo), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Arial,
+    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial,
     sans-serif;
 
   --radius-card: 0.875rem;
