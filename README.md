@@ -134,6 +134,10 @@ keys, and nothing you record ever leaves your device.
 
 - Shareable report links (`/share/<token>`) that carry the whole meal inside the URL, with no
   database behind them, including the active pricing profile and custom foods used in the meal
+- Shareable menu links (`/menu/<token>`) that carry your price assumptions, your custom foods and,
+  optionally, a restaurant setup — previewed read-only, imported only on request, and never
+  overwriting anything the recipient already has
+- A QR code for a menu link, alongside a copyable link that always works
 - Dynamic Open Graph images generated per report, so a posted link previews the actual verdict
 
 **Everything else**
@@ -142,7 +146,7 @@ keys, and nothing you record ever leaves your device.
 - Responsive from 320 px phones to desktop, with original SVG food illustrations
 - Skip link, keyboard-operable throughout, labelled controls, live-region confirmations,
   reduced-motion support, and AA contrast across the palette
-- 935 automated tests
+- 969 automated tests
 
 ## Tech stack
 
@@ -153,6 +157,7 @@ keys, and nothing you record ever leaves your device.
 | Language   | TypeScript 5.9, strict                   |
 | Styling    | Tailwind CSS 4 with a custom theme       |
 | Icons      | lucide-react                             |
+| QR codes   | qrcode-generator                         |
 | Storage    | localStorage + IndexedDB (via `idb`)     |
 | Unit tests | Vitest 4 + React Testing Library         |
 | E2E tests  | Playwright, desktop and mobile viewports |
@@ -160,7 +165,11 @@ keys, and nothing you record ever leaves your device.
 | Hosting    | Vercel                                   |
 
 No component library, no state-management library, no charting library, no backend, and no external
-data services.
+data services. The one dependency beyond the framework and its icons is `qrcode-generator`: a
+standards-correct QR encoder needs Reed-Solomon correction, eight mask patterns and forty version
+tables, there is no browser-native equivalent, and getting any of it subtly wrong produces a code
+that scans as something else. It is a single dependency-free MIT module; the SVG rendering is still
+the app's own.
 
 ## Architecture
 
@@ -228,7 +237,9 @@ it can never produce a meal the calculator itself could not have produced.
 **Stateless sharing.** A shared report has no server-side record. The token is a compact, versioned,
 URL-safe encoding of the meal itself and the menu context needed to reproduce it. Older links keep
 their original decoder, while current links carry the active pricing profile and just the custom
-foods used on that tab.
+foods used on that tab. Shared menus use the same architecture and the same URL-safe codec: a
+versioned, bounded, validated token, previewed read-only, and imported only on an explicit action
+that never replaces anything local — a colliding name comes in as a separate entry instead.
 
 **Conservative caching.** The service worker is network-first for documents and cache-first only for
 content-hashed build assets, so a new deployment can never be masked by a stale shell. Its policy is
@@ -307,6 +318,9 @@ Everything is local by default and stays that way.
 - Analytics are derived on the device from your own records; no usage is tracked or transmitted
 - There is no account system, no backend and no third-party service of any kind
 - Diner names stay local. Shared links anonymise roster names by default, while an exported backup may include names because it is a deliberate local export.
+- Shared menu links carry only the price assumptions, custom foods and (optionally) a restaurant
+  setup. No history, saved order, diner name or note travels with one, and opening one changes
+  nothing until the recipient imports it.
 - Shared report links carry the meal snapshot **inside the URL itself** — the plates, entry price,
   pricing context and any custom foods used. Nothing is uploaded, and nothing else travels with the
   link. Shared pages are marked `noindex`, and opening one never touches the recipient's own session.
@@ -323,7 +337,7 @@ dataset's own integrity, cut search and ordering, verdict boundaries tested on b
 threshold, number and currency formatting, pricing profiles, custom foods, the session reducer
 including undo, storage recovery from corrupt or stale data, the IndexedDB repository against
 `fake-indexeddb`, saved-session migration, meal event validation, ordering and bounds, the pacing
-forecast on both sides of every boundary, replay reconstruction and its named moments, the planner's determinism and bounds, uncertainty scenarios and sensitivity ordering, restaurant profiles and their preset migration, session comparison, the achievement engine, favourites,
+forecast on both sides of every boundary, replay reconstruction and its named moments, the planner's determinism and bounds, uncertainty scenarios and sensitivity ordering, restaurant profiles and their preset migration, menu-token boundaries and import conflict planning, session comparison, the achievement engine, favourites,
 restaurant presets, share-token encoding and decoding, backup import and export, CSV escaping, local
 analytics, browser-stage history, the sitemap and crawling rules, and the service worker's caching
 policy.
@@ -384,12 +398,12 @@ src/
 ├── lib/          calculations, session reducer, meal events, replay, pacing, verdicts,
 │                 achievements, planner, uncertainty, restaurants, comparison, analytics,
 │                 history and its repository, favourites, presets, pricing profiles, custom foods,
-│                 share tokens,
+│                 report and menu share tokens, QR encoding,
 │                 social cards, backup, CSV, formatting, storage, card rendering
 └── types/        domain types
 
-e2e/              21 Playwright specs plus shared journey helpers
-tests/            46 Vitest suites
+e2e/              22 Playwright specs plus shared journey helpers
+tests/            48 Vitest suites
 public/           service worker and PWA icons
 .github/          CI workflow, Dependabot, issue and pull request templates
 ```

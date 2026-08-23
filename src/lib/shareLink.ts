@@ -12,6 +12,7 @@ import { findFoodInCatalogue, foodCatalogue } from '@/lib/foodCatalogue';
 import { DEFAULT_PRICING_PROFILE } from '@/lib/pricing';
 import { parseCustomPricingProfile } from '@/lib/pricingProfiles';
 import { MAX_CUSTOM_FOODS, parseCustomFood } from '@/lib/customFoods';
+import { decodeUrlText, encodeUrlText } from '@/lib/urlText';
 import type { CustomFood } from '@/types/customFoods';
 import type { PricingProfile } from '@/types/pricing';
 import type { Diner, FoodItem, MealItem, MealSession, PlateSize, QualityTier } from '@/types/meal';
@@ -95,36 +96,6 @@ function fromBase36(value: string): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-/** URL-safe base64 without padding, for the one free-text field. */
-function encodeText(value: string): string {
-  if (value.length === 0) {
-    return '';
-  }
-  const bytes = new TextEncoder().encode(value);
-  let binary = '';
-  for (const byte of bytes) {
-    binary += String.fromCharCode(byte);
-  }
-  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-}
-
-function decodeText(value: string): string | null {
-  if (value.length === 0) {
-    return '';
-  }
-  if (!/^[A-Za-z0-9\-_]+$/.test(value)) {
-    return null;
-  }
-  try {
-    const padded = value.replace(/-/g, '+').replace(/_/g, '/');
-    const binary = atob(padded.padEnd(Math.ceil(padded.length / 4) * 4, '='));
-    const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
-    return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
-  } catch {
-    return null;
-  }
-}
-
 /**
  * Version 1 used a compact dot-separated tuple. Version 2 keeps the address
  * URL-safe while carrying the menu context required to reproduce a custom meal.
@@ -167,7 +138,7 @@ export function encodeSharePayload(
       quantity: Math.min(MAX_LINE_QUANTITY, Math.max(MIN_QUANTITY, Math.floor(item.quantity))),
     })),
   };
-  const token = `${SHARE_TOKEN_VERSION}.${encodeText(JSON.stringify(payload))}`;
+  const token = `${SHARE_TOKEN_VERSION}.${encodeUrlText(JSON.stringify(payload))}`;
   return token.length <= MAX_SHARE_TOKEN_LENGTH ? token : null;
 }
 
@@ -259,7 +230,7 @@ function decodeLegacySharePayload(token: string): SharePayload | null {
     return null;
   }
 
-  const restaurantName = decodeText(nameRaw);
+  const restaurantName = decodeUrlText(nameRaw);
   if (restaurantName === null) {
     return null;
   }
@@ -343,7 +314,7 @@ function decodeConfigurableSharePayload(token: string): SharePayload | null {
   if (segments.length !== 2 || segments[0] !== String(SHARE_TOKEN_VERSION)) {
     return null;
   }
-  const decoded = decodeText(segments[1] ?? '');
+  const decoded = decodeUrlText(segments[1] ?? '');
   if (decoded === null) {
     return null;
   }
