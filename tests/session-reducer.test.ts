@@ -287,3 +287,91 @@ describe('sessionReducer', () => {
     expect(state).toEqual(INITIAL_SESSION);
   });
 });
+
+describe('the link between a meal and a saved restaurant', () => {
+  it('links the meal when a saved place is applied', () => {
+    const state = sessionReducer(INITIAL_SESSION, {
+      type: 'apply-setup',
+      setup: {
+        restaurantName: 'Friday KBBQ',
+        pricePerDiner: 42,
+        dinerCount: 2,
+        restaurantId: 'friday-kbbq',
+      },
+    });
+
+    expect(state.restaurantId).toBe('friday-kbbq');
+    expect(state.restaurantName).toBe('Friday KBBQ');
+  });
+
+  it('clears the link when a setup without one is applied', () => {
+    const linked = sessionReducer(INITIAL_SESSION, {
+      type: 'apply-setup',
+      setup: {
+        restaurantName: 'Friday KBBQ',
+        pricePerDiner: 42,
+        dinerCount: 2,
+        restaurantId: 'friday-kbbq',
+      },
+    });
+    const unlinked = sessionReducer(linked, {
+      type: 'apply-setup',
+      setup: { restaurantName: 'Somewhere Else', pricePerDiner: 30, dinerCount: 1 },
+    });
+
+    expect(unlinked).not.toHaveProperty('restaurantId');
+  });
+
+  it('breaks the link the moment the name is edited by hand', () => {
+    const linked = sessionReducer(INITIAL_SESSION, {
+      type: 'apply-setup',
+      setup: {
+        restaurantName: 'Friday KBBQ',
+        pricePerDiner: 42,
+        dinerCount: 2,
+        restaurantId: 'friday-kbbq',
+      },
+    });
+    const renamed = sessionReducer(linked, {
+      type: 'set-restaurant-name',
+      value: 'Somewhere Else',
+    });
+
+    expect(renamed).not.toHaveProperty('restaurantId');
+    expect(renamed.restaurantName).toBe('Somewhere Else');
+  });
+
+  it('leaves the link alone when only the price or table changes', () => {
+    const linked = sessionReducer(INITIAL_SESSION, {
+      type: 'apply-setup',
+      setup: {
+        restaurantName: 'Friday KBBQ',
+        pricePerDiner: 42,
+        dinerCount: 2,
+        restaurantId: 'friday-kbbq',
+      },
+    });
+
+    expect(sessionReducer(linked, { type: 'set-price-per-diner', value: 80 }).restaurantId).toBe(
+      'friday-kbbq',
+    );
+    expect(sessionReducer(linked, { type: 'adjust-diner-count', delta: 1 }).restaurantId).toBe(
+      'friday-kbbq',
+    );
+  });
+
+  it('never costs the tab its plates when a place is applied', () => {
+    const withMeal = sessionReducer(INITIAL_SESSION, addRibeye);
+    const applied = sessionReducer(withMeal, {
+      type: 'apply-setup',
+      setup: {
+        restaurantName: 'Friday KBBQ',
+        pricePerDiner: 42,
+        dinerCount: 2,
+        restaurantId: 'friday-kbbq',
+      },
+    });
+
+    expect(applied.items).toEqual(withMeal.items);
+  });
+});

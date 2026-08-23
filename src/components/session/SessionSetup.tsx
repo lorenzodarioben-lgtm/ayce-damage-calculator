@@ -267,6 +267,9 @@ export function SessionSetup({
             pricePerDiner: preset.pricePerDiner,
             dinerCount: preset.dinerCount,
             pricingProfileId: preset.pricingProfileId,
+            // Applying a saved place links the meal to it, so filing the report
+            // records the visit against that restaurant.
+            restaurantId: preset.id,
           })
         }
         onStatus={onStatus}

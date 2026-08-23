@@ -36,8 +36,21 @@ keys, and nothing you record ever leaves your device.
 
 - Optional restaurant name, printed on the final report
 - Configurable AYCE price per diner and diner count, validated and clamped
-- Restaurant presets you write yourself — save a setup, apply it on the next visit
+- Restaurant profiles you write yourself — save a setup, apply it on the next visit, and have the
+  meal linked to that place
 - Optional Table Mode: record a local diner roster and attribute plates without changing the shared table total
+
+**Restaurant hub** (`/restaurants`)
+
+- A local list of the places you have saved, with a detail page per restaurant: visits, first and
+  latest, average admission, average and best recovery, average plates and food weight, most
+  ordered foods, category mix, a recovery trend and the recent visits themselves
+- Start a meal from a saved place, priced and linked, so filing the report records the visit there
+- A filed record belongs to a restaurant because the meal was started from it, or because you
+  explicitly linked it — never because two names happen to match
+- Deleting a place removes the saved setup only; filed visits keep the name, prices and menu
+  context they were recorded with
+- Still no bundled restaurant directory, no address, no rating, and no network call of any kind
 
 **Personal menus**
 
@@ -113,7 +126,8 @@ keys, and nothing you record ever leaves your device.
 - Local analytics (`/stats`) — totals, averages, bests, category and grade mix, and a recovery
   trend chart drawn in plain SVG
 - Backup and restore (`/history/data`) — versioned JSON export of history, saved orders, personal
-  menus and restaurant presets; validated import, merge or replace
+  menus and saved restaurants; validated import, merge or replace, migrating an older backup's
+  presets into restaurant profiles
 - Spreadsheet export — history as CSV, one row per plate, for taking the numbers elsewhere
 
 **Sharing**
@@ -128,7 +142,7 @@ keys, and nothing you record ever leaves your device.
 - Responsive from 320 px phones to desktop, with original SVG food illustrations
 - Skip link, keyboard-operable throughout, labelled controls, live-region confirmations,
   reduced-motion support, and AA contrast across the palette
-- 900 automated tests
+- 935 automated tests
 
 ## Tech stack
 
@@ -288,7 +302,7 @@ for percentage-valued metrics entirely, so the two can never be conflated in the
 
 Everything is local by default and stays that way.
 
-- Your in-progress meal, filed history, saved orders, restaurant presets, pricing profiles and
+- Your in-progress meal, filed history, saved orders, saved restaurants, pricing profiles and
   custom foods live in this browser
 - Analytics are derived on the device from your own records; no usage is tracked or transmitted
 - There is no account system, no backend and no third-party service of any kind
@@ -309,7 +323,7 @@ dataset's own integrity, cut search and ordering, verdict boundaries tested on b
 threshold, number and currency formatting, pricing profiles, custom foods, the session reducer
 including undo, storage recovery from corrupt or stale data, the IndexedDB repository against
 `fake-indexeddb`, saved-session migration, meal event validation, ordering and bounds, the pacing
-forecast on both sides of every boundary, replay reconstruction and its named moments, the planner's determinism and bounds, uncertainty scenarios and sensitivity ordering, session comparison, the achievement engine, favourites,
+forecast on both sides of every boundary, replay reconstruction and its named moments, the planner's determinism and bounds, uncertainty scenarios and sensitivity ordering, restaurant profiles and their preset migration, session comparison, the achievement engine, favourites,
 restaurant presets, share-token encoding and decoding, backup import and export, CSV escaping, local
 analytics, browser-stage history, the sitemap and crawling rules, and the service worker's caching
 policy.
@@ -359,23 +373,23 @@ npm run verify       # format check, lint, typecheck, tests and build in sequenc
 
 ```text
 src/
-├── app/          routes: calculator, live, plan, history, compare, backup, stats,
+├── app/          routes: calculator, live, plan, restaurants, history, compare, backup, stats,
 │                 share/[token] with its generated OG image, offline, manifest,
 │                 sitemap, robots
-├── components/   meal builder, live mode, planner, session setup, summary, results,
+├── components/   meal builder, live mode, planner, restaurants, session setup, summary, results,
 │                 history, stats, favourites, custom menus, navigation, methodology, PWA, UI
 ├── data/         the 18-item food dataset, with search and ordering
 ├── hooks/        session reducer, meal clock, stage history, meal history, favourites,
 │                 presets, pricing profiles, custom foods, status messaging, undoable removal
 ├── lib/          calculations, session reducer, meal events, replay, pacing, verdicts,
-│                 achievements, planner, uncertainty, comparison, analytics,
+│                 achievements, planner, uncertainty, restaurants, comparison, analytics,
 │                 history and its repository, favourites, presets, pricing profiles, custom foods,
 │                 share tokens,
 │                 social cards, backup, CSV, formatting, storage, card rendering
 └── types/        domain types
 
-e2e/              20 Playwright specs plus shared journey helpers
-tests/            45 Vitest suites
+e2e/              21 Playwright specs plus shared journey helpers
+tests/            46 Vitest suites
 public/           service worker and PWA icons
 .github/          CI workflow, Dependabot, issue and pull request templates
 ```

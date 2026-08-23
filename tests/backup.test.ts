@@ -13,7 +13,7 @@ import { buildDamageReport } from '@/lib/calculations';
 import { createCustomFood } from '@/lib/customFoods';
 import { createFavorite, type MealFavorite } from '@/lib/favorites';
 import { createSavedSession } from '@/lib/history';
-import { createPreset } from '@/lib/presets';
+import { createRestaurantProfile } from '@/lib/restaurants';
 import type { BackupConfiguration } from '@/lib/backup';
 import { getVerdict } from '@/lib/verdicts';
 import type { SavedMealSession } from '@/types/history';
@@ -84,8 +84,8 @@ if (!CHEESE_CORN) {
 const CONFIGURATION: BackupConfiguration = {
   pricingProfiles: [MARKET_PROFILE],
   customFoods: [CHEESE_CORN],
-  presets: [
-    createPreset(
+  restaurants: [
+    createRestaurantProfile(
       {
         name: 'Friday KBBQ',
         pricePerDiner: 42,
@@ -103,7 +103,7 @@ function exported(
   configuration: BackupConfiguration = {
     pricingProfiles: [],
     customFoods: [],
-    presets: [],
+    restaurants: [],
   },
 ): string {
   return serialiseBackup(buildBackup(history, favorites, AT, configuration));
@@ -142,7 +142,7 @@ describe('Round trip', () => {
       skippedFavorites: 0,
       skippedPricingProfiles: 0,
       skippedCustomFoods: 0,
-      skippedPresets: 0,
+      skippedRestaurants: 0,
     });
   });
 
@@ -198,7 +198,7 @@ describe('Round trip', () => {
     expect(parsed.contents.configuration).toEqual({
       pricingProfiles: [],
       customFoods: [],
-      presets: [],
+      restaurants: [],
     });
   });
 });
@@ -292,7 +292,7 @@ describe('Discarding unusable records', () => {
       skippedFavorites: 1,
       skippedPricingProfiles: 0,
       skippedCustomFoods: 0,
-      skippedPresets: 0,
+      skippedRestaurants: 0,
     });
   });
 
@@ -305,7 +305,7 @@ describe('Discarding unusable records', () => {
       configuration: {
         pricingProfiles: [MARKET_PROFILE, { ...MARKET_PROFILE, id: 'bad id' }],
         customFoods: [CHEESE_CORN, { ...CHEESE_CORN, retailPricePerKg: -1 }],
-        presets: [CONFIGURATION.presets[0], { ...CONFIGURATION.presets[0], name: '' }],
+        restaurants: [CONFIGURATION.restaurants[0], { ...CONFIGURATION.restaurants[0], name: '' }],
       },
     });
     const parsed = parseBackup(raw);
@@ -316,7 +316,7 @@ describe('Discarding unusable records', () => {
     expect(parsed.summary).toMatchObject({
       skippedPricingProfiles: 1,
       skippedCustomFoods: 1,
-      skippedPresets: 1,
+      skippedRestaurants: 1,
     });
   });
 
@@ -407,5 +407,98 @@ describe('mergeById', () => {
 
     expect(outcome.result).toHaveLength(2);
     expect(outcome.added).toBe(1);
+  });
+});
+
+describe('restaurant profiles in a backup', () => {
+  it('carries saved restaurants out and back', () => {
+    const parsed = parseBackup(exported([record('a')], [RIBEYE_FAVORITE], CONFIGURATION));
+
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+    expect(parsed.contents.configuration.restaurants).toEqual(CONFIGURATION.restaurants);
+  });
+
+  it('migrates the presets in a backup written before restaurants existed', () => {
+    const parsed = parseBackup(
+      JSON.stringify({
+        format: BACKUP_FORMAT,
+        version: 2,
+        exportedAt: AT,
+        history: [],
+        favorites: [],
+        configuration: {
+          pricingProfiles: [],
+          customFoods: [],
+          presets: [
+            {
+              id: 'friday-kbbq',
+              name: 'Friday KBBQ',
+              pricePerDiner: 42,
+              dinerCount: 2,
+              pricingProfileId: 'australian-kbbq',
+              createdAt: AT,
+            },
+          ],
+        },
+      }),
+    );
+
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+    expect(parsed.contents.configuration.restaurants).toEqual([
+      {
+        id: 'friday-kbbq',
+        name: 'Friday KBBQ',
+        pricePerDiner: 42,
+        dinerCount: 2,
+        pricingProfileId: 'australian-kbbq',
+        note: '',
+        createdAt: AT,
+        updatedAt: AT,
+      },
+    ]);
+  });
+
+  it('prefers the newer shape when a file somehow carries both', () => {
+    const parsed = parseBackup(
+      JSON.stringify({
+        format: BACKUP_FORMAT,
+        version: BACKUP_VERSION,
+        exportedAt: AT,
+        history: [],
+        favorites: [],
+        configuration: {
+          restaurants: [{ ...CONFIGURATION.restaurants[0], note: 'Ask for the corner booth.' }],
+          presets: [
+            {
+              id: 'friday-kbbq',
+              name: 'Friday KBBQ',
+              pricePerDiner: 99,
+              dinerCount: 1,
+              pricingProfileId: 'australian-kbbq',
+              createdAt: AT,
+            },
+          ],
+        },
+      }),
+    );
+
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+    expect(parsed.contents.configuration.restaurants).toHaveLength(1);
+    expect(parsed.contents.configuration.restaurants[0]).toMatchObject({
+      pricePerDiner: 42,
+      note: 'Ask for the corner booth.',
+    });
+  });
+
+  it('keeps the restaurant a filed visit belongs to', () => {
+    const linked = { ...record('linked'), restaurantId: 'friday-kbbq' };
+    const parsed = parseBackup(exported([linked], [], CONFIGURATION));
+
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+    expect(parsed.contents.history[0]?.restaurantId).toBe('friday-kbbq');
   });
 });

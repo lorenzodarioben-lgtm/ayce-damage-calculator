@@ -19,6 +19,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
   between 15 and 300, with start, pause, resume and finish. Elapsed time is derived from recorded
   instants rather than a counter, so it survives reloads, route changes, a backgrounded tab and
   offline use.
+- **Restaurant hub** (`/restaurants`) — a local list of saved places with a detail page for each:
+  visits, first and latest, average admission, average and best recovery, average plates and
+  weight, most ordered foods, category mix, a recovery trend and the recent visits. A meal can be
+  started from a place, and filing it records the visit there.
+- **Explicit visit linking** — a filed record belongs to a restaurant because the meal was started
+  from it, or because the diner linked it. Two places that share a name are not assumed to be the
+  same place, and older records can be linked only on request.
 - **Uncertainty and sensitivity analysis** — every report and filed record now carries a
   conservative, base and upper scenario built by moving the serving-weight, retail-price and
   ingredient-cost assumptions to the ends of a stated band, plus a ranking of which assumption
@@ -49,7 +56,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
   sessions and records load unchanged and are treated as untimed rather than being given
   fabricated timestamps.
 - Filed records now preserve Table Mode plate attribution, reconciled against their own roster.
-- Backups are format version 3, so a record's ledger survives an export and restore.
+- Backups are format version 4 and carry saved restaurants. A backup written before restaurant
+  profiles existed has its presets migrated forward on import rather than dropped.
+- Restaurant presets became restaurant profiles, migrated on first read. The old preset list is
+  left in storage untouched, so an older build still finds it.
 
 ### Privacy
 

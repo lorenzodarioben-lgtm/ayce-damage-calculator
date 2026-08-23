@@ -13,6 +13,7 @@ const ROUTES: ReadonlyArray<{ path: string; priority: number }> = [
   { path: '/', priority: 1 },
   { path: '/live', priority: 0.8 },
   { path: '/plan', priority: 0.5 },
+  { path: '/restaurants', priority: 0.5 },
   { path: '/history', priority: 0.6 },
   { path: '/history/compare', priority: 0.4 },
   { path: '/history/data', priority: 0.4 },
