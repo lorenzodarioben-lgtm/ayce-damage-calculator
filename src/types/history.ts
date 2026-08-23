@@ -1,6 +1,7 @@
 import type { AchievementId } from '@/lib/achievements';
 import type { VerdictId } from '@/lib/verdicts';
 import type { Diner, MealItem, Nutrition } from '@/types/meal';
+import type { MealEvent, MealLifecycle } from '@/types/mealEvents';
 import type { PricingProfile } from '@/types/pricing';
 import type { CustomFood } from '@/types/customFoods';
 
@@ -50,6 +51,15 @@ export interface SavedMealSession {
 
   readonly items: readonly MealItem[];
   readonly diners?: readonly Diner[];
+
+  /**
+   * How the meal developed, when it was recorded with a ledger. Absent on any
+   * record filed before schema version 7 — such a record is explicitly a
+   * timeless one, not a meal whose timing was lost.
+   */
+  readonly events?: readonly MealEvent[];
+  /** The lifecycle the meal was in when it was filed. Absent alongside `events`. */
+  readonly lifecycle?: MealLifecycle;
 
   /**
    * Identifies the same meal recorded twice. Saving a report repeatedly must

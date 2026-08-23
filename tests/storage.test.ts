@@ -293,3 +293,94 @@ describe('browser storage round trip', () => {
     expect(loadSession()).toBeNull();
   });
 });
+
+describe('the persisted meal ledger', () => {
+  const timedSession: MealSession = {
+    ...validSession,
+    events: [
+      {
+        id: 'event-0',
+        at: '2026-08-16T12:00:00.000Z',
+        seq: 0,
+        source: 'builder',
+        type: 'meal-started',
+      },
+      {
+        id: 'event-1',
+        at: '2026-08-16T12:00:00.000Z',
+        seq: 1,
+        source: 'builder',
+        type: 'plates-added',
+        line: { foodId: 'beef-ribeye', quality: 'premium', plateSize: 'regular' },
+        quantity: 3,
+      },
+    ],
+    lifecycle: { status: 'active', startedAt: '2026-08-16T12:00:00.000Z', pausedMs: 0 },
+  };
+
+  it('round trips a timed session through storage', () => {
+    saveSession(timedSession);
+    expect(loadSession()).toEqual(timedSession);
+  });
+
+  it('keeps the readable events and drops the rest', () => {
+    const restored = parseStoredSession(
+      envelope({
+        ...timedSession,
+        events: [
+          timedSession.events?.[0],
+          { id: 'bad', at: 'whenever', seq: 2, source: 'builder', type: 'plates-added' },
+          'not an event',
+        ],
+      }),
+    );
+
+    expect(restored?.events).toEqual([timedSession.events?.[0]]);
+  });
+
+  it('drops an event referring to a food this catalogue does not have', () => {
+    const restored = parseStoredSession(
+      envelope({
+        ...timedSession,
+        events: [
+          {
+            id: 'event-9',
+            at: '2026-08-16T12:00:00.000Z',
+            seq: 9,
+            source: 'live',
+            type: 'plates-added',
+            line: { foodId: 'custom-food-retired', quality: 'standard', plateSize: 'regular' },
+            quantity: 1,
+          },
+        ],
+      }),
+    );
+
+    expect(restored?.events).toBeUndefined();
+    expect(restored?.items).toHaveLength(1);
+  });
+
+  it('discards lifecycle metadata that contradicts itself', () => {
+    const restored = parseStoredSession(
+      envelope({ ...timedSession, lifecycle: { status: 'paused', pausedMs: 0 } }),
+    );
+
+    expect(restored?.lifecycle).toBeUndefined();
+  });
+
+  it('reads a version 3 session as an untimed meal rather than inventing a timeline', () => {
+    const restored = parseStoredSession(envelope(timedSession, 3));
+
+    expect(restored?.events).toBeUndefined();
+    expect(restored?.lifecycle).toBeUndefined();
+    expect(restored?.items).toEqual(validSession.items);
+  });
+
+  it('leaves an untimed session without a ledger at all', () => {
+    const restored = parseStoredSession(envelope(validSession));
+
+    expect(restored).toEqual(validSession);
+    expect(restored).not.toHaveProperty('events');
+    expect(restored).not.toHaveProperty('lifecycle');
+  });
+});

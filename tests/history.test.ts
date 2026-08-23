@@ -9,8 +9,10 @@ import {
   createSavedSession,
   filterSessions,
   fingerprintSession,
+  hasRecordedTimeline,
   parseSavedSession,
   reportFromSaved,
+  sessionFromSaved,
   sortResolvedSessions,
 } from '@/lib/history';
 import { MAX_SESSION_NOTE_LENGTH } from '@/lib/constants';
@@ -481,5 +483,144 @@ describe('history limits', () => {
   it('caps stored records at a bounded number', () => {
     expect(MAX_HISTORY_RECORDS).toBeGreaterThan(0);
     expect(Number.isInteger(MAX_HISTORY_RECORDS)).toBe(true);
+  });
+});
+
+describe('filed meal ledgers', () => {
+  const events = [
+    {
+      id: 'event-0',
+      at: '2026-08-16T12:00:00.000Z',
+      seq: 0,
+      source: 'builder',
+      type: 'meal-started',
+    },
+    {
+      id: 'event-1',
+      at: '2026-08-16T12:00:00.000Z',
+      seq: 1,
+      source: 'builder',
+      type: 'plates-added',
+      line: { foodId: 'beef-ribeye', quality: 'standard', plateSize: 'regular' },
+      quantity: 2,
+    },
+  ] as const;
+
+  const lifecycle = {
+    status: 'completed',
+    startedAt: '2026-08-16T12:00:00.000Z',
+    completedAt: '2026-08-16T13:30:00.000Z',
+    pausedMs: 0,
+  } as const;
+
+  function timedRecord(): SavedMealSession {
+    return saved({ events: [...events], lifecycle: { ...lifecycle } });
+  }
+
+  it('files the ledger alongside the meal and reads it back', () => {
+    const record = timedRecord();
+
+    expect(record.version).toBe(SAVED_SESSION_VERSION);
+    expect(hasRecordedTimeline(record)).toBe(true);
+    expect(parseSavedSession(record)?.events).toEqual([...events]);
+    expect(parseSavedSession(record)?.lifecycle).toEqual(lifecycle);
+  });
+
+  it('copies the ledger rather than referencing the live session', () => {
+    const meal = session({ events: [...events], lifecycle: { ...lifecycle } });
+    const report = buildDamageReport(meal.items, meal);
+    const record = createSavedSession(meal, report, getVerdict(1, 1), {
+      id: 'record-copy',
+      createdAt: '2026-08-16T12:00:00.000Z',
+    });
+
+    expect(record.events?.[0]).not.toBe(meal.events?.[0]);
+    expect(record.events?.[0]).toEqual(meal.events?.[0]);
+  });
+
+  it('treats a record filed before the ledger existed as having no timeline', () => {
+    const legacy = { ...timedRecord(), version: 6 };
+    const parsed = parseSavedSession(legacy);
+
+    expect(parsed?.events).toBeUndefined();
+    expect(parsed?.lifecycle).toBeUndefined();
+    expect(hasRecordedTimeline(parsed!)).toBe(false);
+    // The meal itself survives intact; only the timing is absent.
+    expect(parsed?.items).toHaveLength(1);
+  });
+
+  it('drops malformed events without discarding the record', () => {
+    const parsed = parseSavedSession({
+      ...timedRecord(),
+      events: [events[0], { id: 'x', type: 'plates-added' }, 42],
+    });
+
+    expect(parsed?.events).toEqual([events[0]]);
+    expect(parsed?.items).toHaveLength(1);
+  });
+
+  it('does not let a ledger change what the meal is worth', () => {
+    const withLedger = reportFromSaved(timedRecord());
+    const withoutLedger = reportFromSaved(saved());
+
+    expect(withLedger.totalRetailValue).toBe(withoutLedger.totalRetailValue);
+    expect(withLedger.retailRecoveryPercent).toBe(withoutLedger.retailRecoveryPercent);
+  });
+
+  it('keeps a filed meal out of a re-ordered session, which is a new sitting', () => {
+    const reordered = sessionFromSaved(timedRecord());
+
+    expect(reordered.events).toBeUndefined();
+    expect(reordered.lifecycle).toBeUndefined();
+    expect(reordered.items).toHaveLength(1);
+  });
+});
+
+describe('filed plate attribution', () => {
+  const diners = [
+    { id: 'lorenzo', displayName: 'Lorenzo' },
+    { id: 'omar', displayName: 'Omar' },
+  ];
+
+  it('preserves who ate what across a save and a read', () => {
+    const record = saved({
+      dinerCount: 2,
+      diners,
+      items: [item({ quantity: 4, allocations: [{ dinerId: 'lorenzo', quantity: 3 }] })],
+    });
+
+    expect(parseSavedSession(record)?.items[0]?.allocations).toEqual([
+      { dinerId: 'lorenzo', quantity: 3 },
+    ]);
+  });
+
+  it('drops attribution to a diner who is not on the filed roster', () => {
+    const record = saved({
+      dinerCount: 2,
+      diners,
+      items: [item({ quantity: 2, allocations: [{ dinerId: 'ghost', quantity: 2 }] })],
+    });
+
+    expect(parseSavedSession(record)?.items[0]?.allocations).toBeUndefined();
+  });
+
+  it('never lets attribution exceed the plates on the line', () => {
+    const record = saved({
+      dinerCount: 2,
+      diners,
+      items: [
+        item({
+          quantity: 2,
+          allocations: [
+            { dinerId: 'lorenzo', quantity: 5 },
+            { dinerId: 'omar', quantity: 5 },
+          ],
+        }),
+      ],
+    });
+
+    expect(parseSavedSession(record)?.items[0]?.allocations).toEqual([
+      { dinerId: 'lorenzo', quantity: 2 },
+    ]);
   });
 });
