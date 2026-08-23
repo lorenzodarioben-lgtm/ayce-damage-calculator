@@ -30,6 +30,11 @@ const ENTRIES = [
     detail:
       'Adjusts the estimated retail price and ingredient cost of a cut. It does not change nutritional values.',
   },
+  {
+    term: 'How firm the number is',
+    detail:
+      'Every report carries a range alongside its headline figure, built by moving the serving-weight, retail-price and ingredient-cost assumptions to the ends of a stated band. They are named scenarios, not confidence intervals: nothing was sampled and no distribution was estimated.',
+  },
 ] as const;
 
 export function Methodology({ open, onClose }: MethodologyProps) {

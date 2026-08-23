@@ -19,6 +19,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
   between 15 and 300, with start, pause, resume and finish. Elapsed time is derived from recorded
   instants rather than a counter, so it survives reloads, route changes, a backgrounded tab and
   offline use.
+- **Uncertainty and sensitivity analysis** — every report and filed record now carries a
+  conservative, base and upper scenario built by moving the serving-weight, retail-price and
+  ingredient-cost assumptions to the ends of a stated band, plus a ranking of which assumption
+  moves the result most and whether any of them decides the verdict alone. They are named
+  scenarios, not confidence intervals, and the interface says so. The point estimate remains the
+  headline number and the detail stays collapsed by default.
 - **Damage planner** (`/plan`) — an optional pre-meal menu simulation with a bounded,
   deterministic optimiser. Choose a target recovery between 50% and 250%, pick from three explicit
   strategies, include or exclude cuts, lock the ones you want, cap repeats and restrict quality

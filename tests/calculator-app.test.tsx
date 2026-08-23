@@ -193,9 +193,10 @@ describe('CalculatorApp', () => {
     await user.click(screen.getByRole('button', { name: /calculate the damage/i }));
 
     expect(screen.getByRole('heading', { name: /ayce damage report/i })).toBeInTheDocument();
-    // Three times over: the verdict panel, the shareable card, and the
-    // print-only receipt that sits in the DOM waiting for a print stylesheet.
-    expect(screen.getAllByText(/corporate sponsor/i)).toHaveLength(3);
+    // Six times over: the verdict panel, the shareable card, the print-only
+    // receipt waiting in the DOM for a print stylesheet, and once for each of
+    // the three uncertainty scenarios, which all land on the same verdict here.
+    expect(screen.getAllByText(/corporate sponsor/i)).toHaveLength(6);
 
     await user.click(screen.getByRole('button', { name: /edit meal/i }));
 
