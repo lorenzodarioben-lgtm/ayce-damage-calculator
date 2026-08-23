@@ -131,6 +131,8 @@ keys, and nothing you record ever leaves your device.
 - Backup and restore (`/history/data`) — versioned JSON export of history, saved orders, personal
   menus and saved restaurants; validated import, merge or replace, migrating an older backup's
   presets into restaurant profiles
+- Optional password-encrypted backups, sealed in the browser with Web Crypto, alongside the
+  ordinary unencrypted export
 - Spreadsheet export — history as CSV, one row per plate, for taking the numbers elsewhere
 
 **Sharing**
@@ -151,7 +153,7 @@ keys, and nothing you record ever leaves your device.
 - Responsive from 320 px phones to desktop, with original SVG food illustrations
 - Skip link, keyboard-operable throughout, labelled controls, live-region confirmations,
   reduced-motion support, and AA contrast across the palette
-- 995 automated tests
+- 1024 automated tests
 
 ## Tech stack
 
@@ -164,6 +166,7 @@ keys, and nothing you record ever leaves your device.
 | Icons      | lucide-react                             |
 | QR codes   | qrcode-generator                         |
 | Storage    | localStorage + IndexedDB (via `idb`)     |
+| Encryption | Web Crypto (PBKDF2 + AES-GCM)            |
 | Unit tests | Vitest 4 + React Testing Library         |
 | E2E tests  | Playwright, desktop and mobile viewports |
 | Tooling    | ESLint 9, Prettier 3, GitHub Actions     |
@@ -246,6 +249,15 @@ foods used on that tab. Shared menus use the same architecture and the same URL-
 versioned, bounded, validated token, previewed read-only, and imported only on an explicit action
 that never replaces anything local — a colliding name comes in as a separate entry instead.
 
+**Encryption without invention.** The optional encrypted backup is the ordinary design and nothing
+clever: a random salt, a key derived from the password with PBKDF2-HMAC-SHA-256 at OWASP's current
+iteration floor, a random IV, and AES-256-GCM — authenticated, so a file altered in transit fails to
+open rather than decrypting to something plausible. The non-secret parameters live in a versioned
+envelope so a later build can recognise or migrate the format instead of guessing. The password is
+never stored, never logged and never put in an error; it exists only inside the call that derives a
+key from it. A wrong password and a tampered file are indistinguishable to the cipher, and the
+interface says so rather than pretending to know which it was.
+
 **Conservative caching.** The service worker is network-first for documents and cache-first only for
 content-hashed build assets, so a new deployment can never be masked by a stale shell. Its policy is
 unit-tested directly against an in-memory Cache Storage, because neither Playwright's offline
@@ -323,6 +335,9 @@ Everything is local by default and stays that way.
   custom foods live in this browser
 - Analytics are derived on the device from your own records; no usage is tracked or transmitted
 - There is no account system, no backend and no third-party service of any kind
+- An encrypted backup is sealed on the device with a key derived from your password. The password
+  is never stored, never logged and cannot be recovered — which is also why the file cannot be
+  opened without it
 - Diner names stay local. Shared links anonymise roster names by default, while an exported backup may include names because it is a deliberate local export.
 - Shared challenge links carry two meals and their entry prices. Diner names, roster attribution,
   private notes and the meal ledger stay on the device; opening a challenge writes nothing.
@@ -345,7 +360,8 @@ dataset's own integrity, cut search and ordering, verdict boundaries tested on b
 threshold, number and currency formatting, pricing profiles, custom foods, the session reducer
 including undo, storage recovery from corrupt or stale data, the IndexedDB repository against
 `fake-indexeddb`, saved-session migration, meal event validation, ordering and bounds, the pacing
-forecast on both sides of every boundary, replay reconstruction and its named moments, the planner's determinism and bounds, uncertainty scenarios and sensitivity ordering, restaurant profiles and their preset migration, menu-token boundaries and import conflict planning, challenge tokens and their privacy boundary, session comparison, the achievement engine, favourites,
+forecast on both sides of every boundary, replay reconstruction and its named moments, the planner's determinism and bounds, uncertainty scenarios and sensitivity ordering, restaurant profiles and their preset migration, menu-token boundaries and import conflict planning, challenge tokens and their privacy boundary, encrypted-backup envelope validation and cryptographic
+round trips, session comparison, the achievement engine, favourites,
 restaurant presets, share-token encoding and decoding, backup import and export, CSV escaping, local
 analytics, browser-stage history, the sitemap and crawling rules, and the service worker's caching
 policy.
@@ -407,12 +423,12 @@ src/
 ├── lib/          calculations, session reducer, meal events, replay, pacing, verdicts,
 │                 achievements, planner, uncertainty, restaurants, comparison, analytics,
 │                 history and its repository, favourites, presets, pricing profiles, custom foods,
-│                 report, menu and challenge share tokens, QR encoding,
+│                 report, menu and challenge share tokens, QR encoding, encrypted backups,
 │                 social cards, backup, CSV, formatting, storage, card rendering
 └── types/        domain types
 
-e2e/              23 Playwright specs plus shared journey helpers
-tests/            49 Vitest suites
+e2e/              24 Playwright specs plus shared journey helpers
+tests/            50 Vitest suites
 public/           service worker and PWA icons
 .github/          CI workflow, Dependabot, issue and pull request templates
 ```
