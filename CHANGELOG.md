@@ -19,6 +19,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
   between 15 and 300, with start, pause, resume and finish. Elapsed time is derived from recorded
   instants rather than a counter, so it survives reloads, route changes, a backgrounded tab and
   offline use.
+- **Damage planner** (`/plan`) — an optional pre-meal menu simulation with a bounded,
+  deterministic optimiser. Choose a target recovery between 50% and 250%, pick from three explicit
+  strategies, include or exclude cuts, lock the ones you want, cap repeats and restrict quality
+  tiers and serving sizes. It reports the proposed plates, estimated retail value, recovery, weight
+  and nutrition, and states why the search settled there. A plan never becomes a meal without an
+  explicit confirmation.
 - **Meal replay** — a filed meal recorded with a ledger gains a Timeline view: a scrubbable,
   playable reconstruction with running plates, retail value, recovery, food weight and diner
   contributions, an accessible plain-SVG chart with a full table equivalent, and named moments for
