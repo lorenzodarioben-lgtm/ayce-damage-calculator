@@ -384,3 +384,27 @@ describe('the persisted meal ledger', () => {
     expect(restored).not.toHaveProperty('lifecycle');
   });
 });
+
+describe('the booked meal window', () => {
+  it('round trips a validated duration', () => {
+    const timed: MealSession = { ...validSession, plannedDurationMinutes: 90 };
+    saveSession(timed);
+    expect(loadSession()).toEqual(timed);
+  });
+
+  it('drops a stored duration outside the supported range', () => {
+    expect(
+      parseStoredSession(envelope({ ...validSession, plannedDurationMinutes: 9000 })),
+    ).not.toHaveProperty('plannedDurationMinutes');
+    expect(
+      parseStoredSession(envelope({ ...validSession, plannedDurationMinutes: '90' })),
+    ).not.toHaveProperty('plannedDurationMinutes');
+  });
+
+  it('reads a version 4 session as having booked no window', () => {
+    const restored = parseStoredSession(
+      envelope({ ...validSession, plannedDurationMinutes: 90 }, 4),
+    );
+    expect(restored).not.toHaveProperty('plannedDurationMinutes');
+  });
+});

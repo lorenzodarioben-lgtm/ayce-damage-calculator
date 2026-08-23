@@ -55,6 +55,10 @@ keys, and nothing you record ever leaves your device.
 - One oversized button per cut; logging a plate is a single tap for the rest of the meal
 - Running retail value, recovery, plates and weight pinned under the header
 - Quick decrement and remove, then straight through to the full report
+- Optional meal clock — 60, 90, 120 minutes or a validated custom length, with pause, resume
+  and finish, derived from recorded instants so it survives reloads, backgrounding and offline use
+- Pacing forecast — plates per hour, retail value per minute, recovery rate, a projected final
+  recovery and the pace break-even would take, withheld until there is enough meal to project from
 
 **The numbers**
 
@@ -102,7 +106,7 @@ keys, and nothing you record ever leaves your device.
 - Responsive from 320 px phones to desktop, with original SVG food illustrations
 - Skip link, keyboard-operable throughout, labelled controls, live-region confirmations,
   reduced-motion support, and AA contrast across the palette
-- 738 automated tests
+- 794 automated tests
 
 ## Tech stack
 
@@ -206,6 +210,12 @@ price per diner × number of diners.
 admission price. Below that, the app estimates how many more plates of your current average value
 it would take to get there.
 
+**Pacing** extrapolates the meal so far across whatever window the table booked. Elapsed time comes
+from the instants the ledger recorded, never from a counter, so a paused meal is frozen at the
+moment it paused and a backgrounded phone loses nothing. A projection is withheld for the first few
+minutes, because extrapolating ninety minutes from thirty seconds describes the thirty seconds. All
+of it is entertainment: nobody has to eat to a number.
+
 Values are held at full precision throughout and rounded only for display.
 
 ## Retail value is not restaurant cost
@@ -250,7 +260,8 @@ npm run test:e2e    # end-to-end tests, on desktop and mobile viewports
 dataset's own integrity, cut search and ordering, verdict boundaries tested on both sides of every
 threshold, number and currency formatting, pricing profiles, custom foods, the session reducer
 including undo, storage recovery from corrupt or stale data, the IndexedDB repository against
-`fake-indexeddb`, saved-session migration, meal event validation, ordering and bounds, session comparison, the achievement engine, favourites,
+`fake-indexeddb`, saved-session migration, meal event validation, ordering and bounds, the pacing
+forecast on both sides of every boundary, session comparison, the achievement engine, favourites,
 restaurant presets, share-token encoding and decoding, backup import and export, CSV escaping, local
 analytics, browser-stage history, the sitemap and crawling rules, and the service worker's caching
 policy.
@@ -306,7 +317,7 @@ src/
 ├── components/   meal builder, live mode, session setup, summary, results,
 │                 history, stats, favourites, custom menus, navigation, methodology, PWA, UI
 ├── data/         the 18-item food dataset, with search and ordering
-├── hooks/        session reducer, stage history, meal history, favourites,
+├── hooks/        session reducer, meal clock, stage history, meal history, favourites,
 │                 presets, pricing profiles, custom foods, status messaging, undoable removal
 ├── lib/          calculations, session reducer, meal events, verdicts, achievements, comparison, analytics,
 │                 history and its repository, favourites, presets, pricing profiles, custom foods,
@@ -314,8 +325,8 @@ src/
 │                 social cards, backup, CSV, formatting, storage, card rendering
 └── types/        domain types
 
-e2e/              16 Playwright specs plus shared journey helpers
-tests/            37 Vitest suites
+e2e/              17 Playwright specs plus shared journey helpers
+tests/            39 Vitest suites
 public/           service worker and PWA icons
 .github/          CI workflow, Dependabot, issue and pull request templates
 ```

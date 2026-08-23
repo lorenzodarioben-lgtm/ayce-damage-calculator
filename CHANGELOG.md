@@ -15,12 +15,20 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - **Meal lifecycle metadata** — a meal starts from meal activity, can be paused, resumed and
   completed, and carries the time it spent paused. Editing the restaurant name, price or pricing
   profile deliberately starts nothing.
+- **Optional meal clock in Live Meal Mode** — 60, 90 or 120 minutes, or a validated custom length
+  between 15 and 300, with start, pause, resume and finish. Elapsed time is derived from recorded
+  instants rather than a counter, so it survives reloads, route changes, a backgrounded tab and
+  offline use.
+- **Pacing forecast** — plates per hour, retail value per minute, recovery rate, a projected final
+  recovery and the pace break-even would take before the window closes. Projections are withheld
+  until a few minutes of meal have happened, and are labelled as extrapolations rather than
+  promises.
 
 ### Changed
 
 - The session reducer moved to `src/lib/sessionReducer.ts`, free of React, and stays pure: the
   moment and identifier for each event are supplied by the dispatching surface.
-- The in-progress session envelope is version 4 and filed records are schema version 7. Older
+- The in-progress session envelope is version 5 and filed records are schema version 8. Older
   sessions and records load unchanged and are treated as untimed rather than being given
   fabricated timestamps.
 - Filed records now preserve Table Mode plate attribution, reconciled against their own roster.

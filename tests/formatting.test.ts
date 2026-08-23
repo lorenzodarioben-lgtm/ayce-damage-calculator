@@ -1,11 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import {
   formatCalories,
+  formatClock,
+  formatDurationLabel,
   formatGrams,
   formatKg,
   formatLb,
   formatMoney,
+  formatMoneyPerMinute,
   formatPercent,
+  formatPerHour,
   formatPlates,
   formatPricePerKg,
   formatSignedMoney,
@@ -90,5 +94,48 @@ describe('measurement formatting', () => {
   it('drops trailing decimals on whole per-kilogram prices', () => {
     expect(formatPricePerKg(52)).toBe('$52/kg');
     expect(formatPricePerKg(9.5)).toBe('$9.50/kg');
+  });
+});
+
+describe('formatClock', () => {
+  it('drops the hour until there is one', () => {
+    expect(formatClock(0)).toBe('0:00');
+    expect(formatClock(65_000)).toBe('1:05');
+    expect(formatClock(59 * 60_000 + 59_000)).toBe('59:59');
+  });
+
+  it('shows hours with padded minutes and seconds', () => {
+    expect(formatClock(3_600_000)).toBe('1:00:00');
+    expect(formatClock(90 * 60_000 + 5_000)).toBe('1:30:05');
+  });
+
+  it('never renders a negative or non-finite clock', () => {
+    expect(formatClock(-5000)).toBe('0:00');
+    expect(formatClock(Number.NaN)).toBe('0:00');
+    expect(formatClock(Number.POSITIVE_INFINITY)).toBe('0:00');
+  });
+});
+
+describe('formatDurationLabel', () => {
+  it('says a span the way someone would read it aloud', () => {
+    expect(formatDurationLabel(0)).toBe('under a minute');
+    expect(formatDurationLabel(59_000)).toBe('under a minute');
+    expect(formatDurationLabel(60_000)).toBe('1 minute');
+    expect(formatDurationLabel(45 * 60_000)).toBe('45 minutes');
+    expect(formatDurationLabel(3_600_000)).toBe('1 hour');
+    expect(formatDurationLabel(84 * 60_000)).toBe('1 hour 24 minutes');
+    expect(formatDurationLabel(125 * 60_000)).toBe('2 hours 5 minutes');
+  });
+});
+
+describe('rate formatting', () => {
+  it('renders a per-hour rate to one decimal', () => {
+    expect(formatPerHour(16)).toBe('16.0/hr');
+    expect(formatPerHour(Number.NaN)).toBe('0.0/hr');
+  });
+
+  it('renders a money rate in the meal currency', () => {
+    expect(formatMoneyPerMinute(1.5)).toBe('$1.50/min');
+    expect(formatMoneyPerMinute(Number.POSITIVE_INFINITY)).toBe('$0.00/min');
   });
 });

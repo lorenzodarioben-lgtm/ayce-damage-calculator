@@ -101,6 +101,11 @@ export interface MealSession extends SessionConfig {
   readonly events?: readonly MealEvent[];
   /** Absent until meaningful meal activity starts the meal. */
   readonly lifecycle?: MealLifecycle;
+  /**
+   * The window the table has booked, in minutes. Absent means the meal is not
+   * running against a clock at all, which stays the default.
+   */
+  readonly plannedDurationMinutes?: number;
 }
 
 export interface Nutrition {
