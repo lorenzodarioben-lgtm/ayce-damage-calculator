@@ -121,8 +121,11 @@ keys, and nothing you record ever leaves your device.
   break-even, the busiest run, the longest lull, the last plate and the meal being called
 - Records filed before the ledger existed say so plainly rather than being given a fabricated
   timeline
-- Compare any two sessions (`/history/compare`), stated in percentage points where that is what
-  the difference actually is
+- Compare any two sessions (`/history/compare`) across recovery, retail value, admission, plates,
+  food weight, category mix, commendations and food diversity, stated in percentage points where
+  that is what the difference actually is
+- Share the comparison as a Damage Challenge (`/challenge/<token>`) — both meals inside the link,
+  read-only for the recipient, with its own generated Open Graph preview
 - Local analytics (`/stats`) — totals, averages, bests, category and grade mix, and a recovery
   trend chart drawn in plain SVG
 - Backup and restore (`/history/data`) — versioned JSON export of history, saved orders, personal
@@ -138,6 +141,8 @@ keys, and nothing you record ever leaves your device.
   optionally, a restaurant setup — previewed read-only, imported only on request, and never
   overwriting anything the recipient already has
 - A QR code for a menu link, alongside a copyable link that always works
+- Shareable challenge links carrying two completed meals, with the comparison recalculated by the
+  app's own engine rather than trusted from the sender
 - Dynamic Open Graph images generated per report, so a posted link previews the actual verdict
 
 **Everything else**
@@ -146,7 +151,7 @@ keys, and nothing you record ever leaves your device.
 - Responsive from 320 px phones to desktop, with original SVG food illustrations
 - Skip link, keyboard-operable throughout, labelled controls, live-region confirmations,
   reduced-motion support, and AA contrast across the palette
-- 969 automated tests
+- 995 automated tests
 
 ## Tech stack
 
@@ -307,7 +312,8 @@ comfortably lose the retail-value comparison and still have had a perfectly good
 
 Session comparison states recovery differences in percentage points. A move from 134% to 172% is
 **38 percentage points**, not a 38% increase. The comparison engine withholds a proportional change
-for percentage-valued metrics entirely, so the two can never be conflated in the interface.
+for percentage-valued metrics entirely, so the two can never be conflated in the interface — on the
+comparison page and inside a shared challenge alike, because both render from the same engine.
 
 ## Privacy
 
@@ -318,6 +324,8 @@ Everything is local by default and stays that way.
 - Analytics are derived on the device from your own records; no usage is tracked or transmitted
 - There is no account system, no backend and no third-party service of any kind
 - Diner names stay local. Shared links anonymise roster names by default, while an exported backup may include names because it is a deliberate local export.
+- Shared challenge links carry two meals and their entry prices. Diner names, roster attribution,
+  private notes and the meal ledger stay on the device; opening a challenge writes nothing.
 - Shared menu links carry only the price assumptions, custom foods and (optionally) a restaurant
   setup. No history, saved order, diner name or note travels with one, and opening one changes
   nothing until the recipient imports it.
@@ -337,7 +345,7 @@ dataset's own integrity, cut search and ordering, verdict boundaries tested on b
 threshold, number and currency formatting, pricing profiles, custom foods, the session reducer
 including undo, storage recovery from corrupt or stale data, the IndexedDB repository against
 `fake-indexeddb`, saved-session migration, meal event validation, ordering and bounds, the pacing
-forecast on both sides of every boundary, replay reconstruction and its named moments, the planner's determinism and bounds, uncertainty scenarios and sensitivity ordering, restaurant profiles and their preset migration, menu-token boundaries and import conflict planning, session comparison, the achievement engine, favourites,
+forecast on both sides of every boundary, replay reconstruction and its named moments, the planner's determinism and bounds, uncertainty scenarios and sensitivity ordering, restaurant profiles and their preset migration, menu-token boundaries and import conflict planning, challenge tokens and their privacy boundary, session comparison, the achievement engine, favourites,
 restaurant presets, share-token encoding and decoding, backup import and export, CSV escaping, local
 analytics, browser-stage history, the sitemap and crawling rules, and the service worker's caching
 policy.
@@ -388,6 +396,7 @@ npm run verify       # format check, lint, typecheck, tests and build in sequenc
 ```text
 src/
 ├── app/          routes: calculator, live, plan, restaurants, history, compare, backup, stats,
+│                 challenge/[token] with its generated OG image,
 │                 share/[token] with its generated OG image, offline, manifest,
 │                 sitemap, robots
 ├── components/   meal builder, live mode, planner, restaurants, session setup, summary, results,
@@ -398,12 +407,12 @@ src/
 ├── lib/          calculations, session reducer, meal events, replay, pacing, verdicts,
 │                 achievements, planner, uncertainty, restaurants, comparison, analytics,
 │                 history and its repository, favourites, presets, pricing profiles, custom foods,
-│                 report and menu share tokens, QR encoding,
+│                 report, menu and challenge share tokens, QR encoding,
 │                 social cards, backup, CSV, formatting, storage, card rendering
 └── types/        domain types
 
-e2e/              22 Playwright specs plus shared journey helpers
-tests/            48 Vitest suites
+e2e/              23 Playwright specs plus shared journey helpers
+tests/            49 Vitest suites
 public/           service worker and PWA icons
 .github/          CI workflow, Dependabot, issue and pull request templates
 ```

@@ -81,7 +81,7 @@ describe('robots', () => {
     expect(rules).toMatchObject({
       userAgent: '*',
       allow: '/',
-      disallow: ['/share/', '/menu/'],
+      disallow: ['/share/', '/menu/', '/challenge/'],
     });
   });
 
