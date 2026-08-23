@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, RotateCcw } from 'lucide-react';
+import { MealReplay, UntimedMealNotice } from '@/components/history/MealReplay';
 import { AchievementList } from '@/components/results/AchievementList';
 import { MealBreakdown } from '@/components/results/MealBreakdown';
 import { ReportSummary } from '@/components/results/ReportSummary';
@@ -11,7 +12,13 @@ import { PricingProfileProvider } from '@/components/session/PricingContext';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { formatPlates, formatRecordedAt } from '@/lib/formatting';
-import { resolveSavedSession, sessionFromSaved, type ResolvedSavedSession } from '@/lib/history';
+import {
+  hasRecordedTimeline,
+  resolveSavedSession,
+  sessionFromSaved,
+  type ResolvedSavedSession,
+} from '@/lib/history';
+import { buildMealReplay } from '@/lib/replay';
 import { getSession } from '@/lib/historyRepository';
 import { loadSession, saveSession as saveActiveSession } from '@/lib/storage';
 import type { SavedMealSession } from '@/types/history';
@@ -141,6 +148,14 @@ export function HistoryDetail({ id }: { id: string }) {
         <AchievementList achievements={achievements} headingId="saved-achievements-heading" />
 
         <MealBreakdown lines={report.lines} headingId="recorded-plates-heading" />
+
+        {/* The ordinary report above is unchanged; the replay is an addition to
+            it, and a record filed before the ledger existed says so plainly. */}
+        {hasRecordedTimeline(record) ? (
+          <MealReplay replay={buildMealReplay(record)} record={record} headingId="replay-heading" />
+        ) : (
+          <UntimedMealNotice headingId="replay-heading" />
+        )}
 
         {/* The point of keeping a record of a good order is being able to place
           it again. */}
