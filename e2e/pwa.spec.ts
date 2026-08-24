@@ -9,7 +9,7 @@ import { openCalculator } from './helpers';
  * a browser genuinely proves: registration, control, and what lands in cache.
  */
 
-const CACHE_NAME = 'ayce-shell-v1';
+const CACHE_NAME = 'ayce-shell-v2';
 
 /**
  * Resolves once a service worker has finished activating.
