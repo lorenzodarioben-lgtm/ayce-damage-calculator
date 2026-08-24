@@ -21,6 +21,7 @@ import { usePricingProfiles } from '@/hooks/usePricingProfiles';
 import { useRegularDiners } from '@/hooks/useRegularDiners';
 import { useStageHistory } from '@/hooks/useStageHistory';
 import { useStatusMessage } from '@/hooks/useStatusMessage';
+import { scrollBehaviour } from '@/lib/motion';
 import { DEFAULT_PRICING_PROFILE_ID } from '@/lib/pricing';
 
 export function CalculatorApp() {
@@ -93,10 +94,10 @@ export function CalculatorApp() {
       return;
     }
     if (stage === 'report') {
-      reportRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      reportRef.current?.scrollIntoView({ behavior: scrollBehaviour(), block: 'start' });
       reportRef.current?.focus({ preventScroll: true });
     } else {
-      builderRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      builderRef.current?.scrollIntoView({ behavior: scrollBehaviour(), block: 'start' });
     }
   }, [stage]);
 
@@ -118,7 +119,7 @@ export function CalculatorApp() {
       showBuilder();
       return;
     }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: scrollBehaviour() });
   }, [stage, showBuilder]);
 
   const handleConfirmReset = useCallback(() => {
