@@ -70,11 +70,10 @@ export function ServiceWorkerManager() {
     const update = () => setOnline(navigator.onLine);
     const capture = (event: Event) => {
       event.preventDefault();
-      if (
-        !window.matchMedia('(display-mode: standalone)').matches &&
-        !localStorage.getItem('ayce-install-dismissed')
-      )
+      // Nothing to offer where the app is already running as an installed one.
+      if (!window.matchMedia('(display-mode: standalone)').matches) {
         setDeferredInstall(event as Event & { prompt: () => Promise<void> });
+      }
     };
     window.addEventListener('online', update);
     window.addEventListener('offline', update);
