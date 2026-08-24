@@ -10,7 +10,7 @@ import { AchievementList } from '@/components/results/AchievementList';
 import { MealBreakdown } from '@/components/results/MealBreakdown';
 import { ReportSummary } from '@/components/results/ReportSummary';
 import { PricingProfileProvider } from '@/components/session/PricingContext';
-import { Button } from '@/components/ui/Button';
+import { Button, EMPTY_STATE_LINK } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { formatPlates, formatRecordedAt } from '@/lib/formatting';
 import {
@@ -112,10 +112,7 @@ export function HistoryDetail({ id }: { id: string }) {
           This session is not in the file on this device. It may have been deleted, or filed in a
           different browser.
         </p>
-        <Link
-          href="/history"
-          className="mt-6 inline-flex min-h-12 items-center justify-center rounded-[10px] border border-line-ember bg-ash-850 px-5 text-sm font-semibold uppercase tracking-[0.1em] text-ember-400 transition-colors duration-200 hover:bg-ash-800"
-        >
+        <Link href="/history" className={EMPTY_STATE_LINK}>
           Back to the file
         </Link>
       </div>

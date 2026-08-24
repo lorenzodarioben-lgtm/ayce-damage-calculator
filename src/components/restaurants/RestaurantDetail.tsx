@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Link2, Play, Trash2 } from 'lucide-react';
 import { RecoveryTrend } from '@/components/stats/RecoveryTrend';
 import { ShareBars } from '@/components/stats/ShareBars';
-import { Button } from '@/components/ui/Button';
+import { Button, EMPTY_STATE_LINK } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { StatusToast } from '@/components/ui/StatusToast';
 import { useMealHistory } from '@/hooks/useMealHistory';
@@ -133,10 +133,7 @@ export function RestaurantDetail({ id }: { id: string }) {
           This restaurant is not saved on this device. Any meals you filed against it are still in
           the file, with the name and prices they were recorded under.
         </p>
-        <Link
-          href="/restaurants"
-          className="mt-6 inline-flex min-h-12 items-center justify-center rounded-[10px] border border-line-ember bg-ash-850 px-5 text-sm font-semibold uppercase tracking-[0.1em] text-ember-400 transition-colors duration-200 hover:bg-ash-800"
-        >
+        <Link href="/restaurants" className={EMPTY_STATE_LINK}>
           Back to the places
         </Link>
       </div>

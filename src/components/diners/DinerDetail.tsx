@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Trash2, UserPlus } from 'lucide-react';
 import { ShareBars } from '@/components/stats/ShareBars';
-import { Button } from '@/components/ui/Button';
+import { Button, EMPTY_STATE_LINK } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { StatusToast } from '@/components/ui/StatusToast';
 import { useMealHistory } from '@/hooks/useMealHistory';
@@ -91,10 +91,7 @@ export function DinerDetail({ id }: { id: string }) {
           This person is not saved on this device. Any meals filed with them still hold the roster
           they were recorded with, exactly as it was.
         </p>
-        <Link
-          href="/diners"
-          className="mt-6 inline-flex min-h-12 items-center justify-center rounded-[10px] border border-line-ember bg-ash-850 px-5 text-sm font-semibold uppercase tracking-[0.1em] text-ember-400 transition-colors duration-200 hover:bg-ash-800"
-        >
+        <Link href="/diners" className={EMPTY_STATE_LINK}>
           Back to the people
         </Link>
       </div>
