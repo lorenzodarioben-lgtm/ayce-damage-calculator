@@ -156,28 +156,40 @@ function RestaurantComparison({
       </h2>
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
+          {/* Every cell here is read against two headers at once — a measure and
+              a place — so both axes have to be declared for a cell to mean
+              anything out of visual order. */}
+          <caption className="sr-only">
+            {`${comparison.left.profile.name} and ${comparison.right.profile.name} compared across every recorded visit.`}
+          </caption>
           <thead>
             <tr className="text-cream-500">
-              <th>Measure</th>
-              <th>{comparison.left.profile.name}</th>
-              <th>{comparison.right.profile.name}</th>
+              <th scope="col">Measure</th>
+              <th scope="col">{comparison.left.profile.name}</th>
+              <th scope="col">{comparison.right.profile.name}</th>
             </tr>
           </thead>
           <tbody>
             {metrics.map(([label, value]) => (
               <tr key={label} className="border-t border-line-soft">
-                <th className="py-2 font-medium text-cream-300">{label}</th>
+                <th scope="row" className="py-2 font-medium text-cream-300">
+                  {label}
+                </th>
                 <td className="py-2 tabular">{value(comparison.left)}</td>
                 <td className="py-2 tabular">{value(comparison.right)}</td>
               </tr>
             ))}
             <tr className="border-t border-line-soft">
-              <th className="py-2 font-medium text-cream-300">Top foods</th>
+              <th scope="row" className="py-2 font-medium text-cream-300">
+                Top foods
+              </th>
               <td className="py-2">{foods(comparison.left)}</td>
               <td className="py-2">{foods(comparison.right)}</td>
             </tr>
             <tr className="border-t border-line-soft">
-              <th className="py-2 font-medium text-cream-300">Category mix</th>
+              <th scope="row" className="py-2 font-medium text-cream-300">
+                Category mix
+              </th>
               <td className="py-2">{categories(comparison.left)}</td>
               <td className="py-2">{categories(comparison.right)}</td>
             </tr>
