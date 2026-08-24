@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { usePricingProfile } from '@/components/session/PricingContext';
 import type { ResultCardModel } from '@/lib/resultCard';
 import { renderResultCardBlob } from '@/lib/resultCardImage';
-import { buildShareText, canWebShare, copyToClipboard } from '@/lib/share';
+import { COPY_UNAVAILABLE, buildShareText, canWebShare, copyToClipboard } from '@/lib/share';
 import { shareLinkResult } from '@/lib/shareLink';
 import type { Verdict } from '@/lib/verdicts';
 import type { CustomFood } from '@/types/customFoods';
@@ -36,7 +36,7 @@ export function ShareActions({ report, verdict, session, cardModel, onStatus }: 
 
   async function handleCopy() {
     const copied = await copyToClipboard(shareText);
-    onStatus(copied ? 'Damage report copied to clipboard.' : 'Copying is unavailable here.');
+    onStatus(copied ? 'Damage report copied to clipboard.' : COPY_UNAVAILABLE);
   }
 
   async function handleShare() {
@@ -68,9 +68,7 @@ export function ShareActions({ report, verdict, session, cardModel, onStatus }: 
     // Built from the live origin so the link works on any deployment.
     const copied = await copyToClipboard(new URL(result.path, window.location.origin).toString());
     onStatus(
-      copied
-        ? 'Share link copied. The whole report travels inside the link.'
-        : 'Copying is unavailable here.',
+      copied ? 'Share link copied. The whole report travels inside the link.' : COPY_UNAVAILABLE,
     );
   }
 
