@@ -14,6 +14,15 @@ const EXTERNAL_LINK =
   'text-cream-500 underline-offset-4 hover:text-cream-300 hover:underline';
 
 /**
+ * Said rather than shown: both links leave the app, and a target of _blank
+ * that is only visible as a new tab appearing is a surprise for anyone not
+ * watching for it.
+ */
+function NewTabHint() {
+  return <span className="sr-only"> (opens in a new tab)</span>;
+}
+
+/**
  * An app that claims to keep everything on the device should be checkable on
  * that claim, which takes one link to the source and one to the terms it is
  * offered under. Both are quieter than the methodology control beside them:
@@ -32,9 +41,11 @@ export function SiteFooter({ children, className }: SiteFooterProps) {
             className={EXTERNAL_LINK}
           >
             Source
+            <NewTabHint />
           </a>
           <a href={LICENSE_URL} target="_blank" rel="noopener noreferrer" className={EXTERNAL_LINK}>
             MIT License
+            <NewTabHint />
           </a>
           <MethodologyTrigger
             label="How we calculate it"
