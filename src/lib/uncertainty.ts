@@ -1,4 +1,4 @@
-import { buildDamageReport, calculateAdmission } from '@/lib/calculations';
+import { buildDamageReport, calculateBillTotals } from '@/lib/calculations';
 import { FOODS } from '@/data/foods';
 import { DEFAULT_PRICING_PROFILE, resolveFoodPricing } from '@/lib/pricing';
 import { getVerdict, type VerdictId } from '@/lib/verdicts';
@@ -316,7 +316,10 @@ export function buildUncertaintyAnalysis(
   const hasMeal = items.length > 0 && base.retailValue > 0;
 
   return {
-    admission: calculateAdmission(config),
+    // The final paid total, because that is what every scenario below is
+    // measured against — an uncertainty band around the wrong denominator
+    // would be precise about the wrong question.
+    admission: calculateBillTotals(config).totalPaid,
     base,
     conservative,
     optimistic,

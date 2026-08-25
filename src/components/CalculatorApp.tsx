@@ -41,6 +41,9 @@ export function CalculatorApp() {
     removeDiner,
     moveDiner,
     clearDiners,
+    addAdjustment,
+    removeAdjustment,
+    clearAdjustments,
     addItem,
     incrementItem,
     decrementItem,
@@ -170,6 +173,7 @@ export function CalculatorApp() {
                 <div className="space-y-4 lg:space-y-6">
                   <SessionSetup
                     session={session}
+                    baseAdmission={report.baseAdmission}
                     totalAdmission={report.totalAdmission}
                     onRestaurantNameChange={setRestaurantName}
                     onPricePerDinerChange={setPricePerDiner}
@@ -190,6 +194,9 @@ export function CalculatorApp() {
                     onMoveDiner={moveDiner}
                     onClearDiners={clearDiners}
                     onSaveRegularDiner={regularDiners.save}
+                    onAddAdjustment={addAdjustment}
+                    onRemoveAdjustment={removeAdjustment}
+                    onClearAdjustments={clearAdjustments}
                     onStatus={announce}
                   />
                   <MealBuilder

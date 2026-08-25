@@ -6,6 +6,8 @@ import {
   MAX_LINE_QUANTITY,
   MIN_QUANTITY,
 } from '@/lib/constants';
+import { createAdjustment, reconcileAdjustments, type AdjustmentDraft } from '@/lib/adjustments';
+import { MAX_BILL_ADJUSTMENTS } from '@/lib/constants';
 import { isDinerId, normaliseDinerName, reconcileItemAllocations } from '@/lib/diners';
 import { appendMealEvents, mealEventLine, nextEventSeq, sessionLifecycle } from '@/lib/mealEvents';
 import { clampMealDuration } from '@/lib/pacing';
@@ -13,6 +15,7 @@ import { mealItemId } from '@/lib/mealItems';
 import { DEFAULT_PRICING_PROFILE_ID } from '@/lib/pricing';
 import { normaliseRestaurantNameInput, sanitiseRestaurantName } from '@/lib/storage';
 import type {
+  BillAdjustment,
   Diner,
   DinerAllocation,
   MealItem,
@@ -89,11 +92,32 @@ export type SessionAction =
     }
   | { type: 'remove-item'; id: string; meta?: MealEventMeta }
   | { type: 'restore-item'; item: MealItem; index: number; meta?: MealEventMeta }
+  | { type: 'add-adjustment'; draft: AdjustmentDraft; id: string }
+  | { type: 'remove-adjustment'; id: string }
+  | { type: 'clear-adjustments' }
   | { type: 'set-meal-duration'; minutes: number | undefined }
   | { type: 'pause-meal'; meta: MealEventMeta }
   | { type: 'resume-meal'; meta: MealEventMeta }
   | { type: 'complete-meal'; meta: MealEventMeta }
   | { type: 'reset' };
+
+/**
+ * Attaches a bill list, dropping the key entirely when it is empty.
+ *
+ * An absent list and an empty one already mean the same thing to every reader,
+ * and keeping only one of those shapes is what makes a plain tab serialise to
+ * exactly the bytes it did before adjustments existed.
+ */
+function withAdjustments(
+  session: MealSession,
+  adjustments: readonly BillAdjustment[],
+): MealSession {
+  if (adjustments.length === 0) {
+    const { adjustments: _adjustments, ...plain } = session;
+    return plain;
+  }
+  return { ...session, adjustments };
+}
 
 function clampQuantity(value: number): number {
   if (!Number.isFinite(value)) {
@@ -226,18 +250,24 @@ function applySessionAction(state: MealSession, action: SessionAction): MealSess
           diners,
         ),
       );
+      // A removed diner's own charges become the table's. The money was still
+      // spent, so dropping them would make the total disagree with the receipt.
+      const adjustments = reconcileAdjustments(state.adjustments, diners);
       if (diners.length === 0) {
         const { diners: _diners, ...sharedSession } = state;
-        return { ...sharedSession, items };
+        return withAdjustments({ ...sharedSession, items }, adjustments);
       }
-      return {
-        ...state,
-        diners,
-        dinerCount: diners.length,
-        // A removed diner's plates become shared-table food. The line total is
-        // untouched, so neither value nor nutrition can disappear with them.
-        items,
-      };
+      return withAdjustments(
+        {
+          ...state,
+          diners,
+          dinerCount: diners.length,
+          // A removed diner's plates become shared-table food. The line total is
+          // untouched, so neither value nor nutrition can disappear with them.
+          items,
+        },
+        adjustments,
+      );
     }
 
     case 'move-diner': {
@@ -258,14 +288,40 @@ function applySessionAction(state: MealSession, action: SessionAction): MealSess
       }
       {
         const { diners: _diners, ...sharedSession } = state;
-        return {
-          ...sharedSession,
-          items: state.items.map((item) => {
-            const { allocations: _allocations, ...sharedItem } = item;
-            return sharedItem;
-          }),
-        };
+        return withAdjustments(
+          {
+            ...sharedSession,
+            items: state.items.map((item) => {
+              const { allocations: _allocations, ...sharedItem } = item;
+              return sharedItem;
+            }),
+          },
+          reconcileAdjustments(state.adjustments, []),
+        );
       }
+
+    case 'add-adjustment': {
+      const adjustment = createAdjustment(action.draft, action.id);
+      const current = state.adjustments ?? [];
+      // Silently ignoring an overflowing add keeps the bounded list bounded
+      // without the reducer needing to know how a surface would report it.
+      if (!adjustment || current.length >= MAX_BILL_ADJUSTMENTS) {
+        return state;
+      }
+      // Scoped through the same reconciler the roster changes use, so an
+      // adjustment can never name a diner who is not at this table.
+      return withAdjustments(state, reconcileAdjustments([...current, adjustment], state.diners));
+    }
+
+    case 'remove-adjustment': {
+      const adjustments = (state.adjustments ?? []).filter((entry) => entry.id !== action.id);
+      return adjustments.length === (state.adjustments?.length ?? 0)
+        ? state
+        : withAdjustments(state, adjustments);
+    }
+
+    case 'clear-adjustments':
+      return state.adjustments?.length ? withAdjustments(state, []) : state;
 
     case 'add-item': {
       const quantity = clampQuantity(action.payload.quantity);

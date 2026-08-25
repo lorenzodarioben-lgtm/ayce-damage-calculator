@@ -57,6 +57,31 @@ sealed on the device with Web Crypto and carries only the non-secret
 cryptographic parameters alongside the ciphertext. The password is not stored
 anywhere and cannot be recovered.
 
+## Charges and discounts
+
+A real all-you-can-eat bill is rarely the entry price multiplied by heads. A
+voucher comes off, a weekend surcharge goes on, the card takes its fee,
+somebody orders a drink that was never included.
+
+A session can therefore carry bounded, labelled bill adjustments alongside the
+entry price. Each is a charge or a discount with a name and an amount, applied
+to the whole table or — when Table Mode is in use — to one diner. The entry
+price per diner remains the simple default, and a meal with no adjustments
+calculates exactly as it always did.
+
+Where there are adjustments, the app distinguishes four figures and never
+conflates them: base admission, what was charged, what was discounted, and the
+final paid total. Everything downstream — recovery, break-even, uncertainty,
+diner totals, the planner, history, comparisons, restaurant summaries,
+receipts, result cards, CSV, share links and backups — measures against the
+final paid total, because that is what the evening actually cost. A bill
+reduced past zero settles at zero; the restaurant does not owe the table money.
+
+Migration is by version, as everywhere else. In-progress sessions read at
+storage version 7, filed records at schema version 10, and backups at file
+version 5. Anything written before those versions is read as having been paid
+at its entry price — which is the truth about it, not a gap in it.
+
 ## Data boundaries
 
 All configurable-menu data stays in browser storage unless a diner explicitly

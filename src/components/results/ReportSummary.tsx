@@ -68,6 +68,7 @@ export function ReportSummary({
   const pricingProfile = usePricingProfile();
   const houseStatus = getHouseStatus(report.totalRestaurantCost, report.totalAdmission);
   const extracted = report.retailValueDifference >= 0;
+  const hasAdjustments = report.adjustmentCharges > 0 || report.adjustmentDiscounts > 0;
 
   // A table of one is already reading per-diner figures, so the split is only
   // shown when there is something to split.
@@ -105,7 +106,45 @@ export function ReportSummary({
         </div>
       </section>
 
-      {/* 2 — Retail value against admission */}
+      {hasAdjustments && (
+        <section
+          aria-labelledby="bill-breakdown-heading"
+          className="rounded-[10px] border border-line-soft bg-ash-900 px-4 py-3"
+        >
+          <h3 id="bill-breakdown-heading" className="micro-label mb-2">
+            How the bill settled
+          </h3>
+          <dl className="space-y-1">
+            <BillRow
+              label="Entry price"
+              value={formatMoney(report.baseAdmission, pricingProfile.money)}
+            />
+            {report.adjustmentCharges > 0 && (
+              <BillRow
+                label="Charges"
+                value={`+${formatMoney(report.adjustmentCharges, pricingProfile.money)}`}
+              />
+            )}
+            {report.adjustmentDiscounts > 0 && (
+              <BillRow
+                label="Discounts"
+                value={`−${formatMoney(report.adjustmentDiscounts, pricingProfile.money)}`}
+              />
+            )}
+            <BillRow
+              label="Paid in total"
+              value={formatMoney(report.totalAdmission, pricingProfile.money)}
+              total
+            />
+          </dl>
+          <p className="mt-2 max-w-[60ch] text-xs leading-relaxed text-cream-700">
+            Every figure below is measured against the total paid, not the entry price — that is
+            what the evening actually cost.
+          </p>
+        </section>
+      )}
+
+      {/* 2 — Retail value against what was paid */}
       <div className="grid gap-3 sm:grid-cols-2">
         <ResultMetric
           label="Est. retail value"
@@ -115,15 +154,19 @@ export function ReportSummary({
           tone="accent"
         />
         <ResultMetric
-          label="Admission"
+          label={hasAdjustments ? 'Total paid' : 'Admission'}
           value={formatMoney(report.totalAdmission, pricingProfile.money)}
-          detail="What the table paid to walk in."
+          detail={
+            hasAdjustments
+              ? 'Entry price, plus what went on the bill and minus what came off.'
+              : 'What the table paid to walk in.'
+          }
           emphasis="major"
         />
         <ResultMetric
           label={extracted ? 'Value extracted' : 'Value gap'}
           value={formatSignedMoney(report.retailValueDifference, pricingProfile.money)}
-          detail="Estimated retail value minus admission."
+          detail={`Estimated retail value minus ${hasAdjustments ? 'the total paid' : 'admission'}.`}
           tone={extracted ? 'positive' : 'negative'}
         />
         <ResultMetric
@@ -212,10 +255,38 @@ export function ReportSummary({
           </div>
           <p className="tabular display-type text-3xl text-cream-100">
             {formatPercent(report.estimatedFoodCostPercent)}{' '}
-            <span className="text-sm text-cream-700">of admission</span>
+            <span className="text-sm text-cream-700">
+              of {hasAdjustments ? 'the total paid' : 'admission'}
+            </span>
           </p>
         </div>
       </section>
+    </div>
+  );
+}
+
+function BillRow({
+  label,
+  value,
+  total = false,
+}: {
+  label: string;
+  value: string;
+  total?: boolean;
+}) {
+  return (
+    <div className="flex items-baseline justify-between gap-3">
+      <dt className={total ? 'text-sm font-semibold text-cream-200' : 'text-xs text-cream-700'}>
+        {label}
+      </dt>
+      <dd
+        className={cn(
+          'tabular',
+          total ? 'text-sm font-semibold text-ember-400' : 'text-xs text-cream-500',
+        )}
+      >
+        {value}
+      </dd>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import type { AchievementId } from '@/lib/achievements';
 import type { VerdictId } from '@/lib/verdicts';
-import type { Diner, MealItem, Nutrition } from '@/types/meal';
+import type { BillAdjustment, Diner, MealItem, Nutrition } from '@/types/meal';
 import type { MealEvent, MealLifecycle } from '@/types/mealEvents';
 import type { PricingProfile } from '@/types/pricing';
 import type { CustomFood } from '@/types/customFoods';
@@ -14,6 +14,10 @@ import type { CustomFood } from '@/types/customFoods';
  * otherwise lose those plates silently — the snapshot is what preserves them.
  */
 export interface SavedSessionSnapshot {
+  /**
+   * What the table paid, adjustments included. Identical to base admission for
+   * every record filed before adjustments existed.
+   */
   readonly totalAdmission: number;
   readonly totalRetailValue: number;
   readonly totalRestaurantCost: number;
@@ -57,6 +61,12 @@ export interface SavedMealSession {
 
   readonly items: readonly MealItem[];
   readonly diners?: readonly Diner[];
+  /**
+   * What went on and came off the bill. Absent on any record filed before
+   * schema version 10 — such a record was paid at its entry price, which is a
+   * fact about it rather than a gap in it.
+   */
+  readonly adjustments?: readonly BillAdjustment[];
 
   /**
    * How the meal developed, when it was recorded with a ledger. Absent on any

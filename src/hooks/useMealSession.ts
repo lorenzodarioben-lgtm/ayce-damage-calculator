@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react';
 import { buildDamageReport } from '@/lib/calculations';
+import type { AdjustmentDraft } from '@/lib/adjustments';
 import { createId } from '@/lib/id';
 import { sessionLifecycle } from '@/lib/mealEvents';
 import {
@@ -52,6 +53,9 @@ export interface UseMealSessionResult {
   removeDiner: (id: string) => void;
   moveDiner: (id: string, direction: -1 | 1) => void;
   clearDiners: () => void;
+  addAdjustment: (draft: AdjustmentDraft, id: string) => void;
+  removeAdjustment: (id: string) => void;
+  clearAdjustments: () => void;
   addItem: (payload: AddItemPayload) => void;
   incrementItem: (id: string) => void;
   decrementItem: (id: string) => void;
@@ -193,6 +197,18 @@ export function useMealSession(
     dispatch({ type: 'clear-diners', meta: meta() });
   }, [meta]);
 
+  const addAdjustment = useCallback((draft: AdjustmentDraft, id: string) => {
+    dispatch({ type: 'add-adjustment', draft, id });
+  }, []);
+
+  const removeAdjustment = useCallback((id: string) => {
+    dispatch({ type: 'remove-adjustment', id });
+  }, []);
+
+  const clearAdjustments = useCallback(() => {
+    dispatch({ type: 'clear-adjustments' });
+  }, []);
+
   const addItem = useCallback(
     (payload: AddItemPayload) => {
       dispatch({ type: 'add-item', payload, meta: meta() });
@@ -272,6 +288,9 @@ export function useMealSession(
     removeDiner,
     moveDiner,
     clearDiners,
+    addAdjustment,
+    removeAdjustment,
+    clearAdjustments,
     addItem,
     incrementItem,
     decrementItem,

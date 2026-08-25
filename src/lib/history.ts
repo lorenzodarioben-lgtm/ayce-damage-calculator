@@ -14,6 +14,7 @@ import {
   isPlateSize,
   isQualityTier,
 } from '@/lib/constants';
+import { parseAdjustments } from '@/lib/adjustments';
 import { sanitiseRestaurantName } from '@/lib/storage';
 import { isIsoTimestamp } from '@/lib/datetime';
 import { findFoodInCatalogue, foodCatalogue } from '@/lib/foodCatalogue';
@@ -56,11 +57,12 @@ import type { PricingProfile } from '@/types/pricing';
  * 7 — records retain plate attribution and the timestamped meal ledger.
  * 8 — records retain the booked meal duration.
  * 9 — records retain the local restaurant profile the visit belongs to.
+ * 10 — records retain the bill adjustments that settled the final total.
  */
-export const SAVED_SESSION_VERSION = 9;
+export const SAVED_SESSION_VERSION = 10;
 
 /** Versions `parseSavedSession` knows how to read, current one included. */
-export const SUPPORTED_SESSION_VERSIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9] as const;
+export const SUPPORTED_SESSION_VERSIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
 
 /**
  * The first schema that could carry a timeline.
@@ -111,11 +113,22 @@ export function fingerprintSession(session: MealSession): string {
     .sort()
     .join('|');
 
+  // Adjustments are part of what the meal cost, so two otherwise identical
+  // tabs settled at different totals are different records rather than one
+  // overwriting the other. Sorted for the same reason the items are.
+  const adjustments = [...(session.adjustments ?? [])]
+    .map(
+      (entry) => `${entry.kind}:${entry.amount.toFixed(2)}:${entry.label}:${entry.dinerId ?? ''}`,
+    )
+    .sort()
+    .join('|');
+
   return [
     clampPricePerDiner(session.pricePerDiner).toFixed(2),
     clampDinerCount(session.dinerCount),
     session.pricingProfileId ?? DEFAULT_PRICING_PROFILE_ID,
     items,
+    adjustments,
   ].join('#');
 }
 
@@ -182,6 +195,11 @@ export function createSavedSession(
     note: sanitiseSessionNote(options.note),
     items: session.items.map((item) => ({ ...item })),
     ...(session.diners ? { diners: session.diners.map((diner) => ({ ...diner })) } : {}),
+    // Copied rather than referenced: what the table paid has to stay what it
+    // paid, whatever is edited afterwards.
+    ...(session.adjustments?.length
+      ? { adjustments: session.adjustments.map((entry) => ({ ...entry })) }
+      : {}),
     // Copied rather than referenced, for the same reason the pricing snapshot
     // is: what is filed has to stay what happened.
     ...(session.events?.length ? { events: session.events.map((event) => ({ ...event })) } : {}),
@@ -400,6 +418,9 @@ export function parseSavedSession(value: unknown): SavedMealSession | null {
     version >= 8 ? parseMealDuration(value.plannedDurationMinutes) : undefined;
   const linkedRestaurantId =
     version >= 9 && isRestaurantId(value.restaurantId) ? value.restaurantId : undefined;
+  // Older records were filed before a bill could carry anything but admission,
+  // so an empty list is the truth about them rather than missing data.
+  const adjustments = version >= 10 ? parseAdjustments(value.adjustments, diners) : [];
 
   return {
     id: value.id,
@@ -415,6 +436,7 @@ export function parseSavedSession(value: unknown): SavedMealSession | null {
     note: sanitiseSessionNote(value.note),
     items,
     ...(diners.length ? { diners } : {}),
+    ...(adjustments.length ? { adjustments } : {}),
     ...(events.length ? { events } : {}),
     ...(lifecycle.status === 'idle' ? {} : { lifecycle }),
     ...(plannedDurationMinutes === undefined ? {} : { plannedDurationMinutes }),
@@ -424,6 +446,7 @@ export function parseSavedSession(value: unknown): SavedMealSession | null {
       dinerCount: safeDiners,
       pricingProfileId: pricingProfile.id,
       items,
+      ...(adjustments.length ? { adjustments } : {}),
     }),
     snapshot,
   };
@@ -439,6 +462,8 @@ export function reportFromSaved(record: SavedMealSession): DamageReport {
     {
       pricePerDiner: record.pricePerDiner,
       dinerCount: record.dinerCount,
+      ...(record.diners ? { diners: record.diners } : {}),
+      ...(record.adjustments?.length ? { adjustments: record.adjustments } : {}),
     },
     record.pricingProfile,
     foodCatalogue(record.customFoods),
@@ -477,6 +502,13 @@ export function sessionFromSaved(record: SavedMealSession): MealSession {
     pricePerDiner: record.pricePerDiner,
     dinerCount: record.dinerCount,
     pricingProfileId: record.pricingProfile.id,
+    // The roster is deliberately not carried forward, so the adjustments come
+    // back scoped to the table rather than pointing at diners who are not here.
+    ...(record.adjustments?.length
+      ? {
+          adjustments: record.adjustments.map(({ dinerId: _dinerId, ...entry }) => entry),
+        }
+      : {}),
     items: record.items.map((item) => {
       const { allocations: _allocations, ...sharedItem } = item;
       return sharedItem;
