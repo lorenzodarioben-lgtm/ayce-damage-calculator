@@ -17,6 +17,38 @@ history, comparisons, result cards and shared reports. Changing a profile
 changes the current tab's calculations; filed sessions keep a snapshot of the
 profile that was used when they were saved.
 
+## Two ways to value an item
+
+Grilled meat is bought by weight, so every built-in cut is priced per kilogram
+and a plate of it is a quantity of that weight. Not everything on a Korean
+barbecue table works that way: a bowl of soup, a scoop of ice cream, a bottle
+of beer is one thing at one price.
+
+An item therefore declares which model it is priced under, and the two are
+separate typed shapes rather than one shape with half its fields optional. A
+per-serving item cannot carry a price per kilogram, and nothing downstream has
+to guess which fields are meaningful.
+
+For a **per-serving** item:
+
+- **Price and cost** are per serving, and quality tiers apply to them exactly
+  as they do to a per-kilogram rate — a house dessert and a premium one are
+  different items at different prices.
+- **Plate size does not apply.** A serving is whatever the restaurant serves,
+  so the builder hides that control and the engine ignores it.
+- **Nutrition is per serving**, not per 100 g.
+- **Weight** is a declared grams-per-serving figure, so the table's weight
+  totals stay meaningful. Zero is a legitimate answer — nobody weighs a bowl of
+  soup — and the interface reports it as unweighed rather than as nothing.
+
+Calculations, uncertainty analysis, the planner, reporting, history, analytics,
+sharing, backups and CSV all understand both models, because both resolve to
+the same per-unit figures before any arithmetic happens.
+
+A custom food or pricing override written before this existed has no valuation
+key, which is read as per-kilogram. That is a reading rather than a fallback:
+those items _were_ per-kilogram, and they calculate exactly as they always did.
+
 ## Custom foods
 
 Custom foods use the same calculation contract as the built-in catalogue:

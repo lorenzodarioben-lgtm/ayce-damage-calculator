@@ -21,7 +21,13 @@ const PROFILE: PricingProfile = {
   id: 'custom-weekend-market',
   name: 'Weekend Market',
   money: { currency: 'USD', locale: 'en-US' },
-  overrides: { 'beef-ribeye': { retailPricePerKg: 75, restaurantCostPerKg: 42 } },
+  overrides: {
+    'beef-ribeye': {
+      valuation: 'by-weight' as const,
+      retailPricePerKg: 75,
+      restaurantCostPerKg: 42,
+    },
+  },
   builtIn: false,
 };
 
@@ -105,7 +111,13 @@ describe('pricing profile storage', () => {
         DEFAULT_PRICING_PROFILE,
         {
           ...PROFILE,
-          overrides: { 'beef-ribeye': { retailPricePerKg: 'free', restaurantCostPerKg: 42 } },
+          overrides: {
+            'beef-ribeye': {
+              valuation: 'by-weight' as const,
+              retailPricePerKg: 'free',
+              restaurantCostPerKg: 42,
+            },
+          },
         },
         PROFILE,
         PROFILE,

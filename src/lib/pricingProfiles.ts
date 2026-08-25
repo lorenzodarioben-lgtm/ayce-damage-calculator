@@ -66,16 +66,26 @@ function parseOverrides(value: unknown): Readonly<Record<string, FoodPricing>> {
 
   const overrides: Record<string, FoodPricing> = {};
   for (const [foodId, pricing] of Object.entries(value)) {
-    if (
-      isPricingProfileId(foodId) &&
-      isRecord(pricing) &&
-      validPrice(pricing.retailPricePerKg) &&
-      validPrice(pricing.restaurantCostPerKg)
-    ) {
-      overrides[foodId] = {
-        retailPricePerKg: pricing.retailPricePerKg,
-        restaurantCostPerKg: pricing.restaurantCostPerKg,
-      };
+    if (isPricingProfileId(foodId) && isRecord(pricing)) {
+      if (
+        pricing.valuation === 'by-serving' &&
+        validPrice(pricing.retailPricePerServing) &&
+        validPrice(pricing.restaurantCostPerServing)
+      ) {
+        overrides[foodId] = {
+          valuation: 'by-serving',
+          retailPricePerServing: pricing.retailPricePerServing,
+          restaurantCostPerServing: pricing.restaurantCostPerServing,
+        };
+      } else if (validPrice(pricing.retailPricePerKg) && validPrice(pricing.restaurantCostPerKg)) {
+        // No valuation key means a profile written before per-serving items
+        // existed, and every override in one of those was per kilogram.
+        overrides[foodId] = {
+          valuation: 'by-weight',
+          retailPricePerKg: pricing.retailPricePerKg,
+          restaurantCostPerKg: pricing.restaurantCostPerKg,
+        };
+      }
     }
     if (Object.keys(overrides).length >= MAX_PROFILE_OVERRIDES) {
       break;

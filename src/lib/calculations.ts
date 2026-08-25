@@ -5,8 +5,6 @@ import {
   MAX_PRICE_PER_DINER,
   MIN_DINERS,
   MIN_PRICE_PER_DINER,
-  getPlateSizeMeta,
-  getQualityMeta,
 } from '@/lib/constants';
 import {
   adjustmentsForDiner,
@@ -15,7 +13,8 @@ import {
   totalAdjustments,
   type AdjustmentTotals,
 } from '@/lib/adjustments';
-import { DEFAULT_PRICING_PROFILE, resolveFoodPricing } from '@/lib/pricing';
+import { DEFAULT_PRICING_PROFILE } from '@/lib/pricing';
+import { resolveValuation } from '@/lib/valuation';
 import { findFoodInCatalogue } from '@/lib/foodCatalogue';
 import { sharedQuantity } from '@/lib/diners';
 import { consumedQuantity, uneatenQuantity } from '@/lib/consumption';
@@ -98,28 +97,6 @@ export function calculateAdmission(config: AdmissionConfig) {
   return rosterAdmission + defaultPrice * Math.max(0, dinerCount - diners.length);
 }
 
-export function adjustedRetailPricePerKg(
-  food: FoodItem,
-  quality: MealItem['quality'],
-  pricingProfile: PricingProfile = DEFAULT_PRICING_PROFILE,
-): number {
-  return (
-    resolveFoodPricing(food, pricingProfile).retailPricePerKg *
-    getQualityMeta(quality).retailMultiplier
-  );
-}
-
-export function adjustedRestaurantCostPerKg(
-  food: FoodItem,
-  quality: MealItem['quality'],
-  pricingProfile: PricingProfile = DEFAULT_PRICING_PROFILE,
-): number {
-  return (
-    resolveFoodPricing(food, pricingProfile).restaurantCostPerKg *
-    getQualityMeta(quality).restaurantMultiplier
-  );
-}
-
 /**
  * One tab line, in two measures.
  *
@@ -139,14 +116,13 @@ export function calculateLineItem(
 ): LineItemTotals {
   const plates = Math.max(0, Math.floor(item.quantity));
   const consumedPlates = consumedQuantity(item);
-  const gramsPerPlate = getPlateSizeMeta(item.plateSize).grams;
 
-  const orderedWeightG = gramsPerPlate * plates;
-  const weightG = gramsPerPlate * consumedPlates;
-  const weightKg = weightG / 1000;
-  const per100g = weightG / 100;
+  // One resolution for both valuation models, so the arithmetic below has no
+  // idea whether it is looking at a plate of ribeye or a bowl of soup.
+  const unit = resolveValuation(food, item.quality, item.plateSize, pricingProfile);
 
-  const retailPerKg = adjustedRetailPricePerKg(food, item.quality, pricingProfile);
+  const orderedWeightG = unit.gramsPerUnit * plates;
+  const weightG = unit.gramsPerUnit * consumedPlates;
 
   return {
     item,
@@ -155,17 +131,17 @@ export function calculateLineItem(
     consumedPlates,
     uneatenPlates: uneatenQuantity(item),
     weightG,
-    weightKg,
+    weightKg: weightG / 1000,
     orderedWeightG,
-    retailValue: weightKg * retailPerKg,
-    orderedRetailValue: (orderedWeightG / 1000) * retailPerKg,
-    restaurantCost:
-      (orderedWeightG / 1000) * adjustedRestaurantCostPerKg(food, item.quality, pricingProfile),
+    hasWeight: unit.hasWeight,
+    retailValue: unit.retailPerUnit * consumedPlates,
+    orderedRetailValue: unit.retailPerUnit * plates,
+    restaurantCost: unit.restaurantCostPerUnit * plates,
     nutrition: {
-      calories: per100g * food.caloriesPer100g,
-      protein: per100g * food.proteinPer100g,
-      fat: per100g * food.fatPer100g,
-      carbs: per100g * food.carbsPer100g,
+      calories: unit.nutritionPerUnit.calories * consumedPlates,
+      protein: unit.nutritionPerUnit.protein * consumedPlates,
+      fat: unit.nutritionPerUnit.fat * consumedPlates,
+      carbs: unit.nutritionPerUnit.carbs * consumedPlates,
     },
   };
 }

@@ -44,8 +44,16 @@ const PROFILE = createPricingProfile(
     name: 'Downtown lunch',
     currency: 'USD',
     overrides: {
-      'beef-ribeye': { retailPricePerKg: 61, restaurantCostPerKg: 29 },
-      'pork-belly': { retailPricePerKg: 24, restaurantCostPerKg: 11 },
+      'beef-ribeye': {
+        valuation: 'by-weight' as const,
+        retailPricePerKg: 61,
+        restaurantCostPerKg: 29,
+      },
+      'pork-belly': {
+        valuation: 'by-weight' as const,
+        retailPricePerKg: 24,
+        restaurantCostPerKg: 11,
+      },
     },
   },
   'custom-downtown-lunch',
@@ -331,7 +339,13 @@ describe('planMenuImport', () => {
     const shared = createPricingProfile(
       {
         name: 'House menu',
-        overrides: { 'custom-food-cheese-corn': { retailPricePerKg: 99, restaurantCostPerKg: 9 } },
+        overrides: {
+          'custom-food-cheese-corn': {
+            valuation: 'by-weight' as const,
+            retailPricePerKg: 99,
+            restaurantCostPerKg: 9,
+          },
+        },
       },
       'custom-house-menu',
     )!;
@@ -344,6 +358,7 @@ describe('planMenuImport', () => {
     const newId = plan.customFoods[0]!.id;
     expect(newId).not.toBe(CHEESE_CORN.id);
     expect(plan.pricingProfile?.overrides[newId]).toEqual({
+      valuation: 'by-weight' as const,
       retailPricePerKg: 99,
       restaurantCostPerKg: 9,
     });

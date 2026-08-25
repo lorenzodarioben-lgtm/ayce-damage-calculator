@@ -1,4 +1,5 @@
 import type { DeltaUnit } from '@/lib/comparison';
+import type { FoodPricing } from '@/types/pricing';
 import { DEFAULT_MONEY_CONTEXT, type MoneyContext, resolveMoneyContext } from '@/lib/money';
 
 const INTEGER = new Intl.NumberFormat('en-AU', { maximumFractionDigits: 0 });
@@ -98,6 +99,52 @@ export function formatPricePerKg(
   const safe = finite(value);
   const digits = Number.isInteger(safe) ? 0 : 2;
   return `${currencyFormatter(resolveMoneyContext(context), digits).format(safe)}/kg`;
+}
+
+/**
+ * A count of what was ordered, named for whatever the item is counted in.
+ *
+ * "3 plates" for a cut and "3 servings" for a bowl of soup: the tab counts
+ * units either way, and only the noun differs.
+ */
+export function formatUnits(line: {
+  readonly plates: number;
+  readonly food: { readonly valuation: 'by-weight' | 'by-serving' };
+}): string {
+  const count = Math.max(0, Math.round(finite(line.plates)));
+  const noun = line.food.valuation === 'by-serving' ? 'serving' : 'plate';
+  return `${INTEGER.format(count)} ${count === 1 ? noun : `${noun}s`}`;
+}
+
+/**
+ * A rate, in whichever unit the item is actually priced by.
+ *
+ * One formatter for both models, so a surface showing a price never has to pick
+ * a suffix — and can never say "/kg" about a bowl of soup.
+ */
+export function formatUnitPrice(
+  pricing: FoodPricing,
+  context: MoneyContext = DEFAULT_MONEY_CONTEXT,
+): string {
+  if (pricing.valuation === 'by-serving') {
+    const safe = finite(pricing.retailPricePerServing);
+    const digits = Number.isInteger(safe) ? 0 : 2;
+    return `${currencyFormatter(resolveMoneyContext(context), digits).format(safe)}/serving`;
+  }
+  return formatPricePerKg(pricing.retailPricePerKg, context);
+}
+
+/** The estimated ingredient cost side of the same rate. */
+export function formatUnitCost(
+  pricing: FoodPricing,
+  context: MoneyContext = DEFAULT_MONEY_CONTEXT,
+): string {
+  if (pricing.valuation === 'by-serving') {
+    const safe = finite(pricing.restaurantCostPerServing);
+    const digits = Number.isInteger(safe) ? 0 : 2;
+    return `${currencyFormatter(resolveMoneyContext(context), digits).format(safe)}/serving`;
+  }
+  return formatPricePerKg(pricing.restaurantCostPerKg, context);
 }
 
 function signOf(value: number): string {

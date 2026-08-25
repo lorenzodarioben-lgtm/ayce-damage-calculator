@@ -5,7 +5,7 @@ import { Trash2, Utensils } from 'lucide-react';
 import { QuantityStepper } from '@/components/meal/QuantityStepper';
 import { MAX_LINE_QUANTITY, MIN_QUANTITY, getPlateSizeMeta, getQualityMeta } from '@/lib/constants';
 import { CONSUMPTION_STEP, formatPlateQuantity } from '@/lib/consumption';
-import { formatMoney, formatPlates, formatWeight } from '@/lib/formatting';
+import { formatMoney, formatUnits, formatWeight } from '@/lib/formatting';
 import { usePricingProfile } from '@/components/session/PricingContext';
 import type { LineItemTotals } from '@/types/meal';
 
@@ -49,7 +49,8 @@ export function MealTabItem({
             {getQualityMeta(item.quality).label} · {getPlateSizeMeta(item.plateSize).label}
           </p>
           <p className="tabular mt-0.5 text-xs text-cream-700">
-            {formatPlates(line.plates)} · {formatWeight(line.weightG)}
+            {formatUnits(line)}
+            {line.hasWeight ? ` · ${formatWeight(line.weightG)}` : ' · not weighed'}
           </p>
           {left && (
             <p className="tabular mt-0.5 text-xs text-cream-500">

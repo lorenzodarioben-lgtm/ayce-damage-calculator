@@ -92,7 +92,11 @@ describe('Menu links handed out before compression existed', () => {
 
     expect(payload?.pricingProfile.name).toBe('Downtown lunch');
     expect(payload?.pricingProfile.money.currency).toBe('USD');
-    expect(payload?.pricingProfile.overrides['beef-ribeye']?.retailPricePerKg).toBe(61);
+    const override = payload?.pricingProfile.overrides['beef-ribeye'];
+    // A version 1 menu token predates per-serving items, so every override in
+    // one is per kilogram and must still be read as one.
+    expect(override?.valuation).toBe('by-weight');
+    expect(override?.valuation === 'by-weight' ? override.retailPricePerKg : null).toBe(61);
     expect(payload?.restaurant).toEqual({ name: 'Friday KBBQ', pricePerDiner: 42, dinerCount: 2 });
   });
 

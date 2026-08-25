@@ -2,11 +2,24 @@ import type { MoneyContext } from '@/lib/money';
 
 export type PricingProfileId = string;
 
-/** Raw pre-quality figures; quality tiers are still applied by the calculation engine. */
-export interface FoodPricing {
-  readonly retailPricePerKg: number;
-  readonly restaurantCostPerKg: number;
-}
+/**
+ * Raw pre-quality figures; quality tiers are still applied by the engine.
+ *
+ * Split by valuation model for the same reason the food itself is: an override
+ * for a per-serving item is a price per serving, and letting one shape carry
+ * both would mean every reader deciding for itself which half to believe.
+ */
+export type FoodPricing =
+  | {
+      readonly valuation: 'by-weight';
+      readonly retailPricePerKg: number;
+      readonly restaurantCostPerKg: number;
+    }
+  | {
+      readonly valuation: 'by-serving';
+      readonly retailPricePerServing: number;
+      readonly restaurantCostPerServing: number;
+    };
 
 export interface PricingProfile {
   readonly id: PricingProfileId;

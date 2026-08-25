@@ -214,6 +214,17 @@ facts, with every threshold named in one exported object. Nothing consults the c
 **One meal model.** Live Meal Mode, the full builder and the report all drive the same session
 reducer and the same calculation engine. There is no second meal shape and no second set of sums.
 
+**Two valuation models, one engine.** Grilled meat is bought by weight; a bowl of soup is one thing
+at one price. An item declares which model prices it, as a discriminated union rather than one shape
+with half its fields optional — so a per-serving item cannot carry a price per kilogram, and nothing
+downstream guesses which fields are meaningful. Both models resolve to the same four per-unit figures
+before any arithmetic happens, which is what keeps the calculation engine on one code path instead of
+a branch it would have to keep in step forever. Plate size applies only to a weight-valued cut, and
+the builder hides the control for anything else rather than greying it out. An override written for
+the wrong model is ignored rather than coerced: a price per kilogram says nothing usable about a
+soup, and treating one as the other would produce a confident wrong number. Every existing custom
+food and pricing profile is read as per-kilogram, which is what it was.
+
 **Ordered is not eaten.** A line records the plates that reached the table and, optionally, how much
 of them was eaten. An absent consumed quantity means the plate went clean, which is the default for
 ordinary logging and the truth about every session recorded before this existed — so the fast journey
