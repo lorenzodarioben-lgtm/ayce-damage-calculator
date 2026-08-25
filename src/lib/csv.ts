@@ -1,4 +1,5 @@
 import { getPlateSizeMeta, getQualityMeta } from '@/lib/constants';
+import { formatPlateQuantity } from '@/lib/consumption';
 import { resolveSavedSession } from '@/lib/history';
 import type { SavedMealSession } from '@/types/history';
 
@@ -29,8 +30,12 @@ export const CSV_COLUMNS = [
   'quality',
   'plate_size',
   'plates',
+  'plates_eaten',
+  'plates_left',
   'weight_g',
+  'ordered_weight_g',
   'line_retail_value',
+  'line_ordered_retail_value',
   'attribution',
 ] as const;
 
@@ -88,8 +93,12 @@ export function historyToCsv(records: readonly SavedMealSession[]): string {
           getQualityMeta(line.item.quality).label,
           getPlateSizeMeta(line.item.plateSize).label,
           String(line.plates),
+          formatPlateQuantity(line.consumedPlates),
+          formatPlateQuantity(line.uneatenPlates),
           whole(line.weightG),
+          whole(line.orderedWeightG),
           money(line.retailValue),
+          money(line.orderedRetailValue),
           line.item.allocations?.length
             ? line.item.allocations
                 .map((allocation) => {

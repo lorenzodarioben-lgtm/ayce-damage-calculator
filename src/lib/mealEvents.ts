@@ -1,6 +1,7 @@
 import { MAX_LINE_QUANTITY, MIN_QUANTITY, isPlateSize, isQualityTier } from '@/lib/constants';
 import { isIsoTimestamp } from '@/lib/datetime';
 import { isDinerId } from '@/lib/diners';
+import { normaliseConsumedQuantity } from '@/lib/consumption';
 import { findFoodInCatalogue } from '@/lib/foodCatalogue';
 import {
   MEAL_EVENT_SOURCES,
@@ -209,6 +210,23 @@ export function parseMealEvent(value: unknown, foods?: readonly FoodItem[]): Mea
         line,
         quantity,
         ...(isDinerId(value.dinerId) ? { dinerId: value.dinerId } : {}),
+      };
+    }
+    case 'consumption-changed': {
+      const line = parseLine(value.line, foods);
+      const quantity = parseQuantity(value.quantity);
+      if (!line || quantity === null) {
+        return null;
+      }
+      // Normalised against the quantity the event itself records, so a
+      // hand-edited ledger can never claim more was eaten than arrived.
+      const consumed = normaliseConsumedQuantity(value.consumedQuantity, quantity);
+      return {
+        ...base,
+        type: 'consumption-changed',
+        line,
+        quantity,
+        consumedQuantity: consumed ?? quantity,
       };
     }
     case 'plates-reduced':

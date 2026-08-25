@@ -7,10 +7,17 @@ interface MealTabProps {
   lines: readonly LineItemTotals[];
   onIncrement: (id: string) => void;
   onDecrement: (id: string) => void;
+  onConsumptionChange: (id: string, consumed: number) => void;
   onRemove: (id: string) => void;
 }
 
-export function MealTab({ lines, onIncrement, onDecrement, onRemove }: MealTabProps) {
+export function MealTab({
+  lines,
+  onIncrement,
+  onDecrement,
+  onConsumptionChange,
+  onRemove,
+}: MealTabProps) {
   if (lines.length === 0) {
     return (
       <div className="rounded-[10px] border border-dashed border-line bg-ash-900/60 px-4 py-6 text-center">
@@ -30,6 +37,7 @@ export function MealTab({ lines, onIncrement, onDecrement, onRemove }: MealTabPr
           line={line}
           onIncrement={onIncrement}
           onDecrement={onDecrement}
+          onConsumptionChange={onConsumptionChange}
           onRemove={onRemove}
         />
       ))}

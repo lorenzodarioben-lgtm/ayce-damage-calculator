@@ -82,6 +82,30 @@ storage version 7, filed records at schema version 10, and backups at file
 version 5. Anything written before those versions is read as having been paid
 at its entry price — which is the truth about it, not a gap in it.
 
+## Eaten and left
+
+Ordered plates stay whole numbers. Alongside them, a line may carry an optional
+consumed quantity in quarter plates, so a table can record that some of what
+arrived went back.
+
+Absence is meaningful and is the default. A line with no consumed quantity was
+eaten in full, which is what every session recorded before this existed is
+saying and what ordinary logging keeps saying without anyone touching a
+control. The consumption slider is folded away until it is asked for, or until
+there is already something to show.
+
+Eaten quantity drives retail value, nutrition and therefore recovery, because
+value nobody ate is not value anyone extracted. The ordered figures are kept
+alongside, so the tab still says what reached the table. Estimated ingredient
+cost deliberately follows the ordered quantity: the restaurant bought the plate
+whether or not it came back.
+
+Consumption can never be negative and can never exceed the ordered quantity —
+reducing an order brings the eaten figure down with it. Changes are recorded in
+the meal ledger, so replay, history, reports, receipts, sharing, backups and CSV
+all agree. Migration is by version: in-progress sessions at storage version 8
+and filed records at schema version 11 read anything older as fully eaten.
+
 ## Data boundaries
 
 All configurable-menu data stays in browser storage unless a diner explicitly

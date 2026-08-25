@@ -13,6 +13,7 @@ import { DEFAULT_PRICING_PROFILE } from '@/lib/pricing';
 import { parseCustomPricingProfile } from '@/lib/pricingProfiles';
 import { MAX_CUSTOM_FOODS, parseCustomFood } from '@/lib/customFoods';
 import { parseAdjustments } from '@/lib/adjustments';
+import { normaliseConsumedQuantity } from '@/lib/consumption';
 import {
   packShareBody,
   shareEncodeFailure,
@@ -184,12 +185,22 @@ export function encodeShareResult(
     // were charged to travels only as the same opaque id the roster already
     // anonymises.
     adjustments: session.adjustments?.length ? session.adjustments : undefined,
-    items: session.items.slice(0, MAX_SHARE_ITEMS).map((item) => ({
-      foodId: item.foodId,
-      quality: item.quality,
-      plateSize: item.plateSize,
-      quantity: Math.min(MAX_LINE_QUANTITY, Math.max(MIN_QUANTITY, Math.floor(item.quantity))),
-    })),
+    items: session.items.slice(0, MAX_SHARE_ITEMS).map((item) => {
+      const quantity = Math.min(
+        MAX_LINE_QUANTITY,
+        Math.max(MIN_QUANTITY, Math.floor(item.quantity)),
+      );
+      const consumed = normaliseConsumedQuantity(item.consumedQuantity, quantity);
+      return {
+        foodId: item.foodId,
+        quality: item.quality,
+        plateSize: item.plateSize,
+        quantity,
+        // Omitted for a clean plate, so a link carrying an ordinary meal is
+        // exactly the document it always was.
+        ...(consumed === undefined ? {} : { consumedQuantity: consumed }),
+      };
+    }),
   };
   const body = packShareBody(JSON.stringify(payload), SHARE_LIMITS);
   return body === null
@@ -360,12 +371,15 @@ function parseShareItems(value: unknown, foods: readonly FoodItem[]): readonly M
     ) {
       return null;
     }
+    const safeQuantity = Math.min(MAX_LINE_QUANTITY, Math.max(MIN_QUANTITY, Math.floor(quantity)));
+    const consumed = normaliseConsumedQuantity(entry.consumedQuantity, safeQuantity);
     items.push({
       id: `shared-${index}-${entry.foodId}`,
       foodId: entry.foodId,
       quality: quality as QualityTier,
       plateSize: plateSize as PlateSize,
-      quantity: Math.min(MAX_LINE_QUANTITY, Math.max(MIN_QUANTITY, Math.floor(quantity))),
+      quantity: safeQuantity,
+      ...(consumed === undefined ? {} : { consumedQuantity: consumed }),
     });
   }
   return items;

@@ -48,6 +48,7 @@ export function LiveMealMode() {
     addItem,
     incrementItem,
     decrementItem,
+    setItemConsumption,
     removeItem,
     restoreItem,
     setMealDuration,
@@ -158,6 +159,7 @@ export function LiveMealMode() {
                   line={line}
                   onIncrement={handleIncrement}
                   onDecrement={decrementItem}
+                  onConsumptionChange={setItemConsumption}
                   onRemove={handleRemove}
                 />
               ))}

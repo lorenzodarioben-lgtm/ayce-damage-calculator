@@ -18,6 +18,7 @@ import {
 import { DEFAULT_PRICING_PROFILE, resolveFoodPricing } from '@/lib/pricing';
 import { findFoodInCatalogue } from '@/lib/foodCatalogue';
 import { sharedQuantity } from '@/lib/diners';
+import { consumedQuantity, uneatenQuantity } from '@/lib/consumption';
 import type { PricingProfile } from '@/types/pricing';
 import type {
   DamageReport,
@@ -119,24 +120,47 @@ export function adjustedRestaurantCostPerKg(
   );
 }
 
+/**
+ * One tab line, in two measures.
+ *
+ * What reached the table and what was eaten are the same number for an ordinary
+ * line, and this stays arithmetically identical for one. Where they differ, the
+ * eaten figure drives retail value, nutrition and therefore recovery, because
+ * value you did not eat is not value you extracted — while the ordered figures
+ * are kept alongside so the tab still says what actually arrived.
+ *
+ * Estimated ingredient cost deliberately follows the ordered quantity. The
+ * restaurant bought the plate whether or not it went back.
+ */
 export function calculateLineItem(
   item: MealItem,
   food: FoodItem,
   pricingProfile: PricingProfile = DEFAULT_PRICING_PROFILE,
 ): LineItemTotals {
   const plates = Math.max(0, Math.floor(item.quantity));
-  const weightG = getPlateSizeMeta(item.plateSize).grams * plates;
+  const consumedPlates = consumedQuantity(item);
+  const gramsPerPlate = getPlateSizeMeta(item.plateSize).grams;
+
+  const orderedWeightG = gramsPerPlate * plates;
+  const weightG = gramsPerPlate * consumedPlates;
   const weightKg = weightG / 1000;
   const per100g = weightG / 100;
+
+  const retailPerKg = adjustedRetailPricePerKg(food, item.quality, pricingProfile);
 
   return {
     item,
     food,
     plates,
+    consumedPlates,
+    uneatenPlates: uneatenQuantity(item),
     weightG,
     weightKg,
-    retailValue: weightKg * adjustedRetailPricePerKg(food, item.quality, pricingProfile),
-    restaurantCost: weightKg * adjustedRestaurantCostPerKg(food, item.quality, pricingProfile),
+    orderedWeightG,
+    retailValue: weightKg * retailPerKg,
+    orderedRetailValue: (orderedWeightG / 1000) * retailPerKg,
+    restaurantCost:
+      (orderedWeightG / 1000) * adjustedRestaurantCostPerKg(food, item.quality, pricingProfile),
     nutrition: {
       calories: per100g * food.caloriesPer100g,
       protein: per100g * food.proteinPer100g,
@@ -165,8 +189,12 @@ export function calculateSessionTotals(
   const totals = lines.reduce(
     (acc, line) => ({
       totalPlates: acc.totalPlates + line.plates,
+      totalConsumedPlates: acc.totalConsumedPlates + line.consumedPlates,
+      totalUneatenPlates: acc.totalUneatenPlates + line.uneatenPlates,
       totalWeightG: acc.totalWeightG + line.weightG,
+      totalOrderedWeightG: acc.totalOrderedWeightG + line.orderedWeightG,
       totalRetailValue: acc.totalRetailValue + line.retailValue,
+      totalOrderedRetailValue: acc.totalOrderedRetailValue + line.orderedRetailValue,
       totalRestaurantCost: acc.totalRestaurantCost + line.restaurantCost,
       nutrition: {
         calories: acc.nutrition.calories + line.nutrition.calories,
@@ -177,8 +205,12 @@ export function calculateSessionTotals(
     }),
     {
       totalPlates: 0,
+      totalConsumedPlates: 0,
+      totalUneatenPlates: 0,
       totalWeightG: 0,
+      totalOrderedWeightG: 0,
       totalRetailValue: 0,
+      totalOrderedRetailValue: 0,
       totalRestaurantCost: 0,
       nutrition: EMPTY_NUTRITION,
     },
@@ -189,10 +221,15 @@ export function calculateSessionTotals(
   return {
     lines,
     totalPlates: totals.totalPlates,
+    totalConsumedPlates: totals.totalConsumedPlates,
+    totalUneatenPlates: totals.totalUneatenPlates,
     totalWeightG: totals.totalWeightG,
     totalWeightKg,
     totalWeightLb: totalWeightKg * KG_TO_LB,
+    totalOrderedWeightG: totals.totalOrderedWeightG,
+    totalOrderedWeightKg: totals.totalOrderedWeightG / 1000,
     totalRetailValue: totals.totalRetailValue,
+    totalOrderedRetailValue: totals.totalOrderedRetailValue,
     totalRestaurantCost: totals.totalRestaurantCost,
     nutrition: totals.nutrition,
   };
@@ -260,6 +297,7 @@ export function calculateDinerTotals(
   return diners.map((diner) => {
     let attributedPlates = 0;
     let sharedPlates = 0;
+    let consumedPlates = 0;
     let weightG = 0;
     let retailValue = 0;
     let restaurantCost = 0;
@@ -275,6 +313,9 @@ export function calculateDinerTotals(
       const fraction = safeRatio(effective, line.plates);
       attributedPlates += Math.max(0, attributed);
       sharedPlates += shared;
+      // A line's uneaten share is a property of the line, not of one person, so
+      // each diner carries their proportion of what was eaten from it.
+      consumedPlates += line.consumedPlates * fraction;
       weightG += line.weightG * fraction;
       retailValue += line.retailValue * fraction;
       restaurantCost += line.restaurantCost * fraction;
@@ -305,6 +346,7 @@ export function calculateDinerTotals(
       attributedPlates,
       sharedPlates,
       effectivePlates,
+      consumedPlates,
       weightG,
       retailValue,
       restaurantCost,

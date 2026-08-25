@@ -8,6 +8,7 @@ import {
 } from '@/lib/constants';
 import { createAdjustment, reconcileAdjustments, type AdjustmentDraft } from '@/lib/adjustments';
 import { MAX_BILL_ADJUSTMENTS } from '@/lib/constants';
+import { consumedQuantity, reconcileConsumption, withConsumedQuantity } from '@/lib/consumption';
 import { isDinerId, normaliseDinerName, reconcileItemAllocations } from '@/lib/diners';
 import { appendMealEvents, mealEventLine, nextEventSeq, sessionLifecycle } from '@/lib/mealEvents';
 import { clampMealDuration } from '@/lib/pacing';
@@ -90,6 +91,7 @@ export type SessionAction =
       allocations: readonly DinerAllocation[];
       meta?: MealEventMeta;
     }
+  | { type: 'set-item-consumption'; id: string; consumed: number; meta?: MealEventMeta }
   | { type: 'remove-item'; id: string; meta?: MealEventMeta }
   | { type: 'restore-item'; item: MealItem; index: number; meta?: MealEventMeta }
   | { type: 'add-adjustment'; draft: AdjustmentDraft; id: string }
@@ -340,11 +342,18 @@ function applySessionAction(state: MealSession, action: SessionAction): MealSess
           items: state.items.map((item) =>
             item.id === id
               ? reconcileItemAllocations(
-                  {
-                    ...item,
-                    quantity: nextQuantity,
-                    ...(allocations?.length ? { allocations } : {}),
-                  },
+                  // New plates arrive to be eaten, so they raise the eaten
+                  // figure too; a line nobody has trimmed stays untrimmed.
+                  withConsumedQuantity(
+                    {
+                      ...item,
+                      quantity: nextQuantity,
+                      ...(allocations?.length ? { allocations } : {}),
+                    },
+                    item.consumedQuantity === undefined
+                      ? undefined
+                      : item.consumedQuantity + addedQuantity,
+                  ),
                   state.diners,
                 )
               : item,
@@ -367,7 +376,14 @@ function applySessionAction(state: MealSession, action: SessionAction): MealSess
       return {
         ...state,
         items: state.items.map((item) =>
-          item.id === action.id ? { ...item, quantity: clampQuantity(item.quantity + 1) } : item,
+          item.id === action.id
+            ? // A plate arriving is a plate to eat, so the eaten figure rises
+              // with the order and a line that was clean stays clean.
+              withConsumedQuantity(
+                { ...item, quantity: clampQuantity(item.quantity + 1) },
+                item.consumedQuantity === undefined ? undefined : item.consumedQuantity + 1,
+              )
+            : item,
         ),
       };
 
@@ -376,11 +392,23 @@ function applySessionAction(state: MealSession, action: SessionAction): MealSess
         ...state,
         items: state.items.map((item) =>
           item.id === action.id
-            ? reconcileItemAllocations(
-                { ...item, quantity: clampQuantity(item.quantity - 1) },
-                state.diners,
+            ? // Reconciled, because a shrinking order has to bring what was
+              // eaten down with it rather than claim more was eaten than came.
+              reconcileConsumption(
+                reconcileItemAllocations(
+                  { ...item, quantity: clampQuantity(item.quantity - 1) },
+                  state.diners,
+                ),
               )
             : item,
+        ),
+      };
+
+    case 'set-item-consumption':
+      return {
+        ...state,
+        items: state.items.map((item) =>
+          item.id === action.id ? withConsumedQuantity(item, action.consumed) : item,
         ),
       };
 
@@ -498,6 +526,22 @@ function draftsForAction(
       return removed > 0 && line
         ? [{ type: 'plates-reduced', line: mealEventLine(line), quantity: removed }]
         : [];
+    }
+
+    case 'set-item-consumption': {
+      const previous = before.items.find((item) => item.id === action.id);
+      const line = after.items.find((item) => item.id === action.id);
+      if (!line || !previous || consumedQuantity(previous) === consumedQuantity(line)) {
+        return [];
+      }
+      return [
+        {
+          type: 'consumption-changed',
+          line: mealEventLine(line),
+          consumedQuantity: consumedQuantity(line),
+          quantity: line.quantity,
+        },
+      ];
     }
 
     case 'remove-item': {

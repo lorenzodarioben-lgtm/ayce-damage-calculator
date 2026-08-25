@@ -1,7 +1,9 @@
 'use client';
 
-import { Minus, Plus, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { Minus, Plus, Trash2, Utensils } from 'lucide-react';
 import { getPlateSizeMeta, getQualityMeta } from '@/lib/constants';
+import { CONSUMPTION_STEP, formatPlateQuantity } from '@/lib/consumption';
 import { formatMoney, formatWeight } from '@/lib/formatting';
 import type { LineItemTotals } from '@/types/meal';
 
@@ -9,6 +11,7 @@ interface QuickLogRowProps {
   line: LineItemTotals;
   onIncrement: (id: string) => void;
   onDecrement: (id: string) => void;
+  onConsumptionChange: (id: string, consumed: number) => void;
   onRemove: (id: string) => void;
 }
 
@@ -18,9 +21,20 @@ interface QuickLogRowProps {
  * The add target is deliberately oversized and the destructive controls are
  * small and set apart: this is used one-handed, at a table, in poor light.
  */
-export function QuickLogRow({ line, onIncrement, onDecrement, onRemove }: QuickLogRowProps) {
+export function QuickLogRow({
+  line,
+  onIncrement,
+  onDecrement,
+  onConsumptionChange,
+  onRemove,
+}: QuickLogRowProps) {
   const { item, food } = line;
   const descriptor = `${food.name}, ${getQualityMeta(item.quality).label}, ${getPlateSizeMeta(item.plateSize).label}`;
+  const left = line.uneatenPlates > 0;
+  const [open, setOpen] = useState(false);
+  // Only ever unfolded on purpose, or because there is already something to
+  // show. The one-tap journey is what this screen is for.
+  const expanded = open || left;
 
   return (
     <li className="panel p-3 sm:p-4">
@@ -34,6 +48,9 @@ export function QuickLogRow({ line, onIncrement, onDecrement, onRemove }: QuickL
         <div className="tabular shrink-0 text-right">
           <p className="text-sm font-bold text-ember-400">{formatMoney(line.retailValue)}</p>
           <p className="text-xs text-cream-700">{formatWeight(line.weightG)}</p>
+          {left && (
+            <p className="text-xs text-cream-500">{formatPlateQuantity(line.uneatenPlates)} left</p>
+          )}
         </div>
       </div>
 
@@ -65,6 +82,16 @@ export function QuickLogRow({ line, onIncrement, onDecrement, onRemove }: QuickL
 
         <button
           type="button"
+          onClick={() => setOpen((current) => !current)}
+          aria-expanded={expanded}
+          aria-label={`Record how much of ${descriptor} was eaten`}
+          className="flex min-h-16 w-14 cursor-pointer items-center justify-center rounded-[12px] border border-transparent text-cream-700 transition-colors duration-200 hover:border-line hover:bg-ash-800 hover:text-cream-300"
+        >
+          <Utensils size={18} aria-hidden="true" />
+        </button>
+
+        <button
+          type="button"
           onClick={() => onRemove(item.id)}
           aria-label={`Remove ${descriptor} from your tab`}
           className="flex min-h-16 w-14 cursor-pointer items-center justify-center rounded-[12px] border border-transparent text-cream-700 transition-colors duration-200 hover:border-char-700 hover:bg-char-700/20 hover:text-char-500"
@@ -72,6 +99,27 @@ export function QuickLogRow({ line, onIncrement, onDecrement, onRemove }: QuickL
           <Trash2 size={18} aria-hidden="true" />
         </button>
       </div>
+
+      {expanded && (
+        <div className="mt-3 rounded-[12px] border border-line-soft bg-ash-900 px-3 py-2">
+          <div className="tabular flex items-baseline justify-between gap-2 text-xs text-cream-500">
+            <span className="text-cream-300">Eaten</span>
+            <span>
+              {formatPlateQuantity(line.consumedPlates)} of {line.plates}
+            </span>
+          </div>
+          <input
+            aria-label={`Plates of ${descriptor} eaten`}
+            type="range"
+            min={0}
+            max={line.plates}
+            step={CONSUMPTION_STEP}
+            value={line.consumedPlates}
+            onChange={(event) => onConsumptionChange(item.id, Number(event.target.value))}
+            className="mt-1.5 h-8 w-full cursor-pointer accent-[var(--color-ember-500)]"
+          />
+        </div>
+      )}
     </li>
   );
 }
