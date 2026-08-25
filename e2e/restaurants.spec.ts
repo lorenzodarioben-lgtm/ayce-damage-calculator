@@ -26,6 +26,25 @@ async function fileVisitAt(page: Page, name: string, price: number) {
   await expect(page.getByRole('button', { name: 'Filed to history' })).toBeVisible();
 }
 
+/** Files a meal whose typed name matches a saved place without being linked to it. */
+async function fileUnlinkedVisit(page: Page, name: string, price: number) {
+  await openCalculator(page);
+  await saveRestaurant(page, name, price);
+  // Typed by hand, never applied, so the meal is not linked to the place.
+  await setRestaurantName(page, name);
+  await addPlate(page, 'Ribeye');
+  await calculateDamage(page);
+  await page.getByRole('button', { name: 'Save to history' }).click();
+  await expect(page.getByRole('button', { name: 'Filed to history' })).toBeVisible();
+}
+
+async function linkCandidateVisits(page: Page) {
+  await page.getByRole('button', { name: 'Link these visits' }).click();
+  await expect(page.getByRole('heading', { name: 'Link these visits?' })).toBeVisible();
+  await page.getByRole('button', { name: 'Link them' }).click();
+  await expect(page.getByText(/linked to/)).toBeVisible();
+}
+
 test.describe('The restaurant hub', () => {
   test('states its empty case and stays honest about what it is', async ({ page }) => {
     await page.goto('/restaurants');
@@ -60,14 +79,7 @@ test.describe('The restaurant hub', () => {
   });
 
   test('does not claim a visit merely because the names match', async ({ page }) => {
-    await openCalculator(page);
-    await saveRestaurant(page, 'Friday KBBQ', 42);
-    // Typed by hand, never applied, so the meal is not linked to the place.
-    await setRestaurantName(page, 'Friday KBBQ');
-    await addPlate(page, 'Ribeye');
-    await calculateDamage(page);
-    await page.getByRole('button', { name: 'Save to history' }).click();
-    await expect(page.getByRole('button', { name: 'Filed to history' })).toBeVisible();
+    await fileUnlinkedVisit(page, 'Friday KBBQ', 42);
 
     await page.goto('/restaurants/friday-kbbq');
 
@@ -77,20 +89,46 @@ test.describe('The restaurant hub', () => {
   });
 
   test('links an older visit only when the diner says so', async ({ page }) => {
-    await openCalculator(page);
-    await saveRestaurant(page, 'Friday KBBQ', 42);
-    await setRestaurantName(page, 'Friday KBBQ');
-    await addPlate(page, 'Ribeye');
-    await calculateDamage(page);
-    await page.getByRole('button', { name: 'Save to history' }).click();
-    await expect(page.getByRole('button', { name: 'Filed to history' })).toBeVisible();
+    await fileUnlinkedVisit(page, 'Friday KBBQ', 42);
+
+    await page.goto('/restaurants/friday-kbbq');
+    await expect(page.getByText(/No visits filed here yet/)).toBeVisible();
+    await linkCandidateVisits(page);
+
+    // The place recounts itself as soon as the link is written, with no reload
+    // and no instruction to perform one.
+    await expect(page.getByText('Recent visits')).toBeVisible();
+    await expect(page.getByText('Average recovery')).toBeVisible();
+    await expect(page.getByText(/No visits filed here yet/)).toBeHidden();
+    await expect(page.getByText(/Older visits that might belong here/)).toBeHidden();
+  });
+
+  test('has written the link before it says it has', async ({ page }) => {
+    await fileUnlinkedVisit(page, 'Friday KBBQ', 42);
+
+    await page.goto('/restaurants/friday-kbbq');
+    await linkCandidateVisits(page);
+    await expect(page.getByText('Recent visits')).toBeVisible();
+
+    // Reloading immediately is the whole point: the announcement is a report of
+    // a committed transaction, so what comes back has to agree with it.
+    await page.reload();
+    await expect(page.getByText('Recent visits')).toBeVisible();
+    await expect(page.getByText('Visits', { exact: true })).toBeVisible();
+  });
+
+  test('closes the linking workflow only once the write is done', async ({ page }) => {
+    await fileUnlinkedVisit(page, 'Friday KBBQ', 42);
 
     await page.goto('/restaurants/friday-kbbq');
     await page.getByRole('button', { name: 'Link these visits' }).click();
-    await expect(page.getByRole('heading', { name: 'Link these visits?' })).toBeVisible();
-    await page.getByRole('button', { name: 'Link them' }).click();
+    const heading = page.getByRole('heading', { name: 'Link these visits?' });
+    await expect(heading).toBeVisible();
 
-    await page.reload();
+    await page.getByRole('button', { name: 'Link them' }).click();
+    // Whichever side of the write this lands on, the dialog is never both open
+    // and still offering the action again.
+    await expect(heading).toBeHidden();
     await expect(page.getByText('Recent visits')).toBeVisible();
   });
 
