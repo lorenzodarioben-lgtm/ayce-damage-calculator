@@ -143,6 +143,7 @@ export function calculateLineItem(
       fat: unit.nutritionPerUnit.fat * consumedPlates,
       carbs: unit.nutritionPerUnit.carbs * consumedPlates,
     },
+    hasNutrition: unit.hasNutrition,
   };
 }
 
@@ -172,6 +173,7 @@ export function calculateSessionTotals(
       totalRetailValue: acc.totalRetailValue + line.retailValue,
       totalOrderedRetailValue: acc.totalOrderedRetailValue + line.orderedRetailValue,
       totalRestaurantCost: acc.totalRestaurantCost + line.restaurantCost,
+      linesWithoutNutrition: acc.linesWithoutNutrition + (line.hasNutrition ? 0 : 1),
       nutrition: {
         calories: acc.nutrition.calories + line.nutrition.calories,
         protein: acc.nutrition.protein + line.nutrition.protein,
@@ -188,6 +190,7 @@ export function calculateSessionTotals(
       totalRetailValue: 0,
       totalOrderedRetailValue: 0,
       totalRestaurantCost: 0,
+      linesWithoutNutrition: 0,
       nutrition: EMPTY_NUTRITION,
     },
   );
@@ -208,6 +211,7 @@ export function calculateSessionTotals(
     totalOrderedRetailValue: totals.totalOrderedRetailValue,
     totalRestaurantCost: totals.totalRestaurantCost,
     nutrition: totals.nutrition,
+    linesWithoutNutrition: totals.linesWithoutNutrition,
   };
 }
 

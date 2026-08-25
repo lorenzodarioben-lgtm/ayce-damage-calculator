@@ -49,6 +49,39 @@ A custom food or pricing override written before this existed has no valuation
 key, which is read as per-kilogram. That is a reading rather than a fallback:
 those items _were_ per-kilogram, and they calculate exactly as they always did.
 
+## Menu categories
+
+The bundled Australian KBBQ catalogue occupies four categories — beef, pork,
+chicken and seafood — and is unchanged: the same eighteen cuts, at the same
+prices, with the same macros.
+
+Four more categories exist for a diner's own items: **sides**, **hot food**,
+**desserts** and **drinks**. An all-you-can-eat table has banchan, a stew, a
+scoop of something and a bottle of something, and none of those is a cut of
+meat.
+
+Nothing is bundled for them. There is no invented price for a bowl of soup and
+no assumed calorie count for a beer, because the app does not know and will not
+pretend to — the categories start empty and stay empty until a diner adds
+something. They are therefore hidden from the category tabs until they hold
+something, so anyone using the default menu sees the four grill tabs and no
+empty ones to wonder about.
+
+Each of the four has its own in-app SVG artwork, drawn in the same visual
+language as the grill: three small bowls, an earthenware pot, two scoops in a
+coupe, a tall glass. These describe the category rather than a specific dish,
+which is a truthful thing to draw for "a side" without inventing which side it
+is. A custom item in a _grill_ category keeps the deliberately neutral plate,
+because a handwritten description does not tell us how somebody's brisket looks.
+
+### Nutrition may be unknown
+
+Every macro on a custom item is optional, and blank means unknown. That is
+different from zero, and the app keeps the difference: an unknown figure is
+left out of the totals and the report says how many items it could not count,
+rather than quietly adding nothing and presenting the result as the whole meal.
+A zero somebody actually typed is respected as the claim it is.
+
 ## Custom foods
 
 Custom foods use the same calculation contract as the built-in catalogue:

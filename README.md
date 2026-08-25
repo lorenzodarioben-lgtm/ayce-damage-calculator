@@ -44,6 +44,8 @@ keys, and nothing you record ever leaves your device.
   paid total kept plainly apart
 - Optional consumption tracking: record that some of a plate went back, in quarter plates, and see
   ordered, eaten and left stated plainly — no scolding, no default that assumes waste
+- Personal menu items in four further categories — sides, hot food, desserts and drinks — with their
+  own artwork, no invented defaults, and unknown nutrition distinguished from zero
 
 **Restaurant hub** (`/restaurants`)
 
@@ -213,6 +215,15 @@ facts, with every threshold named in one exported object. Nothing consults the c
 
 **One meal model.** Live Meal Mode, the full builder and the report all drive the same session
 reducer and the same calculation engine. There is no second meal shape and no second set of sums.
+
+**Categories the app does not fill in.** Beyond the four grill categories the bundled catalogue
+occupies, a diner's own items can go in sides, hot food, desserts or drinks. Nothing is bundled for
+them: there is no invented price for a bowl of soup and no assumed calorie count for a beer, so they
+start empty and stay hidden from the tabs until somebody puts something in one. Each has its own SVG
+artwork drawn in the same visual language as the grill, describing the category rather than a
+specific dish. Macros on a custom item are optional, and blank means unknown rather than zero — an
+unknown figure is left out of the totals and the report says how many items it could not count,
+instead of adding nothing and presenting the result as the whole meal.
 
 **Two valuation models, one engine.** Grilled meat is bought by weight; a bowl of soup is one thing
 at one price. An item declares which model prices it, as a discriminated union rather than one shape

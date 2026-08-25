@@ -64,6 +64,17 @@ function amount(value: unknown): number {
 }
 
 /**
+ * Keeps a macro only when one was actually given.
+ *
+ * Absence has to survive the whole way through: the difference between "we do
+ * not know this side's calories" and "this side has no calories" is the whole
+ * reason the interface can be honest about it.
+ */
+function macro(value: unknown): number | undefined {
+  return nonNegative(value) ? value : undefined;
+}
+
+/**
  * Builds a custom item under whichever valuation model the draft declares.
  *
  * A draft with no model is priced by weight, which is what every draft written
@@ -104,10 +115,12 @@ export function createCustomFood(draft: CustomFoodDraft, id: string): CustomFood
       // Zero means nobody weighed it, which is a fact the interface reports
       // rather than a weight it asserts.
       gramsPerServing: amount(draft.gramsPerServing),
-      caloriesPerServing: amount(draft.caloriesPerServing),
-      proteinPerServing: amount(draft.proteinPerServing),
-      fatPerServing: amount(draft.fatPerServing),
-      carbsPerServing: amount(draft.carbsPerServing),
+      ...macros({
+        caloriesPerServing: macro(draft.caloriesPerServing),
+        proteinPerServing: macro(draft.proteinPerServing),
+        fatPerServing: macro(draft.fatPerServing),
+        carbsPerServing: macro(draft.carbsPerServing),
+      }),
     };
   }
 
@@ -119,11 +132,26 @@ export function createCustomFood(draft: CustomFoodDraft, id: string): CustomFood
     valuation: 'by-weight',
     retailPricePerKg: draft.retailPricePerKg,
     restaurantCostPerKg: draft.restaurantCostPerKg,
-    caloriesPer100g: amount(draft.caloriesPer100g),
-    proteinPer100g: amount(draft.proteinPer100g),
-    fatPer100g: amount(draft.fatPer100g),
-    carbsPer100g: amount(draft.carbsPer100g),
+    ...macros({
+      caloriesPer100g: macro(draft.caloriesPer100g),
+      proteinPer100g: macro(draft.proteinPer100g),
+      fatPer100g: macro(draft.fatPer100g),
+      carbsPer100g: macro(draft.carbsPer100g),
+    }),
   };
+}
+
+/** Drops the keys nobody supplied, so absence is a shape rather than a value. */
+function macros<Keys extends string>(
+  values: Readonly<Record<Keys, number | undefined>>,
+): Partial<Record<Keys, number>> {
+  const kept: Partial<Record<Keys, number>> = {};
+  for (const [key, value] of Object.entries(values) as [Keys, number | undefined][]) {
+    if (value !== undefined) {
+      kept[key] = value;
+    }
+  }
+  return kept;
 }
 
 export function upsertCustomFood(

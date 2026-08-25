@@ -1,4 +1,17 @@
-export type FoodCategory = 'beef' | 'pork' | 'chicken' | 'seafood';
+/**
+ * The four grill categories hold the bundled catalogue. The four after them
+ * exist only for a diner's own items — an all-you-can-eat table has sides, a
+ * stew, a dessert and a drink, and none of those is a cut of meat.
+ */
+export type FoodCategory =
+  | 'beef'
+  | 'pork'
+  | 'chicken'
+  | 'seafood'
+  | 'sides'
+  | 'hot-food'
+  | 'desserts'
+  | 'drinks';
 
 export type QualityTier = 'house' | 'standard' | 'premium';
 
@@ -26,7 +39,11 @@ export type VisualVariant =
   | 'prawns'
   | 'squid-rings'
   | 'salmon-fillet'
-  | 'scallops';
+  | 'scallops'
+  | 'side-bowls'
+  | 'stew-pot'
+  | 'dessert-scoop'
+  | 'drink-glass';
 
 /**
  * How a menu item is priced and measured.
@@ -65,10 +82,17 @@ export interface WeightValuedFood extends FoodItemBase {
   /** AUD per kilogram, illustrative bulk procurement estimate. */
   readonly restaurantCostPerKg: number;
 
-  readonly caloriesPer100g: number;
-  readonly proteinPer100g: number;
-  readonly fatPer100g: number;
-  readonly carbsPer100g: number;
+  /**
+   * Absent means nobody recorded it, which is different from zero.
+   *
+   * Every bundled cut states all four. A diner adding a house side may simply
+   * not know its macros, and inventing a plausible number would be worse than
+   * saying so — the interface reports "not recorded" rather than "0 kcal".
+   */
+  readonly caloriesPer100g?: number;
+  readonly proteinPer100g?: number;
+  readonly fatPer100g?: number;
+  readonly carbsPer100g?: number;
 }
 
 /**
@@ -93,10 +117,11 @@ export interface ServingValuedFood extends FoodItemBase {
   /** Illustrative weight of one serving. Zero means it was not weighed. */
   readonly gramsPerServing: number;
 
-  readonly caloriesPerServing: number;
-  readonly proteinPerServing: number;
-  readonly fatPerServing: number;
-  readonly carbsPerServing: number;
+  /** Absent means nobody recorded it, which is different from zero. */
+  readonly caloriesPerServing?: number;
+  readonly proteinPerServing?: number;
+  readonly fatPerServing?: number;
+  readonly carbsPerServing?: number;
 }
 
 export type FoodItem = WeightValuedFood | ServingValuedFood;
@@ -237,8 +262,10 @@ export interface LineItemTotals {
    * because the restaurant's outlay does not shrink when a plate goes back.
    */
   readonly restaurantCost: number;
-  /** Nutrition of what was eaten. */
+  /** Nutrition of what was eaten. Zero throughout when none was recorded. */
   readonly nutrition: Nutrition;
+  /** False when this item has no nutrition on file at all. */
+  readonly hasNutrition: boolean;
 }
 
 export interface SessionTotals {
@@ -261,8 +288,13 @@ export interface SessionTotals {
   /** Retail value of everything that reached the table. */
   readonly totalOrderedRetailValue: number;
   readonly totalRestaurantCost: number;
-  /** Nutrition of what was eaten. */
+  /** Nutrition of what was eaten, over the lines that have any on file. */
   readonly nutrition: Nutrition;
+  /**
+   * Lines with no nutrition recorded at all, so a surface can say the totals
+   * are incomplete rather than presenting them as the whole meal.
+   */
+  readonly linesWithoutNutrition: number;
 }
 
 export interface DamageReport extends SessionTotals {

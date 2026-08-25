@@ -8,7 +8,36 @@ export const KG_TO_LB = 2.2046226218;
  */
 export const THEME_COLOUR = '#0d0c0a';
 
-export const FOOD_CATEGORIES = ['beef', 'pork', 'chicken', 'seafood'] as const;
+/**
+ * The grill categories are the built-in menu. The four after them exist only
+ * for a diner's own items: an all-you-can-eat table has sides, a stew, a scoop
+ * of ice cream and a bottle of something, and none of those is a cut of meat.
+ *
+ * Nothing is bundled for them. There is no invented price for a bowl of soup
+ * and no assumed calorie count for a beer, because the app does not know and
+ * will not pretend to — the categories are empty until somebody fills them.
+ */
+export const FOOD_CATEGORIES = [
+  'beef',
+  'pork',
+  'chicken',
+  'seafood',
+  'sides',
+  'hot-food',
+  'desserts',
+  'drinks',
+] as const;
+
+/** The categories the bundled Australian KBBQ catalogue occupies. */
+export const GRILL_CATEGORIES: readonly FoodCategory[] = ['beef', 'pork', 'chicken', 'seafood'];
+
+/** The categories that only ever hold diner-authored items. */
+export const CUSTOM_ONLY_CATEGORIES: readonly FoodCategory[] = [
+  'sides',
+  'hot-food',
+  'desserts',
+  'drinks',
+];
 
 export interface CategoryMeta {
   readonly id: FoodCategory;
@@ -20,6 +49,10 @@ export const CATEGORY_META: readonly CategoryMeta[] = [
   { id: 'pork', label: 'Pork' },
   { id: 'chicken', label: 'Chicken' },
   { id: 'seafood', label: 'Seafood' },
+  { id: 'sides', label: 'Sides' },
+  { id: 'hot-food', label: 'Hot food' },
+  { id: 'desserts', label: 'Desserts' },
+  { id: 'drinks', label: 'Drinks' },
 ];
 
 export interface QualityMeta {

@@ -1,4 +1,5 @@
 import { useId } from 'react';
+import { CATEGORY_ARTWORK_VARIANTS } from '@/types/customFoods';
 import type { FoodItem, VisualVariant } from '@/types/meal';
 
 /**
@@ -137,6 +138,41 @@ const TONES = {
     fat: '#FFFCF6',
     accent: '#D9A860',
   },
+  /*
+   * The four tones below serve the categories that only ever hold a diner's
+   * own items. They stay inside the same ramp the grill uses — warm ceramic,
+   * one lamp, a single glaze accent — so a personal side sits on the same
+   * table as the ribeye rather than looking like it wandered in from a
+   * different application.
+   */
+  banchan: {
+    light: '#8FB37A',
+    base: '#67924F',
+    deep: '#3C5C2C',
+    fat: '#EFE7CE',
+    accent: '#D4A94E',
+  },
+  stew: {
+    light: '#D2704A',
+    base: '#AB4A2C',
+    deep: '#6B2716',
+    fat: '#F4DEC0',
+    accent: '#E9A960',
+  },
+  sweet: {
+    light: '#F6E3D2',
+    base: '#E4C4A6',
+    deep: '#A8846A',
+    fat: '#FFF8EE',
+    accent: '#C97C86',
+  },
+  pour: {
+    light: '#E8C97C',
+    base: '#C9A044',
+    deep: '#8A6A22',
+    fat: '#FBF1D8',
+    accent: '#F3E8D0',
+  },
 } as const satisfies Record<string, Tone>;
 
 type ToneId = keyof typeof TONES;
@@ -161,6 +197,10 @@ const VARIANT_TONE: Record<VisualVariant, ToneId> = {
   'squid-rings': 'squid',
   'salmon-fillet': 'salmon',
   scallops: 'scallop',
+  'side-bowls': 'banchan',
+  'stew-pot': 'stew',
+  'dessert-scoop': 'sweet',
+  'drink-glass': 'pour',
 };
 
 interface Paint {
@@ -817,7 +857,106 @@ function renderVariant(variant: VisualVariant, paint: Paint) {
       return <SquidRings {...paint} />;
     case 'scallops':
       return <Scallops {...paint} />;
+    case 'side-bowls':
+      return <SideBowls {...paint} />;
+    case 'stew-pot':
+      return <StewPot {...paint} />;
+    case 'dessert-scoop':
+      return <DessertScoop {...paint} />;
+    case 'drink-glass':
+      return <DrinkGlass {...paint} />;
   }
+}
+
+/** Three banchan dishes, the way they actually arrive: small and plural. */
+function SideBowls({ flesh, gloss, tone }: Paint) {
+  const bowls = [
+    [44, 54, 15],
+    [82, 52, 13],
+    [62, 80, 16],
+  ] as const;
+
+  return (
+    <g>
+      {bowls.map(([cx, cy, r], index) => (
+        <g key={index}>
+          <ellipse cx={cx} cy={cy + r * 0.5} rx={r} ry={r * 0.4} fill="#050403" opacity="0.4" />
+          <circle cx={cx} cy={cy} r={r} fill={flesh} stroke={tone.deep} strokeWidth="2" />
+          <path
+            d={`M${cx - r * 0.6} ${cy - r * 0.2}a${r * 0.6} ${r * 0.4} 0 0 0 ${r * 1.2} 0`}
+            fill="none"
+            stroke={gloss}
+            strokeWidth="3"
+          />
+          <circle cx={cx + r * 0.25} cy={cy + r * 0.25} r={r * 0.18} fill={tone.accent} />
+        </g>
+      ))}
+    </g>
+  );
+}
+
+/** A lidless earthenware pot, still bubbling. */
+function StewPot({ flesh, gloss, tone }: Paint) {
+  return (
+    <g>
+      <ellipse cx="64" cy="90" rx="34" ry="11" fill="#050403" opacity="0.45" />
+      <path
+        d="M32 52h64l-5 33c-1 7-13 12-27 12s-26-5-27-12Z"
+        fill={tone.deep}
+        stroke={tone.deep}
+        strokeWidth="2"
+      />
+      <ellipse cx="64" cy="52" rx="32" ry="12" fill={flesh} stroke={tone.deep} strokeWidth="2" />
+      <ellipse cx="64" cy="51" rx="24" ry="8" fill={gloss} opacity="0.6" />
+      <circle cx="55" cy="50" r="3.2" fill={tone.accent} />
+      <circle cx="70" cy="53" r="2.4" fill={tone.accent} opacity="0.85" />
+      <circle cx="64" cy="46" r="2" fill={tone.fat} opacity="0.7" />
+      {/* Handles, which is what makes it read as a pot rather than a bowl. */}
+      <path d="M28 60h6M94 60h6" stroke={tone.deep} strokeWidth="6" strokeLinecap="round" />
+    </g>
+  );
+}
+
+/** Two scoops in a coupe, with one wafer. */
+function DessertScoop({ flesh, gloss, tone }: Paint) {
+  return (
+    <g>
+      <ellipse cx="64" cy="92" rx="26" ry="9" fill="#050403" opacity="0.45" />
+      <path d="M40 62h48l-8 26c-1 4-8 6-16 6s-15-2-16-6Z" fill={tone.fat} opacity="0.9" />
+      <circle cx="54" cy="58" r="15" fill={flesh} stroke={tone.deep} strokeWidth="1.8" />
+      <circle cx="76" cy="60" r="13" fill={flesh} stroke={tone.deep} strokeWidth="1.8" />
+      <path d="M46 54a12 12 0 0 1 14-4" fill="none" stroke={gloss} strokeWidth="3.5" />
+      <path
+        d="M88 34l6 22-9 3Z"
+        fill={tone.accent}
+        stroke={tone.deep}
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+    </g>
+  );
+}
+
+/** A tall glass, poured and beaded. */
+function DrinkGlass({ flesh, gloss, tone }: Paint) {
+  return (
+    <g>
+      <ellipse cx="64" cy="100" rx="20" ry="7" fill="#050403" opacity="0.45" />
+      <path
+        d="M46 28h36l-5 68c0 4-6 6-13 6s-13-2-13-6Z"
+        fill={tone.fat}
+        opacity="0.35"
+        stroke={tone.fat}
+        strokeWidth="1.6"
+      />
+      <path d="M48 46h32l-4 50c0 3-5 5-12 5s-12-2-12-5Z" fill={flesh} />
+      <ellipse cx="64" cy="46" rx="16" ry="5" fill={tone.accent} opacity="0.9" />
+      <path d="M53 58c0 14 1 26 2 34" fill="none" stroke={gloss} strokeWidth="3" />
+      <circle cx="72" cy="64" r="2.2" fill={tone.fat} opacity="0.75" />
+      <circle cx="68" cy="78" r="1.8" fill={tone.fat} opacity="0.6" />
+      <circle cx="75" cy="86" r="1.5" fill={tone.fat} opacity="0.5" />
+    </g>
+  );
 }
 
 /**
@@ -864,7 +1003,15 @@ export function FoodIllustration({ food, className }: FoodIllustrationProps) {
   const glossId = `gloss-${uid}`;
   const clipId = `clip-${uid}`;
 
-  const tone = food.isCustom ? TONES.beefMarinated : TONES[VARIANT_TONE[food.visualVariant]];
+  /*
+   * A custom cut gets the neutral plate, because a handwritten description does
+   * not tell us how somebody's brisket looks. A custom side, stew, dessert or
+   * drink gets its category's own artwork instead: three small bowls is a
+   * truthful thing to draw for "a side" without inventing which side it is.
+   */
+  const drawsCategory = CATEGORY_ARTWORK_VARIANTS.includes(food.visualVariant);
+  const neutral = Boolean(food.isCustom) && !drawsCategory;
+  const tone = neutral ? TONES.beefMarinated : TONES[VARIANT_TONE[food.visualVariant]];
   const paint: Paint = { tone, flesh: `url(#${fleshId})`, gloss: `url(#${glossId})` };
 
   return (
@@ -919,11 +1066,7 @@ export function FoodIllustration({ food, className }: FoodIllustrationProps) {
       <circle cx="64" cy="64" r="50" fill="#0F0C0A" opacity="0.35" />
 
       <g clipPath={`url(#${clipId})`}>
-        {food.isCustom ? (
-          <CustomFoodArtwork {...paint} />
-        ) : (
-          renderVariant(food.visualVariant, paint)
-        )}
+        {neutral ? <CustomFoodArtwork {...paint} /> : renderVariant(food.visualVariant, paint)}
       </g>
 
       {/* Specular arc: the pendant-lamp highlight the rest of the page uses. */}
