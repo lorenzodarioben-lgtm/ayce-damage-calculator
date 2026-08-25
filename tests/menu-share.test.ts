@@ -5,6 +5,8 @@ import {
   MENU_TOKEN_VERSION,
   decodeMenuPayload,
   encodeMenuPayload,
+  encodeMenuResult,
+  MAX_MENU_DECODED_BYTES,
   menuLinkPath,
   planMenuImport,
   type MenuSharePayload,
@@ -12,10 +14,30 @@ import {
 import { DEFAULT_PRICING_PROFILE } from '@/lib/pricing';
 import { createPricingProfile } from '@/lib/pricingProfiles';
 import { createRestaurantProfile } from '@/lib/restaurants';
+import { unpackShareBody } from '@/lib/shareCodec';
 import { encodeUrlText } from '@/lib/urlText';
 import type { CustomFood } from '@/types/customFoods';
 
 const AT = '2026-08-16T12:00:00.000Z';
+
+/**
+ * Text a compressor cannot help with, generated the same way every run.
+ *
+ * The size limit is about what fits in an address, and compression moved where
+ * that boundary sits without removing it. Testing the boundary therefore needs
+ * input the codec genuinely cannot shrink, rather than input that merely used
+ * to be long.
+ */
+function incompressible(length: number, seed: number): string {
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let state = seed;
+  let text = '';
+  for (let index = 0; index < length; index += 1) {
+    state = (state * 1103515245 + 12345) % 2147483648;
+    text += alphabet[state % alphabet.length];
+  }
+  return text;
+}
 
 const PROFILE = createPricingProfile(
   {
@@ -87,6 +109,28 @@ describe('encodeMenuPayload', () => {
           {
             name: `Extremely long custom food name number ${index}`,
             category: 'beef',
+            description: incompressible(140, index + 1),
+            retailPricePerKg: 40,
+            restaurantCostPerKg: 20,
+          },
+          `custom-food-long-${index}`,
+        )!,
+    );
+
+    const result = encodeMenuResult(payload({ customFoods: foods }));
+    expect(result.ok).toBe(false);
+    expect(result.ok ? null : result.reason).toBe('too-large');
+    expect(encodeMenuPayload(payload({ customFoods: foods }))).toBeNull();
+  });
+
+  it('fits a repetitive menu that would not have fitted uncompressed', () => {
+    const foods: CustomFood[] = Array.from(
+      { length: 32 },
+      (_unused, index) =>
+        createCustomFood(
+          {
+            name: `Extremely long custom food name number ${index}`,
+            category: 'beef',
             description: 'x'.repeat(140),
             retailPricePerKg: 40,
             restaurantCostPerKg: 20,
@@ -95,11 +139,23 @@ describe('encodeMenuPayload', () => {
         )!,
     );
 
-    expect(encodeMenuPayload(payload({ customFoods: foods }))).toBeNull();
+    const token = encodeMenuPayload(payload({ customFoods: foods }));
+    expect(token).not.toBeNull();
+    expect(token!.length).toBeLessThanOrEqual(MAX_MENU_TOKEN_LENGTH);
+    expect(decodeMenuPayload(token)?.customFoods).toHaveLength(32);
+  });
+
+  it('says a menu is empty rather than merely unshareable', () => {
+    const result = encodeMenuResult({
+      pricingProfile: DEFAULT_PRICING_PROFILE,
+      customFoods: [],
+    });
+    expect(result.ok).toBe(false);
+    expect(result.ok ? null : result.reason).toBe('empty');
   });
 
   it('builds the path a recipient opens', () => {
-    expect(menuLinkPath(payload())?.startsWith('/menu/1.')).toBe(true);
+    expect(menuLinkPath(payload())?.startsWith(`/menu/${MENU_TOKEN_VERSION}.`)).toBe(true);
     expect(menuLinkPath({ pricingProfile: DEFAULT_PRICING_PROFILE, customFoods: [] })).toBeNull();
   });
 });
@@ -231,9 +287,11 @@ describe('what a menu link does not carry', () => {
     const token = encodeMenuPayload(
       payload({ restaurant: { name: 'Friday KBBQ', pricePerDiner: 42, dinerCount: 2 } }),
     )!;
-    const body = JSON.parse(
-      Buffer.from(token.slice(2).replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf-8'),
-    );
+    const unpacked = unpackShareBody(token.slice(String(MENU_TOKEN_VERSION).length + 1), {
+      maxDecodedBytes: MAX_MENU_DECODED_BYTES,
+      maxEncodedLength: MAX_MENU_TOKEN_LENGTH,
+    });
+    const body = JSON.parse(unpacked!);
 
     expect(Object.keys(body).sort()).toEqual(['customFoods', 'pricingProfile', 'restaurant']);
     expect(Object.keys(body.restaurant).sort()).toEqual(['dinerCount', 'name', 'pricePerDiner']);

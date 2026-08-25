@@ -146,6 +146,9 @@ keys, and nothing you record ever leaves your device.
 - Shareable challenge links carrying two completed meals, with the comparison recalculated by the
   app's own engine rather than trusted from the sender
 - Dynamic Open Graph images generated per report, so a posted link previews the actual verdict
+- Compressed tokens, so a bigger meal or a full personal menu still fits in an address — and every
+  link handed out under an older token format still opens
+- A plain reason when something genuinely will not fit, rather than a link that silently is not there
 
 **Everything else**
 
@@ -249,6 +252,26 @@ foods used on that tab. Shared menus use the same architecture and the same URL-
 versioned, bounded, validated token, previewed read-only, and imported only on an explicit action
 that never replaces anything local — a colliding name comes in as a separate entry instead.
 
+**A compressor, because a link has a budget.** Reports, menus and Damage Challenges all carry their
+whole payload in the address, and a JSON document full of repeated keys spends most of that budget
+saying `"plateSize"` over and over. Current tokens are compressed with a small LZSS codec written
+into the project — typically two thirds smaller for a meal and rather more for a menu, which is the
+difference between a full personal catalogue being shareable and not. The obvious route,
+`CompressionStream`, was not taken: it is asynchronous, absent from some engines this project
+supports, and gives no guarantee that two builds of zlib agree byte for byte. Tokens have to be
+reproducible — the same canonical meal must produce the same address on a phone, on a laptop and
+inside a server-rendered Open Graph route — so the arithmetic lives here, where the output depends
+on nothing but the input.
+
+Decoding is treated as the trust boundary it is. A body declares its decoded size in its header, so
+a decoder compares that claim against a fixed ceiling and refuses the token _before_ allocating
+anything; back-references are validated against what has actually been produced so far; and the
+output buffer is sized once and never grown. A hostile token cannot make the decoder allocate, loop
+or read out of bounds. Every superseded token version keeps its own reader and is still decoded
+exactly as it was — there is no server that could ever reissue a link somebody already posted, so an
+address handed out today has to keep working. Dispatch is on the version prefix alone, and a token
+is never retried against a second reader after the first declines it.
+
 **Encryption without invention.** The optional encrypted backup is the ordinary design and nothing
 clever: a random salt, a key derived from the password with PBKDF2-HMAC-SHA-256 at OWASP's current
 iteration floor, a random IV, and AES-256-GCM — authenticated, so a file altered in transit fails to
@@ -347,6 +370,8 @@ Everything is local by default and stays that way.
 - Shared report links carry the meal snapshot **inside the URL itself** — the plates, entry price,
   pricing context and any custom foods used. Nothing is uploaded, and nothing else travels with the
   link. Shared pages are marked `noindex`, and opening one never touches the recipient's own session.
+- Compression changes how many bytes a link spends, not what it carries. The same fields travel as
+  before, and the privacy boundary for reports, menus and challenges is unchanged.
 
 ## Testing
 

@@ -8,7 +8,9 @@ import {
   setPricePerDiner,
   setRestaurantName,
   tab,
+  decodeTokenDocument,
 } from './helpers';
+import { CHALLENGE_TOKEN_VERSION } from '../src/lib/challengeShare';
 
 /** Files one meal, so a comparison has two sides to work with. */
 async function fileMeal(page: Page, name: string, plates: number, price: number) {
@@ -54,7 +56,7 @@ test.describe('Sharing a damage challenge', () => {
 
     await page.goto('/history/compare');
     const link = await copyChallengeLink(page);
-    expect(link).toContain('/challenge/1.');
+    expect(link).toContain(`/challenge/${CHALLENGE_TOKEN_VERSION}.`);
 
     const recipient = await openAsRecipient(browser, link);
 
@@ -109,10 +111,7 @@ test.describe('Sharing a damage challenge', () => {
 
     await page.goto('/history/compare');
     const link = await copyChallengeLink(page);
-    const body = Buffer.from(
-      link.split('/challenge/1.')[1]!.replace(/-/g, '+').replace(/_/g, '/'),
-      'base64',
-    ).toString('utf-8');
+    const body = decodeTokenDocument(link, 'challenge');
     expect(body).not.toContain('Lorenzo');
 
     const recipient = await openAsRecipient(browser, link);
