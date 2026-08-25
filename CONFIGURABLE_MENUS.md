@@ -95,6 +95,42 @@ They work with favourites, saved sessions, history and sharing. A filed or
 shared meal includes only the custom-food definitions it needs, making the
 record readable even if the local catalogue later changes.
 
+## Importing a menu from CSV
+
+Someone who knows their regular restaurant's prices has usually written them
+down somewhere already, and retyping thirty rows into a dialog is a reason not
+to bother. A personal menu can therefore be imported from a spreadsheet.
+
+The workflow is preview-first, like every other import in the app. A downloadable
+template names the columns; a chosen file is parsed on the device and reported
+on before anything is written:
+
+- **accepted rows**, listed with their category and valuation model
+- **rejected rows**, each with the line number the spreadsheet shows and the
+  exact reason — no name, unknown category, unknown valuation, a missing price,
+  a figure that is not zero or above, or a second row naming an item an earlier
+  row already claimed
+- **conflicts** with items already on the menu, offered as a deliberate choice
+  between keeping yours, keeping both under separate identifiers, or replacing
+  yours. Every conflict starts on "keep mine": replacing something already on
+  the menu is a decision, never a default.
+
+Validation mutates nothing. The plan describes the whole resulting menu, and
+applying it commits that menu in one write, so there is no state in which half
+a file has been imported.
+
+Bounds are enforced before anything is stored: file size, row count, field
+length, and the same numeric bounds a hand-typed item passes. Quoted fields,
+embedded commas, doubled quotes, line breaks inside a field and the carriage
+returns a spreadsheet on Windows writes are all handled. Text fields have
+spreadsheet formula leads stripped, so a name arriving as `=cmd|'/c calc'!A1`
+becomes inert text before it is stored, shared or written back into a CSV —
+numeric fields deliberately are _not_ stripped, because a leading minus there is
+a negative number to reject rather than a character to remove.
+
+Everything stays on the device, and imported items join the ordinary backup and
+sharing systems like any other custom food.
+
 ## Sharing and backups
 
 Current share links are versioned, compressed and self-contained. They include

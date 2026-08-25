@@ -4,6 +4,7 @@ import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useId, useState } from 'react';
 import { Dialog } from '@/components/ui/Dialog';
 import { CATEGORY_META } from '@/lib/constants';
+import { MenuImport } from '@/components/session/MenuImport';
 import { createCustomFood, nextCustomFoodId } from '@/lib/customFoods';
 import type { CustomFood } from '@/types/customFoods';
 import type { FoodCategory, ValuationModel } from '@/types/meal';
@@ -12,6 +13,7 @@ interface CustomFoodManagerProps {
   foods: readonly CustomFood[];
   onSave: (food: CustomFood) => void;
   onRemove: (id: string) => void;
+  onReplaceAll: (foods: readonly CustomFood[]) => void;
   onStatus: (message: string) => void;
 }
 
@@ -379,7 +381,13 @@ function macroFields<Keys extends string>(
 }
 
 /** Personal menu controls, shaped like the rest of the setup rather than an admin screen. */
-export function CustomFoodManager({ foods, onSave, onRemove, onStatus }: CustomFoodManagerProps) {
+export function CustomFoodManager({
+  foods,
+  onSave,
+  onRemove,
+  onReplaceAll,
+  onStatus,
+}: CustomFoodManagerProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const editing = foods.find((food) => food.id === editingId) ?? null;
@@ -455,6 +463,8 @@ export function CustomFoodManager({ foods, onSave, onRemove, onStatus }: CustomF
           ))}
         </ul>
       )}
+
+      <MenuImport foods={foods} onApply={onReplaceAll} onStatus={onStatus} />
 
       {(creating || editing) && (
         <CustomFoodEditor
