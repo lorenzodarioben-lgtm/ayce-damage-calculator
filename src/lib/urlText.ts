@@ -6,28 +6,55 @@
  * this module itself could have produced, and never throws.
  */
 
-export function encodeUrlText(value: string): string {
-  if (value.length === 0) {
-    return '';
-  }
-  const bytes = new TextEncoder().encode(value);
+/** What `btoa` actually takes: one character per byte. */
+function bytesToBinary(bytes: Uint8Array): string {
   let binary = '';
   for (const byte of bytes) {
     binary += String.fromCharCode(byte);
   }
+  return binary;
+}
+
+/** Standard base64, then the two substitutions that make it safe in an address. */
+function toUrlSafe(binary: string): string {
   return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+/**
+ * The inverse, for both URL-safe decoders.
+ *
+ * The alphabet is checked before `atob` rather than relying on it to object,
+ * and the padding this module strips on the way out is restored on the way in.
+ * Null for anything that fails either step, so neither caller has to catch.
+ */
+function fromUrlSafe(value: string): string | null {
+  if (!/^[A-Za-z0-9\-_]+$/.test(value)) {
+    return null;
+  }
+  try {
+    const padded = value.replace(/-/g, '+').replace(/_/g, '/');
+    return atob(padded.padEnd(Math.ceil(padded.length / 4) * 4, '='));
+  } catch {
+    return null;
+  }
+}
+
+export function encodeUrlText(value: string): string {
+  if (value.length === 0) {
+    return '';
+  }
+  return toUrlSafe(bytesToBinary(new TextEncoder().encode(value)));
 }
 
 export function decodeUrlText(value: string): string | null {
   if (value.length === 0) {
     return '';
   }
-  if (!/^[A-Za-z0-9\-_]+$/.test(value)) {
+  const binary = fromUrlSafe(value);
+  if (binary === null) {
     return null;
   }
   try {
-    const padded = value.replace(/-/g, '+').replace(/_/g, '/');
-    const binary = atob(padded.padEnd(Math.ceil(padded.length / 4) * 4, '='));
     const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
     return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
   } catch {
@@ -37,11 +64,7 @@ export function decodeUrlText(value: string): string | null {
 
 /** URL-safe base64 over raw bytes, for the compressed share-token bodies. */
 export function encodeUrlBytes(bytes: Uint8Array): string {
-  let binary = '';
-  for (const byte of bytes) {
-    binary += String.fromCharCode(byte);
-  }
-  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  return toUrlSafe(bytesToBinary(bytes));
 }
 
 /** Returns null for anything outside the URL-safe alphabet, and never throws. */
@@ -49,16 +72,8 @@ export function decodeUrlBytes(value: string): Uint8Array | null {
   if (value.length === 0) {
     return new Uint8Array(0);
   }
-  if (!/^[A-Za-z0-9\-_]+$/.test(value)) {
-    return null;
-  }
-  try {
-    const padded = value.replace(/-/g, '+').replace(/_/g, '/');
-    const binary = atob(padded.padEnd(Math.ceil(padded.length / 4) * 4, '='));
-    return Uint8Array.from(binary, (character) => character.charCodeAt(0));
-  } catch {
-    return null;
-  }
+  const binary = fromUrlSafe(value);
+  return binary === null ? null : Uint8Array.from(binary, (character) => character.charCodeAt(0));
 }
 
 /**
@@ -69,11 +84,7 @@ export function decodeUrlBytes(value: string): Uint8Array | null {
  * a file's envelope wants ordinary base64, an address wants the URL-safe form.
  */
 export function encodeBase64(bytes: Uint8Array): string {
-  let binary = '';
-  for (const byte of bytes) {
-    binary += String.fromCharCode(byte);
-  }
-  return btoa(binary);
+  return btoa(bytesToBinary(bytes));
 }
 
 /** Returns null for anything that is not base64 this module could have written. */
