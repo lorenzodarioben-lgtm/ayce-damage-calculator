@@ -190,7 +190,6 @@ export function HistoryList() {
           <label className="text-sm text-cream-300">
             From date
             <input
-              aria-label="From date"
               type="date"
               value={fromDate}
               onChange={(event) => setFromDate(event.target.value)}
@@ -200,7 +199,6 @@ export function HistoryList() {
           <label className="text-sm text-cream-300">
             To date
             <input
-              aria-label="To date"
               type="date"
               value={toDate}
               onChange={(event) => setToDate(event.target.value)}
@@ -210,7 +208,6 @@ export function HistoryList() {
           <label className="text-sm text-cream-300">
             Restaurant
             <select
-              aria-label="Restaurant filter"
               value={restaurant}
               onChange={(event) => setRestaurant(event.target.value)}
               className="mt-1 min-h-11 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-cream-100"
@@ -226,7 +223,6 @@ export function HistoryList() {
           <label className="text-sm text-cream-300">
             Outcome
             <select
-              aria-label="Outcome filter"
               value={verdict}
               onChange={(event) => setVerdict(event.target.value)}
               className="mt-1 min-h-11 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-cream-100"
@@ -242,7 +238,6 @@ export function HistoryList() {
           <label className="text-sm text-cream-300">
             Tag
             <select
-              aria-label="Tag filter"
               value={tag}
               onChange={(event) => setTag(event.target.value)}
               className="mt-1 min-h-11 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-cream-100"
