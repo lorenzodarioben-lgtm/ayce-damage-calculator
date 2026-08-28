@@ -13,6 +13,7 @@ import { SiteHeader } from '@/components/nav/SiteHeader';
 import { MAIN_CONTENT_ID } from '@/components/nav/destinations';
 import { DamageMeter } from '@/components/summary/DamageMeter';
 import { PricingProfileProvider } from '@/components/session/PricingContext';
+import { SessionConflictNotice } from '@/components/session/SessionConflictNotice';
 import { Button } from '@/components/ui/Button';
 import { StatusToast } from '@/components/ui/StatusToast';
 import { useFavorites } from '@/hooks/useFavorites';
@@ -54,6 +55,9 @@ export function LiveMealMode() {
     pauseMeal,
     resumeMeal,
     completeMeal,
+    sessionConflict,
+    loadExternalSession,
+    keepCurrentSession,
   } = useMealSession(pricingProfiles.profiles, customFoods.foods, { source: 'live' });
   const { favorites, remove: removeFavorite } = useFavorites(catalogue);
 
@@ -105,6 +109,16 @@ export function LiveMealMode() {
           id={MAIN_CONTENT_ID}
           className="relative z-10 mx-auto max-w-[640px] px-4 pt-4 pb-28 sm:px-6"
         >
+          {sessionConflict && (
+            <div className="mb-4">
+              <SessionConflictNotice
+                conflict={sessionConflict}
+                onLoadExternal={loadExternalSession}
+                onKeepCurrent={keepCurrentSession}
+              />
+            </div>
+          )}
+
           {/* Pinned under the header: the number the whole mode exists to move. */}
           <section
             aria-labelledby="live-damage-heading"

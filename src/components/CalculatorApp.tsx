@@ -8,6 +8,7 @@ import { SiteHeader } from '@/components/nav/SiteHeader';
 import { MAIN_CONTENT_ID } from '@/components/nav/destinations';
 import { DamageReport } from '@/components/results/DamageReport';
 import { SessionSetup } from '@/components/session/SessionSetup';
+import { SessionConflictNotice } from '@/components/session/SessionConflictNotice';
 import { PricingProfileProvider } from '@/components/session/PricingContext';
 import { LiveSummary } from '@/components/summary/LiveSummary';
 import { StickySummaryBar } from '@/components/summary/StickySummaryBar';
@@ -47,6 +48,9 @@ export function CalculatorApp() {
     removeItem,
     restoreItem,
     resetSession,
+    sessionConflict,
+    loadExternalSession,
+    keepCurrentSession,
     pricingProfile,
   } = useMealSession(pricingProfiles.profiles, customFoods.foods);
 
@@ -153,6 +157,15 @@ export function CalculatorApp() {
           {stage === 'builder' && <Hero />}
 
           <div className="mx-auto max-w-[1280px] px-4 pb-32 pt-6 sm:px-6 lg:pb-16">
+            {sessionConflict && (
+              <div className="mb-4">
+                <SessionConflictNotice
+                  conflict={sessionConflict}
+                  onLoadExternal={loadExternalSession}
+                  onKeepCurrent={keepCurrentSession}
+                />
+              </div>
+            )}
             {stage === 'report' ? (
               <div ref={reportRef} tabIndex={-1} className="outline-none">
                 <DamageReport
