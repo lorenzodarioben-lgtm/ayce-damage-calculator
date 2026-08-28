@@ -61,6 +61,20 @@ keys, and nothing you record ever leaves your device.
   context they were recorded with
 - Still no bundled restaurant directory, no address, no rating, and no network call of any kind
 
+**Diner hub** (`/diners`)
+
+- A local list of the people you have saved from a table roster, with a detail page per person:
+  meals, first and latest, their plates, estimated retail value, recovery, food weight, what they
+  paid, most ordered foods, category mix and the recent meals themselves
+- Plates somebody explicitly attributed are kept apart from an even share of what the table shared,
+  everywhere and on purpose: the first is a record, the second is a stated assumption
+- A meal filed without a roster is not assigned to anybody — nobody said who was there
+- People are matched by the opaque local id saved with them, never by display name
+- Add someone to the meal in progress, behind a confirmation
+- Removing a person removes their saved profile only; filed meals keep the roster they were
+  recorded with, and no plate is ever reassigned
+- A name that appears on a filed roster without being saved here is reported, not re-created
+
 **Personal menus**
 
 - Currency-aware pricing profiles, starting from the built-in Australian KBBQ estimates and using
@@ -414,7 +428,8 @@ comparison page and inside a shared challenge alike, because both render from th
 
 Everything is local by default and stays that way.
 
-- Your in-progress meal, filed history, saved orders, saved restaurants, pricing profiles and
+- Your in-progress meal, filed history, saved orders, saved restaurants, saved diners, pricing
+  profiles and
   custom foods live in this browser
 - Analytics are derived on the device from your own records; no usage is tracked or transmitted
 - There is no account system, no backend and no third-party service of any kind
@@ -445,7 +460,8 @@ dataset's own integrity, cut search and ordering, verdict boundaries tested on b
 threshold, number and currency formatting, pricing profiles, custom foods, the session reducer
 including undo, storage recovery from corrupt or stale data, the IndexedDB repository against
 `fake-indexeddb`, saved-session migration, meal event validation, ordering and bounds, the pacing
-forecast on both sides of every boundary, replay reconstruction and its named moments, the planner's determinism and bounds, uncertainty scenarios and sensitivity ordering, restaurant profiles and their preset migration, menu-token boundaries and import conflict planning, challenge tokens and their privacy boundary, encrypted-backup envelope validation and cryptographic
+forecast on both sides of every boundary, replay reconstruction and its named moments, the planner's determinism and bounds, uncertainty scenarios and sensitivity ordering, restaurant profiles and their preset migration,
+the diner hub's attribution boundary between explicit plates and an estimated share, menu-token boundaries and import conflict planning, challenge tokens and their privacy boundary, encrypted-backup envelope validation and cryptographic
 round trips, session comparison, the achievement engine, favourites,
 restaurant presets, share-token encoding and decoding, backup import and export, CSV escaping, local
 analytics, browser-stage history, the sitemap and crawling rules, and the service worker's caching
@@ -456,7 +472,7 @@ policy.
 persistence across reloads, Live Meal Mode, history and comparison, favourites, presets, the share
 link round trip through a genuinely separate browser context, Open Graph metadata, the printable
 receipt under print media, PWA registration and cache contents, page structure and heading outlines,
-the skip link, and horizontal overflow on every route.
+the skip link, the restaurant and diner hubs, and horizontal overflow on every route.
 
 `npm run test` runs Vitest in watch mode; `npm run test:e2e:ui` opens the Playwright UI.
 
@@ -496,24 +512,24 @@ npm run verify       # format check, lint, typecheck, tests and build in sequenc
 
 ```text
 src/
-├── app/          routes: calculator, live, plan, restaurants, history, compare, backup, stats,
+├── app/          routes: calculator, live, plan, restaurants, diners, history, compare, backup,
 │                 challenge/[token] with its generated OG image,
 │                 share/[token] with its generated OG image, offline, manifest,
 │                 sitemap, robots
-├── components/   meal builder, live mode, planner, restaurants, session setup, summary, results,
+├── components/   meal builder, live mode, planner, restaurants, diners, session setup, summary,
 │                 history, stats, favourites, custom menus, navigation, methodology, PWA, UI
 ├── data/         the 18-item food dataset, with search and ordering
 ├── hooks/        session reducer, meal clock, stage history, meal history, favourites,
 │                 presets, pricing profiles, custom foods, status messaging, undoable removal
 ├── lib/          calculations, session reducer, meal events, replay, pacing, verdicts,
-│                 achievements, planner, uncertainty, restaurants, comparison, analytics,
+│                 achievements, planner, uncertainty, restaurants, diner hub, comparison, analytics,
 │                 history and its repository, favourites, presets, pricing profiles, custom foods,
 │                 report, menu and challenge share tokens, QR encoding, encrypted backups,
 │                 social cards, backup, CSV, formatting, storage, card rendering
 └── types/        domain types
 
-e2e/              24 Playwright specs plus shared journey helpers
-tests/            50 Vitest suites
+e2e/              30 Playwright specs plus shared journey helpers
+tests/            68 Vitest suites
 public/           service worker and PWA icons
 .github/          CI workflow, Dependabot, issue and pull request templates
 ```

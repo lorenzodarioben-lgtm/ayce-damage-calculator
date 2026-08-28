@@ -41,6 +41,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - **Explicit visit linking** — a filed record belongs to a restaurant because the meal was started
   from it, or because the diner linked it. Two places that share a name are not assumed to be the
   same place, and older records can be linked only on request.
+- **Diner hub** (`/diners`) — a local list of the people saved from a table roster, with a detail
+  page for each: meals, first and latest, their plates, estimated retail value, recovery, food
+  weight, what they paid, most ordered foods, category mix and the recent meals. Someone can be
+  added to the meal in progress behind a confirmation, and every figure is recomputed from the
+  filed meals rather than kept in a second store.
+- **Stated attribution in the diner hub** — plates somebody explicitly attributed are kept apart
+  from an even share of what the table shared, and the page says which is a record and which is an
+  assumption. People are matched by their opaque local id rather than by display name, a meal filed
+  without a roster is assigned to nobody, and removing a profile leaves every filed roster exactly
+  as it was recorded. A name on a filed roster that is not saved locally is reported, not
+  re-created.
 - **Uncertainty and sensitivity analysis** — every report and filed record now carries a
   conservative, base and upper scenario built by moving the serving-weight, retail-price and
   ingredient-cost assumptions to the ends of a stated band, plus a ranking of which assumption
