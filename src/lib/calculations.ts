@@ -8,6 +8,7 @@ import {
 } from '@/lib/constants';
 import {
   adjustmentsForDiner,
+  resolveAdjustmentAmounts,
   settleTotal,
   tableWideAdjustments,
   totalAdjustments,
@@ -20,7 +21,9 @@ import { sharedQuantity } from '@/lib/diners';
 import { consumedQuantity, uneatenQuantity } from '@/lib/consumption';
 import type { PricingProfile } from '@/types/pricing';
 import type {
+  BillAdjustment,
   DamageReport,
+  Diner,
   DinerDamageTotals,
   FoodItem,
   LineItemTotals,
@@ -252,6 +255,32 @@ export function perDinerTotals(report: DamageReport): PerDinerTotals {
   };
 }
 
+/** One diner's entry price, before anything went on or came off the bill. */
+function baseAdmissionForDiner(diner: Diner, defaultAdmission: number): number {
+  return typeof diner.admissionPrice === 'number' && diner.admissionPrice > 0
+    ? clampPricePerDiner(diner.admissionPrice)
+    : defaultAdmission;
+}
+
+/**
+ * The bill with every percentage already turned into money.
+ *
+ * The single place the conversion happens. Everything downstream — the totals,
+ * the per-seat split, the receipt — works on plain cash amounts and never needs
+ * to know a percentage was involved.
+ */
+export function resolvedAdjustments(config: AdmissionConfig): readonly BillAdjustment[] {
+  const defaultAdmission = clampPricePerDiner(config.pricePerDiner);
+  const dinerAdmission: Record<string, number> = {};
+  for (const diner of config.diners ?? []) {
+    dinerAdmission[diner.id] = baseAdmissionForDiner(diner, defaultAdmission);
+  }
+  return resolveAdjustmentAmounts(config.adjustments, {
+    tableAdmission: calculateAdmission(config),
+    dinerAdmission,
+  });
+}
+
 /**
  * How many people the shared food has to stretch across.
  *
@@ -355,7 +384,10 @@ export function calculateTableSplit(
 
   const defaultAdmission = clampPricePerDiner(config.pricePerDiner);
   const unnamedSeats = Math.max(0, seats - diners.length);
-  const tableAdjustments = totalAdjustments(tableWideAdjustments(config.adjustments));
+  // Resolved once, so a percentage is divided as the money it came to rather
+  // than being worked out again against a share of the bill.
+  const bill = resolvedAdjustments(config);
+  const tableAdjustments = totalAdjustments(tableWideAdjustments(bill));
   // One seat's share of what the table as a whole was charged.
   const seatAdjustmentNet = safeRatio(tableAdjustments.net, seats);
 
@@ -405,14 +437,8 @@ export function calculateTableSplit(
     }
   }
 
-  const baseAdmissions = diners.map((diner) =>
-    typeof diner.admissionPrice === 'number' && diner.admissionPrice > 0
-      ? clampPricePerDiner(diner.admissionPrice)
-      : defaultAdmission,
-  );
-  const ownNets = diners.map(
-    (diner) => totalAdjustments(adjustmentsForDiner(config.adjustments, diner.id)).net,
-  );
+  const baseAdmissions = diners.map((diner) => baseAdmissionForDiner(diner, defaultAdmission));
+  const ownNets = diners.map((diner) => totalAdjustments(adjustmentsForDiner(bill, diner.id)).net);
   const adjustmentNets = ownNets.map((net) => net + seatAdjustmentNet);
   const unnamedBaseAdmission = defaultAdmission * unnamedSeats;
   const unnamedAdjustmentNet = seatAdjustmentNet * unnamedSeats;
@@ -493,7 +519,7 @@ export function calculateDinerTotals(
  */
 export function calculateBillTotals(config: AdmissionConfig) {
   const baseAdmission = calculateAdmission(config);
-  const adjustments = totalAdjustments(config.adjustments);
+  const adjustments = totalAdjustments(resolvedAdjustments(config));
   return { baseAdmission, adjustments, totalPaid: settleTotal(baseAdmission, adjustments) };
 }
 

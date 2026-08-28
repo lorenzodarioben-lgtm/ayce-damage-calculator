@@ -136,6 +136,16 @@ export const MAX_ADJUSTMENT_LABEL_LENGTH = 40;
 export const MAX_ADJUSTMENT_AMOUNT = 5000;
 export const MIN_ADJUSTMENT_AMOUNT = 0.01;
 
+/**
+ * A percentage of a bill, bounded to what a bill can actually say.
+ *
+ * A hundred percent is the whole thing, and nothing on a receipt is a share of
+ * more than all of it — a bigger surcharge than that is a different entry
+ * price, not a percentage.
+ */
+export const MAX_ADJUSTMENT_PERCENT = 100;
+export const MIN_ADJUSTMENT_PERCENT = 0.01;
+
 export function getQualityMeta(tier: QualityTier): QualityMeta {
   const meta = QUALITY_TIERS.find((entry) => entry.id === tier);
   if (!meta) {
