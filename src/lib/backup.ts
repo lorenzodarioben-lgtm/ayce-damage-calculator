@@ -85,6 +85,42 @@ export interface BackupSummary {
   readonly skippedRestaurants: number;
 }
 
+/** The comparable local collections that a restore can add to or replace. */
+export type RestoreImpactContents = Pick<BackupContents, 'history' | 'favorites' | 'configuration'>;
+
+export interface MergeRestoreImpact {
+  /** Valid records in the backup for this collection. */
+  readonly incoming: number;
+  /** Incoming ids not currently held on this device. */
+  readonly new: number;
+  /** Incoming ids that are already held on this device. */
+  readonly alreadyOnDevice: number;
+}
+
+export interface ReplaceRestoreImpact {
+  /** Valid records in the backup for this collection. */
+  readonly incoming: number;
+  /** Current local records that a replacement would permanently remove. */
+  readonly discarded: number;
+}
+
+export interface RestoreImpact {
+  readonly merge: {
+    readonly sessions: MergeRestoreImpact;
+    readonly savedOrders: MergeRestoreImpact;
+    readonly pricingProfiles: MergeRestoreImpact;
+    readonly customFoods: MergeRestoreImpact;
+    readonly restaurants: MergeRestoreImpact;
+  };
+  readonly replace: {
+    readonly sessions: ReplaceRestoreImpact;
+    readonly savedOrders: ReplaceRestoreImpact;
+    readonly pricingProfiles: ReplaceRestoreImpact;
+    readonly customFoods: ReplaceRestoreImpact;
+    readonly restaurants: ReplaceRestoreImpact;
+  };
+}
+
 export type BackupParseResult =
   | { readonly ok: true; readonly contents: BackupContents; readonly summary: BackupSummary }
   | { readonly ok: false; readonly error: BackupError };
@@ -259,4 +295,67 @@ export function mergeById<T extends { id: string }>(
   }
 
   return { result: [...byId.values()], added, kept: existing.length };
+}
+
+function measureRestoreImpact<T extends { id: string }>(
+  existing: readonly T[],
+  incoming: readonly T[],
+): { readonly merge: MergeRestoreImpact; readonly replace: ReplaceRestoreImpact } {
+  const currentIds = new Set(existing.map((entry) => entry.id));
+  const alreadyOnDevice = incoming.filter((entry) => currentIds.has(entry.id)).length;
+
+  return {
+    merge: {
+      incoming: incoming.length,
+      new: incoming.length - alreadyOnDevice,
+      alreadyOnDevice,
+    },
+    replace: {
+      incoming: incoming.length,
+      discarded: existing.length,
+    },
+  };
+}
+
+/**
+ * Forecasts a restore without changing either source collection.
+ *
+ * The same id rule as `mergeById` is used, so the preview tells the diner
+ * exactly what merging can add and what replacement would remove locally.
+ */
+export function calculateRestoreImpact(
+  incoming: RestoreImpactContents,
+  current: RestoreImpactContents,
+): RestoreImpact {
+  const sessions = measureRestoreImpact(current.history, incoming.history);
+  const savedOrders = measureRestoreImpact(current.favorites, incoming.favorites);
+  const pricingProfiles = measureRestoreImpact(
+    current.configuration.pricingProfiles,
+    incoming.configuration.pricingProfiles,
+  );
+  const customFoods = measureRestoreImpact(
+    current.configuration.customFoods,
+    incoming.configuration.customFoods,
+  );
+  const restaurants = measureRestoreImpact(
+    current.configuration.restaurants,
+    incoming.configuration.restaurants,
+  );
+
+  return {
+    merge: {
+      sessions: sessions.merge,
+      savedOrders: savedOrders.merge,
+      pricingProfiles: pricingProfiles.merge,
+      customFoods: customFoods.merge,
+      restaurants: restaurants.merge,
+    },
+    replace: {
+      sessions: sessions.replace,
+      savedOrders: savedOrders.replace,
+      pricingProfiles: pricingProfiles.replace,
+      customFoods: customFoods.replace,
+      restaurants: restaurants.replace,
+    },
+  };
 }

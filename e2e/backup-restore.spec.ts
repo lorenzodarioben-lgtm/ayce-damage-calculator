@@ -79,6 +79,9 @@ test.describe('Restore', () => {
     await chooseBackupFile(freshPage, body);
 
     await expect(freshPage.getByText('1 filed sessions')).toBeVisible();
+    const impact = freshPage.getByRole('region', { name: 'Restore impact' });
+    await expect(impact).toContainText('1 new · 0 already on this device');
+    await expect(impact).toContainText('Replace discards 0 currently on this device');
     await expect(freshPage.getByRole('button', { name: 'Merge into this device' })).toBeVisible();
 
     // Still untouched until a mode is chosen.
