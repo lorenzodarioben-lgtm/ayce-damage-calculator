@@ -13,6 +13,7 @@ import {
   tableWideAdjustments,
   totalAdjustments,
 } from '@/lib/adjustments';
+import { clampToRange } from '@/lib/range';
 import { distributeMoney } from '@/lib/splitMoney';
 import { DEFAULT_PRICING_PROFILE } from '@/lib/pricing';
 import { resolveValuation } from '@/lib/valuation';
@@ -46,17 +47,11 @@ function safeRatio(numerator: number, denominator: number): number {
 }
 
 export function clampPricePerDiner(value: number): number {
-  if (!Number.isFinite(value)) {
-    return MIN_PRICE_PER_DINER;
-  }
-  return Math.min(MAX_PRICE_PER_DINER, Math.max(MIN_PRICE_PER_DINER, value));
+  return clampToRange(value, MIN_PRICE_PER_DINER, MAX_PRICE_PER_DINER, MIN_PRICE_PER_DINER);
 }
 
 export function clampDinerCount(value: number): number {
-  if (!Number.isFinite(value)) {
-    return MIN_DINERS;
-  }
-  return Math.min(MAX_DINERS, Math.max(MIN_DINERS, Math.round(value)));
+  return clampToRange(Math.round(value), MIN_DINERS, MAX_DINERS, MIN_DINERS);
 }
 
 type AdmissionConfig = Pick<SessionConfig, 'pricePerDiner' | 'dinerCount' | 'adjustments'> &
