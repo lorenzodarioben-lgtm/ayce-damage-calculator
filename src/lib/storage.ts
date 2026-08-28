@@ -23,6 +23,7 @@ import {
 } from '@/lib/diners';
 import type { Diner, DinerAllocation, FoodItem } from '@/types/meal';
 import { DEFAULT_PRICING_PROFILE_ID, isPricingProfileId } from '@/lib/pricing';
+import { normaliseSeparateCharge } from '@/lib/separateCharges';
 import type { MealItem, MealSession } from '@/types/meal';
 
 export const STORAGE_KEY = 'ayce-damage-calculator';
@@ -36,11 +37,12 @@ export const STORAGE_KEY = 'ayce-damage-calculator';
  * 6 — the local restaurant profile the meal was started from.
  * 7 — bill adjustments: charges and discounts alongside admission.
  * 8 — how much of each line was actually eaten.
+ * 9 — which lines the buffet price did not cover, and what was paid for them.
  */
-export const STORAGE_VERSION = 8;
+export const STORAGE_VERSION = 9;
 
 /** Versions `parseStoredSession` can read, current one included. */
-export const SUPPORTED_STORAGE_VERSIONS = [1, 2, 3, 4, 5, 6, 7, 8] as const;
+export const SUPPORTED_STORAGE_VERSIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9] as const;
 
 /**
  * A tab is small; a full evening's ledger is still only tens of kilobytes.
@@ -141,13 +143,25 @@ function parseMealItem(
   const consumed =
     version >= 8 ? normaliseConsumedQuantity(value.consumedQuantity, safeQuantity) : undefined;
 
+  // A line written before version 9 was paid for by admission, which is again
+  // a statement about it rather than a gap in it.
+  const separate = value.separatelyCharged === true;
+  const charged = normaliseSeparateCharge(value.separateCharge);
+
   const base = {
-    id: mealItemId({ foodId, quality, plateSize }),
+    id: mealItemId({
+      foodId,
+      quality,
+      plateSize,
+      ...(separate ? { separatelyCharged: true } : {}),
+    }),
     foodId,
     quality,
     plateSize,
     quantity: safeQuantity,
     ...(consumed === undefined ? {} : { consumedQuantity: consumed }),
+    ...(separate ? { separatelyCharged: true as const } : {}),
+    ...(separate && charged !== undefined ? { separateCharge: charged } : {}),
   };
   const allocations = normaliseAllocations(
     Array.isArray(value.allocations)

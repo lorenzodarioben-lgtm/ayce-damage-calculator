@@ -66,6 +66,8 @@ export interface UseMealSessionResult {
   restoreItem: (item: MealItem, index: number) => void;
   /** Books a meal window, or clears it with `undefined`. Never starts the meal. */
   setMealDuration: (minutes: number | undefined) => void;
+  /** Marks a line as bought outside the buffet price, at a stated amount. */
+  setItemCharge: (id: string, separate: boolean, charge?: number) => void;
   pauseMeal: () => void;
   resumeMeal: () => void;
   completeMeal: () => void;
@@ -275,6 +277,15 @@ export function useMealSession(
     dispatch({ type: 'complete-meal', meta: meta() });
   }, [meta]);
 
+  const setItemCharge = useCallback((id: string, separate: boolean, charge?: number) => {
+    dispatch({
+      type: 'set-item-charge',
+      id,
+      separate,
+      ...(charge === undefined ? {} : { charge }),
+    });
+  }, []);
+
   const resetSession = useCallback(() => {
     clearSession();
     dispatch({ type: 'reset' });
@@ -310,6 +321,7 @@ export function useMealSession(
     pauseMeal,
     resumeMeal,
     completeMeal,
+    setItemCharge,
     resetSession,
     pricingProfile,
   };

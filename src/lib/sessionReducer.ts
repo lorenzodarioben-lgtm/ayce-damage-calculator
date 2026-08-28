@@ -9,10 +9,11 @@ import {
 import { createAdjustment, reconcileAdjustments, type AdjustmentDraft } from '@/lib/adjustments';
 import { MAX_BILL_ADJUSTMENTS } from '@/lib/constants';
 import { consumedQuantity, reconcileConsumption, withConsumedQuantity } from '@/lib/consumption';
+import { withSeparateCharge } from '@/lib/separateCharges';
 import { isDinerId, normaliseDinerName, reconcileItemAllocations } from '@/lib/diners';
 import { appendMealEvents, mealEventLine, nextEventSeq, sessionLifecycle } from '@/lib/mealEvents';
 import { clampMealDuration } from '@/lib/pacing';
-import { mealItemId } from '@/lib/mealItems';
+import { mealItemId, mergeMealItems } from '@/lib/mealItems';
 import { DEFAULT_PRICING_PROFILE_ID } from '@/lib/pricing';
 import { normaliseRestaurantNameInput, sanitiseRestaurantName } from '@/lib/storage';
 import type {
@@ -101,6 +102,7 @@ export type SessionAction =
   | { type: 'pause-meal'; meta: MealEventMeta }
   | { type: 'resume-meal'; meta: MealEventMeta }
   | { type: 'complete-meal'; meta: MealEventMeta }
+  | { type: 'set-item-charge'; id: string; separate: boolean; charge?: number }
   | { type: 'reset' };
 
 /**
@@ -136,6 +138,12 @@ function findActiveDinerId(
 }
 
 /** Applies the tab change only. Ledger bookkeeping happens around it. */
+/** Re-keys a line when who paid for it changes, since that is part of its id. */
+function rechargedItem(item: MealItem, separate: boolean, charge?: number): MealItem {
+  const next = withSeparateCharge(item, separate, charge);
+  return { ...next, id: mealItemId(next) };
+}
+
 function applySessionAction(state: MealSession, action: SessionAction): MealSession {
   switch (action.type) {
     case 'hydrate':
@@ -409,6 +417,19 @@ function applySessionAction(state: MealSession, action: SessionAction): MealSess
         ...state,
         items: state.items.map((item) =>
           item.id === action.id ? withConsumedQuantity(item, action.consumed) : item,
+        ),
+      };
+
+    case 'set-item-charge':
+      return {
+        ...state,
+        // Merged afterwards because who paid for a line is part of its
+        // identity: moving a plate on or off the buffet re-keys it, and it has
+        // to join the line it now belongs to rather than sit beside it.
+        items: mergeMealItems(
+          state.items.map((item) =>
+            item.id === action.id ? rechargedItem(item, action.separate, action.charge) : item,
+          ),
         ),
       };
 

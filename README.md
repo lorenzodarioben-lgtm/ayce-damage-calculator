@@ -48,6 +48,9 @@ keys, and nothing you record ever leaves your device.
 - Shared food is divided across every seat the table was charged for, so seats nobody named keep
   their own share instead of it being handed to the diners who were; per-seat amounts settle in
   whole cents to exactly what the table paid
+- Separately charged items: mark a line the buffet price did not cover and record what you actually
+  paid for it, keeping its value out of the recovery figure and its cost out of the denominator,
+  with buffet total and total spend reported as different numbers
 - Optional consumption tracking: record that some of a plate went back, in quarter plates, and see
   ordered, eaten and left stated plainly — no scolding, no default that assumes waste
 - Personal menu items in four further categories — sides, hot food, desserts and drinks — with their
