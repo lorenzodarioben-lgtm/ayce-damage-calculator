@@ -38,6 +38,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
   visits, first and latest, average admission, average and best recovery, average plates and
   weight, most ordered foods, category mix, a recovery trend and the recent visits. A meal can be
   started from a place, and filing it records the visit there.
+- **Real plate weights** — a by-weight cut can declare what one of its regular plates actually
+  weighs, per item or per pricing profile, instead of every restaurant's plates being assumed to be
+  the app's nominal 155 g. Small and large scale from it in the proportion they always had. This is
+  the number every other figure is multiplied by: retail value is weight times price per kilogram,
+  so a place serving 250 g plates was understating its own weight, value, recovery and verdict by
+  more than half. An item that declares nothing is calculated exactly as before, and the CSV
+  importer now honours the grams column for plated cuts instead of reading it and throwing it away.
 - **Percentage charges and discounts** — a service charge, a card surcharge or a group discount can
   be recorded as the share of the bill it actually is, rather than worked out by hand and left to go
   stale. Each one states what it is a share of — the entry price alone, or the entry price plus the

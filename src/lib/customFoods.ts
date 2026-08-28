@@ -1,4 +1,5 @@
 import { FOOD_CATEGORIES } from '@/lib/constants';
+import { normalisePlateGrams } from '@/lib/valuation';
 import {
   CUSTOM_FOOD_VARIANT_BY_CATEGORY,
   type CustomFood,
@@ -127,11 +128,15 @@ export function createCustomFood(draft: CustomFoodDraft, id: string): CustomFood
   if (!nonNegative(draft.retailPricePerKg) || !nonNegative(draft.restaurantCostPerKg)) {
     return null;
   }
+  const gramsPerPlate = normalisePlateGrams(draft.gramsPerPlate);
   return {
     ...base,
     valuation: 'by-weight',
     retailPricePerKg: draft.retailPricePerKg,
     restaurantCostPerKg: draft.restaurantCostPerKg,
+    // Omitted when nobody declared one, so an item that never had a weight
+    // serialises to exactly the bytes it always did.
+    ...(gramsPerPlate === undefined ? {} : { gramsPerPlate }),
     ...macros({
       caloriesPer100g: macro(draft.caloriesPer100g),
       proteinPer100g: macro(draft.proteinPer100g),
@@ -219,12 +224,14 @@ export function parseCustomFood(value: unknown): CustomFood | null {
   const protein = figure(value.proteinPer100g);
   const fat = figure(value.fatPer100g);
   const carbs = figure(value.carbsPer100g);
+  const gramsPerPlate = figure(value.gramsPerPlate);
   return createCustomFood(
     {
       ...shared,
       valuation: 'by-weight',
       retailPricePerKg: value.retailPricePerKg as number,
       restaurantCostPerKg: value.restaurantCostPerKg as number,
+      ...(gramsPerPlate === undefined ? {} : { gramsPerPlate }),
       ...(calories === undefined ? {} : { caloriesPer100g: calories }),
       ...(protein === undefined ? {} : { proteinPer100g: protein }),
       ...(fat === undefined ? {} : { fatPer100g: fat }),

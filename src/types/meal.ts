@@ -83,6 +83,20 @@ export interface WeightValuedFood extends FoodItemBase {
   readonly restaurantCostPerKg: number;
 
   /**
+   * What a regular plate of this actually weighs, when somebody knows.
+   *
+   * Absent means the app's nominal 155 g, which is what every cut has always
+   * assumed and what a diner who has never weighed anything keeps getting.
+   *
+   * It matters more than it looks. Retail value is weight times price per
+   * kilogram, so a restaurant whose regular plate is 250 g had every figure
+   * here — weight, value, recovery, the verdict itself — understated by more
+   * than half, from one number nobody could correct. Small and large scale from
+   * this in the same proportion the built-in sizes always had.
+   */
+  readonly gramsPerPlate?: number;
+
+  /**
    * Absent means nobody recorded it, which is different from zero.
    *
    * Every bundled cut states all four. A diner adding a house side may simply
