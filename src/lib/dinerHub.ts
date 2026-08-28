@@ -2,7 +2,7 @@ import { CATEGORY_META } from '@/lib/constants';
 import { calculateDinerTotals, tableSeats } from '@/lib/calculations';
 import { foodCatalogue, findFoodInCatalogue } from '@/lib/foodCatalogue';
 import { DEFAULT_MONEY_CONTEXT, type MoneyContext } from '@/lib/money';
-import { sharedQuantity } from '@/lib/diners';
+import { sharedShareFor } from '@/lib/diners';
 import type { RegularDiner } from '@/lib/regularDiners';
 import type { SavedMealSession } from '@/types/history';
 import type { FoodCategory } from '@/types/meal';
@@ -161,7 +161,9 @@ export function buildDinerSummary(
         continue;
       }
       const explicit = item.allocations?.find((entry) => entry.dinerId === diner.id)?.quantity ?? 0;
-      const share = sharedQuantity(item) / seats;
+      // The same division the report uses, so a person's food here and their
+      // food there cannot disagree.
+      const share = sharedShareFor(item, diner.id, record.diners, seats);
       const plates = Math.max(0, explicit) + share;
       if (plates <= 0) {
         continue;

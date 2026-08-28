@@ -90,6 +90,8 @@ export type SessionAction =
       type: 'set-item-allocations';
       id: string;
       allocations: readonly DinerAllocation[];
+      /** Who splits whatever is left of the line. Omitted means the table. */
+      sharedAmong?: readonly string[];
       meta?: MealEventMeta;
     }
   | { type: 'set-item-consumption'; id: string; consumed: number; meta?: MealEventMeta }
@@ -438,7 +440,14 @@ function applySessionAction(state: MealSession, action: SessionAction): MealSess
         ...state,
         items: state.items.map((item) =>
           item.id === action.id
-            ? reconcileItemAllocations({ ...item, allocations: action.allocations }, state.diners)
+            ? reconcileItemAllocations(
+                {
+                  ...item,
+                  allocations: action.allocations,
+                  ...(action.sharedAmong === undefined ? {} : { sharedAmong: action.sharedAmong }),
+                },
+                state.diners,
+              )
             : item,
         ),
       };

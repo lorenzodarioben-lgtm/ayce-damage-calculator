@@ -28,6 +28,7 @@ import {
   isDinerId,
   normaliseAllocations,
   normaliseDinerName,
+  normaliseSharedAmong,
   reconcileItemAllocations,
 } from '@/lib/diners';
 import { DEFAULT_PRICING_PROFILE, DEFAULT_PRICING_PROFILE_ID } from '@/lib/pricing';
@@ -278,6 +279,10 @@ function parseItem(
   };
   // Ownership is reconciled against the record's own roster, so a filed table
   // breakdown reads exactly as it did when the meal was recorded.
+  const sharedAmong = normaliseSharedAmong(
+    Array.isArray(value.sharedAmong) ? (value.sharedAmong as readonly string[]) : undefined,
+    diners,
+  );
   const allocations = normaliseAllocations(
     Array.isArray(value.allocations)
       ? (value.allocations as readonly DinerAllocation[])
@@ -285,7 +290,11 @@ function parseItem(
     safeQuantity,
     diners,
   );
-  return allocations.length > 0 ? { ...base, allocations } : base;
+  return {
+    ...base,
+    ...(allocations.length > 0 ? { allocations } : {}),
+    ...(sharedAmong.length > 0 ? { sharedAmong } : {}),
+  };
 }
 
 const ZERO_NUTRITION: Nutrition = { calories: 0, protein: 0, fat: 0, carbs: 0 };

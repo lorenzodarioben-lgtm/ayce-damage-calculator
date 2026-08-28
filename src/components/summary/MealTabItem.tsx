@@ -7,7 +7,8 @@ import { MAX_LINE_QUANTITY, MIN_QUANTITY, getPlateSizeMeta, getQualityMeta } fro
 import { CONSUMPTION_STEP, formatPlateQuantity } from '@/lib/consumption';
 import { formatMoney, formatUnits, formatWeight } from '@/lib/formatting';
 import { usePricingProfile } from '@/components/session/PricingContext';
-import type { LineItemTotals } from '@/types/meal';
+import { formatSharePlates, sharedQuantity } from '@/lib/diners';
+import type { Diner, LineItemTotals } from '@/types/meal';
 
 interface MealTabItemProps {
   line: LineItemTotals;
@@ -15,6 +16,9 @@ interface MealTabItemProps {
   onDecrement: (id: string) => void;
   onConsumptionChange: (id: string, consumed: number) => void;
   onChargeChange: (id: string, separate: boolean, charge?: number) => void;
+  onSharedAmongChange: (id: string, sharedAmong: readonly string[]) => void;
+  /** The meal's roster. Empty whenever Table Mode is not in use. */
+  diners: readonly Diner[];
   onRemove: (id: string) => void;
 }
 
@@ -32,6 +36,8 @@ export function MealTabItem({
   onDecrement,
   onConsumptionChange,
   onChargeChange,
+  onSharedAmongChange,
+  diners,
   onRemove,
 }: MealTabItemProps) {
   const pricingProfile = usePricingProfile();
@@ -41,6 +47,17 @@ export function MealTabItem({
   const [open, setOpen] = useState(false);
   const expanded = open || left;
   const extra = line.separatelyCharged;
+  // Only worth offering when there is a remainder to share and people to share
+  // it between; two diners have nothing to choose from.
+  const shareable = diners.length > 2 && sharedQuantity(item) > 0;
+  const sharedBy = item.sharedAmong ?? [];
+
+  function toggleSharer(dinerId: string) {
+    const next = sharedBy.includes(dinerId)
+      ? sharedBy.filter((entry) => entry !== dinerId)
+      : [...sharedBy, dinerId];
+    onSharedAmongChange(item.id, next);
+  }
 
   return (
     <li className="border-b border-line-soft py-3 last:border-b-0">
@@ -134,6 +151,44 @@ export function MealTabItem({
           <Trash2 size={15} aria-hidden="true" />
         </button>
       </div>
+
+      {shareable && (
+        <div className="mt-2 rounded-[10px] border border-line-soft bg-ash-900 px-3 py-2">
+          <p className="micro-label mb-1.5">Shared by</p>
+          <div
+            role="group"
+            aria-label={`Who shared ${descriptor}`}
+            className="flex flex-wrap gap-1.5"
+          >
+            {diners.map((diner) => {
+              const sharing = sharedBy.length === 0 || sharedBy.includes(diner.id);
+              return (
+                <button
+                  key={diner.id}
+                  type="button"
+                  aria-pressed={sharedBy.includes(diner.id)}
+                  onClick={() => toggleSharer(diner.id)}
+                  className={[
+                    'min-h-9 cursor-pointer rounded-full border px-3 text-xs font-semibold transition-colors duration-200',
+                    sharing
+                      ? 'border-ember-600 bg-ash-800 text-cream-100'
+                      : 'border-line bg-ash-950 text-cream-700 hover:border-ember-700',
+                  ].join(' ')}
+                >
+                  {diner.displayName}
+                </button>
+              );
+            })}
+          </div>
+          <p className="mt-1.5 text-xs leading-relaxed text-cream-700">
+            {sharedBy.length === 0
+              ? 'Everyone at the table splits what is left of this line. Name a few of them instead if only they shared it.'
+              : `Split between ${sharedBy.length} of them, and nobody else. ${formatSharePlates(
+                  sharedQuantity(item) / sharedBy.length,
+                )} each.`}
+          </p>
+        </div>
+      )}
 
       {extra && (
         <div className="mt-2 rounded-[10px] border border-line-soft bg-ash-900 px-3 py-2">

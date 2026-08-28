@@ -15,6 +15,7 @@ import { MAX_CUSTOM_FOODS, parseCustomFood } from '@/lib/customFoods';
 import { parseAdjustments } from '@/lib/adjustments';
 import { normaliseConsumedQuantity } from '@/lib/consumption';
 import { normaliseSeparateCharge } from '@/lib/separateCharges';
+import { isDinerId } from '@/lib/diners';
 import {
   packShareBody,
   shareEncodeFailure,
@@ -203,6 +204,7 @@ export function encodeShareResult(
         ...(consumed === undefined ? {} : { consumedQuantity: consumed }),
         // Carried because the recipient's recovery figure would otherwise
         // count food the sender paid for outside the buffet price.
+        ...(item.sharedAmong?.length ? { sharedAmong: item.sharedAmong } : {}),
         ...(item.separatelyCharged === true ? { separatelyCharged: true } : {}),
         ...(item.separatelyCharged === true && charged !== undefined
           ? { separateCharge: charged }
@@ -390,6 +392,9 @@ function parseShareItems(value: unknown, foods: readonly FoodItem[]): readonly M
       plateSize: plateSize as PlateSize,
       quantity: safeQuantity,
       ...(consumed === undefined ? {} : { consumedQuantity: consumed }),
+      ...(Array.isArray(entry.sharedAmong) && entry.sharedAmong.length
+        ? { sharedAmong: (entry.sharedAmong as readonly unknown[]).filter(isDinerId) }
+        : {}),
       ...(separate ? { separatelyCharged: true as const } : {}),
       ...(separate && charged !== undefined ? { separateCharge: charged } : {}),
     });

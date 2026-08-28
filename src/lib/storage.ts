@@ -18,6 +18,7 @@ import { findFoodInCatalogue } from '@/lib/foodCatalogue';
 import {
   isDinerId,
   normaliseAllocations,
+  normaliseSharedAmong,
   normaliseDinerName,
   reconcileItemAllocations,
 } from '@/lib/diners';
@@ -170,7 +171,15 @@ function parseMealItem(
     safeQuantity,
     diners,
   );
-  return allocations.length > 0 ? { ...base, allocations } : base;
+  const sharedAmong = normaliseSharedAmong(
+    Array.isArray(value.sharedAmong) ? (value.sharedAmong as readonly string[]) : undefined,
+    diners,
+  );
+  return {
+    ...base,
+    ...(allocations.length > 0 ? { allocations } : {}),
+    ...(sharedAmong.length > 0 ? { sharedAmong } : {}),
+  };
 }
 
 /** Returns null whenever stored data is absent, stale or untrustworthy. */
