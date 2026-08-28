@@ -2,6 +2,7 @@
 
 import { cn } from '@/lib/cn';
 import { formatMoney, formatPercent } from '@/lib/formatting';
+import { clampToRange } from '@/lib/range';
 import { usePricingProfile } from '@/components/session/PricingContext';
 
 interface DamageMeterProps {
@@ -22,8 +23,9 @@ export function DamageMeter({
   const pricingProfile = usePricingProfile();
   const beaten = recoveryPercent >= 100;
   // The bar caps at 100% while the numeric readout keeps climbing, so a 250%
-  // meal cannot blow out the layout.
-  const fill = Math.min(100, Math.max(0, recoveryPercent));
+  // meal cannot blow out the layout. An unreadable figure reads as no progress
+  // rather than as a width and an ARIA value the browser cannot make sense of.
+  const fill = clampToRange(recoveryPercent, 0, 100, 0);
 
   return (
     <div>
