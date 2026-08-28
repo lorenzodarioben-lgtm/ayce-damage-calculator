@@ -14,6 +14,7 @@ import { MAIN_CONTENT_ID } from '@/components/nav/destinations';
 import { DamageMeter } from '@/components/summary/DamageMeter';
 import { PricingProfileProvider } from '@/components/session/PricingContext';
 import { SessionConflictNotice } from '@/components/session/SessionConflictNotice';
+import { SessionUndoControls } from '@/components/session/SessionUndoControls';
 import { Button } from '@/components/ui/Button';
 import { StatusToast } from '@/components/ui/StatusToast';
 import { useFavorites } from '@/hooks/useFavorites';
@@ -21,7 +22,6 @@ import { useMealSession, type AddItemPayload } from '@/hooks/useMealSession';
 import { usePricingProfiles } from '@/hooks/usePricingProfiles';
 import { useCustomFoods } from '@/hooks/useCustomFoods';
 import { useStatusMessage } from '@/hooks/useStatusMessage';
-import { useUndoableRemove } from '@/hooks/useUndoableRemove';
 import { REPORT_STAGE, STAGE_PARAM } from '@/hooks/useStageHistory';
 import { findFoodInCatalogue, foodCatalogue } from '@/lib/foodCatalogue';
 import { formatKg, formatMoney, formatPlates } from '@/lib/formatting';
@@ -50,7 +50,10 @@ export function LiveMealMode() {
     incrementItem,
     decrementItem,
     removeItem,
-    restoreItem,
+    canUndo,
+    canRedo,
+    undo,
+    redo,
     setMealDuration,
     pauseMeal,
     resumeMeal,
@@ -90,14 +93,6 @@ export function LiveMealMode() {
     [incrementItem],
   );
 
-  const handleRemove = useUndoableRemove({
-    items: session.items,
-    removeItem,
-    restoreItem,
-    announce,
-    location: 'the quick log',
-  });
-
   const hasItems = report.lines.length > 0;
 
   return (
@@ -118,6 +113,10 @@ export function LiveMealMode() {
               />
             </div>
           )}
+
+          <div className="mb-4">
+            <SessionUndoControls canUndo={canUndo} canRedo={canRedo} onUndo={undo} onRedo={redo} />
+          </div>
 
           {/* Pinned under the header: the number the whole mode exists to move. */}
           <section
@@ -172,7 +171,7 @@ export function LiveMealMode() {
                   line={line}
                   onIncrement={handleIncrement}
                   onDecrement={decrementItem}
-                  onRemove={handleRemove}
+                  onRemove={removeItem}
                 />
               ))}
             </ul>
