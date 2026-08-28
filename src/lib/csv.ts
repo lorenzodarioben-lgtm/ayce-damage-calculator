@@ -44,14 +44,6 @@ export const CSV_COLUMNS = [
 const FORMULA_LEAD = /^[=+\-@\t\r]/;
 
 /**
- * Escapes one field.
- *
- * The leading apostrophe on formula-like text is the important part: a
- * restaurant name or note is free text the diner typed, and `=1+1` in a cell is
- * a formula to every spreadsheet that opens the file. Neutralising it here
- * costs one character and removes the whole class of surprise.
- */
-/**
  * Who this line belonged to, in one cell.
  *
  * Explicit attributions are named with their amounts; a line shared by only
@@ -70,6 +62,14 @@ function attributionOf(item: MealItem, diners: readonly Diner[] | undefined): st
   return parts.length > 0 ? parts.join('; ') : 'Table';
 }
 
+/**
+ * Escapes one field.
+ *
+ * The leading apostrophe on formula-like text is the important part: a
+ * restaurant name or note is free text the diner typed, and `=1+1` in a cell is
+ * a formula to every spreadsheet that opens the file. Neutralising it here
+ * costs one character and removes the whole class of surprise.
+ */
 export function escapeCsvField(value: string): string {
   const guarded = FORMULA_LEAD.test(value) ? `'${value}` : value;
   return `"${guarded.replace(/"/g, '""')}"`;
