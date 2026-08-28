@@ -1,5 +1,5 @@
 import { CATEGORY_META } from '@/lib/constants';
-import { calculateDinerTotals } from '@/lib/calculations';
+import { calculateDinerTotals, tableSeats } from '@/lib/calculations';
 import { foodCatalogue, findFoodInCatalogue } from '@/lib/foodCatalogue';
 import { DEFAULT_MONEY_CONTEXT, type MoneyContext } from '@/lib/money';
 import { sharedQuantity } from '@/lib/diners';
@@ -152,14 +152,16 @@ export function buildDinerSummary(
 
     // Per-line attribution again, because the summary above is money and this
     // is "what did they actually eat" — the same division, applied per food.
-    const roster = record.diners?.length ?? 1;
+    // Divided by seats rather than by the roster, so a meal where somebody was
+    // never typed in does not quietly hand their food to the people who were.
+    const seats = Math.max(1, tableSeats(record));
     for (const item of record.items) {
       const food = findFoodInCatalogue(foods, item.foodId);
       if (!food) {
         continue;
       }
       const explicit = item.allocations?.find((entry) => entry.dinerId === diner.id)?.quantity ?? 0;
-      const share = sharedQuantity(item) / Math.max(1, roster);
+      const share = sharedQuantity(item) / seats;
       const plates = Math.max(0, explicit) + share;
       if (plates <= 0) {
         continue;
