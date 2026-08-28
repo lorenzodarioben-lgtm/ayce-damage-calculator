@@ -3,7 +3,7 @@ import { FOODS } from '@/data/foods';
 import { DEFAULT_PRICING_PROFILE, resolveFoodPricing } from '@/lib/pricing';
 import { getVerdict, type VerdictId } from '@/lib/verdicts';
 import type { FoodPricing, PricingProfile } from '@/types/pricing';
-import type { Diner, FoodItem, MealItem, SessionConfig } from '@/types/meal';
+import type { DamageReport, Diner, FoodItem, MealItem, SessionConfig } from '@/types/meal';
 
 /**
  * How much the headline figure depends on assumptions nobody measured.
@@ -130,6 +130,21 @@ function scaledProfile(
   return { ...profile, overrides };
 }
 
+/**
+ * The meal's weight under a scenario's serving-weight assumption.
+ *
+ * Applied to what a plate of meat weighs, which is the thing the assumption is
+ * about. A bowl of soup weighs whatever the restaurant served, and no scenario
+ * here claims otherwise.
+ */
+function scaledWeightG(report: DamageReport, weightMultiplier: number): number {
+  return report.lines.reduce(
+    (total, line) =>
+      total + line.weightG * (line.food.valuation === 'by-weight' ? weightMultiplier : 1),
+    0,
+  );
+}
+
 export interface ScenarioOutcome {
   readonly id: ScenarioId;
   readonly label: string;
@@ -174,7 +189,16 @@ export interface UncertaintyAnalysis {
   readonly headline: string;
 }
 
-type AnalysisConfig = Pick<SessionConfig, 'pricePerDiner' | 'dinerCount'> & {
+/**
+ * What the scenarios are measured against.
+ *
+ * The bill belongs here for the same reason the entry price does. Every figure
+ * below is a recovery percentage, and a recovery percentage is retail value
+ * over what was actually paid — so a range built against the undiscounted entry
+ * price is precise about a question nobody asked, and contradicts the report it
+ * sits underneath.
+ */
+type AnalysisConfig = Pick<SessionConfig, 'pricePerDiner' | 'dinerCount' | 'adjustments'> & {
   readonly diners?: readonly Diner[];
 };
 
@@ -207,7 +231,12 @@ function scenario(
     restaurantCost: report.totalRestaurantCost,
     // The engine's weight is the nominal one; the scenario's own assumption is
     // applied here rather than pretending the plate sizes themselves changed.
-    weightG: report.totalWeightG * multipliers.weight,
+    //
+    // Only to the plated cuts. A serving is one thing at one price, so the
+    // serving-weight assumption is deliberately not applied to its value above
+    // — and scaling its weight here anyway would put a band around a figure the
+    // scenario did not actually move.
+    weightG: scaledWeightG(report, multipliers.weight),
     recoveryPercent: report.retailRecoveryPercent,
     beatsAdmission: report.hasBeatenBuffet,
     verdictId: verdict.id,
