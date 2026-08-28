@@ -285,9 +285,12 @@ describe('Filing and sharing a subset', () => {
     expect(parsed?.items[0]?.sharedAmong).toEqual(['ana', 'ben']);
   });
 
-  it('round-trips through a share link', () => {
+  it('round-trips through a share link, under anonymous positions', () => {
     const decoded = decodeSharePayload(encodeSharePayload(session)!);
-    expect(decoded?.items[0]?.sharedAmong).toEqual(['ana', 'ben']);
+
+    // The structure survives; the identities deliberately do not.
+    expect(decoded?.items[0]?.sharedAmong).toEqual(['d1', 'd2']);
+    expect(decoded?.diners?.map((diner) => diner.id)).toEqual(['d1', 'd2', 'd3']);
   });
 
   it('renders a third as a third rather than on the quarter grid', () => {

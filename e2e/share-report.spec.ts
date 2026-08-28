@@ -2,8 +2,10 @@ import { expect, test, type Browser, type Page } from '@playwright/test';
 import {
   addPlate,
   calculateDamage,
+  decodeTokenDocument,
   horizontalOverflow,
   openCalculator,
+  sessionSetup,
   setPricePerDiner,
   setRestaurantName,
   tab,
@@ -32,6 +34,48 @@ async function openAsRecipient(browser: Browser, link: string): Promise<Page> {
 }
 
 test.use({ permissions: ['clipboard-read', 'clipboard-write'] });
+
+test.describe('What a shared report says about the people at the table', () => {
+  test('carries no name, and no id derived from one', async ({ page }) => {
+    await openCalculator(page);
+    await setRestaurantName(page, 'Seoul Garden');
+    await setPricePerDiner(page, 50);
+
+    // The path that matters: "Add & save" gives the person an id slugged from
+    // their name, which used to travel inside the token in full.
+    const setup = sessionSetup(page);
+    await setup.getByLabel('Diner name').fill('Lorenzo');
+    await setup.getByRole('button', { name: 'Add & save' }).click();
+    await expect(setup.getByRole('textbox', { name: 'Diner 1 name' })).toHaveValue('Lorenzo');
+
+    await addPlate(page, 'Ribeye');
+    await calculateDamage(page);
+
+    const body = decodeTokenDocument(await copyShareLink(page), 'share');
+    expect(body).not.toContain('Lorenzo');
+    // The check the old test could not make: `diner-lorenzo` is the name.
+    expect(body.toLowerCase()).not.toContain('lorenzo');
+    expect(body).toContain('d1');
+  });
+
+  test('still shows the recipient a table, under positions', async ({ page, browser }) => {
+    await openCalculator(page);
+    await setRestaurantName(page, 'Seoul Garden');
+    await setPricePerDiner(page, 50);
+
+    const setup = sessionSetup(page);
+    await setup.getByLabel('Diner name').fill('Lorenzo');
+    await setup.getByRole('button', { name: 'Add & save' }).click();
+    await expect(setup.getByRole('textbox', { name: 'Diner 1 name' })).toHaveValue('Lorenzo');
+
+    await addPlate(page, 'Ribeye');
+    await calculateDamage(page);
+
+    const recipient = await openAsRecipient(browser, await copyShareLink(page));
+    await expect(recipient.getByText('Lorenzo')).toHaveCount(0);
+    await recipient.close();
+  });
+});
 
 test.describe('Sharing a report', () => {
   test('produces a link that reproduces the report for someone else', async ({ page, browser }) => {
