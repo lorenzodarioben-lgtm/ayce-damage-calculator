@@ -8,7 +8,36 @@ export const KG_TO_LB = 2.2046226218;
  */
 export const THEME_COLOUR = '#0d0c0a';
 
-export const FOOD_CATEGORIES = ['beef', 'pork', 'chicken', 'seafood'] as const;
+/**
+ * The grill categories are the built-in menu. The four after them exist only
+ * for a diner's own items: an all-you-can-eat table has sides, a stew, a scoop
+ * of ice cream and a bottle of something, and none of those is a cut of meat.
+ *
+ * Nothing is bundled for them. There is no invented price for a bowl of soup
+ * and no assumed calorie count for a beer, because the app does not know and
+ * will not pretend to — the categories are empty until somebody fills them.
+ */
+export const FOOD_CATEGORIES = [
+  'beef',
+  'pork',
+  'chicken',
+  'seafood',
+  'sides',
+  'hot-food',
+  'desserts',
+  'drinks',
+] as const;
+
+/** The categories the bundled Australian KBBQ catalogue occupies. */
+export const GRILL_CATEGORIES: readonly FoodCategory[] = ['beef', 'pork', 'chicken', 'seafood'];
+
+/** The categories that only ever hold diner-authored items. */
+export const CUSTOM_ONLY_CATEGORIES: readonly FoodCategory[] = [
+  'sides',
+  'hot-food',
+  'desserts',
+  'drinks',
+];
 
 export interface CategoryMeta {
   readonly id: FoodCategory;
@@ -20,6 +49,10 @@ export const CATEGORY_META: readonly CategoryMeta[] = [
   { id: 'pork', label: 'Pork' },
   { id: 'chicken', label: 'Chicken' },
   { id: 'seafood', label: 'Seafood' },
+  { id: 'sides', label: 'Sides' },
+  { id: 'hot-food', label: 'Hot food' },
+  { id: 'desserts', label: 'Desserts' },
+  { id: 'drinks', label: 'Drinks' },
 ];
 
 export interface QualityMeta {
@@ -67,6 +100,25 @@ export const PLATE_SIZES: readonly PlateSizeMeta[] = [
   { id: 'large', label: 'Large', grams: 220, ounces: '7.8 oz' },
 ];
 
+/**
+ * The nominal regular plate every figure has always been built on.
+ *
+ * A declared plate weight replaces this one and the other two sizes scale from
+ * it in the same proportion, so "small" stays meaningfully smaller than
+ * "regular" whatever the restaurant actually serves.
+ */
+export const REGULAR_PLATE_GRAMS = 155;
+
+/**
+ * What a plate can plausibly weigh, in grams.
+ *
+ * Bounded because the figure arrives from storage, a share token and a CSV a
+ * stranger may have written, and because weight multiplies straight into retail
+ * value: an unbounded plate weight is an unbounded claim about the meal.
+ */
+export const MIN_PLATE_GRAMS = 1;
+export const MAX_PLATE_GRAMS = 2000;
+
 export const DEFAULT_QUALITY: QualityTier = 'standard';
 export const DEFAULT_PLATE_SIZE: PlateSize = 'regular';
 
@@ -88,6 +140,30 @@ export const MAX_RESTAURANT_NAME_LENGTH = 60;
 
 /** Long enough for who was there and what happened; short enough to render. */
 export const MAX_SESSION_NOTE_LENGTH = 280;
+
+/**
+ * Bounds on what a bill can have added to or taken off it.
+ *
+ * A real tab picks up a handful of these — a voucher, a card fee, a weekend
+ * surcharge, a plate of something charged separately. Twelve is more than any
+ * receipt anyone has produced and still a fixed ceiling, which is what a
+ * storage, URL and import boundary needs.
+ */
+export const MAX_BILL_ADJUSTMENTS = 12;
+export const MAX_ADJUSTMENT_LABEL_LENGTH = 40;
+/** Per adjustment, in the session's own currency context. */
+export const MAX_ADJUSTMENT_AMOUNT = 5000;
+export const MIN_ADJUSTMENT_AMOUNT = 0.01;
+
+/**
+ * A percentage of a bill, bounded to what a bill can actually say.
+ *
+ * A hundred percent is the whole thing, and nothing on a receipt is a share of
+ * more than all of it — a bigger surcharge than that is a different entry
+ * price, not a percentage.
+ */
+export const MAX_ADJUSTMENT_PERCENT = 100;
+export const MIN_ADJUSTMENT_PERCENT = 0.01;
 
 export function getQualityMeta(tier: QualityTier): QualityMeta {
   const meta = QUALITY_TIERS.find((entry) => entry.id === tier);

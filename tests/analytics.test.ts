@@ -87,7 +87,9 @@ describe('Analytics periods', () => {
 
   it('keeps all records for all time and returns an empty set for an empty period', () => {
     expect(recordsInAnalyticsRange([SMALL, BIG], 'all', now)).toEqual([SMALL, BIG]);
-    expect(recordsInAnalyticsRange([SMALL, BIG], '30', now)).toEqual([]);
+    expect(
+      recordsInAnalyticsRange([SMALL, BIG], '30', new Date('2026-09-30T00:00:00.000Z')),
+    ).toEqual([]);
   });
 });
 

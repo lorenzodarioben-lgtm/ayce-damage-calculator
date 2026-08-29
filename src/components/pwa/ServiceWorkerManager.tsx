@@ -98,7 +98,12 @@ export function ServiceWorkerManager() {
     setWaiting(null);
   }, [waiting]);
 
-  if (!waiting && !deferredInstall && online) {
+  const hasUpdate = waiting !== null;
+  const canInstall = deferredInstall !== null;
+
+  // Nothing to say: no waiting build, no installable prompt, and the network is
+  // there. The bar is absent from the DOM rather than empty.
+  if (!hasUpdate && !canInstall && online) {
     return null;
   }
 
@@ -107,28 +112,35 @@ export function ServiceWorkerManager() {
       role="status"
       className="relative z-40 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 border-b border-line-ember bg-ash-850 px-4 py-2 text-center"
     >
-      <p className="text-xs text-cream-300">A newer version of the calculator is available.</p>
+      {/* Each line is tied to the condition it describes: being offline says
+          nothing about whether a newer build exists, and claiming one that is
+          not waiting would leave the reload with nothing to apply. */}
+      {hasUpdate && (
+        <p className="text-xs text-cream-300">A newer version of the calculator is available.</p>
+      )}
       {!online && (
         <p className="text-xs text-cream-300">
           You are offline. Previously visited pages may remain available.
         </p>
       )}
-      {deferredInstall && (
+      {canInstall && (
         <button
           type="button"
           onClick={() => void deferredInstall.prompt()}
-          className="min-h-8 rounded-[8px] px-2 text-xs font-semibold text-ember-400"
+          className="min-h-8 cursor-pointer rounded-[8px] px-2 text-xs font-semibold text-ember-400"
         >
           Install app
         </button>
       )}
-      <button
-        type="button"
-        onClick={applyUpdate}
-        className="min-h-8 cursor-pointer rounded-[8px] px-2 text-xs font-semibold uppercase tracking-[0.1em] text-ember-400 underline-offset-4 hover:underline"
-      >
-        Reload to update
-      </button>
+      {hasUpdate && (
+        <button
+          type="button"
+          onClick={applyUpdate}
+          className="min-h-8 cursor-pointer rounded-[8px] px-2 text-xs font-semibold uppercase tracking-[0.1em] text-ember-400 underline-offset-4 hover:underline"
+        >
+          Reload to update
+        </button>
+      )}
     </div>
   );
 }

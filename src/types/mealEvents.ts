@@ -21,6 +21,7 @@ export const MEAL_EVENT_TYPES = [
   'meal-started',
   'plates-added',
   'plates-reduced',
+  'consumption-changed',
   'line-removed',
   'line-restored',
   'allocation-changed',
@@ -73,6 +74,22 @@ export interface PlatesReducedEvent extends MealEventBase {
   readonly quantity: number;
 }
 
+/**
+ * Someone said how much of a line was actually eaten.
+ *
+ * Recorded because it is a thing that happened at a time, exactly like a plate
+ * arriving — and because a replay that showed the retail value of food nobody
+ * ate would disagree with the report it sits beside.
+ */
+export interface ConsumptionChangedEvent extends MealEventBase {
+  readonly type: 'consumption-changed';
+  readonly line: MealEventLine;
+  /** Plates eaten from this line, in quarters. Never more than were ordered. */
+  readonly consumedQuantity: number;
+  /** What the line held when the change was made. */
+  readonly quantity: number;
+}
+
 export interface LineRemovedEvent extends MealEventBase {
   readonly type: 'line-removed';
   readonly line: MealEventLine;
@@ -119,6 +136,7 @@ export interface MealLifecycleEvent extends MealEventBase {
 export type MealEvent =
   | PlatesAddedEvent
   | PlatesReducedEvent
+  | ConsumptionChangedEvent
   | LineRemovedEvent
   | LineRestoredEvent
   | AllocationChangedEvent
@@ -131,6 +149,7 @@ export type MealEvent =
 export type MealLineEvent =
   | PlatesAddedEvent
   | PlatesReducedEvent
+  | ConsumptionChangedEvent
   | LineRemovedEvent
   | LineRestoredEvent
   | AllocationChangedEvent;

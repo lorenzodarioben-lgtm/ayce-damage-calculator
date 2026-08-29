@@ -1,8 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { findFood } from '@/data/foods';
 import {
-  adjustedRestaurantCostPerKg,
-  adjustedRetailPricePerKg,
   buildDamageReport,
   calculateAdmission,
   calculateDinerTotals,
@@ -14,8 +12,15 @@ import {
 } from '@/lib/calculations';
 import { KG_TO_LB } from '@/lib/constants';
 import { DEFAULT_PRICING_PROFILE } from '@/lib/pricing';
+import { resolveValuation } from '@/lib/valuation';
 import type { PricingProfile } from '@/types/pricing';
-import type { MealItem } from '@/types/meal';
+import type { FoodItem, MealItem, WeightValuedFood } from '@/types/meal';
+
+/** Narrows a built-in cut to its weight-valued shape; the assertion is the point. */
+function weighed(food: FoodItem): WeightValuedFood {
+  expect(food.valuation).toBe('by-weight');
+  return food as WeightValuedFood;
+}
 
 const ribeye = findFood('beef-ribeye')!;
 const porkBelly = findFood('pork-belly')!;
@@ -25,7 +30,7 @@ const marketPricing: PricingProfile = {
   id: 'sydney-market',
   name: 'Sydney market estimates',
   overrides: {
-    [ribeye.id]: { retailPricePerKg: 80, restaurantCostPerKg: 43 },
+    [ribeye.id]: { valuation: 'by-weight' as const, retailPricePerKg: 80, restaurantCostPerKg: 43 },
   },
 };
 
@@ -71,22 +76,32 @@ describe('line item retail value', () => {
   });
 
   it('applies the retail quality multiplier', () => {
-    expect(adjustedRetailPricePerKg(ribeye, 'house')).toBeCloseTo(52 * 0.85, 10);
-    expect(adjustedRetailPricePerKg(ribeye, 'standard')).toBeCloseTo(52, 10);
-    expect(adjustedRetailPricePerKg(ribeye, 'premium')).toBeCloseTo(52 * 1.35, 10);
+    // A regular plate is 155 g, so the per-unit figure is that fraction of the
+    // per-kilogram rate with the tier multiplier applied.
+    const perPlate = (tier: 'house' | 'standard' | 'premium') =>
+      resolveValuation(ribeye, tier, 'regular').retailPerUnit;
+
+    expect(perPlate('house')).toBeCloseTo(52 * 0.85 * 0.155, 10);
+    expect(perPlate('standard')).toBeCloseTo(52 * 0.155, 10);
+    expect(perPlate('premium')).toBeCloseTo(52 * 1.35 * 0.155, 10);
   });
 
   it('uses the active profile override without changing the catalogue item', () => {
-    expect(adjustedRetailPricePerKg(ribeye, 'standard', marketPricing)).toBe(80);
-    expect(ribeye.retailPricePerKg).toBe(52);
+    expect(
+      resolveValuation(ribeye, 'standard', 'regular', marketPricing).retailPerUnit,
+    ).toBeCloseTo(80 * 0.155, 10);
+    expect(weighed(ribeye).retailPricePerKg).toBe(52);
   });
 });
 
 describe('line item restaurant cost', () => {
   it('applies the restaurant quality multiplier, which differs from retail', () => {
-    expect(adjustedRestaurantCostPerKg(ribeye, 'house')).toBeCloseTo(29 * 0.85, 10);
-    expect(adjustedRestaurantCostPerKg(ribeye, 'standard')).toBeCloseTo(29, 10);
-    expect(adjustedRestaurantCostPerKg(ribeye, 'premium')).toBeCloseTo(29 * 1.25, 10);
+    const perPlate = (tier: 'house' | 'standard' | 'premium') =>
+      resolveValuation(ribeye, tier, 'regular').restaurantCostPerUnit;
+
+    expect(perPlate('house')).toBeCloseTo(29 * 0.85 * 0.155, 10);
+    expect(perPlate('standard')).toBeCloseTo(29 * 0.155, 10);
+    expect(perPlate('premium')).toBeCloseTo(29 * 1.25 * 0.155, 10);
   });
 
   it('scales cost by weight', () => {
@@ -99,7 +114,9 @@ describe('line item restaurant cost', () => {
   });
 
   it('uses profile restaurant-cost assumptions independently', () => {
-    expect(adjustedRestaurantCostPerKg(ribeye, 'standard', marketPricing)).toBe(43);
+    expect(
+      resolveValuation(ribeye, 'standard', 'regular', marketPricing).restaurantCostPerUnit,
+    ).toBeCloseTo(43 * 0.155, 10);
   });
 });
 

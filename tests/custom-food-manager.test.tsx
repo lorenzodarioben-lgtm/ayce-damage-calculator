@@ -21,6 +21,7 @@ function ManagerHarness({ onStatus }: { onStatus: (message: string) => void }) {
       foods={foods.foods}
       onSave={foods.save}
       onRemove={foods.remove}
+      onReplaceAll={foods.replaceAll}
       onStatus={onStatus}
     />
   );

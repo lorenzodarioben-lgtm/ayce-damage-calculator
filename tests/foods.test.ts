@@ -1,14 +1,27 @@
 import { describe, expect, it } from 'vitest';
 import { FOODS, FOOD_COUNT, findFood, foodsInCategory, searchFoods, sortFoods } from '@/data/foods';
-import { CATEGORY_META, FOOD_CATEGORIES } from '@/lib/constants';
+import { CUSTOM_ONLY_CATEGORIES, FOOD_CATEGORIES, GRILL_CATEGORIES } from '@/lib/constants';
 import { DEFAULT_PRICING_PROFILE } from '@/lib/pricing';
 import type { PricingProfile } from '@/types/pricing';
+import type { FoodItem, WeightValuedFood } from '@/types/meal';
 
 /**
  * The dataset is the one place in the app where a typo is silent: every price,
  * macro and identifier is hand-written, and nothing else validates it. These
  * assertions are the guard rail for editing it.
  */
+
+/**
+ * Narrows a catalogue entry to its weight-valued shape.
+ *
+ * The assertion is the point rather than a formality: every built-in cut is
+ * grilled meat sold by weight, and the day one is not, these fixtures need to
+ * be rewritten rather than silently reinterpreted.
+ */
+function weighed(food: FoodItem): WeightValuedFood {
+  expect(food.valuation).toBe('by-weight');
+  return food as WeightValuedFood;
+}
 
 describe('food dataset', () => {
   it('reports its own size', () => {
@@ -39,9 +52,17 @@ describe('food dataset', () => {
     }
   });
 
-  it('leaves no category empty', () => {
-    for (const category of CATEGORY_META) {
-      expect(foodsInCategory(category.id).length).toBeGreaterThan(0);
+  it('leaves no grill category empty', () => {
+    for (const category of GRILL_CATEGORIES) {
+      expect(foodsInCategory(category).length).toBeGreaterThan(0);
+    }
+  });
+
+  it('bundles nothing at all in the custom-only categories', () => {
+    // These exist for a diner's own sides, stews, desserts and drinks. The app
+    // does not know what a bowl of soup costs and will not invent one.
+    for (const category of CUSTOM_ONLY_CATEGORIES) {
+      expect(foodsInCategory(category)).toEqual([]);
     }
   });
 
@@ -52,25 +73,29 @@ describe('food dataset', () => {
   });
 
   it.each(FOODS.map((food) => [food.id, food] as const))('%s is priced sensibly', (_id, food) => {
-    expect(food.retailPricePerKg).toBeGreaterThan(0);
-    expect(food.restaurantCostPerKg).toBeGreaterThan(0);
+    const priced = weighed(food);
+    expect(priced.retailPricePerKg).toBeGreaterThan(0);
+    expect(priced.restaurantCostPerKg).toBeGreaterThan(0);
     // Wholesale below supermarket is the premise the whole comparison rests on.
-    expect(food.restaurantCostPerKg).toBeLessThan(food.retailPricePerKg);
+    expect(priced.restaurantCostPerKg).toBeLessThan(priced.retailPricePerKg);
   });
 
   it.each(FOODS.map((food) => [food.id, food] as const))('%s has usable macros', (_id, food) => {
+    const priced = weighed(food);
     for (const value of [
-      food.caloriesPer100g,
-      food.proteinPer100g,
-      food.fatPer100g,
-      food.carbsPer100g,
+      priced.caloriesPer100g,
+      priced.proteinPer100g,
+      priced.fatPer100g,
+      priced.carbsPer100g,
     ]) {
       expect(Number.isFinite(value)).toBe(true);
       expect(value).toBeGreaterThanOrEqual(0);
     }
 
     // Macros are per 100 g, so their combined mass cannot exceed the sample.
-    expect(food.proteinPer100g + food.fatPer100g + food.carbsPer100g).toBeLessThanOrEqual(100);
+    expect(priced.proteinPer100g! + priced.fatPer100g! + priced.carbsPer100g!).toBeLessThanOrEqual(
+      100,
+    );
   });
 
   it.each(FOODS.map((food) => [food.id, food] as const))('%s is findable by name', (_id, food) => {
@@ -156,7 +181,9 @@ describe('sortFoods', () => {
       const current = sorted[index];
       expect(previous).toBeDefined();
       expect(current).toBeDefined();
-      expect(previous!.retailPricePerKg).toBeGreaterThanOrEqual(current!.retailPricePerKg);
+      expect(weighed(previous!).retailPricePerKg).toBeGreaterThanOrEqual(
+        weighed(current!).retailPricePerKg,
+      );
     }
   });
 
@@ -181,8 +208,8 @@ describe('sortFoods', () => {
   it('sorts a filtered list as readily as the whole dataset', () => {
     const seafood = sortFoods(foodsInCategory('seafood'), 'value');
     expect(seafood).toHaveLength(foodsInCategory('seafood').length);
-    expect(seafood[0]?.retailPricePerKg).toBe(
-      Math.max(...foodsInCategory('seafood').map((food) => food.retailPricePerKg)),
+    expect(weighed(seafood[0]!).retailPricePerKg).toBe(
+      Math.max(...foodsInCategory('seafood').map((food) => weighed(food).retailPricePerKg)),
     );
   });
 
@@ -192,7 +219,11 @@ describe('sortFoods', () => {
       id: 'specials',
       name: 'Specials',
       overrides: {
-        'chicken-thigh': { retailPricePerKg: 120, restaurantCostPerKg: 8 },
+        'chicken-thigh': {
+          valuation: 'by-weight' as const,
+          retailPricePerKg: 120,
+          restaurantCostPerKg: 8,
+        },
       },
     };
     expect(sortFoods(FOODS, 'value', profile)[0]?.id).toBe('chicken-thigh');

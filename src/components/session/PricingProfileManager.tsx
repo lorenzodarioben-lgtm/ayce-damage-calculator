@@ -4,7 +4,8 @@ import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useId, useState } from 'react';
 import { FOODS } from '@/data/foods';
 import { Dialog } from '@/components/ui/Dialog';
-import { formatPricePerKg } from '@/lib/formatting';
+import { formatUnitPrice } from '@/lib/formatting';
+import { resolveFoodPricing } from '@/lib/pricing';
 import { SUPPORTED_CURRENCIES, defaultLocaleForCurrency, type CurrencyCode } from '@/lib/money';
 import { nextPricingProfileId, createPricingProfile } from '@/lib/pricingProfiles';
 import type { FoodPricing, PricingProfile, PricingProfileId } from '@/types/pricing';
@@ -22,13 +23,21 @@ function initialPrices(profile: PricingProfile | null): DraftPrices {
   return Object.fromEntries(
     FOODS.flatMap((food) => {
       const pricing = profile?.overrides[food.id];
-      return pricing
+      return pricing && pricing.valuation === food.valuation
         ? [
             [
               food.id,
               {
-                retail: String(pricing.retailPricePerKg),
-                cost: String(pricing.restaurantCostPerKg),
+                retail: String(
+                  pricing.valuation === 'by-weight'
+                    ? pricing.retailPricePerKg
+                    : pricing.retailPricePerServing,
+                ),
+                cost: String(
+                  pricing.valuation === 'by-weight'
+                    ? pricing.restaurantCostPerKg
+                    : pricing.restaurantCostPerServing,
+                ),
               },
             ],
           ]
@@ -71,23 +80,38 @@ function ProfileEditor({
   function handleSave() {
     const overrides: Record<string, FoodPricing> = {};
     for (const [foodId, fields] of Object.entries(prices)) {
+      const food = FOODS.find((entry) => entry.id === foodId);
+      if (!food) {
+        continue;
+      }
       const retail = fields.retail.trim();
       const cost = fields.cost.trim();
       if (!retail && !cost) {
         continue;
       }
-      const retailPricePerKg = Number(retail);
-      const restaurantCostPerKg = Number(cost);
+      const retailPrice = Number(retail);
+      const restaurantCost = Number(cost);
       if (
-        !Number.isFinite(retailPricePerKg) ||
-        !Number.isFinite(restaurantCostPerKg) ||
-        retailPricePerKg < 0 ||
-        restaurantCostPerKg < 0
+        !Number.isFinite(retailPrice) ||
+        !Number.isFinite(restaurantCost) ||
+        retailPrice < 0 ||
+        restaurantCost < 0
       ) {
         setError('Enter zero or a positive number for both prices, or leave both blank.');
         return;
       }
-      overrides[foodId] = { retailPricePerKg, restaurantCostPerKg };
+      overrides[foodId] =
+        food.valuation === 'by-weight'
+          ? {
+              valuation: 'by-weight',
+              retailPricePerKg: retailPrice,
+              restaurantCostPerKg: restaurantCost,
+            }
+          : {
+              valuation: 'by-serving',
+              retailPricePerServing: retailPrice,
+              restaurantCostPerServing: restaurantCost,
+            };
     }
 
     const id = profile?.id ?? nextPricingProfileId(profiles, name);
@@ -112,8 +136,19 @@ function ProfileEditor({
       Object.fromEntries(
         FOODS.map((food) => {
           const current = prices[food.id];
-          const retail = Number(current?.retail || food.retailPricePerKg);
-          const cost = Number(current?.cost || food.restaurantCostPerKg);
+          const defaults = resolveFoodPricing(food);
+          const retail = Number(
+            current?.retail ||
+              (defaults.valuation === 'by-weight'
+                ? defaults.retailPricePerKg
+                : defaults.retailPricePerServing),
+          );
+          const cost = Number(
+            current?.cost ||
+              (defaults.valuation === 'by-weight'
+                ? defaults.restaurantCostPerKg
+                : defaults.restaurantCostPerServing),
+          );
           return [
             food.id,
             {
@@ -204,7 +239,7 @@ function ProfileEditor({
           </div>
           <div className="mb-2 flex items-baseline justify-between gap-3">
             <h3 className="micro-label">Cut assumptions</h3>
-            <p className="text-xs text-cream-700">Per kg · leave a row blank to inherit</p>
+            <p className="text-xs text-cream-700">Per item · leave a row blank to inherit</p>
           </div>
           <div className="max-h-[40dvh] overflow-y-auto rounded-[10px] border border-line-soft bg-ash-900/50">
             {FOODS.map((food) => {
@@ -218,16 +253,16 @@ function ProfileEditor({
                     <p className="text-sm font-bold text-cream-100">{food.name}</p>
                     <p className="text-xs text-cream-700">
                       Default{' '}
-                      {formatPricePerKg(food.retailPricePerKg, {
+                      {formatUnitPrice(resolveFoodPricing(food), {
                         currency,
                         locale: defaultLocaleForCurrency(currency),
                       })}
                     </p>
                   </div>
                   <label className="text-xs text-cream-500 sm:text-[0px]">
-                    Retail price per kg
+                    Retail price per {food.valuation === 'by-weight' ? 'kg' : 'serving'}
                     <input
-                      aria-label={`${food.name} retail price per kg`}
+                      aria-label={`${food.name} retail price per ${food.valuation === 'by-weight' ? 'kg' : 'serving'}`}
                       type="number"
                       min="0"
                       step="0.01"
@@ -238,9 +273,9 @@ function ProfileEditor({
                     />
                   </label>
                   <label className="text-xs text-cream-500 sm:text-[0px]">
-                    Restaurant cost per kg
+                    Restaurant cost per {food.valuation === 'by-weight' ? 'kg' : 'serving'}
                     <input
-                      aria-label={`${food.name} restaurant cost per kg`}
+                      aria-label={`${food.name} restaurant cost per ${food.valuation === 'by-weight' ? 'kg' : 'serving'}`}
                       type="number"
                       min="0"
                       step="0.01"

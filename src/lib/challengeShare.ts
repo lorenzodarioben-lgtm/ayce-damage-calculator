@@ -2,6 +2,8 @@ import { evaluateAchievementIds } from '@/lib/achievements';
 import { buildDamageReport, clampDinerCount, clampPricePerDiner } from '@/lib/calculations';
 import { compareSessions, type SessionComparison } from '@/lib/comparison';
 import { MAX_CUSTOM_FOODS, parseCustomFood } from '@/lib/customFoods';
+import { parseAdjustments } from '@/lib/adjustments';
+import { normaliseConsumedQuantity } from '@/lib/consumption';
 import { isIsoTimestamp } from '@/lib/datetime';
 import { foodCatalogue, findFoodInCatalogue } from '@/lib/foodCatalogue';
 import { MAX_LINE_QUANTITY, MIN_QUANTITY, isPlateSize, isQualityTier } from '@/lib/constants';
@@ -9,11 +11,20 @@ import { mealItemId } from '@/lib/mealItems';
 import { DEFAULT_PRICING_PROFILE } from '@/lib/pricing';
 import { parseCustomPricingProfile } from '@/lib/pricingProfiles';
 import { sanitiseRestaurantName } from '@/lib/storage';
-import { decodeUrlText, encodeUrlText } from '@/lib/urlText';
+import {
+  packShareBody,
+  shareEncodeFailure,
+  shareEncodeSuccess,
+  shareTokenOrNull,
+  unpackShareBody,
+  type PackLimits,
+  type ShareEncodeResult,
+} from '@/lib/shareCodec';
+import { decodeUrlText } from '@/lib/urlText';
 import { getVerdict } from '@/lib/verdicts';
 import type { SavedMealSession } from '@/types/history';
 import type { CustomFood } from '@/types/customFoods';
-import type { MealItem, PlateSize, QualityTier } from '@/types/meal';
+import type { BillAdjustment, MealItem, PlateSize, QualityTier } from '@/types/meal';
 import type { PricingProfile } from '@/types/pricing';
 
 /**
@@ -30,10 +41,26 @@ import type { PricingProfile } from '@/types/pricing';
  * meals and their prices.
  */
 
-export const CHALLENGE_TOKEN_VERSION = 1;
+/**
+ * 1 — URL-safe base64 JSON, with single-letter keys.
+ * 2 — the same document, compressed.
+ *
+ * Both still decode. A challenge someone posted is a standing invitation, and
+ * there is no server that could reissue it.
+ */
+export const CHALLENGE_TOKEN_VERSION = 2;
+const VERBOSE_CHALLENGE_TOKEN_VERSION = 1;
 
 /** Two meals is more than one, so the bound is larger than a report's — still fixed. */
 export const MAX_CHALLENGE_TOKEN_LENGTH = 4096;
+
+/** Two full meals with their menu context, and a fixed ceiling all the same. */
+export const MAX_CHALLENGE_DECODED_BYTES = 64 * 1024;
+
+const CHALLENGE_LIMITS: PackLimits = {
+  maxDecodedBytes: MAX_CHALLENGE_DECODED_BYTES,
+  maxEncodedLength: MAX_CHALLENGE_TOKEN_LENGTH - 2,
+};
 
 /** More lines than a real tab carries, and a hard stop on a hostile one. */
 export const MAX_CHALLENGE_ITEMS = 24;
@@ -47,6 +74,12 @@ export interface ChallengeSide {
   readonly pricingProfile: PricingProfile;
   readonly customFoods: readonly CustomFood[];
   readonly items: readonly MealItem[];
+  /**
+   * What settled each bill. Without it the two sides would be compared at
+   * their entry prices, and a meal that was half paid for by a voucher would
+   * look like a triumph of ordering rather than of couponing.
+   */
+  readonly adjustments?: readonly BillAdjustment[];
 }
 
 export interface ChallengePayload {
@@ -78,7 +111,15 @@ export function challengeSideFromRecord(record: SavedMealSession): ChallengeSide
       quality: item.quality,
       plateSize: item.plateSize,
       quantity: item.quantity,
+      ...(item.consumedQuantity === undefined ? {} : { consumedQuantity: item.consumedQuantity }),
     })),
+    // Scoped to the table on the way out: which diner a charge belonged to is
+    // roster information, and a challenge deliberately carries no roster.
+    ...(record.adjustments?.length
+      ? {
+          adjustments: record.adjustments.map(({ dinerId: _dinerId, ...entry }) => ({ ...entry })),
+        }
+      : {}),
   };
 }
 
@@ -96,28 +137,37 @@ function encodeSide(side: ChallengeSide) {
       o: side.pricingProfile.overrides,
     },
     f: side.customFoods,
+    j: side.adjustments,
     x: side.items.map((item) => ({
       f: item.foodId,
       q: item.quality,
       s: item.plateSize,
       n: item.quantity,
+      ...(item.consumedQuantity === undefined ? {} : { e: item.consumedQuantity }),
     })),
   };
 }
 
-export function encodeChallengePayload(payload: ChallengePayload): string | null {
+export function encodeChallengeResult(payload: ChallengePayload): ShareEncodeResult {
   if (payload.previous.items.length === 0 || payload.current.items.length === 0) {
-    return null;
+    return shareEncodeFailure('empty');
   }
 
-  const token = `${CHALLENGE_TOKEN_VERSION}.${encodeUrlText(
+  const packed = packShareBody(
     JSON.stringify({
       a: encodeSide(payload.previous),
       b: encodeSide(payload.current),
     }),
-  )}`;
+    CHALLENGE_LIMITS,
+  );
 
-  return token.length <= MAX_CHALLENGE_TOKEN_LENGTH ? token : null;
+  return packed === null
+    ? shareEncodeFailure('too-large')
+    : shareEncodeSuccess(`${CHALLENGE_TOKEN_VERSION}.${packed}`);
+}
+
+export function encodeChallengePayload(payload: ChallengePayload): string | null {
+  return shareTokenOrNull(encodeChallengeResult(payload));
 }
 
 function parseProfile(value: unknown): PricingProfile {
@@ -181,12 +231,15 @@ function parseItems(
     }
     const quality: QualityTier = entry.q;
     const plateSize: PlateSize = entry.s;
+    const quantity = Math.min(MAX_LINE_QUANTITY, Math.max(MIN_QUANTITY, Math.floor(entry.n)));
+    const consumed = normaliseConsumedQuantity(entry.e, quantity);
     items.push({
       id: mealItemId({ foodId: entry.f, quality, plateSize }),
       foodId: entry.f,
       quality,
       plateSize,
-      quantity: Math.min(MAX_LINE_QUANTITY, Math.max(MIN_QUANTITY, Math.floor(entry.n))),
+      quantity,
+      ...(consumed === undefined ? {} : { consumedQuantity: consumed }),
     });
   }
   return items;
@@ -205,6 +258,7 @@ function parseSide(value: unknown): ChallengeSide | null {
 
   const customFoods = parseFoods(value.f);
   const items = parseItems(value.x, customFoods);
+  const adjustments = parseAdjustments(value.j, []);
   if (!items) {
     return null;
   }
@@ -219,6 +273,8 @@ function parseSide(value: unknown): ChallengeSide | null {
     pricingProfile: parseProfile(value.m),
     customFoods,
     items,
+    // A challenge carries no roster, so every adjustment on it is table-wide.
+    ...(adjustments.length ? { adjustments } : {}),
   };
 }
 
@@ -232,11 +288,20 @@ export function decodeChallengePayload(token: string | null | undefined): Challe
   }
 
   const separator = token.indexOf('.');
-  if (separator < 0 || token.slice(0, separator) !== String(CHALLENGE_TOKEN_VERSION)) {
+  if (separator < 0) {
     return null;
   }
 
-  const decoded = decodeUrlText(token.slice(separator + 1));
+  const body = token.slice(separator + 1);
+  const version = token.slice(0, separator);
+  let decoded: string | null;
+  if (version === String(VERBOSE_CHALLENGE_TOKEN_VERSION)) {
+    decoded = decodeUrlText(body);
+  } else if (version === String(CHALLENGE_TOKEN_VERSION)) {
+    decoded = unpackShareBody(body, CHALLENGE_LIMITS);
+  } else {
+    return null;
+  }
   if (decoded === null) {
     return null;
   }
@@ -271,7 +336,11 @@ function recordFromSide(side: ChallengeSide, id: string): SavedMealSession {
   const foods = foodCatalogue(side.customFoods);
   const report = buildDamageReport(
     side.items,
-    { pricePerDiner: side.pricePerDiner, dinerCount: side.dinerCount },
+    {
+      pricePerDiner: side.pricePerDiner,
+      dinerCount: side.dinerCount,
+      ...(side.adjustments?.length ? { adjustments: side.adjustments } : {}),
+    },
     side.pricingProfile,
     foods,
   );
@@ -289,6 +358,7 @@ function recordFromSide(side: ChallengeSide, id: string): SavedMealSession {
     note: '',
     tags: [],
     items: side.items,
+    ...(side.adjustments?.length ? { adjustments: side.adjustments } : {}),
     fingerprint: id,
     snapshot: {
       achievementIds: evaluateAchievementIds(report, side.dinerCount),

@@ -7,7 +7,7 @@ import { usePricingProfile } from '@/components/session/PricingContext';
 import type { ResultCardModel } from '@/lib/resultCard';
 import { renderResultCardBlob } from '@/lib/resultCardImage';
 import { buildShareText, canWebShare, copyToClipboard } from '@/lib/share';
-import { shareLinkPath } from '@/lib/shareLink';
+import { shareLinkResult } from '@/lib/shareLink';
 import type { Verdict } from '@/lib/verdicts';
 import type { CustomFood } from '@/types/customFoods';
 import type { DamageReport, MealSession } from '@/types/meal';
@@ -54,14 +54,19 @@ export function ShareActions({ report, verdict, session, cardModel, onStatus }: 
     const customFoods = report.lines.flatMap((line) =>
       line.food.isCustom ? [line.food as CustomFood] : [],
     );
-    const path = shareLinkPath(session, { pricingProfile, customFoods });
-    if (!path) {
-      onStatus('There is nothing on the tab to share yet.');
+    const result = shareLinkResult(session, { pricingProfile, customFoods });
+    if (!result.ok) {
+      // The two reasons have opposite remedies, so they are said separately.
+      onStatus(
+        result.reason === 'empty'
+          ? 'There is nothing on the tab to share yet.'
+          : 'This meal is too large to fit inside a link. A share link carries the whole report in the address, so there is a limit to what it can hold.',
+      );
       return;
     }
 
     // Built from the live origin so the link works on any deployment.
-    const copied = await copyToClipboard(new URL(path, window.location.origin).toString());
+    const copied = await copyToClipboard(new URL(result.path, window.location.origin).toString());
     onStatus(
       copied
         ? 'Share link copied. The whole report travels inside the link.'

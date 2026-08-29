@@ -1,6 +1,8 @@
 import { getPlateSizeMeta, getQualityMeta } from '@/lib/constants';
+import { formatPlateQuantity } from '@/lib/consumption';
 import { resolveSavedSession } from '@/lib/history';
 import type { SavedMealSession } from '@/types/history';
+import type { Diner, MealItem } from '@/types/meal';
 
 /**
  * History as a spreadsheet.
@@ -17,6 +19,9 @@ export const CSV_COLUMNS = [
   'note',
   'diners',
   'price_per_diner',
+  'base_admission',
+  'bill_charges',
+  'bill_discounts',
   'admission',
   'verdict',
   'session_retail_value',
@@ -26,8 +31,12 @@ export const CSV_COLUMNS = [
   'quality',
   'plate_size',
   'plates',
+  'plates_eaten',
+  'plates_left',
   'weight_g',
+  'ordered_weight_g',
   'line_retail_value',
+  'line_ordered_retail_value',
   'attribution',
 ] as const;
 
@@ -42,6 +51,25 @@ const FORMULA_LEAD = /^[=+\-@\t\r]/;
  * a formula to every spreadsheet that opens the file. Neutralising it here
  * costs one character and removes the whole class of surprise.
  */
+/**
+ * Who this line belonged to, in one cell.
+ *
+ * Explicit attributions are named with their amounts; a line shared by only
+ * some of the table names them rather than saying "Table", because the export
+ * has to be able to say the same thing the report does.
+ */
+function attributionOf(item: MealItem, diners: readonly Diner[] | undefined): string {
+  const nameOf = (id: string) => diners?.find((diner) => diner.id === id)?.displayName ?? 'Unknown';
+  const explicit = (item.allocations ?? []).map(
+    (allocation) => `${nameOf(allocation.dinerId)}: ${formatPlateQuantity(allocation.quantity)}`,
+  );
+  const subset = item.sharedAmong?.length
+    ? [`Shared by ${item.sharedAmong.map(nameOf).join(' & ')}`]
+    : [];
+  const parts = [...explicit, ...subset];
+  return parts.length > 0 ? parts.join('; ') : 'Table';
+}
+
 export function escapeCsvField(value: string): string {
   const guarded = FORMULA_LEAD.test(value) ? `'${value}` : value;
   return `"${guarded.replace(/"/g, '""')}"`;
@@ -66,6 +94,10 @@ export function historyToCsv(records: readonly SavedMealSession[]): string {
       record.note,
       String(record.dinerCount),
       money(record.pricePerDiner),
+      money(report.baseAdmission),
+      money(report.adjustmentCharges),
+      money(report.adjustmentDiscounts),
+      // The final paid total, which is what every recovery figure divides by.
       money(report.totalAdmission),
       verdict.title,
       money(report.totalRetailValue),
@@ -81,18 +113,13 @@ export function historyToCsv(records: readonly SavedMealSession[]): string {
           getQualityMeta(line.item.quality).label,
           getPlateSizeMeta(line.item.plateSize).label,
           String(line.plates),
+          formatPlateQuantity(line.consumedPlates),
+          formatPlateQuantity(line.uneatenPlates),
           whole(line.weightG),
+          whole(line.orderedWeightG),
           money(line.retailValue),
-          line.item.allocations?.length
-            ? line.item.allocations
-                .map((allocation) => {
-                  const name = record.diners?.find(
-                    (diner) => diner.id === allocation.dinerId,
-                  )?.displayName;
-                  return `${name ?? 'Table'}: ${allocation.quantity}`;
-                })
-                .join('; ')
-            : 'Table',
+          money(line.orderedRetailValue),
+          attributionOf(line.item, record.diners),
         ]
           .map(escapeCsvField)
           .join(','),

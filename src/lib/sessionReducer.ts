@@ -6,13 +6,18 @@ import {
   MAX_LINE_QUANTITY,
   MIN_QUANTITY,
 } from '@/lib/constants';
+import { createAdjustment, reconcileAdjustments, type AdjustmentDraft } from '@/lib/adjustments';
+import { MAX_BILL_ADJUSTMENTS } from '@/lib/constants';
+import { consumedQuantity, reconcileConsumption, withConsumedQuantity } from '@/lib/consumption';
+import { withSeparateCharge } from '@/lib/separateCharges';
 import { isDinerId, normaliseDinerName, reconcileItemAllocations } from '@/lib/diners';
 import { appendMealEvents, mealEventLine, nextEventSeq, sessionLifecycle } from '@/lib/mealEvents';
 import { clampMealDuration } from '@/lib/pacing';
-import { mealItemId } from '@/lib/mealItems';
+import { mealItemId, mergeMealItems } from '@/lib/mealItems';
 import { DEFAULT_PRICING_PROFILE_ID } from '@/lib/pricing';
 import { normaliseRestaurantNameInput, sanitiseRestaurantName } from '@/lib/storage';
 import type {
+  BillAdjustment,
   Diner,
   DinerAllocation,
   MealItem,
@@ -86,15 +91,40 @@ export type SessionAction =
       type: 'set-item-allocations';
       id: string;
       allocations: readonly DinerAllocation[];
+      /** Who splits whatever is left of the line. Omitted means the table. */
+      sharedAmong?: readonly string[];
       meta?: MealEventMeta;
     }
+  | { type: 'set-item-consumption'; id: string; consumed: number; meta?: MealEventMeta }
   | { type: 'remove-item'; id: string; meta?: MealEventMeta }
   | { type: 'restore-item'; item: MealItem; index: number; meta?: MealEventMeta }
+  | { type: 'add-adjustment'; draft: AdjustmentDraft; id: string }
+  | { type: 'remove-adjustment'; id: string }
+  | { type: 'clear-adjustments' }
   | { type: 'set-meal-duration'; minutes: number | undefined }
   | { type: 'pause-meal'; meta: MealEventMeta }
   | { type: 'resume-meal'; meta: MealEventMeta }
   | { type: 'complete-meal'; meta: MealEventMeta }
+  | { type: 'set-item-charge'; id: string; separate: boolean; charge?: number }
   | { type: 'reset' };
+
+/**
+ * Attaches a bill list, dropping the key entirely when it is empty.
+ *
+ * An absent list and an empty one already mean the same thing to every reader,
+ * and keeping only one of those shapes is what makes a plain tab serialise to
+ * exactly the bytes it did before adjustments existed.
+ */
+function withAdjustments(
+  session: MealSession,
+  adjustments: readonly BillAdjustment[],
+): MealSession {
+  if (adjustments.length === 0) {
+    const { adjustments: _adjustments, ...plain } = session;
+    return plain;
+  }
+  return { ...session, adjustments };
+}
 
 function clampQuantity(value: number): number {
   if (!Number.isFinite(value)) {
@@ -111,6 +141,12 @@ function findActiveDinerId(
 }
 
 /** Applies the tab change only. Ledger bookkeeping happens around it. */
+/** Re-keys a line when who paid for it changes, since that is part of its id. */
+function rechargedItem(item: MealItem, separate: boolean, charge?: number): MealItem {
+  const next = withSeparateCharge(item, separate, charge);
+  return { ...next, id: mealItemId(next) };
+}
+
 function applySessionAction(state: MealSession, action: SessionAction): MealSession {
   switch (action.type) {
     case 'hydrate':
@@ -227,18 +263,24 @@ function applySessionAction(state: MealSession, action: SessionAction): MealSess
           diners,
         ),
       );
+      // A removed diner's own charges become the table's. The money was still
+      // spent, so dropping them would make the total disagree with the receipt.
+      const adjustments = reconcileAdjustments(state.adjustments, diners);
       if (diners.length === 0) {
         const { diners: _diners, ...sharedSession } = state;
-        return { ...sharedSession, items };
+        return withAdjustments({ ...sharedSession, items }, adjustments);
       }
-      return {
-        ...state,
-        diners,
-        dinerCount: diners.length,
-        // A removed diner's plates become shared-table food. The line total is
-        // untouched, so neither value nor nutrition can disappear with them.
-        items,
-      };
+      return withAdjustments(
+        {
+          ...state,
+          diners,
+          dinerCount: diners.length,
+          // A removed diner's plates become shared-table food. The line total is
+          // untouched, so neither value nor nutrition can disappear with them.
+          items,
+        },
+        adjustments,
+      );
     }
 
     case 'move-diner': {
@@ -259,14 +301,40 @@ function applySessionAction(state: MealSession, action: SessionAction): MealSess
       }
       {
         const { diners: _diners, ...sharedSession } = state;
-        return {
-          ...sharedSession,
-          items: state.items.map((item) => {
-            const { allocations: _allocations, ...sharedItem } = item;
-            return sharedItem;
-          }),
-        };
+        return withAdjustments(
+          {
+            ...sharedSession,
+            items: state.items.map((item) => {
+              const { allocations: _allocations, ...sharedItem } = item;
+              return sharedItem;
+            }),
+          },
+          reconcileAdjustments(state.adjustments, []),
+        );
       }
+
+    case 'add-adjustment': {
+      const adjustment = createAdjustment(action.draft, action.id);
+      const current = state.adjustments ?? [];
+      // Silently ignoring an overflowing add keeps the bounded list bounded
+      // without the reducer needing to know how a surface would report it.
+      if (!adjustment || current.length >= MAX_BILL_ADJUSTMENTS) {
+        return state;
+      }
+      // Scoped through the same reconciler the roster changes use, so an
+      // adjustment can never name a diner who is not at this table.
+      return withAdjustments(state, reconcileAdjustments([...current, adjustment], state.diners));
+    }
+
+    case 'remove-adjustment': {
+      const adjustments = (state.adjustments ?? []).filter((entry) => entry.id !== action.id);
+      return adjustments.length === (state.adjustments?.length ?? 0)
+        ? state
+        : withAdjustments(state, adjustments);
+    }
+
+    case 'clear-adjustments':
+      return state.adjustments?.length ? withAdjustments(state, []) : state;
 
     case 'add-item': {
       const quantity = clampQuantity(action.payload.quantity);
@@ -285,11 +353,18 @@ function applySessionAction(state: MealSession, action: SessionAction): MealSess
           items: state.items.map((item) =>
             item.id === id
               ? reconcileItemAllocations(
-                  {
-                    ...item,
-                    quantity: nextQuantity,
-                    ...(allocations?.length ? { allocations } : {}),
-                  },
+                  // New plates arrive to be eaten, so they raise the eaten
+                  // figure too; a line nobody has trimmed stays untrimmed.
+                  withConsumedQuantity(
+                    {
+                      ...item,
+                      quantity: nextQuantity,
+                      ...(allocations?.length ? { allocations } : {}),
+                    },
+                    item.consumedQuantity === undefined
+                      ? undefined
+                      : item.consumedQuantity + addedQuantity,
+                  ),
                   state.diners,
                 )
               : item,
@@ -312,7 +387,14 @@ function applySessionAction(state: MealSession, action: SessionAction): MealSess
       return {
         ...state,
         items: state.items.map((item) =>
-          item.id === action.id ? { ...item, quantity: clampQuantity(item.quantity + 1) } : item,
+          item.id === action.id
+            ? // A plate arriving is a plate to eat, so the eaten figure rises
+              // with the order and a line that was clean stays clean.
+              withConsumedQuantity(
+                { ...item, quantity: clampQuantity(item.quantity + 1) },
+                item.consumedQuantity === undefined ? undefined : item.consumedQuantity + 1,
+              )
+            : item,
         ),
       };
 
@@ -321,11 +403,36 @@ function applySessionAction(state: MealSession, action: SessionAction): MealSess
         ...state,
         items: state.items.map((item) =>
           item.id === action.id
-            ? reconcileItemAllocations(
-                { ...item, quantity: clampQuantity(item.quantity - 1) },
-                state.diners,
+            ? // Reconciled, because a shrinking order has to bring what was
+              // eaten down with it rather than claim more was eaten than came.
+              reconcileConsumption(
+                reconcileItemAllocations(
+                  { ...item, quantity: clampQuantity(item.quantity - 1) },
+                  state.diners,
+                ),
               )
             : item,
+        ),
+      };
+
+    case 'set-item-consumption':
+      return {
+        ...state,
+        items: state.items.map((item) =>
+          item.id === action.id ? withConsumedQuantity(item, action.consumed) : item,
+        ),
+      };
+
+    case 'set-item-charge':
+      return {
+        ...state,
+        // Merged afterwards because who paid for a line is part of its
+        // identity: moving a plate on or off the buffet re-keys it, and it has
+        // to join the line it now belongs to rather than sit beside it.
+        items: mergeMealItems(
+          state.items.map((item) =>
+            item.id === action.id ? rechargedItem(item, action.separate, action.charge) : item,
+          ),
         ),
       };
 
@@ -347,7 +454,14 @@ function applySessionAction(state: MealSession, action: SessionAction): MealSess
         ...state,
         items: state.items.map((item) =>
           item.id === action.id
-            ? reconcileItemAllocations({ ...item, allocations: action.allocations }, state.diners)
+            ? reconcileItemAllocations(
+                {
+                  ...item,
+                  allocations: action.allocations,
+                  ...(action.sharedAmong === undefined ? {} : { sharedAmong: action.sharedAmong }),
+                },
+                state.diners,
+              )
             : item,
         ),
       };
@@ -456,6 +570,22 @@ function draftsForAction(
       return removed > 0 && line
         ? [{ type: 'plates-reduced', line: mealEventLine(line), quantity: removed }]
         : [];
+    }
+
+    case 'set-item-consumption': {
+      const previous = before.items.find((item) => item.id === action.id);
+      const line = after.items.find((item) => item.id === action.id);
+      if (!line || !previous || consumedQuantity(previous) === consumedQuantity(line)) {
+        return [];
+      }
+      return [
+        {
+          type: 'consumption-changed',
+          line: mealEventLine(line),
+          consumedQuantity: consumedQuantity(line),
+          quantity: line.quantity,
+        },
+      ];
     }
 
     case 'set-item-quantity': {

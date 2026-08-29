@@ -129,7 +129,11 @@ describe('CalculatorApp', () => {
             name: 'Downtown lunch',
             money: { currency: 'USD', locale: 'en-US' },
             overrides: {
-              'beef-ribeye': { retailPricePerKg: 80, restaurantCostPerKg: 45 },
+              'beef-ribeye': {
+                valuation: 'by-weight' as const,
+                retailPricePerKg: 80,
+                restaurantCostPerKg: 45,
+              },
             },
             builtIn: false,
           },

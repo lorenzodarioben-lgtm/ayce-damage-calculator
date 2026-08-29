@@ -34,6 +34,15 @@ function allocationsEqual(
   );
 }
 
+function sharedAmongEqual(
+  left: readonly string[] | undefined,
+  right: readonly string[] | undefined,
+): boolean {
+  const a = left ?? [];
+  const b = right ?? [];
+  return a.length === b.length && a.every((dinerId, index) => dinerId === b[index]);
+}
+
 function lineAt(
   session: MealSession,
   id: string,
@@ -66,11 +75,17 @@ function restoreLineActions(
   if (previous.item.quantity !== current.item.quantity) {
     actions.push({ type: 'set-item-quantity', id, quantity: previous.item.quantity });
   }
-  if (!allocationsEqual(previous.item.allocations, current.item.allocations)) {
+  if (
+    !allocationsEqual(previous.item.allocations, current.item.allocations) ||
+    !sharedAmongEqual(previous.item.sharedAmong, current.item.sharedAmong)
+  ) {
     actions.push({
       type: 'set-item-allocations',
       id,
       allocations: previous.item.allocations ?? [],
+      ...(previous.item.sharedAmong === undefined
+        ? {}
+        : { sharedAmong: previous.item.sharedAmong }),
     });
   }
   return actions;
@@ -134,7 +149,8 @@ export function createSessionCommand(
       const current = lineAt(after, action.id);
       return previous &&
         current &&
-        !allocationsEqual(previous.item.allocations, current.item.allocations)
+        (!allocationsEqual(previous.item.allocations, current.item.allocations) ||
+          !sharedAmongEqual(previous.item.sharedAmong, current.item.sharedAmong))
         ? {
             label: 'Change plate allocation',
             forward: [action],
@@ -143,6 +159,29 @@ export function createSessionCommand(
                 type: 'set-item-allocations',
                 id: action.id,
                 allocations: previous.item.allocations ?? [],
+                ...(previous.item.sharedAmong === undefined
+                  ? {}
+                  : { sharedAmong: previous.item.sharedAmong }),
+              },
+            ],
+          }
+        : null;
+    }
+
+    case 'set-item-consumption': {
+      const previous = lineAt(before, action.id);
+      const current = lineAt(after, action.id);
+      return previous && current && previous.item.consumedQuantity !== current.item.consumedQuantity
+        ? {
+            label: 'Change consumption',
+            forward: [action],
+            inverse: [
+              {
+                type: 'set-item-consumption',
+                id: action.id,
+                // The reducer accepts the effective full quantity as the
+                // compatibility representation for an older implicit value.
+                consumed: previous.item.consumedQuantity ?? previous.item.quantity,
               },
             ],
           }

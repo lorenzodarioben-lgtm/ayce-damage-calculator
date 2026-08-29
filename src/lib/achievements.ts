@@ -1,4 +1,4 @@
-import { FOOD_CATEGORIES, PLATE_SIZES } from '@/lib/constants';
+import { GRILL_CATEGORIES, PLATE_SIZES } from '@/lib/constants';
 import type { DamageReport, FoodCategory, PlateSize, QualityTier } from '@/types/meal';
 
 export type AchievementId =
@@ -92,7 +92,11 @@ const RULES: readonly AchievementRule[] = [
     title: 'Four Corners',
     requirement: 'Record at least one item from Beef, Pork, Chicken and Seafood.',
     copy: 'A complete survey of the menu. Nothing was overlooked.',
-    isEarned: (facts) => FOOD_CATEGORIES.every((category) => facts.categories.has(category)),
+    // The four corners are the four grill categories, which is what the title
+    // has always meant. A diner's own sides and drinks are optional additions
+    // to the menu, so requiring them would make this unearnable by anyone who
+    // has not built a personal one.
+    isEarned: (facts) => GRILL_CATEGORIES.every((category) => facts.categories.has(category)),
   },
   {
     id: 'variety-pack',
