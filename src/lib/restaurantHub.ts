@@ -32,6 +32,23 @@ export interface RestaurantSummary {
   readonly money: MoneyContext;
 }
 
+export interface RestaurantComparison {
+  readonly left: RestaurantSummary;
+  readonly right: RestaurantSummary;
+}
+
+/** Compares two saved profiles; each side only includes explicitly linked visits. */
+export function compareRestaurants(
+  left: RestaurantProfile,
+  right: RestaurantProfile,
+  records: readonly SavedMealSession[],
+): RestaurantComparison {
+  return {
+    left: buildRestaurantSummary(left, records),
+    right: buildRestaurantSummary(right, records),
+  };
+}
+
 function safeAverage(total: number, count: number): number {
   return count > 0 && Number.isFinite(total) ? total / count : 0;
 }
