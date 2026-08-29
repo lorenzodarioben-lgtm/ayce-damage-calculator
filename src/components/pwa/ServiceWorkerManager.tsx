@@ -16,7 +16,7 @@ export function ServiceWorkerManager() {
   const [deferredInstall, setDeferredInstall] = useState<{ prompt: () => Promise<void> } | null>(
     null,
   );
-  const [online, setOnline] = useState(true);
+  const [online, setOnline] = useState(() => typeof navigator === 'undefined' || navigator.onLine);
 
   useEffect(() => {
     if (process.env.NODE_ENV !== 'production' || !('serviceWorker' in navigator)) {
@@ -67,7 +67,6 @@ export function ServiceWorkerManager() {
   }, []);
 
   useEffect(() => {
-    setOnline(navigator.onLine);
     const update = () => setOnline(navigator.onLine);
     const capture = (event: Event) => {
       event.preventDefault();
