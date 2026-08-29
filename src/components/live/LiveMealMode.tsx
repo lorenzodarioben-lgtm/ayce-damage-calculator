@@ -13,14 +13,16 @@ import { SiteHeader } from '@/components/nav/SiteHeader';
 import { MAIN_CONTENT_ID } from '@/components/nav/destinations';
 import { DamageMeter } from '@/components/summary/DamageMeter';
 import { PricingProfileProvider } from '@/components/session/PricingContext';
+import { SessionConflictNotice } from '@/components/session/SessionConflictNotice';
+import { SessionUndoControls } from '@/components/session/SessionUndoControls';
 import { Button } from '@/components/ui/Button';
 import { StatusToast } from '@/components/ui/StatusToast';
 import { useFavorites } from '@/hooks/useFavorites';
+import { useMealHistory } from '@/hooks/useMealHistory';
 import { useMealSession, type AddItemPayload } from '@/hooks/useMealSession';
 import { usePricingProfiles } from '@/hooks/usePricingProfiles';
 import { useCustomFoods } from '@/hooks/useCustomFoods';
 import { useStatusMessage } from '@/hooks/useStatusMessage';
-import { useUndoableRemove } from '@/hooks/useUndoableRemove';
 import { REPORT_STAGE, STAGE_PARAM } from '@/hooks/useStageHistory';
 import { findFoodInCatalogue, foodCatalogue } from '@/lib/foodCatalogue';
 import { formatKg, formatMoney, formatPlates } from '@/lib/formatting';
@@ -50,13 +52,20 @@ export function LiveMealMode() {
     decrementItem,
     setItemConsumption,
     removeItem,
-    restoreItem,
+    canUndo,
+    canRedo,
+    undo,
+    redo,
     setMealDuration,
     pauseMeal,
     resumeMeal,
     completeMeal,
+    sessionConflict,
+    loadExternalSession,
+    keepCurrentSession,
   } = useMealSession(pricingProfiles.profiles, customFoods.foods, { source: 'live' });
   const { favorites, remove: removeFavorite } = useFavorites(catalogue);
+  const { records: history } = useMealHistory();
 
   const [addOpen, setAddOpen] = useState(false);
   const [activeDinerId, setActiveDinerId] = useState<string | null>(null);
@@ -87,15 +96,26 @@ export function LiveMealMode() {
     [incrementItem],
   );
 
-  const handleRemove = useUndoableRemove({
-    items: session.items,
-    removeItem,
-    restoreItem,
-    announce,
-    location: 'the quick log',
-  });
-
   const hasItems = report.lines.length > 0;
+  const quickPicks = useMemo(() => {
+    const counts = new Map<string, { payload: AddItemPayload; count: number }>();
+    for (const record of history)
+      for (const item of record.items) {
+        const existing = counts.get(item.id);
+        counts.set(item.id, {
+          payload: {
+            foodId: item.foodId,
+            quality: item.quality,
+            plateSize: item.plateSize,
+            quantity: 1,
+          },
+          count: (existing?.count ?? 0) + item.quantity,
+        });
+      }
+    return [...counts.values()]
+      .sort((a, b) => b.count - a.count || a.payload.foodId.localeCompare(b.payload.foodId))
+      .slice(0, 4);
+  }, [history]);
 
   return (
     <PricingProfileProvider profile={pricingProfile}>
@@ -106,6 +126,20 @@ export function LiveMealMode() {
           id={MAIN_CONTENT_ID}
           className="relative z-10 mx-auto max-w-[640px] px-4 pt-4 pb-28 sm:px-6"
         >
+          {sessionConflict && (
+            <div className="mb-4">
+              <SessionConflictNotice
+                conflict={sessionConflict}
+                onLoadExternal={loadExternalSession}
+                onKeepCurrent={keepCurrentSession}
+              />
+            </div>
+          )}
+
+          <div className="mb-4">
+            <SessionUndoControls canUndo={canUndo} canRedo={canRedo} onUndo={undo} onRedo={redo} />
+          </div>
+
           {/* Pinned under the header: the number the whole mode exists to move. */}
           <section
             aria-labelledby="live-damage-heading"
@@ -160,7 +194,7 @@ export function LiveMealMode() {
                   onIncrement={handleIncrement}
                   onDecrement={decrementItem}
                   onConsumptionChange={setItemConsumption}
-                  onRemove={handleRemove}
+                  onRemove={removeItem}
                 />
               ))}
             </ul>
@@ -186,6 +220,31 @@ export function LiveMealMode() {
                 onRemove={removeFavorite}
                 size="large"
               />
+            </section>
+          )}
+
+          {quickPicks.length > 0 && (
+            <section aria-labelledby="live-history-picks-heading" className="mt-4">
+              <h2 id="live-history-picks-heading" className="micro-label mb-1">
+                Frequently logged on this device
+              </h2>
+              <p className="mb-2 text-xs text-cream-700">Based only on your filed local history.</p>
+              <div className="flex flex-wrap gap-2">
+                {quickPicks.map(({ payload, count }) => {
+                  const food = findFoodInCatalogue(catalogue, payload.foodId);
+                  return (
+                    <button
+                      key={`${payload.foodId}-${payload.quality}-${payload.plateSize}`}
+                      type="button"
+                      onClick={() => handleAdd(payload)}
+                      className="rounded-[10px] border border-line px-3 py-2 text-sm text-cream-100 hover:border-ember-700"
+                    >
+                      {food?.name ?? 'Saved cut'}{' '}
+                      <span className="text-xs text-cream-700">· {count} plates</span>
+                    </button>
+                  );
+                })}
+              </div>
             </section>
           )}
 

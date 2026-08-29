@@ -58,7 +58,11 @@ function session(overrides: Partial<MealSession> = {}): MealSession {
 }
 
 function envelope(value: MealSession, version = STORAGE_VERSION): string {
-  return JSON.stringify({ version, session: value });
+  return JSON.stringify(
+    version === STORAGE_VERSION
+      ? { version, revision: 1, writerId: 'adjustments-test', kind: 'session', session: value }
+      : { version, session: value },
+  );
 }
 
 function file(value: MealSession): SavedMealSession {
@@ -97,12 +101,9 @@ describe('The in-progress tab', () => {
   });
 
   it('drops a stored adjustment that has been edited into nonsense', () => {
-    const hostile = JSON.stringify({
-      version: STORAGE_VERSION,
-      session: {
-        ...session(),
-        adjustments: [{ id: 'adj-1', label: 'Voucher', amount: 'lots', kind: 'discount' }],
-      },
+    const hostile = envelope({
+      ...session(),
+      adjustments: [{ id: 'adj-1', label: 'Voucher', amount: 'lots', kind: 'discount' }] as never,
     });
     expect(parseStoredSession(hostile)).not.toHaveProperty('adjustments');
   });

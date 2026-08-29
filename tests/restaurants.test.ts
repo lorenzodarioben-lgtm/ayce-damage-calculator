@@ -21,6 +21,7 @@ import {
 } from '@/lib/restaurants';
 import {
   buildRestaurantSummary,
+  compareRestaurants,
   orphanedVisits,
   restaurantVisits,
   summariseRestaurants,
@@ -319,5 +320,18 @@ describe('deleting a place', () => {
 
   it('never treats an unlinked record as orphaned', () => {
     expect(orphanedVisits([visit('a')], [])).toEqual([]);
+  });
+});
+
+describe('restaurant comparisons', () => {
+  it('uses only records linked to each explicit restaurant ID', () => {
+    const comparison = compareRestaurants(profile('Friday KBBQ'), profile('Sunday Hotpot'), [
+      visit('friday', { restaurantId: 'friday-kbbq' }),
+      visit('sunday', { restaurantId: 'sunday-hotpot' }),
+      visit('unlinked', { restaurantName: 'Friday KBBQ' }),
+    ]);
+
+    expect(comparison.left.visits).toBe(1);
+    expect(comparison.right.visits).toBe(1);
   });
 });

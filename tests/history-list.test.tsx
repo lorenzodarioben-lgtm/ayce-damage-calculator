@@ -37,6 +37,7 @@ async function file(
   restaurantName: string,
   items: readonly MealItem[],
   note = '',
+  tags: readonly string[] = [],
 ) {
   const session: MealSession = { restaurantName, pricePerDiner: 59.9, dinerCount: 1, items };
   const report = buildDamageReport(session.items, session);
@@ -49,6 +50,7 @@ async function file(
         id,
         createdAt,
         note,
+        tags,
       },
     ),
   );
@@ -159,7 +161,7 @@ describe('HistoryList', () => {
     await user.clear(search);
     await user.type(search, 'anniversary');
     expect(screen.getAllByRole('listitem')).toHaveLength(1);
-    expect(screen.getByText('Wagyu House')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Wagyu House' })).toBeInTheDocument();
   });
 
   it('says so plainly when a search matches nothing', async () => {
@@ -174,6 +176,21 @@ describe('HistoryList', () => {
     expect(screen.getByText(/no session on file matches that/i)).toBeInTheDocument();
     // The records are filtered, never deleted.
     expect(screen.getByText(/0 of 3 sessions match/i)).toBeInTheDocument();
+  });
+
+  it('filters by a saved restaurant without changing records', async () => {
+    const user = userEvent.setup();
+    await seed();
+    render(<HistoryList />);
+    await screen.findAllByRole('listitem');
+
+    await user.click(screen.getByText('Filter history'));
+    await user.selectOptions(screen.getByLabelText('Restaurant filter'), 'Wagyu House');
+    expect(screen.getAllByRole('listitem')).toHaveLength(1);
+    expect(screen.getByRole('link', { name: 'Wagyu House' })).toBeInTheDocument();
+    expect(screen.getByText(/1 of 3 sessions match/i)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Clear all filters' }));
+    expect(screen.getAllByRole('listitem')).toHaveLength(3);
   });
 
   it('restores the whole file when the search is cleared', async () => {

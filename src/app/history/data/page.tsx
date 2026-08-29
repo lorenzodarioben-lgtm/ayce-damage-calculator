@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { BackupRestore } from '@/components/history/BackupRestore';
+import { StorageDurability } from '@/components/history/StorageDurability';
 import { SiteFooter } from '@/components/nav/SiteFooter';
 import { SiteHeader } from '@/components/nav/SiteHeader';
 import { MAIN_CONTENT_ID } from '@/components/nav/destinations';
@@ -26,6 +27,9 @@ export default function BackupPage() {
 
         <div className="mt-8">
           <BackupRestore />
+        </div>
+        <div className="mt-6">
+          <StorageDurability />
         </div>
       </main>
 

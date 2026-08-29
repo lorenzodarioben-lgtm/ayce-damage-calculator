@@ -56,11 +56,87 @@ export interface HistoryAnalytics {
   readonly trend: readonly TrendPoint[];
 }
 
+export interface MealTrendGroup {
+  readonly count: number;
+  readonly averageRecoveryPercent: number;
+  readonly averageAdmission: number;
+  readonly averagePlates: number;
+  readonly averageDiversity: number;
+  readonly breakEvenFrequency: number;
+}
+
+export interface RecentMealTrends {
+  readonly recent: MealTrendGroup;
+  readonly previous: MealTrendGroup;
+}
+
 /** How many recent sessions the trend chart shows. */
 export const TREND_LENGTH = 10;
 
 /** How many foods the "most ordered" list names. */
 export const TOP_FOOD_LENGTH = 5;
+
+export type AnalyticsRange = '30' | '90' | '365' | 'all';
+
+/**
+ * Returns the records in a rolling analytics period. The lower boundary is
+ * inclusive: a meal filed at exactly the cutoff belongs to the period.
+ * Supplying `now` keeps callers and tests deterministic.
+ */
+export function recordsInAnalyticsRange(
+  records: readonly SavedMealSession[],
+  range: AnalyticsRange,
+  now = new Date(),
+): readonly SavedMealSession[] {
+  if (range === 'all') return records;
+
+  const nowTime = now.getTime();
+  const cutoff = nowTime - Number(range) * 24 * 60 * 60 * 1000;
+
+  return records.filter((record) => {
+    const recordedAt = Date.parse(record.createdAt);
+    return Number.isFinite(recordedAt) && recordedAt >= cutoff && recordedAt <= nowTime;
+  });
+}
+
+/** Compares the latest five filed meals with the five immediately before them. */
+export function compareRecentMealTrends(records: readonly SavedMealSession[]): RecentMealTrends {
+  const newestFirst = [...records].sort(
+    (a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt) || b.id.localeCompare(a.id),
+  );
+  const summarise = (group: readonly SavedMealSession[]): MealTrendGroup => {
+    if (group.length === 0) {
+      return {
+        count: 0,
+        averageRecoveryPercent: 0,
+        averageAdmission: 0,
+        averagePlates: 0,
+        averageDiversity: 0,
+        breakEvenFrequency: 0,
+      };
+    }
+    const resolved = group.map(resolveSavedSession);
+    const sum = <T>(value: (entry: (typeof resolved)[number]) => T) =>
+      resolved.reduce((total, entry) => total + Number(value(entry)), 0);
+    return {
+      count: group.length,
+      averageRecoveryPercent: sum((entry) => entry.report.retailRecoveryPercent) / group.length,
+      averageAdmission: sum((entry) => entry.report.totalAdmission) / group.length,
+      averagePlates: sum((entry) => entry.report.totalPlates) / group.length,
+      averageDiversity:
+        sum((entry) => new Set(entry.report.lines.map((line) => line.food.id)).size) / group.length,
+      breakEvenFrequency:
+        (resolved.filter((entry) => entry.report.retailRecoveryPercent >= 100).length /
+          group.length) *
+        100,
+    };
+  };
+
+  return {
+    recent: summarise(newestFirst.slice(0, 5)),
+    previous: summarise(newestFirst.slice(5, 10)),
+  };
+}
 
 export const EMPTY_ANALYTICS: HistoryAnalytics = {
   sessionCount: 0,

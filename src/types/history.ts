@@ -59,6 +59,9 @@ export interface SavedMealSession {
    */
   readonly note: string;
 
+  /** Optional diner-authored labels, normalised at every persistence boundary. */
+  readonly tags: readonly string[];
+
   readonly items: readonly MealItem[];
   readonly diners?: readonly Diner[];
   /**
