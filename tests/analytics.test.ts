@@ -3,6 +3,7 @@ import {
   TOP_FOOD_LENGTH,
   TREND_LENGTH,
   buildHistoryAnalytics,
+  compareRecentMealTrends,
   recordsInAnalyticsRange,
 } from '@/lib/analytics';
 import { buildDamageReport } from '@/lib/calculations';
@@ -87,6 +88,27 @@ describe('Analytics periods', () => {
   it('keeps all records for all time and returns an empty set for an empty period', () => {
     expect(recordsInAnalyticsRange([SMALL, BIG], 'all', now)).toEqual([SMALL, BIG]);
     expect(recordsInAnalyticsRange([SMALL, BIG], '30', now)).toEqual([]);
+  });
+});
+
+describe('Recent meal trends', () => {
+  it('uses the latest five and the immediately preceding five only', () => {
+    const records = Array.from({ length: 11 }, (_, index) =>
+      filed(`trend-${index}`, `2026-08-${String(index + 1).padStart(2, '0')}T12:00:00.000Z`, [
+        line(index < 5 ? 'chicken-thigh' : 'beef-ribeye', index + 1),
+      ]),
+    );
+    const trends = compareRecentMealTrends(records);
+
+    expect(trends.recent.count).toBe(5);
+    expect(trends.previous.count).toBe(5);
+    expect(trends.recent.averagePlates).toBe(9);
+    expect(trends.previous.averagePlates).toBe(4);
+  });
+
+  it('returns safe zero metrics when no comparison baseline exists', () => {
+    const trends = compareRecentMealTrends([SMALL]);
+    expect(trends.previous).toMatchObject({ count: 0, breakEvenFrequency: 0 });
   });
 });
 
