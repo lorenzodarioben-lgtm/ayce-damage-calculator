@@ -62,6 +62,29 @@ export const TREND_LENGTH = 10;
 /** How many foods the "most ordered" list names. */
 export const TOP_FOOD_LENGTH = 5;
 
+export type AnalyticsRange = '30' | '90' | '365' | 'all';
+
+/**
+ * Returns the records in a rolling analytics period. The lower boundary is
+ * inclusive: a meal filed at exactly the cutoff belongs to the period.
+ * Supplying `now` keeps callers and tests deterministic.
+ */
+export function recordsInAnalyticsRange(
+  records: readonly SavedMealSession[],
+  range: AnalyticsRange,
+  now = new Date(),
+): readonly SavedMealSession[] {
+  if (range === 'all') return records;
+
+  const nowTime = now.getTime();
+  const cutoff = nowTime - Number(range) * 24 * 60 * 60 * 1000;
+
+  return records.filter((record) => {
+    const recordedAt = Date.parse(record.createdAt);
+    return Number.isFinite(recordedAt) && recordedAt >= cutoff && recordedAt <= nowTime;
+  });
+}
+
 export const EMPTY_ANALYTICS: HistoryAnalytics = {
   sessionCount: 0,
   totalPlates: 0,
