@@ -126,6 +126,29 @@ export interface PlanResult {
   readonly evaluated: number;
 }
 
+export interface PlanProgress {
+  readonly plannedPlates: number;
+  readonly matchedPlates: number;
+  readonly remainingPlates: number;
+}
+
+/**
+ * Progress is a read-only comparison of a plan and the actual meal ledger.
+ * It deliberately returns no meal items and never adjusts quantities or totals.
+ */
+export function calculatePlanProgress(
+  plan: readonly PlanLine[],
+  eaten: readonly MealItem[],
+): PlanProgress {
+  const actual = new Map(eaten.map((item) => [mealItemId(item), item.quantity]));
+  const plannedPlates = plan.reduce((total, line) => total + line.quantity, 0);
+  const matchedPlates = plan.reduce(
+    (total, line) => total + Math.min(line.quantity, actual.get(mealItemId(line)) ?? 0),
+    0,
+  );
+  return { plannedPlates, matchedPlates, remainingPlates: plannedPlates - matchedPlates };
+}
+
 interface Candidate {
   readonly foodId: string;
   readonly quality: QualityTier;
