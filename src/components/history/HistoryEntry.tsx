@@ -49,6 +49,18 @@ export function HistoryEntry({ session, onDelete }: HistoryEntryProps) {
               {record.note}
             </p>
           )}
+          {record.tags.length > 0 && (
+            <ul aria-label="Session tags" className="mt-2 flex flex-wrap gap-1.5">
+              {record.tags.map((tag) => (
+                <li
+                  key={tag}
+                  className="rounded-full border border-line-ember bg-ash-900 px-2 py-0.5 text-xs font-semibold text-ember-400"
+                >
+                  {tag}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
         <button

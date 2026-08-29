@@ -15,6 +15,7 @@ import {
   listSessions,
   resetHistoryConnection,
   saveSession,
+  updateSessionTags,
 } from '@/lib/historyRepository';
 import { getVerdict } from '@/lib/verdicts';
 import type { SavedMealSession } from '@/types/history';
@@ -122,6 +123,15 @@ describe('History repository', () => {
 
   it('reports a miss for an unknown id', async () => {
     expect(await getSession('never-existed')).toBeNull();
+  });
+
+  it('updates only validated tags on a filed record', async () => {
+    await saveSession(record('a', '2026-08-16T12:00:00.000Z'));
+
+    const updated = await updateSessionTags('a', [' Friends ', 'friends', 'lunch']);
+
+    expect(updated?.tags).toEqual(['friends', 'lunch']);
+    expect((await getSession('a'))?.tags).toEqual(['friends', 'lunch']);
   });
 });
 
