@@ -9,6 +9,16 @@ export const KG_TO_LB = 2.2046226218;
 export const THEME_COLOUR = '#0d0c0a';
 
 /**
+ * Where the source lives.
+ *
+ * Named once so the footer, the README badge and anything else that points at
+ * the project cannot drift apart. The licence is addressed through the same
+ * base for the same reason.
+ */
+export const REPOSITORY_URL = 'https://github.com/lorenzodarioben-lgtm/ayce-damage-calculator';
+export const LICENSE_URL = `${REPOSITORY_URL}/blob/main/LICENSE`;
+
+/**
  * The grill categories are the built-in menu. The four after them exist only
  * for a diner's own items: an all-you-can-eat table has sides, a stew, a scoop
  * of ice cream and a bottle of something, and none of those is a cut of meat.

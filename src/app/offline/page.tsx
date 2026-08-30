@@ -5,6 +5,9 @@ import { BrandMark } from '@/components/BrandMark';
 export const metadata: Metadata = {
   title: 'Offline — AYCE Damage Calculator',
   description: 'The calculator is temporarily unreachable.',
+  // Served only when a navigation fails, so it is a dead end for anyone who
+  // arrives from a search result rather than from the service worker.
+  robots: { index: false, follow: false },
 };
 
 /**
