@@ -48,6 +48,7 @@ export function FoodSort({ value, onChange }: FoodSortProps) {
                 selected
                   ? 'bg-ember-500 text-ash-950'
                   : 'text-cream-500 hover:bg-ash-800 hover:text-cream-100',
+                'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember-400',
               )}
             >
               {option.label}
