@@ -7,6 +7,9 @@ import { StatsView } from '@/components/stats/StatsView';
 export const metadata: Metadata = {
   title: 'Damage analytics — AYCE Damage Calculator',
   description: 'Patterns across your recorded all-you-can-eat sessions, derived on this device.',
+  // Analytics derive from this browser's own history. There is no public data
+  // set here, so a crawler has no useful page to index.
+  robots: { index: false, follow: false },
 };
 
 export default function StatsPage() {
