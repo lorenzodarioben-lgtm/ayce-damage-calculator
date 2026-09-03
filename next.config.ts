@@ -19,6 +19,14 @@ const nextConfig: NextConfig = {
         headers: [
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          // The calculator neither embeds third-party pages nor needs its own
+          // device-local data to appear inside someone else's frame.
+          { key: 'X-Frame-Options', value: 'DENY' },
+          { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), geolocation=(), microphone=(), payment=(), usb=()',
+          },
         ],
       },
     ];
