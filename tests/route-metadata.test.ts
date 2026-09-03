@@ -79,4 +79,10 @@ describe('machine-only and device-local routes', () => {
 
     expect(metadata.robots).toEqual({ index: false, follow: false });
   });
+
+  it('keeps the local restaurant list out of search results', async () => {
+    const { metadata } = await import('@/app/restaurants/page');
+
+    expect(metadata.robots).toEqual({ index: false, follow: false });
+  });
 });
