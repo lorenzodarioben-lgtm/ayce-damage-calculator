@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [main]
 
+# This workflow only reads the checkout and publishes no releases, statuses or
+# pull requests. Keep its token unable to write if a dependency is compromised.
+permissions:
+  contents: read
+
 # A newer push to the same branch makes an in-flight run obsolete.
 concurrency:
   group: ci-${{ github.ref }}
