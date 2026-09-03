@@ -79,6 +79,20 @@ describe('ServiceWorkerManager', () => {
     expect(event.defaultPrevented).toBe(true);
     await user.click(screen.getByRole('button', { name: /install app/i }));
     expect(prompt).toHaveBeenCalledOnce();
+    expect(screen.queryByRole('button', { name: /install app/i })).toBeNull();
+  });
+
+  it('does not leave a retryable button when the browser withdraws its prompt', async () => {
+    const user = userEvent.setup();
+    setStandalone(false);
+    render(<ServiceWorkerManager />);
+
+    const prompt = vi.fn().mockRejectedValue(new Error('Prompt is no longer available'));
+    fireInstallPrompt(prompt);
+    await user.click(screen.getByRole('button', { name: /install app/i }));
+
+    expect(prompt).toHaveBeenCalledOnce();
+    expect(screen.queryByRole('button', { name: /install app/i })).toBeNull();
   });
 
   it('does not offer to install an app that is already installed', () => {

@@ -97,6 +97,22 @@ export function ServiceWorkerManager() {
     setWaiting(null);
   }, [waiting]);
 
+  const requestInstall = useCallback(async () => {
+    const prompt = deferredInstall;
+    if (!prompt) {
+      return;
+    }
+    // Browsers issue each deferred prompt once. Remove the stale affordance
+    // before awaiting it so a slow or rejected prompt cannot be invoked twice.
+    setDeferredInstall(null);
+    try {
+      await prompt.prompt();
+    } catch {
+      // Installation remains an enhancement; a browser may withdraw the
+      // prompt while the page is open, and the next event can offer a new one.
+    }
+  }, [deferredInstall]);
+
   const hasUpdate = waiting !== null;
   const canInstall = deferredInstall !== null;
 
@@ -125,7 +141,7 @@ export function ServiceWorkerManager() {
       {canInstall && (
         <button
           type="button"
-          onClick={() => void deferredInstall.prompt()}
+          onClick={() => void requestInstall()}
           className="min-h-8 cursor-pointer rounded-[8px] px-2 text-xs font-semibold text-ember-400"
         >
           Install app
