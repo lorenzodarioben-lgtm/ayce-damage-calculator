@@ -125,7 +125,7 @@ export function ServiceWorkerManager() {
   return (
     <div
       role="status"
-      className="relative z-40 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 border-b border-line-ember bg-ash-850 px-4 py-2 text-center"
+      className="relative z-40 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 border-b border-line-ember bg-ash-850 bg-[image:var(--fill-panel)] px-4 py-2 text-center shadow-[inset_0_1px_0_rgb(255_250_240/0.05),0_6px_18px_-14px_#000]"
     >
       {/* Each line is tied to the condition it describes: being offline says
           nothing about whether a newer build exists, and claiming one that is
