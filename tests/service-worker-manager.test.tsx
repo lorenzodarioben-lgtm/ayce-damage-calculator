@@ -16,6 +16,11 @@ function setOnline(online: boolean) {
   window.dispatchEvent(new Event(online ? 'online' : 'offline'));
 }
 
+/** Connectivity changes without the event that should have announced it. */
+function setOnlineSilently(online: boolean) {
+  Object.defineProperty(navigator, 'onLine', { configurable: true, value: online });
+}
+
 function setStandalone(standalone: boolean) {
   window.matchMedia = ((query: string) => ({
     matches: query.includes('display-mode: standalone') ? standalone : false,
@@ -66,6 +71,69 @@ describe('ServiceWorkerManager', () => {
 
     act(() => setOnline(true));
     expect(screen.queryByRole('status')).toBeNull();
+  });
+
+  /*
+   * The bar latched. A worker-backed app paints its shell from cache before the
+   * network has settled, so the first reading is often a false "offline"; the
+   * matching event can then land before the listener exists, or never fire
+   * because the tab was in the background when the connection returned. The
+   * result on the deployed site was a permanent offline banner over a working
+   * connection, which the three cases below are the cover for.
+   */
+  it('does not report a network that came back before it started listening', () => {
+    /*
+     * The initial value is taken during render and the listeners attach after
+     * paint. This returns "offline" to that first read and "online" to every
+     * one after it, which is the gap itself: the connection returns before any
+     * listener exists, so the event that would have cleared the bar is one
+     * nobody was there to hear.
+     */
+    let reads = 0;
+    Object.defineProperty(navigator, 'onLine', {
+      configurable: true,
+      get: () => (reads++ === 0 ? false : true),
+    });
+
+    render(<ServiceWorkerManager />);
+
+    expect(screen.queryByRole('status')).toBeNull();
+  });
+
+  it('re-reads the network when the page is looked at again', () => {
+    render(<ServiceWorkerManager />);
+
+    act(() => setOnline(false));
+    expect(screen.getByText(/you are offline/i)).toBeInTheDocument();
+
+    // The connection returns while the tab is in the background, so the event
+    // that would have cleared this never arrives.
+    setOnlineSilently(true);
+    act(() => void document.dispatchEvent(new Event('visibilitychange')));
+
+    expect(screen.queryByRole('status')).toBeNull();
+  });
+
+  it('re-reads the network when the window is focused again', () => {
+    render(<ServiceWorkerManager />);
+
+    act(() => setOnline(false));
+    expect(screen.getByText(/you are offline/i)).toBeInTheDocument();
+
+    setOnlineSilently(true);
+    act(() => void window.dispatchEvent(new Event('focus')));
+
+    expect(screen.queryByRole('status')).toBeNull();
+  });
+
+  it('still says the network is gone when it genuinely is', () => {
+    render(<ServiceWorkerManager />);
+
+    act(() => setOnline(false));
+    // A look at the page does not wish a connection into existence.
+    act(() => void window.dispatchEvent(new Event('focus')));
+
+    expect(screen.getByText(/you are offline/i)).toBeInTheDocument();
   });
 
   it('offers the install the browser held back, and hands it on when asked', async () => {
