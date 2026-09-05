@@ -68,9 +68,11 @@ export function Dialog({ open, onClose, title, children, labelledById }: DialogP
         }
       }}
       onKeyDown={handleKeyDown}
-      className="m-auto max-h-[85dvh] w-[min(38rem,calc(100vw-2rem))] overflow-y-auto rounded-card border border-line bg-ash-850 p-0 text-cream-100 backdrop:bg-black/70 backdrop:backdrop-blur-[2px]"
+      className="m-auto max-h-[85dvh] w-[min(38rem,calc(100vw-2rem))] overflow-y-auto rounded-panel border border-line-ember bg-ash-850 bg-[image:var(--fill-panel)] p-0 text-cream-100 shadow-[var(--shadow-float)] backdrop:bg-black/75 backdrop:backdrop-blur-sm"
     >
-      <div className="sticky top-0 flex items-start justify-between gap-4 border-b border-line bg-ash-850 px-5 py-4">
+      {/* The header stays put while the body scrolls under it, so it needs to
+          be opaque and to cast a little shade over what passes beneath. */}
+      <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-line bg-ash-850/95 px-5 py-4 shadow-[0_10px_20px_-18px_#000] backdrop-blur-sm">
         <h2 id={labelledById} className="display-type text-2xl text-cream-50">
           {title}
         </h2>
