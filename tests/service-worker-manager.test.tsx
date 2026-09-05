@@ -157,6 +157,22 @@ describe('ServiceWorkerManager', () => {
   });
 
   /*
+   * The bug that put "You are offline" into the prerendered HTML of every page.
+   *
+   * Node has defined a global `navigator` since v18 and it carries no `onLine`,
+   * so a `typeof navigator === 'undefined'` guard passes on the server and then
+   * reads `undefined`. This reproduces that shape: the property present but not
+   * a boolean, which is what the component actually met at build time.
+   */
+  it('does not claim a disconnection from a browser that never reported one', () => {
+    Object.defineProperty(navigator, 'onLine', { configurable: true, value: undefined });
+
+    render(<ServiceWorkerManager />);
+
+    expect(screen.queryByText(/you are offline/i)).toBeNull();
+  });
+
+  /*
    * The reason this verification exists. Chrome reports a lost connection over
    * a working one on a machine carrying a virtual network adapter, which left a
    * permanent offline banner on the deployed site.
