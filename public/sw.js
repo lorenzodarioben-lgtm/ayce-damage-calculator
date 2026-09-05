@@ -14,7 +14,7 @@
  * Bump CACHE_VERSION to retire every previously cached response.
  */
 
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v3';
 const CACHE_NAME = `ayce-shell-${CACHE_VERSION}`;
 
 const APP_SHELL_URL = '/';
