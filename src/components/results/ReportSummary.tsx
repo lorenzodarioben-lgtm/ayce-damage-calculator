@@ -111,6 +111,15 @@ export function ReportSummary({
         style={rise(0)}
         className="animate-rise panel-raised relative isolate overflow-hidden"
       >
+        {/*
+         * Coals under the verdict. Faint, and faded out well before the title
+         * so the sentence keeps the contrast it had — the picture is there to
+         * give the moment a floor to land on, not to be looked at.
+         */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 -z-20 bg-[url('/images/embers.webp')] bg-cover bg-center opacity-[0.14] [mask-image:radial-gradient(120%_100%_at_50%_120%,black_0%,rgba(0,0,0,0.45)_45%,transparent_78%)]"
+        />
         <div
           aria-hidden="true"
           className={cn(

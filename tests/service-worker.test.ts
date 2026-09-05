@@ -330,6 +330,22 @@ describe('Asset requests', () => {
     expect(await second?.text()).toBe('chunk body');
   });
 
+  it('keeps the backdrops available once they have been seen', async () => {
+    const sw = loadServiceWorker(networkServing({ '/images/embers.webp': 'webp bytes' }));
+
+    const first = await sw.request('/images/embers.webp');
+    expect(await first?.text()).toBe('webp bytes');
+
+    /*
+     * Unlike a build asset these names are not content-hashed, so this hit is
+     * only correct for as long as the artwork behind the name has not changed
+     * — which is what the cache version is bumped for.
+     */
+    currentFetch = OFFLINE_NETWORK;
+    const second = await sw.request('/images/embers.webp');
+    expect(await second?.text()).toBe('webp bytes');
+  });
+
   it('leaves non-GET requests entirely alone', async () => {
     const sw = loadServiceWorker(networkServing(SHELL));
 

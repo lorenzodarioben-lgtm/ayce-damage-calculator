@@ -9,12 +9,17 @@
  *     no longer exist. Cache is the fallback, never the preference.
  *   - /_next/static/* is cache-first. Those URLs are content-hashed, so a hit is
  *     always the exact bytes that URL has ever meant.
+ *   - /images/* is cache-first too, but for a weaker reason: those names are
+ *     not hashed, so a replaced picture keeps serving from cache until the
+ *     version below changes. That is the trade accepted knowingly — a backdrop
+ *     is decoration, the offline page should not lose it, and the version is
+ *     bumped whenever the artwork changes anyway.
  *   - Everything else passes straight through to the network.
  *
  * Bump CACHE_VERSION to retire every previously cached response.
  */
 
-const CACHE_VERSION = 'v3';
+const CACHE_VERSION = 'v4';
 const CACHE_NAME = `ayce-shell-${CACHE_VERSION}`;
 
 const APP_SHELL_URL = '/';
@@ -138,7 +143,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  if (url.pathname.startsWith('/_next/static/')) {
+  if (url.pathname.startsWith('/_next/static/') || url.pathname.startsWith('/images/')) {
     event.respondWith(handleStaticAsset(request));
   }
 });

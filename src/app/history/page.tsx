@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { HistoryList } from '@/components/history/HistoryList';
 import { SiteFooter } from '@/components/nav/SiteFooter';
+import { RouteHeader } from '@/components/nav/RouteHeader';
 import { SiteHeader } from '@/components/nav/SiteHeader';
 import { MAIN_CONTENT_ID } from '@/components/nav/destinations';
 
@@ -21,11 +22,10 @@ export default function HistoryPage() {
         id={MAIN_CONTENT_ID}
         className="relative z-10 mx-auto max-w-[900px] px-4 pt-8 pb-16 sm:px-6"
       >
-        <h1 className="display-hero text-[clamp(2.5rem,7vw,4rem)] text-cream-50">The file</h1>
-        <p className="mt-3 max-w-[56ch] text-sm leading-relaxed text-cream-300">
+        <RouteHeader image="/images/embers.webp" title="The file">
           Every session you have filed, held on this device only. Totals are recalculated from the
           meal each time, so the file always agrees with the current model.
-        </p>
+        </RouteHeader>
 
         <div className="mt-8">
           <HistoryList />
