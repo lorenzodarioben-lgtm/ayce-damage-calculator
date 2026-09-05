@@ -16,25 +16,24 @@ export default function ComparePage() {
     <>
       <SiteHeader />
 
-      <main
-        id={MAIN_CONTENT_ID}
-        className="relative z-10 mx-auto max-w-[900px] px-4 pt-8 pb-16 sm:px-6"
-      >
+      <main id={MAIN_CONTENT_ID} className="relative z-10 pb-16">
         <RouteHeader image="/images/embers.webp" title="Case comparison">
           Two filed sessions, measured against each other. Both sides are recalculated from their
           recorded meals, so the comparison is like for like.
         </RouteHeader>
 
-        <div className="mt-8">
-          <Suspense
-            fallback={
-              <p role="status" className="text-sm text-cream-700">
-                Retrieving comparison…
-              </p>
-            }
-          >
-            <ComparisonView />
-          </Suspense>
+        <div className="mx-auto max-w-[900px] px-4 sm:px-6">
+          <div className="mt-8">
+            <Suspense
+              fallback={
+                <p role="status" className="text-sm text-cream-700">
+                  Retrieving comparison…
+                </p>
+              }
+            >
+              <ComparisonView />
+            </Suspense>
+          </div>
         </div>
       </main>
 

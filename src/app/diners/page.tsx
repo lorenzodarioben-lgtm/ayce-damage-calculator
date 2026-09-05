@@ -19,18 +19,17 @@ export default function DinersPage() {
     <>
       <SiteHeader />
 
-      <main
-        id={MAIN_CONTENT_ID}
-        className="relative z-10 mx-auto max-w-[900px] px-4 pt-8 pb-16 sm:px-6"
-      >
+      <main id={MAIN_CONTENT_ID} className="relative z-10 pb-16">
         <RouteHeader image="/images/table.webp" title="Known diners">
           People you have saved from a table roster, with their share of the meals you filed
           together. Every figure is recalculated from the meals themselves. A meal recorded without
           a roster is not assigned to anybody — nobody said who was there.
         </RouteHeader>
 
-        <div className="mt-8">
-          <DinerList />
+        <div className="mx-auto max-w-[900px] px-4 sm:px-6">
+          <div className="mt-8">
+            <DinerList />
+          </div>
         </div>
       </main>
 
