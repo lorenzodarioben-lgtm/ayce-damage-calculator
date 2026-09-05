@@ -264,7 +264,7 @@ export function SessionSetup({
         onStatus={onStatus}
       />
 
-      <div className="mt-4 flex flex-wrap items-end justify-between gap-2 rounded-[10px] border border-line-soft bg-ash-900 px-4 py-3">
+      <div className="mt-4 flex flex-wrap items-end justify-between gap-2 well px-4 py-3">
         <div>
           <p className="micro-label">
             {session.adjustments?.length ? 'Total paid' : 'Total entry'}

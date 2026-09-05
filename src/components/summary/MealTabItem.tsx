@@ -153,7 +153,7 @@ export function MealTabItem({
       </div>
 
       {shareable && (
-        <div className="mt-2 rounded-[10px] border border-line-soft bg-ash-900 px-3 py-2">
+        <div className="mt-2 well px-3 py-2">
           <p className="micro-label mb-1.5">Shared by</p>
           <div
             role="group"
@@ -191,7 +191,7 @@ export function MealTabItem({
       )}
 
       {extra && (
-        <div className="mt-2 rounded-[10px] border border-line-soft bg-ash-900 px-3 py-2">
+        <div className="mt-2 well px-3 py-2">
           <label className="tabular flex items-baseline justify-between gap-2 text-xs text-cream-300">
             What was paid for it
             <input
@@ -220,7 +220,7 @@ export function MealTabItem({
       )}
 
       {expanded && (
-        <div className="mt-2 rounded-[10px] border border-line-soft bg-ash-900 px-3 py-2">
+        <div className="mt-2 well px-3 py-2">
           <div className="tabular flex items-baseline justify-between gap-2 text-xs text-cream-500">
             <span className="text-cream-300">Eaten</span>
             <span>

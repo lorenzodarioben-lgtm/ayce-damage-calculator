@@ -105,10 +105,7 @@ export function QuickLogRow({
       </div>
 
       {expanded && (
-        <div
-          id={consumptionPanelId}
-          className="mt-3 rounded-[12px] border border-line-soft bg-ash-900 px-3 py-2"
-        >
+        <div id={consumptionPanelId} className="well mt-3 px-3 py-2">
           <div className="tabular flex items-baseline justify-between gap-2 text-xs text-cream-500">
             <span className="text-cream-300">Eaten</span>
             <span>

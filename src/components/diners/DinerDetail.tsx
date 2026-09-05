@@ -159,7 +159,7 @@ export function DinerDetail({ id }: { id: string }) {
               <Figure label="Latest meal" value={formatRecordedAt(summary.latestVisitAt ?? '')} />
             </dl>
 
-            <div className="mt-4 rounded-[10px] border border-line-soft bg-ash-900 px-4 py-3">
+            <div className="mt-4 well px-4 py-3">
               <h3 className="micro-label mb-2">How those plates were counted</h3>
               <dl className="grid grid-cols-2 gap-2">
                 <Figure
@@ -260,7 +260,7 @@ export function DinerDetail({ id }: { id: string }) {
 
 function Figure({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[10px] border border-line-soft bg-ash-900 px-3 py-2">
+    <div className="well px-3 py-2">
       <dt className="micro-label">{label}</dt>
       <dd className="tabular mt-0.5 text-sm font-semibold text-cream-50">{value}</dd>
     </div>

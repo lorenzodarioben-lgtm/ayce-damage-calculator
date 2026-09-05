@@ -30,10 +30,7 @@ export function AchievementList({ achievements, headingId }: AchievementListProp
 
       <ul className="grid gap-2 sm:grid-cols-2">
         {achievements.map((achievement) => (
-          <li
-            key={achievement.id}
-            className="flex items-start gap-3 rounded-[10px] border border-line-soft bg-ash-900 px-3 py-3"
-          >
+          <li key={achievement.id} className="flex items-start gap-3 well px-3 py-3">
             <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full border border-line-ember bg-ash-850 text-ember-400">
               <Award size={14} aria-hidden="true" />
             </span>
