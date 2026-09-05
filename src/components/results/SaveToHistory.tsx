@@ -46,7 +46,7 @@ export function SaveToHistory({ session, report, verdict }: SaveToHistoryProps) 
           disabled={filed || state === 'saving'}
           onChange={(event) => setNote(event.target.value)}
           placeholder="Who was there, what was worth ordering again…"
-          className="w-full resize-none rounded-[10px] border border-line bg-ash-900 px-3 py-2 text-sm text-cream-100 placeholder:text-cream-700 focus:border-ember-600 focus:outline-none disabled:opacity-60"
+          className="w-full resize-none rounded-[10px] border border-line bg-ash-900 px-3 py-2 text-sm text-cream-100 placeholder:text-cream-700 disabled:opacity-60"
         />
       </div>
 
