@@ -9,6 +9,18 @@ export const KG_TO_LB = 2.2046226218;
 export const THEME_COLOUR = '#0d0c0a';
 
 /**
+ * The language the whole app is written in.
+ *
+ * Declared here for the same reason the theme colour is: the document, the
+ * social metadata and the installed app's manifest all have to state it, in
+ * three different notations, and none of the three is a stylesheet.
+ */
+export const SITE_LANGUAGE = 'en-AU';
+
+/** The same language in the underscored form Open Graph asks for. */
+export const SITE_OG_LOCALE = SITE_LANGUAGE.replace('-', '_');
+
+/**
  * Where the source lives.
  *
  * Named once so the footer, the README badge and anything else that points at

@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { fontVariables } from '@/app/fonts';
 import { SkipLink } from '@/components/nav/SkipLink';
 import { ServiceWorkerManager } from '@/components/pwa/ServiceWorkerManager';
-import { THEME_COLOUR } from '@/lib/constants';
+import { SITE_LANGUAGE, SITE_OG_LOCALE, THEME_COLOUR } from '@/lib/constants';
 import { siteUrl } from '@/lib/site';
 import './globals.css';
 
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
    */
   openGraph: {
     type: 'website',
-    locale: 'en_AU',
+    locale: SITE_OG_LOCALE,
     url: '/',
     siteName: SITE_NAME,
     title: SITE_NAME,
@@ -59,7 +59,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en-AU" className={fontVariables}>
+    <html lang={SITE_LANGUAGE} className={fontVariables}>
       <body>
         {/* Ahead of everything, including the service worker's status bar, so a
             keyboard always reaches it first. */}
