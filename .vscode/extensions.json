@@ -1,0 +1,11 @@
+{
+  "//": "The tooling the repository already configures. .gitignore excludes .vscode/* apart from this file, so nobody's personal settings travel with it.",
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "bradlc.vscode-tailwindcss",
+    "editorconfig.editorconfig",
+    "ms-playwright.playwright",
+    "vitest.explorer"
+  ]
+}
