@@ -34,13 +34,13 @@ export function OptionCard({ selected, onSelect, label, detail, glyph, name }: O
       {glyph}
       <span
         className={cn(
-          'text-[0.8rem] font-bold uppercase tracking-[0.08em]',
+          'text-ui font-bold uppercase tracking-caps',
           selected ? 'text-ember-300' : 'text-cream-100',
         )}
       >
         {label}
       </span>
-      <span className="tabular text-[0.7rem] leading-tight text-cream-500">{detail}</span>
+      <span className="tabular text-caption leading-tight text-cream-500">{detail}</span>
     </label>
   );
 }

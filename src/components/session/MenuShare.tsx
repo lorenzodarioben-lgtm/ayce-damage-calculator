@@ -65,25 +65,28 @@ export function MenuShare({ pricingProfile, customFoods, restaurant, onStatus }:
 
   return (
     <section aria-labelledby="menu-share-heading" className="mt-4 border-t border-line-soft pt-4">
-      <h3 id="menu-share-heading" className="micro-label mb-2 flex items-center gap-1.5">
+      <h3
+        id="menu-share-heading"
+        className="display-type text-lead text-cream-100 mb-2 flex items-center gap-1.5"
+      >
         <Share2 size={13} aria-hidden="true" />
         Share this menu
       </h3>
 
       {token === null ? (
-        <p className="rounded-surface border border-dashed border-line bg-ash-900/60 px-4 py-3 text-center text-xs leading-relaxed text-cream-700">
+        <p className="rounded-surface border border-dashed border-line bg-ash-900/60 px-4 py-3 text-center text-caption leading-relaxed text-cream-700">
           {!result.ok && result.reason === 'too-large'
             ? 'This menu is too large to fit inside a link. A menu link carries every price and custom food in the address itself, so there is a limit to what it can hold — share fewer foods, or trim their descriptions.'
             : 'There is nothing to share yet. A menu link carries your own price assumptions and custom foods — add one of those, or a restaurant setup, and a link appears here.'}
         </p>
       ) : (
         <>
-          <p className="max-w-[60ch] text-xs leading-relaxed text-cream-700">
+          <p className="max-w-[62ch] text-caption leading-relaxed text-cream-700">
             The link carries the whole menu inside the address. Nothing is uploaded, and no history,
             saved order, diner name or note travels with it.
           </p>
 
-          <label className="mt-3 flex cursor-pointer items-start gap-2 text-sm text-cream-300">
+          <label className="mt-3 flex cursor-pointer items-start gap-2 text-ui text-cream-300">
             <input
               type="checkbox"
               checked={includeRestaurant && namedRestaurant}
@@ -116,7 +119,7 @@ export function MenuShare({ pricingProfile, customFoods, restaurant, onStatus }:
           {showQr && (
             <div className="mt-3 flex flex-col items-center gap-2">
               <QrCode value={url} label="A scannable link to this menu" />
-              <p className="max-w-[46ch] text-center text-xs leading-relaxed text-cream-700">
+              <p className="max-w-[44ch] text-center text-caption leading-relaxed text-cream-700">
                 Scanning opens the same read-only preview the link does. Copy the link instead if
                 the code will not scan — it always works.
               </p>

@@ -259,10 +259,12 @@ export function ServiceWorkerManager() {
           nothing about whether a newer build exists, and claiming one that is
           not waiting would leave the reload with nothing to apply. */}
       {hasUpdate && (
-        <p className="text-xs text-cream-300">A newer version of the calculator is available.</p>
+        <p className="text-caption text-cream-300">
+          A newer version of the calculator is available.
+        </p>
       )}
       {!online && (
-        <p className="text-xs text-cream-300">
+        <p className="text-caption text-cream-300">
           You are offline. Previously visited pages may remain available.
         </p>
       )}
@@ -270,7 +272,7 @@ export function ServiceWorkerManager() {
         <button
           type="button"
           onClick={() => void requestInstall()}
-          className="min-h-8 cursor-pointer rounded-surface px-2 text-xs font-semibold text-ember-400"
+          className="min-h-8 cursor-pointer rounded-surface px-2 text-caption font-semibold text-ember-400"
         >
           Install app
         </button>
@@ -279,7 +281,7 @@ export function ServiceWorkerManager() {
         <button
           type="button"
           onClick={applyUpdate}
-          className="min-h-8 cursor-pointer rounded-surface px-2 text-xs font-semibold uppercase tracking-[0.1em] text-ember-400 underline-offset-4 hover:underline"
+          className="min-h-8 cursor-pointer rounded-surface px-2 text-caption font-semibold uppercase tracking-caps text-ember-400 underline-offset-4 hover:underline"
         >
           Reload to update
         </button>

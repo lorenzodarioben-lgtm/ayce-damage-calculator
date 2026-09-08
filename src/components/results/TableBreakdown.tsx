@@ -29,10 +29,10 @@ export function TableBreakdown({
   const hasAdjustments = diners.some((diner) => diner.adjustmentNet !== 0);
   return (
     <section aria-labelledby="table-breakdown-heading" className="panel overflow-x-auto p-4 sm:p-5">
-      <h2 id="table-breakdown-heading" className="micro-label">
+      <h2 id="table-breakdown-heading" className="display-type text-title text-cream-100">
         Table breakdown
       </h2>
-      <p className="mt-1 max-w-[70ch] text-xs leading-relaxed text-cream-700">
+      <p className="mt-1 max-w-[68ch] reading">
         Explicit plates are known ownership. Shared Table plates are estimated evenly across every
         seat the table was charged for.
         {hasAdjustments
@@ -42,8 +42,8 @@ export function TableBreakdown({
           ? ' Seats nobody named keep their own share rather than handing it to the people who were named.'
           : ''}
       </p>
-      <table className="mt-4 w-full min-w-[580px] text-left text-sm">
-        <thead className="text-xs text-cream-500">
+      <table className="mt-4 w-full min-w-[580px] text-left text-ui">
+        <thead className="text-caption text-cream-500">
           <tr>
             <th scope="col" className="pb-2 pr-3">
               Diner
@@ -75,7 +75,7 @@ export function TableBreakdown({
               <td className="py-3 pr-3">
                 {formatMoney(diner.admission, pricingProfile.money)}
                 {diner.adjustmentNet !== 0 && (
-                  <span className="block text-xs text-cream-700">
+                  <span className="block text-caption text-cream-700">
                     {formatMoney(diner.baseAdmission, pricingProfile.money)} entry{' '}
                     {diner.adjustmentNet > 0 ? '+' : '−'}
                     {formatMoney(Math.abs(diner.adjustmentNet), pricingProfile.money)}

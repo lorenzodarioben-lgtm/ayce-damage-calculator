@@ -45,21 +45,21 @@ export function Methodology({ open, onClose }: MethodologyProps) {
       <dl className="space-y-4">
         {ENTRIES.map((entry) => (
           <div key={entry.term}>
-            <dt className="text-sm font-bold text-cream-50">{entry.term}</dt>
-            <dd className="mt-1 text-sm leading-relaxed text-cream-300">{entry.detail}</dd>
+            <dt className="text-ui font-bold text-cream-50">{entry.term}</dt>
+            <dd className="mt-1 reading text-cream-300">{entry.detail}</dd>
           </div>
         ))}
 
         <div>
-          <dt className="text-sm font-bold text-cream-50">Portion sizes</dt>
+          <dt className="text-ui font-bold text-cream-50">Portion sizes</dt>
           <dd className="mt-2">
-            <ul className="tabular grid grid-cols-3 gap-2 text-sm">
+            <ul className="tabular grid grid-cols-3 gap-2 text-ui">
               {PLATE_SIZES.map((size) => (
                 <li
                   key={size.id}
                   className="rounded-surface border border-line bg-ash-900 px-3 py-2 text-center"
                 >
-                  <span className="block text-xs uppercase tracking-wider text-cream-700">
+                  <span className="block text-caption uppercase tracking-caps text-cream-700">
                     {size.label}
                   </span>
                   <span className="block font-bold text-cream-100">{size.grams} g</span>
@@ -71,8 +71,8 @@ export function Methodology({ open, onClose }: MethodologyProps) {
       </dl>
 
       <div className="mt-6 rounded-surface border border-line bg-ash-900 px-4 py-4">
-        <p className="micro-label mb-2">Important disclaimer</p>
-        <p className="text-sm leading-relaxed text-cream-300">
+        <p className="micro-label text-cream-500 mb-2">Important disclaimer</p>
+        <p className="reading text-cream-300">
           AYCE Damage Calculator is for entertainment and estimation only. Actual meat prices,
           restaurant procurement costs, portion sizes and nutrition vary by supplier, restaurant,
           preparation, trimming, marinades and location. Estimated ingredient margin is not

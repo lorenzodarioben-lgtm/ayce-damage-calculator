@@ -34,7 +34,7 @@ function PlateGlyph({ grams, active }: { grams: number; active: boolean }) {
 export function PlateSizeSelector({ value, onChange }: PlateSizeSelectorProps) {
   return (
     <fieldset>
-      <legend className="micro-label mb-2">Plate size</legend>
+      <legend className="micro-label text-cream-500 mb-2">Plate size</legend>
       <div className="grid grid-cols-3 gap-2">
         {PLATE_SIZES.map((size) => {
           const selected = size.id === value;

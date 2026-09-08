@@ -18,9 +18,9 @@ function deltaTone(metric: MetricComparison): string {
 function MetricRow({ metric }: { metric: MetricComparison }) {
   return (
     <div className="grid grid-cols-[1fr_auto] items-baseline gap-x-3 gap-y-1 border-b border-line-soft py-3 last:border-b-0 sm:grid-cols-[1fr_auto_auto]">
-      <p className="micro-label col-span-2 sm:col-span-1 sm:!text-cream-300">{metric.label}</p>
+      <p className="micro-label col-span-2 sm:col-span-1 sm:text-cream-300">{metric.label}</p>
 
-      <p className="tabular text-sm text-cream-500">
+      <p className="tabular text-ui text-cream-500">
         {formatMetricValue(metric.previous, metric.unit, metric.previousMoney)}
         <span aria-hidden="true" className="px-2 text-cream-700">
           →
@@ -30,18 +30,18 @@ function MetricRow({ metric }: { metric: MetricComparison }) {
         </span>
       </p>
 
-      <p className={cn('tabular text-right text-sm font-semibold', deltaTone(metric))}>
+      <p className={cn('tabular text-right text-ui font-semibold', deltaTone(metric))}>
         {metric.comparable && metric.delta !== null ? (
           <>
             {formatDelta(metric.delta, metric.unit, metric.currentMoney)}
             {metric.relativeChange !== null && metric.relativeChange !== 0 && (
-              <span className="ml-1 text-xs font-normal text-cream-700">
+              <span className="ml-1 text-caption font-normal text-cream-700">
                 ({formatPercent(metric.relativeChange)})
               </span>
             )}
           </>
         ) : (
-          <span className="text-xs font-normal text-cream-600">Different currencies</span>
+          <span className="text-caption font-normal text-cream-600">Different currencies</span>
         )}
       </p>
     </div>
@@ -71,43 +71,43 @@ export function ComparisonReport({
     <>
       <section aria-labelledby="verdict-shift-heading" className="panel overflow-hidden">
         <div className="grill-texture border-b border-line px-5 py-4 text-center">
-          <h2 id="verdict-shift-heading" className="micro-label !text-ember-400">
+          <h2 id="verdict-shift-heading" className="display-type text-title text-cream-100 ">
             Change in performance
           </h2>
         </div>
         <div className="grid gap-px bg-line sm:grid-cols-2">
           <div className="bg-ash-850 px-5 py-6 text-center">
-            <p className="micro-label">{previousLabel}</p>
-            <p className="mt-1 text-xs text-cream-700">
+            <p className="micro-label text-cream-500">{previousLabel}</p>
+            <p className="mt-1 text-caption text-cream-700">
               {formatRecordedAt(comparison.previous.record.createdAt)}
             </p>
-            <p className="tabular display-type mt-2 text-3xl text-cream-100">
+            <p className="tabular display-type mt-2 text-figure text-cream-100">
               {formatPercent(comparison.previous.report.retailRecoveryPercent)}
             </p>
-            <p className="display-type mt-2 text-2xl text-cream-300">
+            <p className="display-type mt-2 text-title text-cream-300">
               {comparison.previous.verdict.title}
             </p>
           </div>
           <div className="bg-ash-850 px-5 py-6 text-center">
-            <p className="micro-label">{currentLabel}</p>
-            <p className="mt-1 text-xs text-cream-700">
+            <p className="micro-label text-cream-500">{currentLabel}</p>
+            <p className="mt-1 text-caption text-cream-700">
               {formatRecordedAt(comparison.current.record.createdAt)}
             </p>
-            <p className="tabular display-type mt-2 text-3xl text-ember-300">
+            <p className="tabular display-type mt-2 text-figure text-ember-300">
               {formatPercent(comparison.current.report.retailRecoveryPercent)}
             </p>
-            <p className="display-type mt-2 text-2xl text-ember-400">
+            <p className="display-type mt-2 text-title text-ember-400">
               {comparison.current.verdict.title}
             </p>
           </div>
         </div>
-        <p className="border-t border-line px-5 py-4 text-center text-sm text-cream-300">
+        <p className="border-t border-line px-5 py-4 text-center text-ui text-cream-300">
           {comparison.summary}
         </p>
       </section>
 
       <section aria-labelledby="metric-shift-heading" className="panel p-4 sm:p-5">
-        <h3 id="metric-shift-heading" className="micro-label mb-1">
+        <h3 id="metric-shift-heading" className="display-type text-lead text-cream-100 mb-1">
           Line by line
         </h3>
         <div>
@@ -116,7 +116,7 @@ export function ComparisonReport({
           ))}
         </div>
         {comparison.metrics.some((metric) => !metric.comparable) && (
-          <p className="mt-3 text-xs leading-relaxed text-cream-700">
+          <p className="mt-3 text-caption leading-relaxed text-cream-700">
             Money figures are shown in the currency recorded for each visit. No currency delta is
             claimed without an exchange-rate assumption.
           </p>
@@ -124,14 +124,14 @@ export function ComparisonReport({
       </section>
 
       <section aria-labelledby="category-shift-heading" className="panel p-4 sm:p-5">
-        <h3 id="category-shift-heading" className="micro-label mb-3">
+        <h3 id="category-shift-heading" className="display-type text-lead text-cream-100 mb-3">
           Category mix, in plates
         </h3>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {comparison.categories.map((category) => (
             <div key={category.id} className="well px-3 py-3">
-              <p className="micro-label">{category.label}</p>
-              <p className="tabular mt-1 text-sm text-cream-500">
+              <p className="micro-label text-cream-500">{category.label}</p>
+              <p className="tabular mt-1 text-ui text-cream-500">
                 {category.previousPlates}
                 <span aria-hidden="true" className="px-1.5 text-cream-700">
                   →
@@ -140,7 +140,7 @@ export function ComparisonReport({
               </p>
               <p
                 className={cn(
-                  'tabular mt-0.5 text-xs font-semibold',
+                  'tabular mt-0.5 text-caption font-semibold',
                   category.delta === 0
                     ? 'text-cream-700'
                     : category.delta > 0
@@ -156,12 +156,12 @@ export function ComparisonReport({
       </section>
 
       <section aria-labelledby="achievement-shift-heading" className="panel p-4 sm:p-5">
-        <h3 id="achievement-shift-heading" className="micro-label mb-3">
+        <h3 id="achievement-shift-heading" className="display-type text-lead text-cream-100 mb-3">
           Commendations
         </h3>
         {comparison.achievements.previous.length === 0 &&
         comparison.achievements.current.length === 0 ? (
-          <p className="text-sm text-cream-700">Neither side earned one.</p>
+          <p className="text-ui text-cream-700">Neither side earned one.</p>
         ) : (
           <dl className="space-y-3">
             <AchievementGroup label="Newly earned" achievements={comparison.achievements.gained} />
@@ -183,8 +183,8 @@ function AchievementGroup({
 }) {
   return (
     <div className="border-t border-line-soft pt-3 first:border-t-0 first:pt-0">
-      <dt className="micro-label">{label}</dt>
-      <dd className="mt-1 text-sm text-cream-300">
+      <dt className="micro-label text-cream-500">{label}</dt>
+      <dd className="mt-1 text-ui text-cream-300">
         {achievements.length === 0
           ? '—'
           : achievements.map((achievement) => achievement.title).join(', ')}

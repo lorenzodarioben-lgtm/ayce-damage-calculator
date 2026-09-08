@@ -25,8 +25,8 @@ export const metadata: Metadata = {
 };
 
 const CTA_CLASS =
-  'inline-flex min-h-14 items-center justify-center rounded-surface bg-ember-500 px-6 text-base ' +
-  'font-bold uppercase tracking-[0.1em] text-ash-950 transition-colors duration-200 hover:bg-ember-400';
+  'inline-flex min-h-14 items-center justify-center rounded-surface bg-ember-500 px-6 text-body ' +
+  'font-bold uppercase tracking-caps text-ash-950 transition-colors duration-200 hover:bg-ember-400';
 
 export default async function SharedMenuPage({ params }: MenuPageProps) {
   const { token } = await params;
@@ -41,8 +41,8 @@ export default async function SharedMenuPage({ params }: MenuPageProps) {
           className="relative z-10 mx-auto max-w-[560px] px-4 pt-16 pb-16 sm:px-6"
         >
           <div className="panel border-dashed px-6 py-14 text-center">
-            <h1 className="display-type text-3xl text-cream-300">This menu cannot be read.</h1>
-            <p className="mx-auto mt-4 max-w-[44ch] text-sm leading-relaxed text-cream-700">
+            <h1 className="display-type text-figure text-cream-300">This menu cannot be read.</h1>
+            <p className="mx-auto mt-4 max-w-[44ch] text-ui leading-relaxed text-cream-700">
               The link is incomplete, was altered in transit, or was produced by a version of the
               calculator this one does not understand. Nothing was lost — a shared menu lives
               entirely in its own link.

@@ -52,7 +52,7 @@ export function Hero() {
       <div className="mx-auto flex min-h-[clamp(30rem,68vh,46rem)] max-w-[1280px] flex-col justify-center px-4 py-16 sm:px-6 sm:py-24">
         <div className="flex items-center gap-3">
           <span aria-hidden="true" className="h-4 w-[3px] rounded-full bg-ember-500" />
-          <p className="micro-label !text-ember-400">AYCE Damage Calculator</p>
+          <p className="micro-label text-ember-400">AYCE Damage Calculator</p>
         </div>
 
         <h1 className="display-hero mt-6 max-w-[15ch] text-[clamp(3.5rem,11vw,9rem)] text-over-photo">
@@ -61,7 +61,7 @@ export function Hero() {
           <span className="text-gradient-ember">the buffet?</span>
         </h1>
 
-        <p className="mt-7 max-w-[52ch] text-base leading-relaxed text-cream-100 text-over-photo sm:text-lg">
+        <p className="mt-7 max-w-[62ch] reading text-cream-100 text-over-photo sm:text-lead">
           Track the plates. Calculate the damage. Find out whether you got your money&rsquo;s worth
           or funded their next renovation.
         </p>
@@ -69,8 +69,8 @@ export function Hero() {
         <dl className="mt-10 flex flex-wrap gap-x-10 gap-y-5 border-t border-line pt-6">
           {CREDENTIALS.map((credential) => (
             <div key={credential.value}>
-              <dt className="display-type text-lg text-cream-100">{credential.value}</dt>
-              <dd className="micro-label mt-1">{credential.label}</dd>
+              <dt className="display-type text-lead text-cream-100">{credential.value}</dt>
+              <dd className="micro-label text-cream-500 mt-1">{credential.label}</dd>
             </div>
           ))}
         </dl>

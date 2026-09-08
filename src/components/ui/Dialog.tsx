@@ -73,7 +73,7 @@ export function Dialog({ open, onClose, title, children, labelledById }: DialogP
       {/* The header stays put while the body scrolls under it, so it needs to
           be opaque and to cast a little shade over what passes beneath. */}
       <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-line bg-ash-850/95 px-5 py-4 backdrop-blur-sm">
-        <h2 id={labelledById} className="display-type text-2xl text-cream-50">
+        <h2 id={labelledById} className="display-type text-title text-cream-50">
           {title}
         </h2>
         <button

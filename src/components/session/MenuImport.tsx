@@ -126,11 +126,14 @@ export function MenuImport({ foods, onApply, onStatus }: MenuImportProps) {
 
   return (
     <section aria-labelledby="menu-import-heading" className="mt-4 border-t border-line-soft pt-4">
-      <h3 id="menu-import-heading" className="micro-label mb-2 flex items-center gap-1.5">
+      <h3
+        id="menu-import-heading"
+        className="display-type text-lead text-cream-100 mb-2 flex items-center gap-1.5"
+      >
         <FileSpreadsheet size={13} aria-hidden="true" />
         Import a menu
       </h3>
-      <p className="max-w-[62ch] text-xs leading-relaxed text-cream-700">
+      <p className="max-w-[62ch] text-caption leading-relaxed text-cream-700">
         Bring your restaurant&rsquo;s prices in from a spreadsheet. The file is read on this device,
         shown to you first, and nothing is saved until you say so.
       </p>
@@ -169,14 +172,14 @@ export function MenuImport({ foods, onApply, onStatus }: MenuImportProps) {
       </div>
 
       {stage.kind === 'error' && (
-        <p role="alert" className="mt-3 text-sm font-semibold text-char-500">
+        <p role="alert" className="mt-3 text-ui font-semibold text-char-500">
           {stage.message}
         </p>
       )}
 
       {stage.kind === 'preview' && (
         <div className="mt-4 space-y-4 rounded-surface border border-line bg-ash-900/60 p-3">
-          <p role="status" className="text-sm text-cream-200">
+          <p role="status" className="text-ui text-cream-200">
             {stage.plan.accepted.length} {stage.plan.accepted.length === 1 ? 'row is' : 'rows are'}{' '}
             ready to import
             {stage.plan.conflicts.length > 0 && `, ${stage.plan.conflicts.length} need a decision`}
@@ -184,14 +187,14 @@ export function MenuImport({ foods, onApply, onStatus }: MenuImportProps) {
           </p>
 
           {stage.plan.truncated && (
-            <p className="text-xs leading-relaxed text-cream-700">
+            <p className="text-caption leading-relaxed text-cream-700">
               Only the first rows of that file were read. It is longer than a menu is expected to
               be, so the rest was left alone rather than parsed.
             </p>
           )}
 
           {stage.plan.overCapacity && (
-            <p className="text-xs leading-relaxed text-char-500">
+            <p className="text-caption leading-relaxed text-char-500">
               Your menu holds {MAX_CUSTOM_FOODS} items. Importing everything here would go past
               that, so the overflow will not be saved — trim the file if the order matters.
             </p>
@@ -199,15 +202,15 @@ export function MenuImport({ foods, onApply, onStatus }: MenuImportProps) {
 
           {stage.plan.accepted.length > 0 && (
             <div>
-              <h4 className="micro-label mb-2">Ready to import</h4>
+              <h4 className="text-body font-semibold text-cream-200 mb-2">Ready to import</h4>
               <ul className="max-h-40 overflow-y-auto">
                 {stage.plan.accepted.map((food) => (
                   <li
                     key={food.id}
-                    className="flex flex-wrap items-baseline justify-between gap-2 border-b border-line-soft py-1.5 text-sm last:border-b-0"
+                    className="flex flex-wrap items-baseline justify-between gap-2 border-b border-line-soft py-1.5 text-ui last:border-b-0"
                   >
                     <span className="min-w-0 truncate text-cream-100">{food.name}</span>
-                    <span className="text-xs text-cream-700">
+                    <span className="text-caption text-cream-700">
                       {categoryLabel(food.category)} ·{' '}
                       {food.valuation === 'by-serving' ? 'per serving' : 'per kg'}
                     </span>
@@ -219,16 +222,16 @@ export function MenuImport({ foods, onApply, onStatus }: MenuImportProps) {
 
           {stage.plan.conflicts.length > 0 && (
             <div>
-              <h4 className="micro-label mb-1">Already on your menu</h4>
-              <p className="mb-2 max-w-[60ch] text-xs leading-relaxed text-cream-700">
+              <h4 className="text-body font-semibold text-cream-200 mb-1">Already on your menu</h4>
+              <p className="mb-2 max-w-[62ch] text-caption leading-relaxed text-cream-700">
                 These names are taken. Nothing is replaced unless you choose it.
               </p>
               <ul className="space-y-2">
                 {stage.plan.conflicts.map((conflict) => (
                   <li key={conflict.existingId} className="border-b border-line-soft pb-2">
-                    <p className="text-sm text-cream-100">
+                    <p className="text-ui text-cream-100">
                       {conflict.name}{' '}
-                      <span className="text-xs text-cream-700">(row {conflict.line})</span>
+                      <span className="text-caption text-cream-700">(row {conflict.line})</span>
                     </p>
                     <div
                       role="radiogroup"
@@ -240,7 +243,7 @@ export function MenuImport({ foods, onApply, onStatus }: MenuImportProps) {
                         return (
                           <label
                             key={choice.id}
-                            className={`min-h-9 cursor-pointer rounded-surface border px-2.5 py-1.5 text-xs font-semibold transition-colors duration-200 ${
+                            className={`min-h-9 cursor-pointer rounded-surface border px-2.5 py-1.5 text-caption font-semibold transition-colors duration-200 ${
                               active
                                 ? 'border-ember-600 bg-ash-800 text-cream-50'
                                 : 'border-line text-cream-500 hover:text-cream-200'
@@ -272,12 +275,12 @@ export function MenuImport({ foods, onApply, onStatus }: MenuImportProps) {
 
           {stage.plan.rejected.length > 0 && (
             <div>
-              <h4 className="micro-label mb-2">Could not be read</h4>
+              <h4 className="text-body font-semibold text-cream-200 mb-2">Could not be read</h4>
               <ul className="max-h-40 overflow-y-auto">
                 {stage.plan.rejected.map((row) => (
                   <li
                     key={`${row.line}-${row.problem}`}
-                    className="border-b border-line-soft py-1.5 text-xs last:border-b-0"
+                    className="border-b border-line-soft py-1.5 text-caption last:border-b-0"
                   >
                     <span className="text-cream-300">
                       Row {row.line}

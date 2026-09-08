@@ -20,10 +20,10 @@ export function AchievementList({ achievements, headingId }: AchievementListProp
   return (
     <section aria-labelledby={headingId} className="panel p-4 sm:p-5">
       <div className="mb-3 flex items-baseline justify-between gap-3">
-        <h3 id={headingId} className="micro-label">
+        <h3 id={headingId} className="display-type text-lead text-cream-100">
           Commendations
         </h3>
-        <p className="tabular text-xs text-cream-700">
+        <p className="tabular text-caption text-cream-700">
           {achievements.length} of {ACHIEVEMENTS.length}
         </p>
       </div>
@@ -35,10 +35,10 @@ export function AchievementList({ achievements, headingId }: AchievementListProp
               <Award size={14} aria-hidden="true" />
             </span>
             <div className="min-w-0">
-              <p className="display-type text-base leading-tight text-cream-50">
+              <p className="display-type text-body leading-tight text-cream-50">
                 {achievement.title}
               </p>
-              <p className="mt-1 text-xs leading-snug text-cream-500">{achievement.copy}</p>
+              <p className="mt-1 text-caption leading-snug text-cream-500">{achievement.copy}</p>
             </div>
           </li>
         ))}

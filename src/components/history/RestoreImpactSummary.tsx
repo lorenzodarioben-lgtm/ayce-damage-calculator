@@ -18,7 +18,7 @@ function ImpactRow({ label, newItems, alreadyOnDevice, discarded }: ImpactRowPro
       <span className="tabular text-cream-300">
         {newItems} new · {alreadyOnDevice} already on this device
       </span>
-      <span className="tabular text-xs text-char-400 sm:col-start-2">
+      <span className="tabular text-caption text-char-400 sm:col-start-2">
         Replace discards {discarded} currently on this device
       </span>
     </li>
@@ -57,14 +57,14 @@ export function RestoreImpactSummary({ impact }: RestoreImpactSummaryProps) {
 
   return (
     <section aria-labelledby="restore-impact-heading" className="mt-4">
-      <h3 id="restore-impact-heading" className="micro-label mb-2">
+      <h3 id="restore-impact-heading" className="display-type text-lead text-cream-100 mb-2">
         Restore impact
       </h3>
-      <p className="mb-2 text-xs leading-relaxed text-cream-700">
+      <p className="mb-2 text-caption leading-relaxed text-cream-700">
         Merging adds only the new records below. Replacing discards the current records shown for
         each collection before writing this backup.
       </p>
-      <ul className="rounded-surface border border-line bg-ash-950 px-3 text-sm">
+      <ul className="rounded-surface border border-line bg-ash-950 px-3 text-ui">
         {rows.map((row) => (
           <ImpactRow
             key={row.label}

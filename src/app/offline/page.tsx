@@ -23,20 +23,22 @@ export default function OfflinePage() {
     >
       <BrandMark />
 
-      <h1 className="display-type mt-8 text-4xl text-cream-50 sm:text-5xl">Service interrupted</h1>
+      <h1 className="display-type mt-8 text-figure text-cream-50 sm:text-reading">
+        Service interrupted
+      </h1>
 
-      <p className="mt-4 text-sm leading-relaxed text-cream-300">
+      <p className="mt-4 text-ui leading-relaxed text-cream-300">
         This page is not available offline. The calculator itself keeps working once it has been
         opened at least once — the connection is only needed for pages you have not visited yet.
       </p>
 
-      <p className="mt-3 text-sm leading-relaxed text-cream-500">
+      <p className="mt-3 text-ui leading-relaxed text-cream-500">
         Your meal, history and favourites are stored on this device and are unaffected.
       </p>
 
       <Link
         href="/"
-        className="mt-8 inline-flex min-h-12 items-center justify-center rounded-surface border border-line-ember bg-ash-850 px-5 text-sm font-semibold uppercase tracking-[0.1em] text-ember-400 transition-colors duration-200 hover:bg-ash-800"
+        className="mt-8 inline-flex min-h-12 items-center justify-center rounded-surface border border-line-ember bg-ash-850 px-5 text-ui font-semibold uppercase tracking-caps text-ember-400 transition-colors duration-200 hover:bg-ash-800"
       >
         Return to the calculator
       </Link>

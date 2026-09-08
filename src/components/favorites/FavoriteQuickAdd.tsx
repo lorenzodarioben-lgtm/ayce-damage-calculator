@@ -33,7 +33,7 @@ export function FavoriteQuickAdd({
 }: FavoriteQuickAddProps) {
   if (favorites.length === 0) {
     return (
-      <p className="rounded-surface border border-dashed border-line bg-ash-900/60 px-4 py-3 text-center text-xs leading-relaxed text-cream-700">
+      <p className="rounded-surface border border-dashed border-line bg-ash-900/60 px-4 py-3 text-center text-caption leading-relaxed text-cream-700">
         No saved orders yet. Use the star beside a configured cut to keep it here for next time.
       </p>
     );
@@ -75,8 +75,8 @@ export function FavoriteQuickAdd({
                 className="shrink-0 text-ember-400"
               />
               <span className="min-w-0">
-                <span className="block text-sm font-bold text-cream-50">{food.name}</span>
-                <span className="block text-[0.7rem] text-cream-500">
+                <span className="block text-ui font-bold text-cream-50">{food.name}</span>
+                <span className="block text-caption text-cream-500">
                   {getQualityMeta(favorite.quality).label} ·{' '}
                   {getPlateSizeMeta(favorite.plateSize).label}
                 </span>

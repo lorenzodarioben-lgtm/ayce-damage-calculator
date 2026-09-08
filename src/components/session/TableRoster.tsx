@@ -87,12 +87,12 @@ export function TableRoster({
         <div>
           <h3
             id="table-roster-heading"
-            className="flex items-center gap-2 text-sm font-semibold text-cream-200"
+            className="flex items-center gap-2 text-ui font-semibold text-cream-200"
           >
             <UsersRound size={17} aria-hidden="true" />
             Table roster
           </h3>
-          <p className="mt-1 max-w-[62ch] text-xs leading-relaxed text-cream-700">
+          <p className="mt-1 max-w-[62ch] text-caption leading-relaxed text-cream-700">
             Optional. Add people only when you want to attribute plates; otherwise everything stays
             with the Table.
           </p>
@@ -121,7 +121,7 @@ export function TableRoster({
           }}
           maxLength={40}
           placeholder="Add a diner"
-          className="h-11 min-w-0 flex-1 rounded-surface border border-line bg-ash-900 px-3 text-sm text-cream-50 placeholder:text-cream-700"
+          className="h-11 min-w-0 flex-1 rounded-surface border border-line bg-ash-900 px-3 text-ui text-cream-50 placeholder:text-cream-700"
         />
         <Button variant="secondary" size="md" onClick={() => addNamed(false)}>
           <UserPlus size={16} aria-hidden="true" />
@@ -159,14 +159,16 @@ export function TableRoster({
       </div>
 
       {diners.length === 0 ? (
-        <p className="mt-4 rounded-surface bg-ash-900 px-3 py-3 text-sm text-cream-500">
+        <p className="mt-4 rounded-surface bg-ash-900 px-3 py-3 text-ui text-cream-500">
           No one is being tracked individually. Food you log remains shared by the table.
         </p>
       ) : (
         <ol className="mt-4 space-y-2">
           {diners.map((diner, index) => (
             <li key={diner.id} className="flex items-center gap-2 rounded-surface bg-ash-900 p-2">
-              <span className="w-5 text-center text-xs font-bold text-ember-400">{index + 1}</span>
+              <span className="w-5 text-center text-caption font-bold text-ember-400">
+                {index + 1}
+              </span>
               <label className="sr-only" htmlFor={`diner-name-${diner.id}`}>
                 Diner {index + 1} name
               </label>
@@ -175,7 +177,7 @@ export function TableRoster({
                 value={diner.displayName}
                 onChange={(event) => onRename(diner.id, event.target.value)}
                 autoComplete="off"
-                className="h-9 min-w-0 flex-1 rounded-surface border border-line bg-ash-850 px-2 text-sm text-cream-100"
+                className="h-9 min-w-0 flex-1 rounded-surface border border-line bg-ash-850 px-2 text-ui text-cream-100"
               />
               <label className="sr-only" htmlFor={`diner-admission-${diner.id}`}>
                 {diner.displayName} admission price
@@ -194,7 +196,7 @@ export function TableRoster({
                   onAdmissionPriceChange(diner.id, Number.isFinite(value) ? value : undefined);
                 }}
                 placeholder="Default"
-                className="h-9 w-24 rounded-surface border border-line bg-ash-850 px-2 text-right text-sm text-cream-100 placeholder:text-cream-700"
+                className="h-9 w-24 rounded-surface border border-line bg-ash-850 px-2 text-right text-ui text-cream-100 placeholder:text-cream-700"
               />
               <div className="flex shrink-0">
                 <button

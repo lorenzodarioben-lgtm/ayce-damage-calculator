@@ -434,12 +434,42 @@ input[type='number']::-webkit-inner-spin-button {
   text-transform: uppercase;
 }
 
+/*
+ * The caption of a value, or the header of a column. Never a heading.
+ *
+ * It was carrying seven different semantic roles at one identical weight —
+ * thirty-six h3s, twenty-seven h2s, and twenty-four paragraphs, which meant a
+ * section boundary and a field caption were the same eleven pixels. The
+ * headings are headings now; this is what is left, and what is left is a label.
+ *
+ * The colour is deliberately not set here. Baking one in is what forced four
+ * `!important` escapes across the components; a label takes the colour of the
+ * thing it labels.
+ */
 @utility micro-label {
+  font-family: var(--font-heading);
   font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
+  font-weight: 500;
+  letter-spacing: var(--tracking-label);
   text-transform: uppercase;
-  color: var(--text-faint);
+}
+
+/*
+ * Text that is meant to be read rather than scanned.
+ *
+ * The app had no reading typography at all: ninety-three passages set with
+ * `leading-relaxed` at twelve or fourteen pixels, including the uncertainty
+ * explanation — the content that makes this rigorous rather than a toy — set
+ * two steps below body text in the faintest colour on the palette.
+ *
+ * Seventeen pixels, a leading that suits it, and a colour with real contrast.
+ * Disclaimers are body copy: they are the product's honesty, not its small
+ * print, and they take this like everything else.
+ */
+@utility reading {
+  font-size: var(--text-body);
+  line-height: 1.6;
+  color: var(--color-cream-300);
 }
 
 @utility tabular {

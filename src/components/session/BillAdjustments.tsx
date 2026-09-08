@@ -131,12 +131,12 @@ export function BillAdjustments({
         <div>
           <h3
             id="bill-adjustments-heading"
-            className="flex items-center gap-2 text-sm font-semibold text-cream-200"
+            className="flex items-center gap-2 text-ui font-semibold text-cream-200"
           >
             <Receipt size={17} aria-hidden="true" />
             Charges and discounts
           </h3>
-          <p className="mt-1 max-w-[62ch] text-xs leading-relaxed text-cream-700">
+          <p className="mt-1 max-w-[62ch] text-caption leading-relaxed text-cream-700">
             Optional. A voucher, a weekend surcharge, a card fee, a drink charged separately —
             anything the bill picked up beyond the entry price. Leave it empty and nothing changes.
           </p>
@@ -160,7 +160,7 @@ export function BillAdjustments({
             <label
               key={option}
               className={[
-                'inline-flex min-h-10 cursor-pointer items-center gap-1.5 rounded-surface px-3 text-xs font-semibold uppercase tracking-[0.08em]',
+                'inline-flex min-h-10 cursor-pointer items-center gap-1.5 rounded-surface px-3 text-caption font-semibold uppercase tracking-caps',
                 'transition-colors duration-200',
                 kind === option
                   ? 'bg-ash-700 text-cream-50'
@@ -194,7 +194,7 @@ export function BillAdjustments({
             <label
               key={option}
               className={[
-                'inline-flex min-h-10 cursor-pointer items-center rounded-surface px-3 text-xs font-semibold uppercase tracking-[0.08em]',
+                'inline-flex min-h-10 cursor-pointer items-center rounded-surface px-3 text-caption font-semibold uppercase tracking-caps',
                 'transition-colors duration-200',
                 basis === option
                   ? 'bg-ash-700 text-cream-50'
@@ -218,7 +218,10 @@ export function BillAdjustments({
 
         <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_9rem]">
           <div>
-            <label htmlFor={labelId} className="mb-1.5 block text-xs font-semibold text-cream-300">
+            <label
+              htmlFor={labelId}
+              className="mb-1.5 block text-caption font-semibold text-cream-300"
+            >
               What was it
             </label>
             <input
@@ -229,7 +232,7 @@ export function BillAdjustments({
               maxLength={MAX_ADJUSTMENT_LABEL_LENGTH}
               placeholder={suggestions[0]}
               onChange={(event) => setLabel(event.target.value)}
-              className="h-12 w-full rounded-surface border border-line bg-ash-900 px-3 text-base text-cream-50"
+              className="h-12 w-full rounded-surface border border-line bg-ash-900 px-3 text-body text-cream-50"
             />
             <datalist id={suggestionsId}>
               {suggestions.map((suggestion) => (
@@ -239,7 +242,10 @@ export function BillAdjustments({
           </div>
 
           <div>
-            <label htmlFor={amountId} className="mb-1.5 block text-xs font-semibold text-cream-300">
+            <label
+              htmlFor={amountId}
+              className="mb-1.5 block text-caption font-semibold text-cream-300"
+            >
               {isPercent ? 'Percent' : 'Amount'}
             </label>
             <input
@@ -251,13 +257,13 @@ export function BillAdjustments({
               step="0.01"
               value={amount}
               onChange={(event) => setAmount(event.target.value)}
-              className="tabular h-12 w-full rounded-surface border border-line bg-ash-900 px-3 text-base text-cream-50"
+              className="tabular h-12 w-full rounded-surface border border-line bg-ash-900 px-3 text-body text-cream-50"
             />
           </div>
         </div>
 
         {isPercent && (
-          <p className="mt-2 max-w-[62ch] text-xs leading-relaxed text-cream-700">
+          <p className="mt-2 max-w-[62ch] text-caption leading-relaxed text-cream-700">
             Worked out against the entry price plus any fixed charges already on the bill, and
             recalculated whenever those change. Percentages never compound: each one is a share of a
             base that contains no percentage, so the order you add them in cannot change the total.
@@ -266,14 +272,17 @@ export function BillAdjustments({
 
         {diners.length > 0 && (
           <div className="mt-2">
-            <label htmlFor={dinerId} className="mb-1.5 block text-xs font-semibold text-cream-300">
+            <label
+              htmlFor={dinerId}
+              className="mb-1.5 block text-caption font-semibold text-cream-300"
+            >
               Who it belongs to
             </label>
             <select
               id={dinerId}
               value={scope}
               onChange={(event) => setScope(event.target.value)}
-              className="h-12 w-full rounded-surface border border-line bg-ash-900 px-3 text-base text-cream-50"
+              className="h-12 w-full rounded-surface border border-line bg-ash-900 px-3 text-body text-cream-50"
             >
               <option value="">The whole table</option>
               {diners.map((diner) => (
@@ -290,7 +299,7 @@ export function BillAdjustments({
           Add to the bill
         </Button>
         {full && (
-          <p className="mt-2 text-xs text-cream-700">
+          <p className="mt-2 text-caption text-cream-700">
             That is {MAX_BILL_ADJUSTMENTS} adjustments, which is as many as a bill can carry here.
           </p>
         )}
@@ -306,8 +315,8 @@ export function BillAdjustments({
                 className="flex items-center gap-3 border-t border-line-soft py-2"
               >
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm text-cream-100">{adjustment.label}</p>
-                  <p className="text-xs text-cream-700">
+                  <p className="truncate text-ui text-cream-100">{adjustment.label}</p>
+                  <p className="text-caption text-cream-700">
                     {adjustment.kind === 'charge' ? 'Added to' : 'Taken off'} ·{' '}
                     {owner ? owner.displayName : 'The whole table'}
                     {adjustment.basis === 'percent'
@@ -321,7 +330,7 @@ export function BillAdjustments({
                 </div>
                 <p
                   className={[
-                    'tabular shrink-0 text-sm font-semibold',
+                    'tabular shrink-0 text-ui font-semibold',
                     adjustment.kind === 'charge' ? 'text-cream-50' : 'text-ember-400',
                   ].join(' ')}
                 >
@@ -353,7 +362,7 @@ export function BillAdjustments({
       )}
 
       {adjustments.length > 0 && (
-        <dl className="mt-3 space-y-1 well px-4 py-3 text-sm">
+        <dl className="mt-3 space-y-1 well px-4 py-3 text-ui">
           <Row label="Entry price" value={formatMoney(baseAdmission, pricingProfile.money)} muted />
           {totals.charges > 0 && (
             <Row
@@ -371,7 +380,7 @@ export function BillAdjustments({
           )}
           <Row label="Paid in total" value={formatMoney(totalPaid, pricingProfile.money)} />
           {totalPaid === 0 && (
-            <p className="pt-1 text-xs leading-relaxed text-cream-700">
+            <p className="pt-1 text-caption leading-relaxed text-cream-700">
               The discounts cover the whole bill. Nothing was paid, so there is no recovery
               percentage to report — every plate is upside.
             </p>
@@ -399,12 +408,16 @@ export function BillAdjustments({
 function Row({ label, value, muted = false }: { label: string; value: string; muted?: boolean }) {
   return (
     <div className="flex items-baseline justify-between gap-3">
-      <dt className={muted ? 'text-xs text-cream-700' : 'text-sm font-semibold text-cream-200'}>
+      <dt
+        className={muted ? 'text-caption text-cream-700' : 'text-ui font-semibold text-cream-200'}
+      >
         {label}
       </dt>
       <dd
         className={
-          muted ? 'tabular text-xs text-cream-500' : 'tabular text-sm font-semibold text-ember-400'
+          muted
+            ? 'tabular text-caption text-cream-500'
+            : 'tabular text-ui font-semibold text-ember-400'
         }
       >
         {value}
