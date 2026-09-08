@@ -41,8 +41,8 @@ const STATUS_LABELS: Record<MealLifecycleStatus, string> = {
 };
 
 const CHIP =
-  'min-h-11 flex-1 cursor-pointer rounded-[10px] border px-3 text-xs font-semibold uppercase ' +
-  'tracking-[0.08em] transition-colors duration-200';
+  'min-h-11 flex-1 cursor-pointer rounded-surface border px-3 text-caption font-semibold uppercase ' +
+  'tracking-caps transition-colors duration-160';
 
 /**
  * The meal clock, and what the current pace implies.
@@ -127,11 +127,14 @@ export function MealPacing({
   return (
     <section aria-labelledby={headingId} className="panel mb-4 p-4">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 id={headingId} className="micro-label flex items-center gap-1.5">
+        <h2
+          id={headingId}
+          className="display-type text-title text-cream-100 flex items-center gap-1.5"
+        >
           <Timer size={13} aria-hidden="true" />
           Meal clock
         </h2>
-        <p className="text-xs text-cream-500">{STATUS_LABELS[lifecycle.status]}</p>
+        <p className="text-caption text-cream-500">{STATUS_LABELS[lifecycle.status]}</p>
       </div>
 
       <div role="group" aria-label="Meal length" className="mt-3 flex flex-wrap gap-2">
@@ -146,7 +149,7 @@ export function MealPacing({
               className={cn(
                 CHIP,
                 active
-                  ? 'border-line-ember bg-ash-800 text-ember-400'
+                  ? 'border-line-ember bg-ash-800 text-cream-100'
                   : 'border-line bg-ash-900 text-cream-300 hover:bg-ash-800',
               )}
             >
@@ -170,7 +173,7 @@ export function MealPacing({
           className={cn(
             CHIP,
             plannedDurationMinutes === undefined
-              ? 'border-line-ember bg-ash-800 text-ember-400'
+              ? 'border-line-ember bg-ash-800 text-cream-100'
               : 'border-line bg-ash-900 text-cream-300 hover:bg-ash-800',
           )}
         >
@@ -181,7 +184,7 @@ export function MealPacing({
       {customOpen && (
         <div className="mt-2 flex flex-wrap items-end gap-2">
           <div className="min-w-0 flex-1">
-            <label htmlFor={customId} className="micro-label mb-1 block">
+            <label htmlFor={customId} className="text-ui font-semibold text-cream-300 mb-1 block">
               Custom length in minutes
             </label>
             <input
@@ -192,7 +195,7 @@ export function MealPacing({
               max={MAX_MEAL_DURATION_MINUTES}
               value={customValue}
               onChange={(event) => setCustomValue(event.target.value)}
-              className="h-11 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-sm text-cream-50"
+              className="h-11 w-full rounded-surface border border-line-strong bg-ash-900 px-3 text-ui text-cream-50"
             />
           </div>
           <Button variant="secondary" size="md" onClick={applyCustom}>
@@ -204,14 +207,14 @@ export function MealPacing({
       {forecast.timed ? (
         <div className="mt-4">
           <div className="flex items-baseline justify-between gap-3">
-            <p className="micro-label">{clockLabel}</p>
-            <p className="text-xs text-cream-700">
+            <p className="micro-label text-cream-500">{clockLabel}</p>
+            <p className="text-caption text-cream-600">
               {formatDurationLabel(forecast.plannedDurationMs ?? 0)} booked
             </p>
           </div>
           {/* The digits update every second, which is exactly what a screen
               reader must not follow; the spoken form lives in the label below. */}
-          <p aria-hidden="true" className="tabular display-type mt-1 text-4xl text-cream-50">
+          <p aria-hidden="true" className="tabular display-type mt-1 text-figure text-cream-50">
             {formatClock(clockMs)}
           </p>
           <div
@@ -221,19 +224,19 @@ export function MealPacing({
             aria-valuemax={100}
             aria-valuenow={Math.round(forecast.progressPercent)}
             aria-valuetext={`${formatDurationLabel(forecast.elapsedMs)} elapsed, ${formatDurationLabel(forecast.remainingMs ?? 0)} remaining`}
-            className="mt-2 h-2 w-full overflow-hidden rounded-full bg-ash-800"
+            className="relative mt-2 h-2 w-full overflow-hidden rounded-full bg-ash-800"
           >
             <div
               className={cn(
-                'h-full rounded-full transition-[width] duration-500 ease-out-soft',
+                'absolute inset-0 rounded-full transition-transform duration-[420ms] ease-out-soft',
                 forecast.expired ? 'bg-char-500' : 'bg-ember-500',
               )}
-              style={{ width: `${Math.max(2, forecast.progressPercent)}%` }}
+              style={{ transform: `translateX(${Math.max(2, forecast.progressPercent) - 100}%)` }}
             />
           </div>
         </div>
       ) : (
-        <p className="mt-3 text-xs leading-relaxed text-cream-700">
+        <p className="mt-3 text-caption leading-relaxed text-cream-600">
           No time limit set. Pick a length above if your table has one — the meal itself works
           exactly the same either way.
         </p>
@@ -304,7 +307,7 @@ export function MealPacing({
       )}
 
       {started && (
-        <p className="mt-3 text-xs leading-relaxed text-cream-700">
+        <p className="mt-3 text-caption leading-relaxed text-cream-600">
           {forecast.expired
             ? 'The booked window is over. Anything after this is extra time, and the numbers keep counting it.'
             : forecast.projectedRecoveryPercent === null
@@ -329,10 +332,10 @@ export function MealPacing({
 function Figure({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
     <div className="well px-3 py-2">
-      <dt className="micro-label">{label}</dt>
+      <dt className="micro-label text-cream-500">{label}</dt>
       <dd
         className={cn(
-          'tabular mt-0.5 text-sm font-semibold',
+          'tabular mt-0.5 text-ui font-semibold',
           accent ? 'text-sesame-400' : 'text-cream-50',
         )}
       >

@@ -253,16 +253,18 @@ export function ServiceWorkerManager() {
   return (
     <div
       role="status"
-      className="relative z-40 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 border-b border-line-ember bg-ash-850 bg-[image:var(--fill-panel)] px-4 py-2 text-center shadow-[inset_0_1px_0_rgb(255_250_240/0.05),0_6px_18px_-14px_#000]"
+      className="relative z-40 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 border-b border-line-ember bg-ash-850 bg-[image:var(--fill-panel)] px-4 py-2 text-center elevate-control"
     >
       {/* Each line is tied to the condition it describes: being offline says
           nothing about whether a newer build exists, and claiming one that is
           not waiting would leave the reload with nothing to apply. */}
       {hasUpdate && (
-        <p className="text-xs text-cream-300">A newer version of the calculator is available.</p>
+        <p className="text-caption text-cream-300">
+          A newer version of the calculator is available.
+        </p>
       )}
       {!online && (
-        <p className="text-xs text-cream-300">
+        <p className="text-caption text-cream-300">
           You are offline. Previously visited pages may remain available.
         </p>
       )}
@@ -270,7 +272,7 @@ export function ServiceWorkerManager() {
         <button
           type="button"
           onClick={() => void requestInstall()}
-          className="min-h-8 cursor-pointer rounded-[8px] px-2 text-xs font-semibold text-ember-400"
+          className="min-h-11 cursor-pointer rounded-surface px-2 text-caption font-semibold text-cream-100"
         >
           Install app
         </button>
@@ -279,7 +281,7 @@ export function ServiceWorkerManager() {
         <button
           type="button"
           onClick={applyUpdate}
-          className="min-h-8 cursor-pointer rounded-[8px] px-2 text-xs font-semibold uppercase tracking-[0.1em] text-ember-400 underline-offset-4 hover:underline"
+          className="min-h-11 cursor-pointer rounded-surface px-2 text-caption font-semibold uppercase tracking-caps text-cream-100 underline-offset-4 hover:underline"
         >
           Reload to update
         </button>

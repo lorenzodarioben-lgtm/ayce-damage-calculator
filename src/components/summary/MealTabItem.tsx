@@ -64,16 +64,16 @@ export function MealTabItem({
       <div className="flex items-start justify-between gap-3">
         {/* The name is given the full row width; cut-off cut names read as bugs. */}
         <div className="min-w-0">
-          <p className="text-sm font-bold text-cream-50">{food.name}</p>
-          <p className="text-xs text-cream-500">
+          <p className="text-ui font-bold text-cream-50">{food.name}</p>
+          <p className="text-caption text-cream-500">
             {getQualityMeta(item.quality).label} · {getPlateSizeMeta(item.plateSize).label}
           </p>
-          <p className="tabular mt-0.5 text-xs text-cream-700">
+          <p className="tabular mt-0.5 text-caption text-cream-600">
             {formatUnits(line)}
             {line.hasWeight ? ` · ${formatWeight(line.weightG)}` : ' · not weighed'}
           </p>
           {left && (
-            <p className="tabular mt-0.5 text-xs text-cream-500">
+            <p className="tabular mt-0.5 text-caption text-cream-500">
               {formatPlateQuantity(line.consumedPlates)} eaten ·{' '}
               {formatPlateQuantity(line.uneatenPlates)} left
             </p>
@@ -82,23 +82,23 @@ export function MealTabItem({
         <div className="shrink-0 text-right">
           <p
             className={[
-              'tabular text-sm font-bold',
+              'tabular text-ui font-bold',
               // An extra's retail value is not buffet value, so it is not
               // coloured as though it counted towards beating the buffet.
-              extra ? 'text-cream-500' : 'text-ember-400',
+              extra ? 'text-cream-500' : 'text-cream-100',
             ].join(' ')}
           >
             {formatMoney(line.retailValue, pricingProfile.money)}
           </p>
           {extra && (
-            <p className="tabular text-xs text-cream-700">
+            <p className="tabular text-caption text-cream-600">
               {line.unpricedCharge
                 ? 'paid separately'
                 : `${formatMoney(line.separateCharge, pricingProfile.money)} paid`}
             </p>
           )}
           {left && (
-            <p className="tabular text-xs text-cream-700">
+            <p className="tabular text-caption text-cream-600">
               of {formatMoney(line.orderedRetailValue, pricingProfile.money)} ordered
             </p>
           )}
@@ -112,7 +112,7 @@ export function MealTabItem({
             onClick={() => setOpen((current) => !current)}
             aria-expanded={expanded}
             aria-label={`Record how much of ${descriptor} was eaten`}
-            className="flex size-9 cursor-pointer items-center justify-center rounded-[10px] border border-transparent text-cream-700 transition-colors duration-200 hover:border-line hover:bg-ash-800 hover:text-cream-300"
+            className="flex size-11 cursor-pointer items-center justify-center rounded-surface border border-transparent text-cream-600 transition-colors duration-160 hover:border-line hover:bg-ash-800 hover:text-cream-300"
           >
             <Utensils size={15} aria-hidden="true" />
           </button>
@@ -123,10 +123,10 @@ export function MealTabItem({
           aria-pressed={extra}
           aria-label={`Charge ${descriptor} separately from the buffet price`}
           className={[
-            'flex size-9 cursor-pointer items-center justify-center rounded-[10px] border transition-colors duration-200',
+            'flex size-9 cursor-pointer items-center justify-center rounded-surface border transition-colors duration-160',
             extra
-              ? 'border-line-ember bg-ash-800 text-ember-400'
-              : 'border-transparent text-cream-700 hover:border-line hover:bg-ash-800 hover:text-cream-300',
+              ? 'border-line-ember bg-ash-800 text-cream-100'
+              : 'border-transparent text-cream-600 hover:border-line hover:bg-ash-800 hover:text-cream-300',
           ].join(' ')}
         >
           <Receipt size={15} aria-hidden="true" />
@@ -146,7 +146,7 @@ export function MealTabItem({
           type="button"
           onClick={() => onRemove(item.id)}
           aria-label={`Remove ${descriptor} from your tab`}
-          className="flex size-9 cursor-pointer items-center justify-center rounded-[10px] border border-transparent text-cream-700 transition-colors duration-200 hover:border-char-700 hover:bg-char-700/20 hover:text-char-500"
+          className="flex size-11 cursor-pointer items-center justify-center rounded-surface border border-transparent text-cream-600 transition-colors duration-160 hover:border-char-700 hover:bg-char-700/20 hover:text-char-400"
         >
           <Trash2 size={15} aria-hidden="true" />
         </button>
@@ -154,7 +154,7 @@ export function MealTabItem({
 
       {shareable && (
         <div className="mt-2 well px-3 py-2">
-          <p className="micro-label mb-1.5">Shared by</p>
+          <p className="micro-label text-cream-500 mb-1.5">Shared by</p>
           <div
             role="group"
             aria-label={`Who shared ${descriptor}`}
@@ -169,10 +169,10 @@ export function MealTabItem({
                   aria-pressed={sharedBy.includes(diner.id)}
                   onClick={() => toggleSharer(diner.id)}
                   className={[
-                    'min-h-9 cursor-pointer rounded-full border px-3 text-xs font-semibold transition-colors duration-200',
+                    'min-h-9 cursor-pointer rounded-full border px-3 text-caption font-semibold transition-colors duration-160',
                     sharing
                       ? 'border-ember-600 bg-ash-800 text-cream-100'
-                      : 'border-line bg-ash-950 text-cream-700 hover:border-ember-700',
+                      : 'border-line bg-ash-950 text-cream-600 hover:border-line-strong',
                   ].join(' ')}
                 >
                   {diner.displayName}
@@ -180,7 +180,7 @@ export function MealTabItem({
               );
             })}
           </div>
-          <p className="mt-1.5 text-xs leading-relaxed text-cream-700">
+          <p className="mt-1.5 text-caption leading-relaxed text-cream-600">
             {sharedBy.length === 0
               ? 'Everyone at the table splits what is left of this line. Name a few of them instead if only they shared it.'
               : `Split between ${sharedBy.length} of them, and nobody else. ${formatSharePlates(
@@ -192,7 +192,7 @@ export function MealTabItem({
 
       {extra && (
         <div className="mt-2 well px-3 py-2">
-          <label className="tabular flex items-baseline justify-between gap-2 text-xs text-cream-300">
+          <label className="tabular flex items-baseline justify-between gap-2 text-caption text-cream-300">
             What was paid for it
             <input
               type="number"
@@ -208,10 +208,10 @@ export function MealTabItem({
                   event.target.value === '' ? undefined : Number(event.target.value),
                 )
               }
-              className="tabular h-9 w-28 rounded-[8px] border border-line bg-ash-950 px-2 text-right text-sm font-normal text-cream-50"
+              className="tabular h-9 w-28 rounded-surface border border-line-strong bg-ash-950 px-2 text-right text-ui font-normal text-cream-50"
             />
           </label>
-          <p className="mt-1.5 text-xs leading-relaxed text-cream-700">
+          <p className="mt-1.5 text-caption leading-relaxed text-cream-600">
             The buffet price did not cover this, so its value is kept out of the recovery figure and
             what you paid is counted as spending instead. Leave the amount blank if you do not know
             it.
@@ -221,7 +221,7 @@ export function MealTabItem({
 
       {expanded && (
         <div className="mt-2 well px-3 py-2">
-          <div className="tabular flex items-baseline justify-between gap-2 text-xs text-cream-500">
+          <div className="tabular flex items-baseline justify-between gap-2 text-caption text-cream-500">
             <span className="text-cream-300">Eaten</span>
             <span>
               {formatPlateQuantity(line.consumedPlates)} of {line.plates}
@@ -242,7 +242,7 @@ export function MealTabItem({
             onChange={(event) => onConsumptionChange(item.id, Number(event.target.value))}
             className="mt-1.5 h-6 w-full cursor-pointer accent-[var(--color-ember-500)]"
           />
-          <p className="text-xs leading-relaxed text-cream-700">
+          <p className="text-caption leading-relaxed text-cream-600">
             Slide it down if some went back. Ordered value is still counted separately, so the tab
             keeps saying what reached the table.
           </p>

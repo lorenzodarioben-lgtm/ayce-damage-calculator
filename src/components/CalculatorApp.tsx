@@ -21,6 +21,7 @@ import { usePricingProfiles } from '@/hooks/usePricingProfiles';
 import { useRegularDiners } from '@/hooks/useRegularDiners';
 import { useStageHistory } from '@/hooks/useStageHistory';
 import { useStatusMessage } from '@/hooks/useStatusMessage';
+import { useUndoableRemove } from '@/hooks/useUndoableRemove';
 import { scrollBehaviour } from '@/lib/motion';
 import { DEFAULT_PRICING_PROFILE_ID } from '@/lib/pricing';
 
@@ -53,6 +54,7 @@ export function CalculatorApp() {
     setItemCharge,
     setItemAllocations,
     removeItem,
+    restoreItem,
     canUndo,
     canRedo,
     undo,
@@ -72,6 +74,17 @@ export function CalculatorApp() {
   const [resetOpen, setResetOpen] = useState(false);
   const [activeDinerId, setActiveDinerId] = useState<string | null>(null);
   const [status, announce] = useStatusMessage();
+
+  // Removing a line drops a quality, a plate size and a running count, so it
+  // is offered back rather than simply confirmed. The hook for this existed,
+  // and was wired to nothing.
+  const removeItemWithUndo = useUndoableRemove({
+    items: session.items,
+    removeItem,
+    restoreItem,
+    announce,
+    location: 'your tab',
+  });
 
   const reportRef = useRef<HTMLDivElement>(null);
   const builderRef = useRef<HTMLDivElement>(null);
@@ -157,9 +170,9 @@ export function CalculatorApp() {
         />
 
         <main id={MAIN_CONTENT_ID} className="relative z-10">
-          {stage === 'builder' && <Hero />}
+          {stage === 'builder' && <Hero compact={report.lines.length > 0} />}
 
-          <div className="mx-auto max-w-[1280px] px-4 pb-32 pt-6 sm:px-6 lg:pb-16">
+          <div className="mx-auto max-w-page px-4 pb-32 pt-6 sm:px-6 lg:pb-16">
             {sessionConflict && (
               <div className="mb-4">
                 <SessionConflictNotice
@@ -193,6 +206,22 @@ export function CalculatorApp() {
                     onUndo={undo}
                     onRedo={redo}
                   />
+                  {/*
+                   * The builder comes first.
+                   *
+                   * Configuration used to be twelve stacked sections above it, five of
+                   * them empty states for features nobody had used yet, so the first
+                   * plate was thousands of pixels down a phone. The product's own
+                   * principle is that configuration is an enhancement rather than a
+                   * prerequisite, and the entry price already has a sensible default.
+                   */}
+                  <MealBuilder
+                    onAdd={handleAdd}
+                    customFoods={customFoods.foods}
+                    diners={session.diners ?? []}
+                    activeDinerId={selectedDinerId}
+                    onActiveDinerChange={setActiveDinerId}
+                  />
                   <SessionSetup
                     session={session}
                     baseAdmission={report.baseAdmission}
@@ -222,13 +251,6 @@ export function CalculatorApp() {
                     onClearAdjustments={clearAdjustments}
                     onStatus={announce}
                   />
-                  <MealBuilder
-                    onAdd={handleAdd}
-                    customFoods={customFoods.foods}
-                    diners={session.diners ?? []}
-                    activeDinerId={selectedDinerId}
-                    onActiveDinerChange={setActiveDinerId}
-                  />
                 </div>
 
                 <div className="lg:sticky lg:top-[4.5rem]">
@@ -246,7 +268,7 @@ export function CalculatorApp() {
                       )
                     }
                     diners={session.diners ?? []}
-                    onRemove={removeItem}
+                    onRemove={removeItemWithUndo}
                     onCalculate={handleCalculate}
                     onReset={() => setResetOpen(true)}
                   />
@@ -272,6 +294,8 @@ export function CalculatorApp() {
           title="Reset session?"
           body="This clears the restaurant name, entry price, diners and every plate on your tab. It cannot be undone."
           confirmLabel="Reset everything"
+          cancelLabel="Keep my tab"
+          destructive
           onConfirm={handleConfirmReset}
           onCancel={() => setResetOpen(false)}
         />

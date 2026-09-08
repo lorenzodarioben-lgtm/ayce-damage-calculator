@@ -17,7 +17,7 @@ interface VaultPasswordDialogProps {
 }
 
 const FIELD =
-  'h-12 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-base text-cream-50';
+  'h-12 w-full rounded-surface border border-line bg-ash-900 px-3 text-body text-cream-50';
 
 /**
  * Asks for the password, and holds it for exactly as long as it takes to use it.
@@ -76,21 +76,21 @@ export function VaultPasswordDialog({
       title={encrypting ? 'Choose a password' : 'This backup is encrypted'}
       labelledById={titleId}
     >
-      <p className="max-w-[52ch] text-sm leading-relaxed text-cream-300">
+      <p className="max-w-[62ch] text-ui leading-relaxed text-cream-300">
         {encrypting
           ? 'The backup is encrypted in this browser before it is saved. The password is never stored anywhere, which also means it cannot be recovered — without it the file cannot be opened again.'
           : 'Enter the password this backup was encrypted with. It is used here and kept nowhere.'}
       </p>
 
       {error && (
-        <p role="alert" className="mt-3 text-sm font-semibold text-char-500">
+        <p role="alert" className="mt-3 text-ui font-semibold text-char-400">
           {error}
         </p>
       )}
 
       <div className="mt-4 space-y-3">
         <div>
-          <label htmlFor={passwordId} className="mb-1.5 block text-sm font-semibold text-cream-300">
+          <label htmlFor={passwordId} className="mb-1.5 block text-ui font-semibold text-cream-300">
             Password
           </label>
           <input
@@ -108,7 +108,7 @@ export function VaultPasswordDialog({
             className={FIELD}
           />
           {encrypting && (
-            <p className="mt-1 text-xs text-cream-700">
+            <p className="mt-1 text-caption text-cream-600">
               At least {MIN_VAULT_PASSWORD_LENGTH} characters.
             </p>
           )}
@@ -118,7 +118,7 @@ export function VaultPasswordDialog({
           <div>
             <label
               htmlFor={confirmId}
-              className="mb-1.5 block text-sm font-semibold text-cream-300"
+              className="mb-1.5 block text-ui font-semibold text-cream-300"
             >
               Confirm password
             </label>
@@ -135,7 +135,7 @@ export function VaultPasswordDialog({
       </div>
 
       {mismatch && (
-        <p role="alert" className="mt-3 text-sm font-semibold text-char-500">
+        <p role="alert" className="mt-3 text-ui font-semibold text-char-400">
           Those two passwords are not the same.
         </p>
       )}

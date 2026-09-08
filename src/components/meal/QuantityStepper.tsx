@@ -31,16 +31,16 @@ export function QuantityStepper({
   incrementLabel,
 }: QuantityStepperProps) {
   const buttonSize = size === 'sm' ? 'size-9' : 'size-12';
-  const valueSize = size === 'sm' ? 'min-w-8 text-base' : 'min-w-14 text-2xl';
+  const valueSize = size === 'sm' ? 'min-w-8 text-body' : 'min-w-14 text-title';
   const iconSize = size === 'sm' ? 14 : 18;
 
   const buttonClass = cn(
     buttonSize,
-    'flex shrink-0 cursor-pointer items-center justify-center rounded-[10px] border border-line',
-    'bg-ash-800 text-cream-100 shadow-[inset_0_1px_0_rgb(255_250_240/0.05)]',
-    'transition-[background-color,border-color,transform] duration-200 ease-out-soft',
-    'hover:border-ember-600 hover:bg-ash-700 active:scale-95 active:bg-ash-800',
-    'disabled:cursor-not-allowed disabled:border-line-soft disabled:bg-ash-900 disabled:text-cream-700',
+    'flex shrink-0 cursor-pointer items-center justify-center rounded-inner border border-line-strong',
+    'bg-ash-800 text-cream-100 elevate-control',
+    'transition-[background-color,border-color,transform] duration-160 ease-out-soft',
+    'hover:border-line-strong hover:bg-ash-700 active:scale-95 active:bg-ash-800',
+    'disabled:cursor-not-allowed disabled:border-line-soft disabled:bg-ash-900 disabled:text-cream-600',
   );
 
   return (
@@ -61,7 +61,7 @@ export function QuantityStepper({
 
       {/* <output> is a polite live region by default, so assistive technology
           hears the new count after pressing either control. */}
-      <output className={cn('tabular display-hero text-center text-cream-50', valueSize)}>
+      <output className={cn('tabular text-center font-bold text-cream-50', valueSize)}>
         {value}
       </output>
 

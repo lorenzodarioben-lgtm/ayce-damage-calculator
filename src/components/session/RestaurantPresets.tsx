@@ -68,10 +68,10 @@ export function RestaurantPresets({
   return (
     <div className="mt-4 border-t border-line-soft pt-4">
       <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
-        <h3 className="micro-label">Saved restaurants</h3>
+        <h3 className="display-type text-lead text-cream-100">Saved restaurants</h3>
         <Link
           href="/restaurants"
-          className="inline-flex min-h-9 items-center rounded-[8px] px-2 text-xs font-semibold uppercase tracking-[0.1em] text-cream-500 transition-colors duration-200 hover:bg-ash-800 hover:text-cream-100"
+          className="inline-flex min-h-11 items-center rounded-surface px-2 text-caption font-semibold uppercase tracking-caps text-cream-500 transition-colors duration-160 hover:bg-ash-800 hover:text-cream-100"
         >
           Open the hub
         </Link>
@@ -79,7 +79,7 @@ export function RestaurantPresets({
           type="button"
           onClick={handleSave}
           disabled={!nameGiven}
-          className="inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-[8px] px-2 text-xs font-semibold uppercase tracking-[0.1em] text-ember-500 transition-colors duration-200 hover:bg-ash-800 disabled:cursor-not-allowed disabled:text-cream-700 disabled:hover:bg-transparent"
+          className="inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-surface px-2 text-caption font-semibold uppercase tracking-caps text-cream-100 transition-colors duration-160 hover:bg-ash-800 disabled:cursor-not-allowed disabled:text-cream-600 disabled:hover:bg-transparent"
         >
           <BookmarkPlus size={14} aria-hidden="true" />
           Save this setup
@@ -87,7 +87,7 @@ export function RestaurantPresets({
       </div>
 
       {presets.length === 0 ? (
-        <p className="rounded-[10px] border border-dashed border-line bg-ash-900/60 px-4 py-3 text-center text-xs leading-relaxed text-cream-700">
+        <p className="rounded-surface border border-dashed border-line bg-ash-900/60 px-4 py-3 text-center text-caption leading-relaxed text-cream-600">
           No saved restaurants yet. Name a restaurant and set its price, then save the setup to
           reuse it on the next visit.
         </p>
@@ -99,13 +99,13 @@ export function RestaurantPresets({
                 type="button"
                 onClick={() => requestApply(preset)}
                 aria-label={`Apply preset ${describe(preset)}`}
-                className="flex min-h-11 cursor-pointer items-center rounded-[10px] border border-line bg-ash-900 pl-3 pr-9 text-left transition-colors duration-200 hover:border-ember-700 hover:bg-ash-850"
+                className="flex min-h-11 cursor-pointer items-center rounded-surface border border-line-strong bg-ash-900 pl-3 pr-9 text-left transition-colors duration-160 hover:border-line-strong hover:bg-ash-850"
               >
                 <span className="min-w-0">
-                  <span className="block truncate text-sm font-bold text-cream-50">
+                  <span className="block truncate text-ui font-bold text-cream-50">
                     {preset.name}
                   </span>
-                  <span className="tabular block text-[0.7rem] text-cream-500">
+                  <span className="tabular block text-caption text-cream-500">
                     {formatMoney(preset.pricePerDiner)} · {preset.dinerCount}{' '}
                     {preset.dinerCount === 1 ? 'diner' : 'diners'}
                   </span>
@@ -116,7 +116,7 @@ export function RestaurantPresets({
                 type="button"
                 onClick={() => remove(preset.id)}
                 aria-label={`Delete the preset ${preset.name}`}
-                className="absolute right-1 top-1/2 flex size-7 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-cream-700 transition-colors duration-200 hover:bg-char-700/25 hover:text-char-500"
+                className="absolute right-1 top-1/2 flex size-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-cream-600 transition-colors duration-160 hover:bg-char-700/25 hover:text-char-400"
               >
                 <X size={14} aria-hidden="true" />
               </button>

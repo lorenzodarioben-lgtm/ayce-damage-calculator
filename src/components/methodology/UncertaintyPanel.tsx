@@ -74,32 +74,33 @@ export function UncertaintyPanel({
   ];
 
   return (
-    <section aria-labelledby={headingId} className="panel p-4 sm:p-5">
-      <h3 id={headingId} className="micro-label">
+    <section
+      aria-labelledby={headingId}
+      className="border-t border-line pt-5 first:border-t-0 first:pt-0"
+    >
+      <h3 id={headingId} className="display-type text-lead text-cream-100">
         How firm is this number?
       </h3>
-      <p className="mt-2 max-w-[62ch] text-sm leading-relaxed text-cream-300">
-        {analysis.headline}
-      </p>
+      <p className="mt-2 max-w-[62ch] reading text-cream-300">{analysis.headline}</p>
 
       <details className="mt-3">
-        <summary className="min-h-11 cursor-pointer py-2 text-xs font-semibold uppercase tracking-[0.1em] text-ember-500 underline-offset-4 hover:underline">
+        <summary className="min-h-11 cursor-pointer py-2 text-caption font-semibold uppercase tracking-caps text-cream-100 underline-offset-4 hover:underline">
           Show the range and what moves it
         </summary>
 
-        <p className="mt-3 max-w-[62ch] text-xs leading-relaxed text-cream-700">
+        <p className="mt-3 max-w-[62ch] reading">
           These are three named scenarios, not confidence intervals. Nothing here was sampled and no
           distribution was estimated — each one simply re-runs the same calculation with the
           assumptions moved to the ends of a range this project chose and states below.
         </p>
 
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full min-w-[420px] text-left text-sm">
+        <div className="mt-4 scroll-x">
+          <table className="w-full min-w-[420px] text-left text-ui">
             <caption className="sr-only">
               Estimated retail value, recovery and verdict under the conservative, base and upper
               assumptions.
             </caption>
-            <thead className="text-xs text-cream-500">
+            <thead className="text-caption text-cream-500">
               <tr>
                 <th scope="col" className="pb-2 pr-3">
                   Scenario
@@ -130,19 +131,19 @@ export function UncertaintyPanel({
                   <th scope="row" className="py-2 pr-3 text-left font-semibold text-cream-50">
                     {entry.label}
                   </th>
-                  <td className="tabular py-2 pr-3 text-ember-400">
+                  <td className="tabular py-2 pr-3 text-cream-100">
                     {formatMoney(entry.retailValue, profile.money)}
                   </td>
                   <td className="tabular py-2 pr-3">{formatPercent(entry.recoveryPercent)}</td>
                   <td className="tabular py-2 pr-3">{formatWeight(entry.weightG)}</td>
-                  <td className="py-2 text-xs">{entry.verdictTitle}</td>
+                  <td className="py-2 text-caption">{entry.verdictTitle}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
 
-        <p className="tabular mt-2 text-xs text-cream-700">
+        <p className="tabular mt-2 text-caption text-cream-600">
           The stated range spans {formatPercent(scenarioSpreadPercent(analysis))} of the base
           estimate.{' '}
           {analysis.verdictHolds
@@ -150,7 +151,9 @@ export function UncertaintyPanel({
             : 'The verdict is not the same at every end of it.'}
         </p>
 
-        <h4 className="micro-label mt-5 mb-2">What moves the result most</h4>
+        <h4 className="text-body font-semibold text-cream-200 mt-5 mb-2">
+          What moves the result most
+        </h4>
         <ul className="space-y-2">
           {analysis.sensitivity.map((entry) => {
             const assumption = UNCERTAINTY_ASSUMPTIONS.find(
@@ -159,14 +162,14 @@ export function UncertaintyPanel({
             return (
               <li key={entry.assumptionId} className="border-t border-line-soft pt-2">
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
-                  <span className="text-sm font-semibold text-cream-50">{entry.label}</span>
-                  <span className="tabular text-xs text-cream-500">
+                  <span className="text-ui font-semibold text-cream-50">{entry.label}</span>
+                  <span className="tabular text-caption text-cream-500">
                     {entry.effect === 'recovery'
                       ? `${formatPercent(entry.lowRecoveryPercent)} – ${formatPercent(entry.highRecoveryPercent)} recovery`
                       : `${formatMoney(entry.marginSwing, profile.money)} of ingredient cost`}
                   </span>
                 </div>
-                <p className="mt-1 max-w-[62ch] text-xs leading-relaxed text-cream-700">
+                <p className="mt-1 max-w-[62ch] reading">
                   {assumption?.detail}
                   {entry.changesOutcome
                     ? ' On its own, this assumption decides whether admission was beaten.'
@@ -177,7 +180,7 @@ export function UncertaintyPanel({
           })}
         </ul>
 
-        <p className="mt-4 max-w-[62ch] text-xs leading-relaxed text-cream-700">
+        <p className="mt-4 max-w-[62ch] reading">
           Estimated ingredient margin is still not restaurant profit under any of these scenarios.
           It excludes labour, rent, utilities, tax, waste, sides and every other operating cost.
         </p>

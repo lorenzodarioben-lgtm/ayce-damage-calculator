@@ -8,6 +8,7 @@ const TONE_COLOURS = {
   cream: CARD_COLOURS.cream,
   ember: CARD_COLOURS.ember,
   green: CARD_COLOURS.green,
+  flame: CARD_COLOURS.flame,
   red: CARD_COLOURS.red,
 } as const;
 

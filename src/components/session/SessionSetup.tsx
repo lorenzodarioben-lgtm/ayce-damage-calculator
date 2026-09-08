@@ -136,13 +136,13 @@ export function SessionSetup({
 
   return (
     <section aria-labelledby="session-setup-heading" className="panel p-4 sm:p-5">
-      <h2 id="session-setup-heading" className="micro-label mb-4">
+      <h2 id="session-setup-heading" className="display-type text-title text-cream-100 mb-4">
         Session setup
       </h2>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="sm:col-span-2">
-          <label htmlFor={nameId} className="mb-1.5 block text-sm font-semibold text-cream-300">
+          <label htmlFor={nameId} className="mb-1.5 block text-ui font-semibold text-cream-300">
             Restaurant
           </label>
           <input
@@ -154,18 +154,18 @@ export function SessionSetup({
             value={session.restaurantName}
             onChange={(event) => onRestaurantNameChange(event.target.value)}
             placeholder="Restaurant name (optional)"
-            className="h-12 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-base text-cream-50 placeholder:text-cream-700"
+            className="h-12 w-full rounded-surface border border-line-strong bg-ash-900 px-3 text-body text-cream-50 placeholder:text-cream-600"
           />
         </div>
 
         <div>
-          <label htmlFor={priceId} className="mb-1.5 block text-sm font-semibold text-cream-300">
+          <label htmlFor={priceId} className="mb-1.5 block text-ui font-semibold text-cream-300">
             Price per diner
           </label>
           <div className="relative">
             <span
               aria-hidden="true"
-              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-base font-semibold text-cream-500"
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-body font-semibold text-cream-500"
             >
               $
             </span>
@@ -181,15 +181,15 @@ export function SessionSetup({
               onBlur={handlePriceBlur}
               aria-describedby={priceHintId}
               aria-invalid={priceError !== null}
-              className="tabular h-12 w-full rounded-[10px] border border-line bg-ash-900 pl-7 pr-3 text-base text-cream-50"
+              className="tabular h-12 w-full rounded-surface border border-line-strong bg-ash-900 pl-7 pr-3 text-body text-cream-50"
             />
           </div>
           <p
             id={priceHintId}
             className={
               priceError
-                ? 'mt-1.5 text-xs font-medium text-char-500'
-                : 'mt-1.5 text-xs text-cream-700'
+                ? 'mt-1.5 text-caption font-medium text-char-400'
+                : 'mt-1.5 text-caption text-cream-600'
             }
           >
             {priceError ?? `AUD, between $${MIN_PRICE_PER_DINER} and $${MAX_PRICE_PER_DINER}.`}
@@ -199,7 +199,7 @@ export function SessionSetup({
         <div className="sm:col-span-2">
           <label
             htmlFor="pricing-profile"
-            className="mb-1.5 block text-sm font-semibold text-cream-300"
+            className="mb-1.5 block text-ui font-semibold text-cream-300"
           >
             Menu pricing
           </label>
@@ -213,7 +213,7 @@ export function SessionSetup({
                 onStatus(`${next.name} pricing applied to this table.`);
               }
             }}
-            className="h-12 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-base text-cream-50"
+            className="h-12 w-full rounded-surface border border-line-strong bg-ash-900 px-3 text-body text-cream-50"
           >
             {pricingProfiles.map((profile) => (
               <option key={profile.id} value={profile.id}>
@@ -221,13 +221,13 @@ export function SessionSetup({
               </option>
             ))}
           </select>
-          <p className="mt-1.5 text-xs text-cream-700">
+          <p className="mt-1.5 text-caption text-cream-600">
             Switching profiles recalculates the whole tab with that menu&rsquo;s assumptions.
           </p>
         </div>
 
         <div>
-          <span className="mb-1.5 block text-sm font-semibold text-cream-300">Diners</span>
+          <span className="mb-1.5 block text-ui font-semibold text-cream-300">Diners</span>
           <QuantityStepper
             label="number of diners"
             value={session.dinerCount}
@@ -266,10 +266,10 @@ export function SessionSetup({
 
       <div className="mt-4 flex flex-wrap items-end justify-between gap-2 well px-4 py-3">
         <div>
-          <p className="micro-label">
+          <p className="micro-label text-cream-500">
             {session.adjustments?.length ? 'Total paid' : 'Total entry'}
           </p>
-          <p className="tabular text-xs text-cream-500">
+          <p className="tabular text-caption text-cream-500">
             {session.adjustments?.length
               ? `${formatMoney(baseAdmission, pricingProfile.money)} entry, then ${session.adjustments.length} ${session.adjustments.length === 1 ? 'adjustment' : 'adjustments'}`
               : session.diners?.some((diner) => diner.admissionPrice !== undefined)
@@ -277,7 +277,7 @@ export function SessionSetup({
                 : `${formatMoney(session.pricePerDiner, pricingProfile.money)} per person × ${session.dinerCount} ${session.dinerCount === 1 ? 'diner' : 'diners'}`}
           </p>
         </div>
-        <p className="tabular display-type text-3xl text-ember-400">
+        <p className="tabular display-type text-figure text-cream-100">
           {formatMoney(totalAdmission, pricingProfile.money)}
         </p>
       </div>

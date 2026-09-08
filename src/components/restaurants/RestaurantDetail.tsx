@@ -4,9 +4,10 @@ import { useCallback, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Link2, Play, Trash2 } from 'lucide-react';
+import { Figure } from '@/components/ui/Figure';
 import { RecoveryTrend } from '@/components/stats/RecoveryTrend';
 import { ShareBars } from '@/components/stats/ShareBars';
-import { Button, EMPTY_STATE_LINK } from '@/components/ui/Button';
+import { Button, EMPTY_STATE_LINK, buttonClasses } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { StatusToast } from '@/components/ui/StatusToast';
 import { useMealHistory } from '@/hooks/useMealHistory';
@@ -23,9 +24,7 @@ import { putSessions } from '@/lib/historyRepository';
 import { buildRestaurantSummary, unlinkedVisitCandidates } from '@/lib/restaurantHub';
 import { loadSession, saveSession } from '@/lib/storage';
 
-const BACK_LINK =
-  '-ml-2 inline-flex min-h-11 items-center gap-1.5 rounded-[10px] px-2 text-xs font-semibold ' +
-  'uppercase tracking-[0.1em] text-cream-500 transition-colors duration-200 hover:bg-ash-850 hover:text-cream-100';
+const BACK_LINK = buttonClasses('ghost', 'sm', '-ml-2');
 
 /**
  * One place, and what the file says about visiting it.
@@ -119,7 +118,7 @@ export function RestaurantDetail({ id }: { id: string }) {
 
   if (!hydrated || status === 'loading') {
     return (
-      <p role="status" className="py-16 text-center text-sm text-cream-700">
+      <p role="status" className="py-16 text-center text-ui text-cream-600">
         Reading the file…
       </p>
     );
@@ -128,8 +127,8 @@ export function RestaurantDetail({ id }: { id: string }) {
   if (!profile) {
     return (
       <div className="panel border-dashed px-6 py-14 text-center">
-        <p className="display-type text-2xl text-cream-300">No such place.</p>
-        <p className="mx-auto mt-3 max-w-[44ch] text-sm leading-relaxed text-cream-700">
+        <p className="display-type text-title text-cream-300">No such place.</p>
+        <p className="mx-auto mt-3 max-w-[44ch] text-ui leading-relaxed text-cream-600">
           This restaurant is not saved on this device. Any meals you filed against it are still in
           the file, with the name and prices they were recorded under.
         </p>
@@ -150,16 +149,22 @@ export function RestaurantDetail({ id }: { id: string }) {
         Back to the places
       </Link>
 
-      <section aria-labelledby="restaurant-heading" className="panel p-4 sm:p-5">
-        <h1 id="restaurant-heading" className="display-type text-3xl text-cream-50 sm:text-4xl">
+      <section
+        aria-labelledby="restaurant-heading"
+        className="border-t border-line pt-5 first:border-t-0 first:pt-0"
+      >
+        <h1
+          id="restaurant-heading"
+          className="display-type text-figure text-cream-50 sm:text-figure"
+        >
           {profile.name}
         </h1>
-        <p className="tabular mt-2 text-sm text-cream-500">
+        <p className="tabular mt-2 text-ui text-cream-500">
           Saved setup: {formatMoney(profile.pricePerDiner, summary.money)} per diner ·{' '}
           {profile.dinerCount} {profile.dinerCount === 1 ? 'diner' : 'diners'}
         </p>
         {profile.note && (
-          <p className="mt-2 max-w-[56ch] break-words text-sm leading-relaxed text-cream-300">
+          <p className="mt-2 max-w-[62ch] break-words text-ui leading-relaxed text-cream-300">
             {profile.note}
           </p>
         )}
@@ -176,13 +181,16 @@ export function RestaurantDetail({ id }: { id: string }) {
         </div>
       </section>
 
-      <section aria-labelledby="restaurant-visits-heading" className="panel p-4 sm:p-5">
-        <h2 id="restaurant-visits-heading" className="micro-label mb-3">
+      <section
+        aria-labelledby="restaurant-visits-heading"
+        className="border-t border-line pt-5 first:border-t-0 first:pt-0"
+      >
+        <h2 id="restaurant-visits-heading" className="display-type text-title text-cream-100 mb-3">
           The record
         </h2>
 
         {summary.visits === 0 ? (
-          <p className="max-w-[56ch] text-sm leading-relaxed text-cream-700">
+          <p className="max-w-[62ch] text-ui leading-relaxed text-cream-600">
             No visits filed here yet. Start a meal from this place and file the report, and it will
             appear with everything that follows it.
           </p>
@@ -207,7 +215,10 @@ export function RestaurantDetail({ id }: { id: string }) {
 
             {summary.analytics.trend.length > 1 && (
               <div className="mt-5">
-                <h3 id="restaurant-trend-heading" className="micro-label mb-2">
+                <h3
+                  id="restaurant-trend-heading"
+                  className="display-type text-lead text-cream-100 mb-2"
+                >
                   Recovery over time
                 </h3>
                 <RecoveryTrend
@@ -219,19 +230,19 @@ export function RestaurantDetail({ id }: { id: string }) {
 
             {categories.length > 0 && (
               <div className="mt-5">
-                <h3 className="micro-label mb-2">Category mix</h3>
+                <h3 className="display-type text-lead text-cream-100 mb-2">Category mix</h3>
                 <ShareBars tallies={categories} unitLabel="plates" />
               </div>
             )}
 
             {summary.analytics.topFoods.length > 0 && (
               <div className="mt-5">
-                <h3 className="micro-label mb-2">Most ordered here</h3>
+                <h3 className="display-type text-lead text-cream-100 mb-2">Most ordered here</h3>
                 <ul className="space-y-1">
                   {summary.analytics.topFoods.map((food) => (
                     <li
                       key={food.foodId}
-                      className="flex items-baseline justify-between gap-3 border-t border-line-soft py-2 text-sm"
+                      className="flex items-baseline justify-between gap-3 border-t border-line-soft py-2 text-ui"
                     >
                       <span className="text-cream-100">{food.name}</span>
                       <span className="tabular text-cream-500">{formatPlates(food.plates)}</span>
@@ -242,16 +253,16 @@ export function RestaurantDetail({ id }: { id: string }) {
             )}
 
             <div className="mt-5">
-              <h3 className="micro-label mb-2">Recent visits</h3>
+              <h3 className="display-type text-lead text-cream-100 mb-2">Recent visits</h3>
               <ul className="space-y-1">
                 {summary.records.slice(0, 5).map((record) => (
                   <li key={record.id} className="border-t border-line-soft py-2">
                     <Link
                       href={`/history/${record.id}`}
-                      className="flex flex-wrap items-baseline justify-between gap-2 text-sm text-cream-100 underline-offset-4 hover:underline"
+                      className="flex flex-wrap items-baseline justify-between gap-2 text-ui text-cream-100 underline-offset-4 hover:underline"
                     >
                       <span>{formatRecordedAt(record.createdAt)}</span>
-                      <span className="tabular text-xs text-cream-500">
+                      <span className="tabular text-caption text-cream-500">
                         {formatPercent(record.snapshot.retailRecoveryPercent)} ·{' '}
                         {formatPlates(record.snapshot.totalPlates)}
                       </span>
@@ -269,10 +280,10 @@ export function RestaurantDetail({ id }: { id: string }) {
           aria-labelledby="restaurant-link-heading"
           className="panel border-dashed p-4 sm:p-5"
         >
-          <h2 id="restaurant-link-heading" className="micro-label mb-2">
+          <h2 id="restaurant-link-heading" className="display-type text-title text-cream-100 mb-2">
             Older visits that might belong here
           </h2>
-          <p className="max-w-[60ch] text-sm leading-relaxed text-cream-300">
+          <p className="max-w-[62ch] text-ui leading-relaxed text-cream-300">
             {linkCandidates.length}{' '}
             {linkCandidates.length === 1 ? 'filed record names' : 'filed records name'} this
             restaurant but are not linked to it. A matching name is not proof they are the same
@@ -303,6 +314,7 @@ export function RestaurantDetail({ id }: { id: string }) {
         title="Delete this place?"
         body={`This removes the saved setup for ${profile.name} from this device. Every meal you filed here stays in your history exactly as it was recorded, with its own name, prices and menu context.`}
         confirmLabel="Delete the place"
+        destructive
         cancelLabel="Keep it"
         onConfirm={() => {
           remove(profile.id);
@@ -332,15 +344,6 @@ export function RestaurantDetail({ id }: { id: string }) {
       />
 
       <StatusToast message={status_} />
-    </div>
-  );
-}
-
-function Figure({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="well px-3 py-2">
-      <dt className="micro-label">{label}</dt>
-      <dd className="tabular mt-0.5 text-sm font-semibold text-cream-50">{value}</dd>
     </div>
   );
 }

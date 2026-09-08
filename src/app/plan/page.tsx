@@ -24,7 +24,7 @@ export default function PlanPage() {
           eat, and nothing here touches the meal you are actually tracking.
         </RouteHeader>
 
-        <div className="mx-auto max-w-[900px] px-4 sm:px-6">
+        <div className="mx-auto max-w-page px-4 sm:px-6">
           <div className="mt-8">
             <DamagePlanner />
           </div>

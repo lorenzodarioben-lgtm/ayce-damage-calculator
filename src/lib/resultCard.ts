@@ -6,22 +6,32 @@ import {
   formatPercent,
   formatSignedMoney,
 } from '@/lib/formatting';
+import { bandForPercent, type Band } from '@/lib/bands';
 import type { Verdict } from '@/lib/verdicts';
 import type { DamageReport } from '@/types/meal';
 
+/*
+ * The palette, written out rather than read from the stylesheet.
+ *
+ * These values are consumed by the DOM preview, by a hand-written canvas
+ * painter and by three `opengraph-image` routes, none of which can see a CSS
+ * custom property — so this is where the app's colours have to be restated,
+ * and it has to move whenever they do. It is what other people see.
+ */
 export const CARD_COLOURS = {
   bg: '#0D0C0A',
   panel: '#171411',
-  line: '#2A241D',
+  line: '#63564B',
   cream: '#F3E8D0',
   muted: '#A99B84',
-  faint: '#8F8271',
-  ember: '#C99557',
+  faint: '#9C8E7A',
+  ember: '#E0B47C',
   green: '#8FB37A',
-  red: '#C4694E',
+  flame: '#F0855A',
+  red: '#D68872',
 } as const;
 
-export type StatTone = 'cream' | 'ember' | 'green' | 'red';
+export type StatTone = 'cream' | 'ember' | 'green' | 'flame' | 'red';
 
 export interface CardStat {
   readonly label: string;
@@ -78,9 +88,11 @@ export function buildResultCardModel(
         tone: extracted ? 'green' : 'red',
       },
       {
+        // The same three bands the app itself reads by, so the card a diner
+        // posts cannot disagree with the screen they read it from.
         label: 'Retail recovered',
         value: formatPercent(report.retailRecoveryPercent),
-        tone: 'ember',
+        tone: CARD_BAND[bandForPercent(report.retailRecoveryPercent)],
       },
     ],
     nutrition: [
@@ -89,5 +101,11 @@ export function buildResultCardModel(
     ],
   };
 }
+
+const CARD_BAND: Record<Band, StatTone> = {
+  behind: 'ember',
+  recovered: 'green',
+  runaway: 'flame',
+};
 
 export const CARD_FOOTER = 'Estimates only · AYCE Damage Calculator';

@@ -21,26 +21,26 @@ export function OptionCard({ selected, onSelect, label, detail, glyph, name }: O
   return (
     <label
       className={cn(
-        'relative flex cursor-pointer flex-col items-center gap-1 rounded-card border px-2 py-3 text-center',
-        'transition-[border-color,background-color,box-shadow,transform] duration-200 ease-out-soft',
+        'relative flex cursor-pointer flex-col items-center gap-1 rounded-surface border px-2 py-3 text-center',
+        'transition-[border-color,background-color,box-shadow,transform] duration-160 ease-out-soft',
         'has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2',
         'has-[:focus-visible]:outline-ember-400',
         selected
-          ? 'border-ember-500 bg-ash-800 shadow-[inset_0_1px_0_rgb(255_250_240/0.08),inset_0_0_0_1px_var(--color-ember-500),0_0_20px_-8px_var(--color-ember-500)]'
-          : 'border-line bg-ash-900 shadow-[inset_0_1px_3px_rgb(0_0_0/0.35)] hover:-translate-y-px hover:border-ember-700 hover:bg-ash-850',
+          ? 'border-ember-500 bg-ash-800 elevate-selected'
+          : 'border-line-strong bg-ash-900 recessed hover:-translate-y-px hover:border-line-strong hover:bg-ash-850',
       )}
     >
       <input type="radio" name={name} checked={selected} onChange={onSelect} className="sr-only" />
       {glyph}
       <span
         className={cn(
-          'text-[0.8rem] font-bold uppercase tracking-[0.08em]',
-          selected ? 'text-ember-300' : 'text-cream-100',
+          'text-ui font-bold uppercase tracking-caps',
+          selected ? 'text-cream-100' : 'text-cream-100',
         )}
       >
         {label}
       </span>
-      <span className="tabular text-[0.7rem] leading-tight text-cream-500">{detail}</span>
+      <span className="tabular text-caption leading-tight text-cream-500">{detail}</span>
     </label>
   );
 }

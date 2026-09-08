@@ -20,7 +20,7 @@ export default async function HistoryDetailPage({ params }: { params: Promise<{ 
 
       <main
         id={MAIN_CONTENT_ID}
-        className="relative z-10 mx-auto max-w-[900px] px-4 pt-6 pb-16 sm:px-6"
+        className="relative z-10 mx-auto max-w-page px-4 pt-6 pb-16 sm:px-6"
       >
         <HistoryDetail id={id} />
       </main>

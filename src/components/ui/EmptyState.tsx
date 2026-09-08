@@ -118,7 +118,7 @@ export function EmptyState({
         role="presentation"
         focusable="false"
         aria-hidden="true"
-        className="mx-auto mb-5 size-24 drop-shadow-[0_8px_18px_rgba(0,0,0,0.55)] sm:size-28"
+        className="mx-auto mb-5 size-24 elevate-illustration sm:size-28"
       >
         <ellipse cx="64" cy="68" rx="52" ry="50" fill={PLATE} />
         <ellipse
@@ -137,8 +137,8 @@ export function EmptyState({
         </g>
       </svg>
 
-      <p className="display-type text-2xl text-cream-300">{title}</p>
-      <p className="mx-auto mt-3 max-w-[44ch] text-sm leading-relaxed text-cream-700">{children}</p>
+      <p className="display-type text-title text-cream-300">{title}</p>
+      <p className="mx-auto mt-3 max-w-[44ch] reading">{children}</p>
       {action}
     </div>
   );

@@ -1,7 +1,9 @@
 'use client';
 
-import { ResultMetric } from '@/components/results/ResultMetric';
+import { Figure } from '@/components/ui/Figure';
+import { DamageMeter } from '@/components/summary/DamageMeter';
 import { usePricingProfile } from '@/components/session/PricingContext';
+import { SEVERITY_TEXT, verdictGlow, verdictText } from '@/lib/bands';
 import { perDinerTotals } from '@/lib/calculations';
 import { cn } from '@/lib/cn';
 import { formatPlateQuantity } from '@/lib/consumption';
@@ -36,33 +38,6 @@ interface ReportSummaryProps {
   /** Rendered under the verdict copy, for context-specific detail. */
   subheading?: string;
 }
-
-const SEVERITY_TONE = {
-  calm: 'text-cream-500',
-  normal: 'text-cream-300',
-  watch: 'text-ember-400',
-  alert: 'text-ember-300',
-  breach: 'text-char-500',
-} as const;
-
-const VERDICT_TONE = {
-  diner: 'text-sesame-400',
-  even: 'text-ember-300',
-  house: 'text-cream-50',
-} as const;
-
-/*
- * The light behind the verdict, in the colour the verdict is already in.
- *
- * This is the sentence the whole app is built to deliver, and it was arriving
- * as centred text on the same brown as the eight tiles under it. The bloom is
- * the one place the report is allowed to be theatrical.
- */
-const VERDICT_GLOW = {
-  diner: 'bg-[radial-gradient(ellipse_at_center,var(--color-sesame-600)_0%,transparent_68%)]',
-  even: 'bg-[radial-gradient(ellipse_at_center,var(--color-ember-600)_0%,transparent_68%)]',
-  house: 'bg-[radial-gradient(ellipse_at_center,var(--color-char-600)_0%,transparent_70%)]',
-} as const;
 
 /**
  * Where a block sits in the arrival sequence.
@@ -134,15 +109,15 @@ export function ReportSummary({
           aria-hidden="true"
           className={cn(
             'pointer-events-none absolute -top-24 left-1/2 -z-10 h-72 w-[36rem] max-w-[130%] -translate-x-1/2 opacity-25 blur-3xl',
-            VERDICT_GLOW[verdict.tone],
+            verdictGlow(verdict.tone, report.retailRecoveryPercent),
           )}
         />
         <div className="grill-texture border-b border-line px-5 py-4 text-center">
-          <Heading id={headingId} className="micro-label !text-ember-400">
+          <Heading id={headingId} className="display-type text-lead text-cream-300">
             {heading}
           </Heading>
           {restaurantName && (
-            <p className="mt-1 break-words text-sm text-cream-300">{restaurantName}</p>
+            <p className="mt-1 break-words text-ui text-cream-300">{restaurantName}</p>
           )}
         </div>
 
@@ -150,15 +125,24 @@ export function ReportSummary({
           <p
             className={cn(
               'display-hero text-[clamp(2.5rem,8vw,4.75rem)]',
-              VERDICT_TONE[verdict.tone],
+              verdictText(verdict.tone, report.retailRecoveryPercent),
             )}
           >
             {verdict.title}
           </p>
-          <p className="mx-auto mt-5 max-w-md text-sm leading-relaxed text-cream-300 sm:text-base">
-            {verdict.copy}
-          </p>
-          {subheading && <p className="mt-3 text-xs text-cream-700">{subheading}</p>}
+          <p className="mx-auto mt-5 max-w-[44ch] reading text-cream-300">{verdict.copy}</p>
+          {subheading && <p className="mt-3 text-caption text-cream-600">{subheading}</p>}
+        </div>
+
+        {/* The verdict says it in words; this says it in the number the words
+            are about. They are one block because they are one answer. */}
+        <div className="border-t border-line px-5 pb-6 pt-5">
+          <DamageMeter
+            retailValue={report.totalRetailValue}
+            totalAdmission={report.totalAdmission}
+            recoveryPercent={report.retailRecoveryPercent}
+            remainingGap={report.remainingRetailGap}
+          />
         </div>
       </section>
 
@@ -168,7 +152,7 @@ export function ReportSummary({
           style={rise(1)}
           className="animate-rise well px-4 py-3"
         >
-          <h3 id="bill-breakdown-heading" className="micro-label mb-2">
+          <h3 id="bill-breakdown-heading" className="display-type mb-2 text-lead text-cream-100">
             How the bill settled
           </h3>
           <dl className="space-y-1">
@@ -207,7 +191,7 @@ export function ReportSummary({
               </>
             )}
           </dl>
-          <p className="mt-2 max-w-[60ch] text-xs leading-relaxed text-cream-700">
+          <p className="mt-2 max-w-[62ch] reading">
             Every figure below is measured against the total paid, not the entry price — that is
             what the evening actually cost.
             {report.hasSeparatelyChargedItems
@@ -220,16 +204,17 @@ export function ReportSummary({
         </section>
       )}
 
-      {/* 2 — Retail value against what was paid */}
-      <div style={rise(2)} className="animate-rise grid gap-3 sm:grid-cols-2">
-        <ResultMetric
+      {/* 2 — The three figures the answer is made of. Ruled rather than
+             tiled: ten equal boxes ranked nothing, and the layout was identical
+             at twenty-one per cent and at two hundred and forty-eight. */}
+      <dl style={rise(2)} className="animate-rise grid gap-x-6 gap-y-3 sm:grid-cols-3">
+        <Figure
           label="Est. retail value"
           value={formatMoney(report.totalRetailValue, pricingProfile.money)}
           detail="What a similar quantity might cost at retail."
-          emphasis="major"
-          tone="accent"
+          size="figure"
         />
-        <ResultMetric
+        <Figure
           label={hasAdjustments ? 'Total paid' : 'Admission'}
           value={formatMoney(report.totalAdmission, pricingProfile.money)}
           detail={
@@ -237,41 +222,36 @@ export function ReportSummary({
               ? 'Entry price, plus what went on the bill and minus what came off.'
               : 'What the table paid to walk in.'
           }
-          emphasis="major"
+          size="figure"
         />
-        <ResultMetric
+        <Figure
           label={extracted ? 'Value extracted' : 'Value gap'}
           value={formatSignedMoney(report.retailValueDifference, pricingProfile.money)}
           detail={`Estimated retail value minus ${hasAdjustments ? 'the total paid' : 'admission'}.`}
-          tone={extracted ? 'positive' : 'negative'}
+          size="figure"
+          tone={extracted ? 'recovered' : 'lost'}
         />
-        <ResultMetric
-          label="Retail value recovered"
-          value={formatPercent(report.retailRecoveryPercent)}
-          detail="Retail comparison only — not restaurant profitability."
-          tone="accent"
-        />
-      </div>
+      </dl>
 
-      {/* 3 — Volume */}
-      <div style={rise(3)} className="animate-rise grid gap-3 sm:grid-cols-2">
-        <ResultMetric
+      {/* 3 — Supporting: what was ordered and what it weighed. */}
+      <dl style={rise(3)} className="animate-rise grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-4">
+        <Figure
           label="Plates ordered"
           value={formatPlates(report.totalPlates)}
           {...(hasUneaten
             ? { detail: `${formatPlateQuantity(report.totalConsumedPlates)} eaten` }
             : {})}
         />
-        <ResultMetric
+        <Figure
           label="Food eaten"
           value={formatKg(report.totalWeightKg)}
           detail={formatLb(report.totalWeightLb)}
         />
-      </div>
+      </dl>
 
       {hasUneaten && (
         <section aria-labelledby="uneaten-heading" className="well px-4 py-3">
-          <SubHeading id="uneaten-heading" className="micro-label mb-2">
+          <SubHeading id="uneaten-heading" className="display-type mb-2 text-lead text-cream-100">
             What reached the table
           </SubHeading>
           <dl className="grid grid-cols-2 gap-2 sm:grid-cols-3">
@@ -285,7 +265,7 @@ export function ReportSummary({
             />
             <Figure label="Left" value={formatPlateQuantity(report.totalUneatenPlates)} />
           </dl>
-          <p className="mt-2 max-w-[62ch] text-xs leading-relaxed text-cream-700">
+          <p className="mt-2 max-w-[62ch] reading">
             Recovery is measured on what was eaten, because value you did not eat is not value you
             extracted. What reached the table is kept alongside it, so the tab still says what
             arrived. Estimated ingredient cost follows the ordered figure — the restaurant bought
@@ -299,47 +279,49 @@ export function ReportSummary({
         <section
           aria-labelledby={`${headingId}-per-diner`}
           style={rise(4)}
-          className="animate-rise panel p-4 sm:p-5"
+          className="animate-rise border-t border-line pt-5 first:border-t-0 first:pt-0"
         >
-          <SubHeading id={`${headingId}-per-diner`} className="micro-label mb-1">
+          <SubHeading
+            id={`${headingId}-per-diner`}
+            className="display-type mb-1 text-lead text-cream-100"
+          >
             Split {formatCount(perDiner.dinerCount)} ways
           </SubHeading>
-          <p className="mb-3 text-xs text-cream-700">
+          <p className="mb-3 text-caption text-cream-600">
             An even split of the table&rsquo;s totals. The calculator records one shared tab, so it
             cannot know who reached for what.
           </p>
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <ResultMetric
+          <dl className="grid grid-cols-2 gap-x-6 gap-y-3 lg:grid-cols-4">
+            <Figure
               label="Admission each"
               value={formatMoney(perDiner.admission, pricingProfile.money)}
             />
-            <ResultMetric
+            <Figure
               label="Retail value each"
               value={formatMoney(perDiner.retailValue, pricingProfile.money)}
-              tone="accent"
             />
-            <ResultMetric label="Food each" value={formatWeight(perDiner.weightG)} />
-            <ResultMetric
-              label="Calories each"
-              value={formatCalories(perDiner.nutrition.calories)}
-            />
-          </div>
+            <Figure label="Food each" value={formatWeight(perDiner.weightG)} />
+            <Figure label="Calories each" value={formatCalories(perDiner.nutrition.calories)} />
+          </dl>
         </section>
       )}
 
       {/* 5 — Nutrition */}
       <section aria-labelledby={`${headingId}-nutrition`} style={rise(5)} className="animate-rise">
-        <SubHeading id={`${headingId}-nutrition`} className="micro-label mb-2">
+        <SubHeading
+          id={`${headingId}-nutrition`}
+          className="display-type mb-2 text-lead text-cream-100"
+        >
           Approximate nutrition
         </SubHeading>
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <ResultMetric label="Calories" value={formatCalories(report.nutrition.calories)} />
-          <ResultMetric label="Protein" value={formatGrams(report.nutrition.protein)} />
-          <ResultMetric label="Fat" value={formatGrams(report.nutrition.fat)} />
-          <ResultMetric label="Carbohydrates" value={formatGrams(report.nutrition.carbs)} />
-        </div>
+        <dl className="grid grid-cols-2 gap-x-6 gap-y-3 lg:grid-cols-4">
+          <Figure label="Calories" value={formatCalories(report.nutrition.calories)} />
+          <Figure label="Protein" value={formatGrams(report.nutrition.protein)} />
+          <Figure label="Fat" value={formatGrams(report.nutrition.fat)} />
+          <Figure label="Carbohydrates" value={formatGrams(report.nutrition.carbs)} />
+        </dl>
         {report.linesWithoutNutrition > 0 && (
-          <p className="mt-2 max-w-[62ch] text-xs leading-relaxed text-cream-700">
+          <p className="mt-2 max-w-[62ch] reading">
             {report.linesWithoutNutrition}{' '}
             {report.linesWithoutNutrition === 1 ? 'item on this tab has' : 'items on this tab have'}{' '}
             no nutrition recorded, so {report.linesWithoutNutrition === 1 ? 'it is' : 'they are'}{' '}
@@ -352,33 +334,36 @@ export function ReportSummary({
       <section
         aria-labelledby={`${headingId}-house`}
         style={rise(6)}
-        className="animate-rise panel p-4 sm:p-5"
+        className="animate-rise border-t border-line pt-5 first:border-t-0 first:pt-0"
       >
-        <SubHeading id={`${headingId}-house`} className="micro-label mb-3">
+        <SubHeading
+          id={`${headingId}-house`}
+          className="display-type mb-3 text-lead text-cream-100"
+        >
           The house side of the ledger
         </SubHeading>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <ResultMetric
+        <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
+          <Figure
             label="Est. ingredient cost"
             value={formatMoney(report.totalRestaurantCost, pricingProfile.money)}
             detail="What the restaurant may have spent on the raw ingredient."
           />
-          <ResultMetric
+          <Figure
             label="Est. ingredient margin"
             value={formatMoney(report.estimatedIngredientMargin, pricingProfile.money)}
             detail="Before rent, wages, utilities, tax, waste, sides and overhead."
           />
-        </div>
-        <div className="well mt-3 flex flex-wrap items-baseline justify-between gap-2 px-4 py-3">
+        </dl>
+        <div className="mt-4 flex flex-wrap items-baseline justify-between gap-2 border-t border-line-soft pt-3">
           <div>
-            <p className="micro-label">Est. food cost</p>
-            <p className={cn('mt-0.5 text-sm font-semibold', SEVERITY_TONE[houseStatus.severity])}>
+            <p className="micro-label text-cream-500">Est. food cost</p>
+            <p className={cn('mt-0.5 text-ui font-semibold', SEVERITY_TEXT[houseStatus.severity])}>
               {houseStatus.label}
             </p>
           </div>
-          <p className="tabular display-hero text-3xl leading-none text-cream-100">
+          <p className="tabular text-figure font-bold leading-none text-cream-100">
             {formatPercent(report.estimatedFoodCostPercent)}{' '}
-            <span className="text-sm text-cream-700">
+            <span className="text-ui text-cream-600">
               of {hasAdjustments ? 'the total paid' : 'admission'}
             </span>
           </p>
@@ -399,26 +384,19 @@ function BillRow({
 }) {
   return (
     <div className="flex items-baseline justify-between gap-3">
-      <dt className={total ? 'text-sm font-semibold text-cream-200' : 'text-xs text-cream-700'}>
+      <dt
+        className={total ? 'text-ui font-semibold text-cream-200' : 'text-caption text-cream-600'}
+      >
         {label}
       </dt>
       <dd
         className={cn(
           'tabular',
-          total ? 'text-sm font-semibold text-ember-400' : 'text-xs text-cream-500',
+          total ? 'text-ui font-semibold text-cream-100' : 'text-caption text-cream-500',
         )}
       >
         {value}
       </dd>
-    </div>
-  );
-}
-
-function Figure({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <dt className="micro-label">{label}</dt>
-      <dd className="tabular mt-0.5 text-sm font-semibold text-cream-50">{value}</dd>
     </div>
   );
 }
