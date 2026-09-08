@@ -16,11 +16,11 @@ import { formatRecordedAt } from '@/lib/formatting';
 import type { SavedMealSession } from '@/types/history';
 
 const BACK_LINK =
-  '-ml-2 inline-flex min-h-11 items-center gap-1.5 rounded-[10px] px-2 text-xs font-semibold ' +
+  '-ml-2 inline-flex min-h-11 items-center gap-1.5 rounded-surface px-2 text-xs font-semibold ' +
   'uppercase tracking-[0.1em] text-cream-500 transition-colors duration-200 hover:bg-ash-850 hover:text-cream-100';
 
 const SELECT =
-  'h-12 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-sm text-cream-50';
+  'h-12 w-full rounded-surface border border-line bg-ash-900 px-3 text-sm text-cream-50';
 
 function describe(record: SavedMealSession): string {
   return `${formatRecordedAt(record.createdAt)} — ${record.restaurantName || 'Unnamed restaurant'}`;

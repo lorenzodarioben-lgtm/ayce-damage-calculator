@@ -20,7 +20,7 @@ export function BrandMark({ className }: BrandMarkProps) {
     <span className={cn('inline-flex items-center gap-2.5', className)}>
       <svg
         viewBox="0 0 24 24"
-        className="size-6 shrink-0 text-ember-500 drop-shadow-[0_0_6px_var(--color-ember-700)]"
+        className="size-6 shrink-0 text-ember-500"
         aria-hidden="true"
         focusable="false"
       >

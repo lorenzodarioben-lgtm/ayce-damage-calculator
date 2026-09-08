@@ -27,7 +27,7 @@ export function MealTab({
 }: MealTabProps) {
   if (lines.length === 0) {
     return (
-      <div className="rounded-[10px] border border-dashed border-line bg-ash-900/60 px-4 py-6 text-center">
+      <div className="rounded-surface border border-dashed border-line bg-ash-900/60 px-4 py-6 text-center">
         <p className="display-type text-lg text-cream-300">No damage yet</p>
         <p className="mt-1 text-sm text-cream-700">
           Add your first plate to begin the investigation.

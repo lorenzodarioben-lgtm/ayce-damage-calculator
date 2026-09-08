@@ -41,7 +41,7 @@ const STATUS_LABELS: Record<MealLifecycleStatus, string> = {
 };
 
 const CHIP =
-  'min-h-11 flex-1 cursor-pointer rounded-[10px] border px-3 text-xs font-semibold uppercase ' +
+  'min-h-11 flex-1 cursor-pointer rounded-surface border px-3 text-xs font-semibold uppercase ' +
   'tracking-[0.08em] transition-colors duration-200';
 
 /**
@@ -192,7 +192,7 @@ export function MealPacing({
               max={MAX_MEAL_DURATION_MINUTES}
               value={customValue}
               onChange={(event) => setCustomValue(event.target.value)}
-              className="h-11 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-sm text-cream-50"
+              className="h-11 w-full rounded-surface border border-line bg-ash-900 px-3 text-sm text-cream-50"
             />
           </div>
           <Button variant="secondary" size="md" onClick={applyCustom}>

@@ -59,7 +59,7 @@ export function DamageReport({ report, session, onEditMeal, onStatus }: DamageRe
       <button
         type="button"
         onClick={onEditMeal}
-        className="-ml-2 inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-[10px] px-2 text-xs font-semibold uppercase tracking-[0.1em] text-cream-500 transition-colors duration-200 hover:bg-ash-850 hover:text-cream-100"
+        className="-ml-2 inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-surface px-2 text-xs font-semibold uppercase tracking-[0.1em] text-cream-500 transition-colors duration-200 hover:bg-ash-850 hover:text-cream-100"
       >
         <ArrowLeft size={15} aria-hidden="true" />
         Back to meal

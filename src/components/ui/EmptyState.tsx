@@ -118,7 +118,7 @@ export function EmptyState({
         role="presentation"
         focusable="false"
         aria-hidden="true"
-        className="mx-auto mb-5 size-24 drop-shadow-[0_8px_18px_rgba(0,0,0,0.55)] sm:size-28"
+        className="mx-auto mb-5 size-24 elevate-illustration sm:size-28"
       >
         <ellipse cx="64" cy="68" rx="52" ry="50" fill={PLATE} />
         <ellipse

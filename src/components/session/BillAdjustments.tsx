@@ -154,13 +154,13 @@ export function BillAdjustments({
         <div
           role="radiogroup"
           aria-label="Direction"
-          className="inline-flex rounded-[10px] border border-line bg-ash-900 p-0.5"
+          className="inline-flex rounded-surface border border-line bg-ash-900 p-0.5"
         >
           {(['charge', 'discount'] as const).map((option) => (
             <label
               key={option}
               className={[
-                'inline-flex min-h-10 cursor-pointer items-center gap-1.5 rounded-[8px] px-3 text-xs font-semibold uppercase tracking-[0.08em]',
+                'inline-flex min-h-10 cursor-pointer items-center gap-1.5 rounded-surface px-3 text-xs font-semibold uppercase tracking-[0.08em]',
                 'transition-colors duration-200',
                 kind === option
                   ? 'bg-ash-700 text-cream-50'
@@ -188,13 +188,13 @@ export function BillAdjustments({
         <div
           role="radiogroup"
           aria-label="Basis"
-          className="ml-2 inline-flex rounded-[10px] border border-line bg-ash-900 p-0.5"
+          className="ml-2 inline-flex rounded-surface border border-line bg-ash-900 p-0.5"
         >
           {(['fixed', 'percent'] as const).map((option) => (
             <label
               key={option}
               className={[
-                'inline-flex min-h-10 cursor-pointer items-center rounded-[8px] px-3 text-xs font-semibold uppercase tracking-[0.08em]',
+                'inline-flex min-h-10 cursor-pointer items-center rounded-surface px-3 text-xs font-semibold uppercase tracking-[0.08em]',
                 'transition-colors duration-200',
                 basis === option
                   ? 'bg-ash-700 text-cream-50'
@@ -229,7 +229,7 @@ export function BillAdjustments({
               maxLength={MAX_ADJUSTMENT_LABEL_LENGTH}
               placeholder={suggestions[0]}
               onChange={(event) => setLabel(event.target.value)}
-              className="h-12 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-base text-cream-50"
+              className="h-12 w-full rounded-surface border border-line bg-ash-900 px-3 text-base text-cream-50"
             />
             <datalist id={suggestionsId}>
               {suggestions.map((suggestion) => (
@@ -251,7 +251,7 @@ export function BillAdjustments({
               step="0.01"
               value={amount}
               onChange={(event) => setAmount(event.target.value)}
-              className="tabular h-12 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-base text-cream-50"
+              className="tabular h-12 w-full rounded-surface border border-line bg-ash-900 px-3 text-base text-cream-50"
             />
           </div>
         </div>
@@ -273,7 +273,7 @@ export function BillAdjustments({
               id={dinerId}
               value={scope}
               onChange={(event) => setScope(event.target.value)}
-              className="h-12 w-full rounded-[10px] border border-line bg-ash-900 px-3 text-base text-cream-50"
+              className="h-12 w-full rounded-surface border border-line bg-ash-900 px-3 text-base text-cream-50"
             >
               <option value="">The whole table</option>
               {diners.map((diner) => (
@@ -342,7 +342,7 @@ export function BillAdjustments({
                     onRemove(adjustment.id);
                     onStatus(`${adjustment.label} was taken off the bill.`);
                   }}
-                  className="inline-flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-[8px] text-cream-500 transition-colors duration-200 hover:bg-ash-800 hover:text-char-500"
+                  className="inline-flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-surface text-cream-500 transition-colors duration-200 hover:bg-ash-800 hover:text-char-500"
                 >
                   <Trash2 size={15} aria-hidden="true" />
                 </button>

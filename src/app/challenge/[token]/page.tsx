@@ -43,7 +43,7 @@ export async function generateMetadata({ params }: ChallengePageProps): Promise<
 }
 
 const CTA_CLASS =
-  'inline-flex min-h-14 items-center justify-center rounded-[10px] bg-ember-500 px-6 text-base ' +
+  'inline-flex min-h-14 items-center justify-center rounded-surface bg-ember-500 px-6 text-base ' +
   'font-bold uppercase tracking-[0.1em] text-ash-950 transition-colors duration-200 hover:bg-ember-400';
 
 export default async function ChallengePage({ params }: ChallengePageProps) {

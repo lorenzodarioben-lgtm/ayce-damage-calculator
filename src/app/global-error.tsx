@@ -39,7 +39,7 @@ export default function GlobalError({ error: _error, retry }: GlobalErrorProps) 
             <button
               type="button"
               onClick={retry}
-              className="inline-flex min-h-14 cursor-pointer items-center justify-center rounded-[10px] bg-ember-500 px-6 text-base font-bold uppercase tracking-[0.1em] text-ash-950 transition-colors duration-200 hover:bg-ember-400"
+              className="inline-flex min-h-14 cursor-pointer items-center justify-center rounded-surface bg-ember-500 px-6 text-base font-bold uppercase tracking-[0.1em] text-ash-950 transition-colors duration-200 hover:bg-ember-400"
             >
               Try again
             </button>
@@ -49,7 +49,7 @@ export default function GlobalError({ error: _error, retry }: GlobalErrorProps) 
             <button
               type="button"
               onClick={() => window.location.reload()}
-              className="inline-flex min-h-14 cursor-pointer items-center justify-center rounded-[10px] border border-line-ember bg-ash-850 px-6 text-base font-bold uppercase tracking-[0.1em] text-ember-400 transition-colors duration-200 hover:bg-ash-800"
+              className="inline-flex min-h-14 cursor-pointer items-center justify-center rounded-surface border border-line-ember bg-ash-850 px-6 text-base font-bold uppercase tracking-[0.1em] text-ember-400 transition-colors duration-200 hover:bg-ash-800"
             >
               Reload the page
             </button>

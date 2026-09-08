@@ -187,7 +187,7 @@ function CustomFoodEditor({
               onChange={(event) => set('name', event.target.value)}
               autoComplete="off"
               placeholder="e.g. Honey soy chicken"
-              className="mt-1.5 h-11 w-full rounded-[10px] border border-line bg-ash-900 px-3 font-normal text-cream-50 placeholder:text-cream-700"
+              className="mt-1.5 h-11 w-full rounded-surface border border-line bg-ash-900 px-3 font-normal text-cream-50 placeholder:text-cream-700"
             />
           </label>
           <label className="block text-sm font-semibold text-cream-300">
@@ -195,7 +195,7 @@ function CustomFoodEditor({
             <select
               value={draft.category}
               onChange={(event) => set('category', event.target.value as FoodCategory)}
-              className="mt-1.5 h-11 w-full rounded-[10px] border border-line bg-ash-900 px-3 font-normal text-cream-50"
+              className="mt-1.5 h-11 w-full rounded-surface border border-line bg-ash-900 px-3 font-normal text-cream-50"
             >
               {CATEGORY_META.map((category) => (
                 <option key={category.id} value={category.id}>
@@ -213,7 +213,7 @@ function CustomFoodEditor({
             onChange={(event) => set('shortName', event.target.value)}
             autoComplete="off"
             placeholder="Used where space is tight"
-            className="mt-1.5 h-11 w-full rounded-[10px] border border-line bg-ash-900 px-3 font-normal text-cream-50 placeholder:text-cream-700"
+            className="mt-1.5 h-11 w-full rounded-surface border border-line bg-ash-900 px-3 font-normal text-cream-50 placeholder:text-cream-700"
           />
         </label>
 
@@ -224,7 +224,7 @@ function CustomFoodEditor({
             value={draft.description}
             onChange={(event) => set('description', event.target.value)}
             placeholder="A quick note to distinguish it on the menu"
-            className="mt-1.5 w-full resize-none rounded-[10px] border border-line bg-ash-900 px-3 py-2 font-normal text-cream-50 placeholder:text-cream-700"
+            className="mt-1.5 w-full resize-none rounded-surface border border-line bg-ash-900 px-3 py-2 font-normal text-cream-50 placeholder:text-cream-700"
           />
         </label>
 
@@ -239,7 +239,7 @@ function CustomFoodEditor({
             ).map(([model, label, hint]) => (
               <label
                 key={model}
-                className={`block cursor-pointer rounded-[10px] border px-3 py-2 transition-colors duration-200 ${
+                className={`block cursor-pointer rounded-surface border px-3 py-2 transition-colors duration-200 ${
                   draft.valuation === model
                     ? 'border-ember-600 bg-ash-800'
                     : 'border-line bg-ash-900 hover:border-line-ember'
@@ -270,7 +270,7 @@ function CustomFoodEditor({
               step="0.01"
               value={draft.retailPrice}
               onChange={(event) => set('retailPrice', event.target.value)}
-              className="mt-1.5 h-11 w-full rounded-[10px] border border-line bg-ash-900 px-3 font-normal text-cream-50"
+              className="mt-1.5 h-11 w-full rounded-surface border border-line bg-ash-900 px-3 font-normal text-cream-50"
             />
           </label>
           <label className="block text-sm font-semibold text-cream-300">
@@ -282,7 +282,7 @@ function CustomFoodEditor({
               step="0.01"
               value={draft.restaurantCost}
               onChange={(event) => set('restaurantCost', event.target.value)}
-              className="mt-1.5 h-11 w-full rounded-[10px] border border-line bg-ash-900 px-3 font-normal text-cream-50"
+              className="mt-1.5 h-11 w-full rounded-surface border border-line bg-ash-900 px-3 font-normal text-cream-50"
             />
           </label>
         </div>
@@ -304,7 +304,7 @@ function CustomFoodEditor({
             step="1"
             value={draft.gramsPerServing}
             onChange={(event) => set('gramsPerServing', event.target.value)}
-            className="mt-1.5 h-11 w-full rounded-[10px] border border-line bg-ash-900 px-3 font-normal text-cream-50"
+            className="mt-1.5 h-11 w-full rounded-surface border border-line bg-ash-900 px-3 font-normal text-cream-50"
           />
           <span className="mt-1 block text-xs font-normal leading-snug text-cream-700">
             {perServing
@@ -339,7 +339,7 @@ function CustomFoodEditor({
                   placeholder="Unknown"
                   value={draft[key]}
                   onChange={(event) => set(key, event.target.value)}
-                  className="mt-1 h-10 w-full rounded-[8px] border border-line bg-ash-900 px-2 text-sm font-normal text-cream-50 placeholder:text-cream-700"
+                  className="mt-1 h-10 w-full rounded-surface border border-line bg-ash-900 px-2 text-sm font-normal text-cream-50 placeholder:text-cream-700"
                 />
               </label>
             ))}
@@ -356,14 +356,14 @@ function CustomFoodEditor({
           <button
             type="button"
             onClick={onClose}
-            className="min-h-10 rounded-[9px] px-3 text-xs font-semibold uppercase tracking-[0.1em] text-cream-400 hover:bg-ash-800 hover:text-cream-100"
+            className="min-h-10 rounded-surface px-3 text-xs font-semibold uppercase tracking-[0.1em] text-cream-400 hover:bg-ash-800 hover:text-cream-100"
           >
             Cancel
           </button>
           <button
             type="button"
             onClick={handleSave}
-            className="min-h-10 rounded-[9px] bg-ember-500 px-4 text-xs font-bold uppercase tracking-[0.1em] text-ash-950 hover:bg-ember-400"
+            className="min-h-10 rounded-surface bg-ember-500 px-4 text-xs font-bold uppercase tracking-[0.1em] text-ash-950 hover:bg-ember-400"
           >
             Save to my menu
           </button>
@@ -417,7 +417,7 @@ export function CustomFoodManager({
         <button
           type="button"
           onClick={() => setCreating(true)}
-          className="inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-[8px] px-2 text-xs font-semibold uppercase tracking-[0.1em] text-ember-500 transition-colors hover:bg-ash-800"
+          className="inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-surface px-2 text-xs font-semibold uppercase tracking-[0.1em] text-ember-500 transition-colors hover:bg-ash-800"
         >
           <Plus size={14} aria-hidden="true" />
           Add food
@@ -425,7 +425,7 @@ export function CustomFoodManager({
       </div>
 
       {foods.length === 0 ? (
-        <p className="mt-3 rounded-[10px] border border-dashed border-line bg-ash-900/60 px-4 py-3 text-center text-xs leading-relaxed text-cream-700">
+        <p className="mt-3 rounded-surface border border-dashed border-line bg-ash-900/60 px-4 py-3 text-center text-xs leading-relaxed text-cream-700">
           No custom items yet. Your menu is optional; the built-in cuts remain ready to go.
         </p>
       ) : (
@@ -433,7 +433,7 @@ export function CustomFoodManager({
           {foods.map((food) => (
             <li
               key={food.id}
-              className="flex min-h-12 items-center justify-between gap-3 rounded-[10px] border border-line bg-ash-900/70 px-3 py-2"
+              className="flex min-h-12 items-center justify-between gap-3 rounded-surface border border-line bg-ash-900/70 px-3 py-2"
             >
               <div className="min-w-0">
                 <p className="truncate text-sm font-bold text-cream-100">{food.name}</p>
@@ -449,7 +449,7 @@ export function CustomFoodManager({
                   type="button"
                   onClick={() => setEditingId(food.id)}
                   aria-label={`Edit ${food.name}`}
-                  className="flex size-9 cursor-pointer items-center justify-center rounded-[8px] text-cream-500 transition-colors hover:bg-ash-800 hover:text-ember-400"
+                  className="flex size-9 cursor-pointer items-center justify-center rounded-surface text-cream-500 transition-colors hover:bg-ash-800 hover:text-ember-400"
                 >
                   <Pencil size={15} aria-hidden="true" />
                 </button>
@@ -460,7 +460,7 @@ export function CustomFoodManager({
                     onStatus(`${food.name} removed from your menu.`);
                   }}
                   aria-label={`Delete ${food.name}`}
-                  className="flex size-9 cursor-pointer items-center justify-center rounded-[8px] text-cream-600 transition-colors hover:bg-char-700/25 hover:text-char-500"
+                  className="flex size-9 cursor-pointer items-center justify-center rounded-surface text-cream-600 transition-colors hover:bg-char-700/25 hover:text-char-500"
                 >
                   <Trash2 size={15} aria-hidden="true" />
                 </button>
