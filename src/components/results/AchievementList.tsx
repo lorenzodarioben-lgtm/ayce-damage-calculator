@@ -18,7 +18,10 @@ export function AchievementList({ achievements, headingId }: AchievementListProp
   }
 
   return (
-    <section aria-labelledby={headingId} className="panel p-4 sm:p-5">
+    <section
+      aria-labelledby={headingId}
+      className="border-t border-line pt-5 first:border-t-0 first:pt-0"
+    >
       <div className="mb-3 flex items-baseline justify-between gap-3">
         <h3 id={headingId} className="display-type text-lead text-cream-100">
           Commendations

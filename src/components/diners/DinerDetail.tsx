@@ -107,7 +107,10 @@ export function DinerDetail({ id }: { id: string }) {
         Back to the people
       </Link>
 
-      <section aria-labelledby="diner-heading" className="panel p-4 sm:p-5">
+      <section
+        aria-labelledby="diner-heading"
+        className="border-t border-line pt-5 first:border-t-0 first:pt-0"
+      >
         <h1
           id="diner-heading"
           className="display-type break-words text-figure text-cream-50 sm:text-figure"
@@ -131,7 +134,10 @@ export function DinerDetail({ id }: { id: string }) {
         </div>
       </section>
 
-      <section aria-labelledby="diner-record-heading" className="panel p-4 sm:p-5">
+      <section
+        aria-labelledby="diner-record-heading"
+        className="border-t border-line pt-5 first:border-t-0 first:pt-0"
+      >
         <h2 id="diner-record-heading" className="display-type text-title text-cream-100 mb-3">
           The record
         </h2>

@@ -11,7 +11,7 @@ export function SkipLink() {
   return (
     <a
       href={`#${MAIN_CONTENT_ID}`}
-      className="fixed left-4 top-2 z-50 -translate-y-[150%] rounded-surface border border-line-ember bg-ash-850 px-4 py-2 text-caption font-semibold uppercase tracking-caps text-cream-100 transition-transform duration-150 focus-visible:translate-y-0"
+      className="fixed left-4 top-2 z-50 -translate-y-[150%] rounded-surface border border-line-ember bg-ash-850 px-4 py-2 text-caption font-semibold uppercase tracking-caps text-cream-100 transition-transform duration-160 focus-visible:translate-y-0"
     >
       Skip to content
     </a>

@@ -279,7 +279,7 @@ export function ReportSummary({
         <section
           aria-labelledby={`${headingId}-per-diner`}
           style={rise(4)}
-          className="animate-rise panel p-4 sm:p-5"
+          className="animate-rise border-t border-line pt-5 first:border-t-0 first:pt-0"
         >
           <SubHeading
             id={`${headingId}-per-diner`}
@@ -334,7 +334,7 @@ export function ReportSummary({
       <section
         aria-labelledby={`${headingId}-house`}
         style={rise(6)}
-        className="animate-rise panel p-4 sm:p-5"
+        className="animate-rise border-t border-line pt-5 first:border-t-0 first:pt-0"
       >
         <SubHeading
           id={`${headingId}-house`}
