@@ -78,7 +78,7 @@ export function HistoryEntry({ session, onDelete, selected = false, onSelect }: 
           type="button"
           onClick={() => onDelete(record)}
           aria-label={`Delete the record from ${label} on ${formatRecordedAt(record.createdAt)}`}
-          className="relative z-10 flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-surface border border-transparent text-cream-600 transition-colors duration-160 hover:border-char-700 hover:bg-char-700/20 hover:text-char-400"
+          className="relative z-10 flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-surface border border-transparent text-cream-600 transition-colors duration-160 hover:border-char-700 hover:bg-char-700/20 hover:text-char-400"
         >
           <Trash2 size={15} aria-hidden="true" />
         </button>

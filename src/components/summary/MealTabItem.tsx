@@ -112,7 +112,7 @@ export function MealTabItem({
             onClick={() => setOpen((current) => !current)}
             aria-expanded={expanded}
             aria-label={`Record how much of ${descriptor} was eaten`}
-            className="flex size-9 cursor-pointer items-center justify-center rounded-surface border border-transparent text-cream-600 transition-colors duration-160 hover:border-line hover:bg-ash-800 hover:text-cream-300"
+            className="flex size-11 cursor-pointer items-center justify-center rounded-surface border border-transparent text-cream-600 transition-colors duration-160 hover:border-line hover:bg-ash-800 hover:text-cream-300"
           >
             <Utensils size={15} aria-hidden="true" />
           </button>
@@ -146,7 +146,7 @@ export function MealTabItem({
           type="button"
           onClick={() => onRemove(item.id)}
           aria-label={`Remove ${descriptor} from your tab`}
-          className="flex size-9 cursor-pointer items-center justify-center rounded-surface border border-transparent text-cream-600 transition-colors duration-160 hover:border-char-700 hover:bg-char-700/20 hover:text-char-400"
+          className="flex size-11 cursor-pointer items-center justify-center rounded-surface border border-transparent text-cream-600 transition-colors duration-160 hover:border-char-700 hover:bg-char-700/20 hover:text-char-400"
         >
           <Trash2 size={15} aria-hidden="true" />
         </button>

@@ -57,6 +57,7 @@ export function DamageMeter({
   const fill = clampToRange(recoveryPercent, 0, 100, 0);
   const bar = variant === 'bar';
   const rail = variant === 'rail';
+  const inline = variant === 'inline';
 
   return (
     <div className={cn(bar && 'px-4 pt-2')}>
@@ -132,15 +133,26 @@ export function DamageMeter({
             `${formatMoney(remainingGap, pricingProfile.money)} until retail break-even`
           )}
         </p>
-        <p
-          className={cn(
-            'tabular font-bold leading-none',
-            rail ? 'text-figure' : 'text-figure sm:text-reading',
-            BAND_TEXT[band],
+        {/* The reading, named. On the report it carries its own label, because
+            there it is the report's headline figure rather than a number beside
+            a bar somebody is already looking at. */}
+        <div className="text-right">
+          {inline && (
+            <div>
+              <p className="micro-label text-cream-500">Retail value recovered</p>
+            </div>
           )}
-        >
-          {formatPercent(recoveryPercent)}
-        </p>
+          <p
+            className={cn(
+              'tabular font-bold leading-none',
+              rail ? 'text-figure' : 'text-figure sm:text-reading',
+              inline && 'mt-1',
+              BAND_TEXT[band],
+            )}
+          >
+            {formatPercent(recoveryPercent)}
+          </p>
+        </div>
       </div>
 
       {beaten && !rail && !bar && (

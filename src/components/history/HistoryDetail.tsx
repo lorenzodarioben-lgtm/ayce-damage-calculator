@@ -200,7 +200,7 @@ export function HistoryDetail({ id }: { id: string }) {
                     disabled={savingTags}
                     onClick={() => void saveTags(record.tags.filter((current) => current !== tag))}
                     aria-label={`Remove tag ${tag}`}
-                    className="flex size-7 cursor-pointer items-center justify-center rounded-full text-cream-500 hover:bg-ash-800 hover:text-cream-100 disabled:cursor-not-allowed"
+                    className="flex size-11 cursor-pointer items-center justify-center rounded-full text-cream-500 hover:bg-ash-800 hover:text-cream-100 disabled:cursor-not-allowed"
                   >
                     <X size={14} aria-hidden="true" />
                   </button>

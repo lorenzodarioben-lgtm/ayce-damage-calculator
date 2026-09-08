@@ -272,7 +272,7 @@ export function ServiceWorkerManager() {
         <button
           type="button"
           onClick={() => void requestInstall()}
-          className="min-h-8 cursor-pointer rounded-surface px-2 text-caption font-semibold text-cream-100"
+          className="min-h-11 cursor-pointer rounded-surface px-2 text-caption font-semibold text-cream-100"
         >
           Install app
         </button>
@@ -281,7 +281,7 @@ export function ServiceWorkerManager() {
         <button
           type="button"
           onClick={applyUpdate}
-          className="min-h-8 cursor-pointer rounded-surface px-2 text-caption font-semibold uppercase tracking-caps text-cream-100 underline-offset-4 hover:underline"
+          className="min-h-11 cursor-pointer rounded-surface px-2 text-caption font-semibold uppercase tracking-caps text-cream-100 underline-offset-4 hover:underline"
         >
           Reload to update
         </button>

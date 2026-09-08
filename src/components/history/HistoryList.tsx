@@ -171,7 +171,7 @@ export function HistoryList() {
                 type="button"
                 onClick={() => setQuery('')}
                 aria-label="Clear the search"
-                className="absolute right-1.5 top-1/2 flex size-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-inner text-cream-500 transition-colors duration-160 hover:bg-ash-800 hover:text-cream-100"
+                className="absolute right-1.5 top-1/2 flex size-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-inner text-cream-500 transition-colors duration-160 hover:bg-ash-800 hover:text-cream-100"
               >
                 <X size={15} aria-hidden="true" />
               </button>
@@ -283,7 +283,7 @@ export function HistoryList() {
           <div
             role="group"
             aria-labelledby="history-sort-label"
-            className="flex gap-1 rounded-surface border border-line bg-ash-900 p-1"
+            className="segmented-track flex gap-1 p-1"
           >
             {SORTS.map((option) => {
               const selected = option.key === sort;
@@ -294,9 +294,9 @@ export function HistoryList() {
                   aria-pressed={selected}
                   onClick={() => setSort(option.key)}
                   className={cn(
-                    'min-h-9 cursor-pointer rounded-inner px-3 text-caption font-semibold uppercase tracking-caps transition-colors duration-160',
+                    'min-h-11 cursor-pointer rounded-inner px-3 text-caption font-semibold uppercase tracking-caps transition-colors duration-160',
                     selected
-                      ? 'bg-ember-500 text-ash-950'
+                      ? 'segmented-thumb'
                       : 'text-cream-500 hover:bg-ash-800 hover:text-cream-100',
                   )}
                 >

@@ -283,7 +283,7 @@ function ProfileEditor({
                       value={fields?.retail ?? ''}
                       onChange={(event) => updatePrice(food.id, 'retail', event.target.value)}
                       placeholder="Retail"
-                      className="mt-1 h-10 w-full rounded-surface border border-line-strong bg-ash-850 px-2 text-ui text-cream-50 placeholder:text-cream-600 sm:mt-0"
+                      className="mt-1 h-11 w-full rounded-surface border border-line-strong bg-ash-850 px-2 text-ui text-cream-50 placeholder:text-cream-600 sm:mt-0"
                     />
                   </label>
                   <label className="text-caption text-cream-500">
@@ -298,7 +298,7 @@ function ProfileEditor({
                       value={fields?.cost ?? ''}
                       onChange={(event) => updatePrice(food.id, 'cost', event.target.value)}
                       placeholder="Cost"
-                      className="mt-1 h-10 w-full rounded-surface border border-line-strong bg-ash-850 px-2 text-ui text-cream-50 placeholder:text-cream-600 sm:mt-0"
+                      className="mt-1 h-11 w-full rounded-surface border border-line-strong bg-ash-850 px-2 text-ui text-cream-50 placeholder:text-cream-600 sm:mt-0"
                     />
                   </label>
                 </div>
@@ -317,14 +317,14 @@ function ProfileEditor({
           <button
             type="button"
             onClick={onClose}
-            className="min-h-10 rounded-surface px-3 text-caption font-semibold uppercase tracking-caps text-cream-400 hover:bg-ash-800 hover:text-cream-100"
+            className="min-h-11 rounded-surface px-3 text-caption font-semibold uppercase tracking-caps text-cream-400 hover:bg-ash-800 hover:text-cream-100"
           >
             Cancel
           </button>
           <button
             type="button"
             onClick={handleSave}
-            className="min-h-10 rounded-surface bg-ember-500 px-4 text-caption font-bold uppercase tracking-caps text-ash-950 hover:bg-ember-400"
+            className="min-h-11 rounded-surface bg-ember-500 px-4 text-caption font-bold uppercase tracking-caps text-ash-950 hover:bg-ember-400"
           >
             Save profile
           </button>
@@ -366,7 +366,7 @@ export function PricingProfileManager({
         <button
           type="button"
           onClick={() => setCreating(true)}
-          className="inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-surface px-2 text-caption font-semibold uppercase tracking-caps text-cream-100 transition-colors duration-160 hover:bg-ash-800"
+          className="inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-surface px-2 text-caption font-semibold uppercase tracking-caps text-cream-100 transition-colors duration-160 hover:bg-ash-800"
         >
           <Plus size={14} aria-hidden="true" />
           New profile
@@ -393,7 +393,7 @@ export function PricingProfileManager({
                   type="button"
                   onClick={() => setEditingId(profile.id)}
                   aria-label={`Edit ${profile.name} pricing`}
-                  className="flex size-9 cursor-pointer items-center justify-center rounded-surface text-cream-500 transition-colors hover:bg-ash-800 hover:text-cream-50"
+                  className="flex size-11 cursor-pointer items-center justify-center rounded-surface text-cream-500 transition-colors hover:bg-ash-800 hover:text-cream-50"
                 >
                   <Pencil size={15} aria-hidden="true" />
                 </button>
@@ -404,7 +404,7 @@ export function PricingProfileManager({
                     onStatus(`${profile.name} pricing removed from this device.`);
                   }}
                   aria-label={`Delete ${profile.name} pricing`}
-                  className="flex size-9 cursor-pointer items-center justify-center rounded-surface text-cream-600 transition-colors hover:bg-char-700/25 hover:text-char-400"
+                  className="flex size-11 cursor-pointer items-center justify-center rounded-surface text-cream-600 transition-colors hover:bg-char-700/25 hover:text-char-400"
                 >
                   <Trash2 size={15} aria-hidden="true" />
                 </button>
