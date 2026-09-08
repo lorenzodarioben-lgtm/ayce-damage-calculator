@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Trash2, UserPlus } from 'lucide-react';
 import { Figure } from '@/components/ui/Figure';
 import { ShareBars } from '@/components/stats/ShareBars';
-import { Button, EMPTY_STATE_LINK } from '@/components/ui/Button';
+import { Button, EMPTY_STATE_LINK, buttonClasses } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { StatusToast } from '@/components/ui/StatusToast';
 import { useMealHistory } from '@/hooks/useMealHistory';
@@ -23,9 +23,7 @@ import {
 } from '@/lib/formatting';
 import { loadSession, saveSession } from '@/lib/storage';
 
-const BACK_LINK =
-  '-ml-2 inline-flex min-h-11 items-center gap-1.5 rounded-surface px-2 text-caption font-semibold ' +
-  'uppercase tracking-caps text-cream-500 transition-colors duration-200 hover:bg-ash-850 hover:text-cream-100';
+const BACK_LINK = buttonClasses('ghost', 'sm', '-ml-2');
 
 /**
  * One person, and what the file says about eating with them.
@@ -247,6 +245,7 @@ export function DinerDetail({ id }: { id: string }) {
         title="Remove this person?"
         body={`This removes ${diner.displayName} from the people saved on this device. Every meal you filed with them keeps its own roster exactly as it was recorded — no history is rewritten and no plate is reassigned.`}
         confirmLabel="Remove them"
+        destructive
         cancelLabel="Keep them"
         onConfirm={() => {
           remove(diner.id);

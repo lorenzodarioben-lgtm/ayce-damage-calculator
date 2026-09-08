@@ -52,7 +52,7 @@ import type { BillAdjustment, PlateSize, QualityTier } from '@/types/meal';
 
 const CHIP =
   'min-h-11 cursor-pointer rounded-surface border px-3 text-caption font-semibold uppercase ' +
-  'tracking-caps transition-colors duration-200';
+  'tracking-caps transition-colors duration-160';
 
 const ON = 'border-line-ember bg-ash-800 text-cream-100';
 const OFF = 'border-line bg-ash-900 text-cream-300 hover:bg-ash-800';

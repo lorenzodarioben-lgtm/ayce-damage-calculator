@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { buttonClasses } from '@/components/ui/Button';
 import Link from 'next/link';
 import { MenuPreview } from '@/components/menu/MenuPreview';
 import { SiteFooter } from '@/components/nav/SiteFooter';
@@ -24,9 +25,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-const CTA_CLASS =
-  'inline-flex min-h-14 items-center justify-center rounded-surface bg-ember-500 px-6 text-body ' +
-  'font-bold uppercase tracking-caps text-ash-950 transition-colors duration-200 hover:bg-ember-400';
+const CTA_CLASS = buttonClasses('primary', 'lg');
 
 export default async function SharedMenuPage({ params }: MenuPageProps) {
   const { token } = await params;

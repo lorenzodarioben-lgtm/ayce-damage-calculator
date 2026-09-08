@@ -25,7 +25,7 @@ export function FoodCard({ food, selected, onSelect }: FoodCardProps) {
       onClick={() => onSelect(food.id)}
       className={cn(
         'group relative flex h-full cursor-pointer flex-col gap-2 overflow-hidden rounded-surface border p-3 text-left',
-        'transition-[border-color,background-color,transform,box-shadow] duration-200 ease-out-soft',
+        'transition-[border-color,background-color,transform,box-shadow] duration-160 ease-out-soft',
         // Lifts a pixel under the pointer and settles back under the press, so
         // the card behaves like something on the page rather than a hit area.
         'hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] sm:p-4',
@@ -40,7 +40,7 @@ export function FoodCard({ food, selected, onSelect }: FoodCardProps) {
       <span
         aria-hidden="true"
         className={cn(
-          'pointer-events-none absolute -top-10 left-1/2 h-32 w-40 -translate-x-1/2 rounded-full blur-2xl transition-opacity duration-300',
+          'pointer-events-none absolute -top-10 left-1/2 h-32 w-40 -translate-x-1/2 rounded-full blur-2xl transition-opacity duration-160',
           'bg-[radial-gradient(circle,var(--color-ember-500)_0%,transparent_70%)]',
           selected ? 'opacity-25' : 'opacity-0 group-hover:opacity-15',
         )}
@@ -48,7 +48,7 @@ export function FoodCard({ food, selected, onSelect }: FoodCardProps) {
       <span
         aria-hidden="true"
         className={cn(
-          'absolute right-2.5 top-2.5 flex size-6 items-center justify-center rounded-full border transition-opacity duration-200',
+          'absolute right-2.5 top-2.5 flex size-6 items-center justify-center rounded-full border transition-opacity duration-160',
           selected
             ? 'border-ember-500 bg-ember-500 text-ash-950 opacity-100'
             : 'border-line bg-ash-900 text-transparent opacity-0 group-hover:opacity-60',
@@ -59,7 +59,7 @@ export function FoodCard({ food, selected, onSelect }: FoodCardProps) {
 
       <FoodIllustration
         food={food}
-        className="relative h-24 w-24 shrink-0 elevate-illustration transition-transform duration-300 ease-out-soft group-hover:scale-[1.05] sm:h-28 sm:w-28"
+        className="relative h-24 w-24 shrink-0 elevate-illustration transition-transform duration-160 ease-out-soft group-hover:scale-[1.05] sm:h-28 sm:w-28"
       />
 
       <span className="display-type relative text-lead leading-tight text-cream-50 sm:text-lead">

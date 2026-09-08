@@ -123,14 +123,14 @@ export function HistoryList() {
           <div className="mt-6 flex flex-wrap justify-center gap-2">
             <Link
               href="/"
-              className="inline-flex min-h-12 items-center justify-center rounded-surface border border-line-ember bg-ash-850 px-5 text-ui font-semibold uppercase tracking-caps text-cream-100 transition-colors duration-200 hover:bg-ash-800"
+              className="inline-flex min-h-12 items-center justify-center rounded-surface border border-line-ember bg-ash-850 px-5 text-ui font-semibold uppercase tracking-caps text-cream-100 transition-colors duration-160 hover:bg-ash-800"
             >
               Start a session
             </Link>
             {/* An empty file is exactly when someone arrives with a backup. */}
             <Link
               href="/history/data"
-              className="inline-flex min-h-12 items-center justify-center rounded-surface border border-line-strong bg-ash-850 px-5 text-ui font-semibold uppercase tracking-caps text-cream-300 transition-colors duration-200 hover:bg-ash-800 hover:text-cream-50"
+              className="inline-flex min-h-12 items-center justify-center rounded-surface border border-line-strong bg-ash-850 px-5 text-ui font-semibold uppercase tracking-caps text-cream-300 transition-colors duration-160 hover:bg-ash-800 hover:text-cream-50"
             >
               Restore a backup
             </Link>
@@ -171,7 +171,7 @@ export function HistoryList() {
                 type="button"
                 onClick={() => setQuery('')}
                 aria-label="Clear the search"
-                className="absolute right-1.5 top-1/2 flex size-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-inner text-cream-500 transition-colors duration-200 hover:bg-ash-800 hover:text-cream-100"
+                className="absolute right-1.5 top-1/2 flex size-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-inner text-cream-500 transition-colors duration-160 hover:bg-ash-800 hover:text-cream-100"
               >
                 <X size={15} aria-hidden="true" />
               </button>
@@ -294,7 +294,7 @@ export function HistoryList() {
                   aria-pressed={selected}
                   onClick={() => setSort(option.key)}
                   className={cn(
-                    'min-h-9 cursor-pointer rounded-inner px-3 text-caption font-semibold uppercase tracking-caps transition-colors duration-200',
+                    'min-h-9 cursor-pointer rounded-inner px-3 text-caption font-semibold uppercase tracking-caps transition-colors duration-160',
                     selected
                       ? 'bg-ember-500 text-ash-950'
                       : 'text-cream-500 hover:bg-ash-800 hover:text-cream-100',
@@ -313,21 +313,21 @@ export function HistoryList() {
           {records.length >= 2 && (
             <Link
               href="/history/compare"
-              className="flex min-h-11 items-center rounded-surface border border-line-ember px-3 text-caption font-semibold uppercase tracking-caps text-cream-100 transition-colors duration-200 hover:bg-ash-800"
+              className="flex min-h-11 items-center rounded-surface border border-line-ember px-3 text-caption font-semibold uppercase tracking-caps text-cream-100 transition-colors duration-160 hover:bg-ash-800"
             >
               Compare
             </Link>
           )}
           <Link
             href="/history/data"
-            className="flex min-h-11 items-center rounded-surface border border-line-strong px-3 text-caption font-semibold uppercase tracking-caps text-cream-300 transition-colors duration-200 hover:bg-ash-800 hover:text-cream-50"
+            className="flex min-h-11 items-center rounded-surface border border-line-strong px-3 text-caption font-semibold uppercase tracking-caps text-cream-300 transition-colors duration-160 hover:bg-ash-800 hover:text-cream-50"
           >
             Backup
           </Link>
           <button
             type="button"
             onClick={() => setPending({ kind: 'all' })}
-            className="min-h-11 cursor-pointer rounded-surface border border-char-700 px-3 text-caption font-semibold uppercase tracking-caps text-char-400 transition-colors duration-200 hover:bg-char-700/25 hover:text-cream-100"
+            className="min-h-11 cursor-pointer rounded-surface border border-char-700 px-3 text-caption font-semibold uppercase tracking-caps text-char-400 transition-colors duration-160 hover:bg-char-700/25 hover:text-cream-100"
           >
             Clear history
           </button>
@@ -405,6 +405,7 @@ export function HistoryList() {
       )}
 
       <ConfirmDialog
+        destructive
         open={pending !== null}
         title={
           pending?.kind === 'all'

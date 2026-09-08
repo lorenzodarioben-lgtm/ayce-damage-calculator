@@ -37,22 +37,38 @@ const VARIANTS: Record<Variant, string> = {
 };
 
 const SIZES: Record<Size, string> = {
-  sm: 'min-h-9 px-3 text-caption tracking-caps',
-  md: 'min-h-11 px-4 text-ui tracking-caps',
+  sm: 'min-h-11 px-3 text-caption tracking-caps',
+  md: 'min-h-12 px-4 text-ui tracking-caps',
   lg: 'min-h-14 px-6 text-body tracking-caps',
 };
 
+const BASE =
+  'inline-flex cursor-pointer items-center justify-center gap-2 rounded-surface font-semibold uppercase ' +
+  'motion-button ' +
+  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember-400 ' +
+  'active:scale-[0.97] disabled:pointer-events-none disabled:cursor-not-allowed';
+
 /**
- * The way out of an empty state, which is always a link rather than a button:
- * every one of these navigates. Shaped like a secondary button and named once,
- * because seven copies of the same class list could not stay in step.
+ * The button recipe, for the things that are shaped like buttons and are not
+ * buttons.
+ *
+ * Every route-level call to action, every way out of an empty state and every
+ * "back to the list" navigates, so each one is an anchor — and each one had
+ * grown its own class list. Seven recipes, none of which used the lit gradient
+ * this file defines as primary, so the first thing a visitor met on `/live`, on
+ * a 404, on an error page and on every shared link was a flat rectangle that
+ * looked nothing like the app's primary action.
  */
-export const EMPTY_STATE_LINK =
-  'mt-6 inline-flex min-h-12 items-center justify-center rounded-surface border border-line-ember ' +
-  'bg-ash-850 px-5 text-ui font-semibold uppercase tracking-caps text-cream-100 ' +
-  'elevate-control ' +
-  'transition-[background-color,border-color,transform] duration-200 ' +
-  'hover:-translate-y-px hover:border-line-strong hover:bg-ash-800';
+export function buttonClasses(
+  variant: Variant = 'secondary',
+  size: Size = 'md',
+  className?: string,
+): string {
+  return cn(BASE, VARIANTS[variant], SIZES[size], className);
+}
+
+/** The way out of an empty state. Shaped like a secondary button, and spaced. */
+export const EMPTY_STATE_LINK = buttonClasses('secondary', 'md', 'mt-6');
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant;
@@ -73,15 +89,7 @@ export function Button({
   return (
     <button
       type={type}
-      className={cn(
-        'inline-flex cursor-pointer items-center justify-center gap-2 rounded-surface font-semibold uppercase',
-        'transition-[background-color,border-color,color,transform,box-shadow] duration-200 ease-out-soft',
-        'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember-400 active:scale-[0.985] disabled:pointer-events-none disabled:cursor-not-allowed',
-        VARIANTS[variant],
-        SIZES[size],
-        fullWidth && 'w-full',
-        className,
-      )}
+      className={cn(BASE, VARIANTS[variant], SIZES[size], fullWidth && 'w-full', className)}
       {...props}
     >
       {children}

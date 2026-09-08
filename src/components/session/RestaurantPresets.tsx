@@ -71,7 +71,7 @@ export function RestaurantPresets({
         <h3 className="display-type text-lead text-cream-100">Saved restaurants</h3>
         <Link
           href="/restaurants"
-          className="inline-flex min-h-9 items-center rounded-surface px-2 text-caption font-semibold uppercase tracking-caps text-cream-500 transition-colors duration-200 hover:bg-ash-800 hover:text-cream-100"
+          className="inline-flex min-h-9 items-center rounded-surface px-2 text-caption font-semibold uppercase tracking-caps text-cream-500 transition-colors duration-160 hover:bg-ash-800 hover:text-cream-100"
         >
           Open the hub
         </Link>
@@ -79,7 +79,7 @@ export function RestaurantPresets({
           type="button"
           onClick={handleSave}
           disabled={!nameGiven}
-          className="inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-surface px-2 text-caption font-semibold uppercase tracking-caps text-cream-100 transition-colors duration-200 hover:bg-ash-800 disabled:cursor-not-allowed disabled:text-cream-600 disabled:hover:bg-transparent"
+          className="inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-surface px-2 text-caption font-semibold uppercase tracking-caps text-cream-100 transition-colors duration-160 hover:bg-ash-800 disabled:cursor-not-allowed disabled:text-cream-600 disabled:hover:bg-transparent"
         >
           <BookmarkPlus size={14} aria-hidden="true" />
           Save this setup
@@ -99,7 +99,7 @@ export function RestaurantPresets({
                 type="button"
                 onClick={() => requestApply(preset)}
                 aria-label={`Apply preset ${describe(preset)}`}
-                className="flex min-h-11 cursor-pointer items-center rounded-surface border border-line-strong bg-ash-900 pl-3 pr-9 text-left transition-colors duration-200 hover:border-line-strong hover:bg-ash-850"
+                className="flex min-h-11 cursor-pointer items-center rounded-surface border border-line-strong bg-ash-900 pl-3 pr-9 text-left transition-colors duration-160 hover:border-line-strong hover:bg-ash-850"
               >
                 <span className="min-w-0">
                   <span className="block truncate text-ui font-bold text-cream-50">
@@ -116,7 +116,7 @@ export function RestaurantPresets({
                 type="button"
                 onClick={() => remove(preset.id)}
                 aria-label={`Delete the preset ${preset.name}`}
-                className="absolute right-1 top-1/2 flex size-7 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-cream-600 transition-colors duration-200 hover:bg-char-700/25 hover:text-char-400"
+                className="absolute right-1 top-1/2 flex size-7 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-cream-600 transition-colors duration-160 hover:bg-char-700/25 hover:text-char-400"
               >
                 <X size={14} aria-hidden="true" />
               </button>

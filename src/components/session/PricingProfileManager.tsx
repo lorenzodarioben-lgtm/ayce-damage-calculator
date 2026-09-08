@@ -366,7 +366,7 @@ export function PricingProfileManager({
         <button
           type="button"
           onClick={() => setCreating(true)}
-          className="inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-surface px-2 text-caption font-semibold uppercase tracking-caps text-cream-100 transition-colors duration-200 hover:bg-ash-800"
+          className="inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-surface px-2 text-caption font-semibold uppercase tracking-caps text-cream-100 transition-colors duration-160 hover:bg-ash-800"
         >
           <Plus size={14} aria-hidden="true" />
           New profile

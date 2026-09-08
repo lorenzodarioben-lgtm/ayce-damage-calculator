@@ -41,7 +41,7 @@ export function FoodSort({ value, onChange }: FoodSortProps) {
               onClick={() => onChange(option.key)}
               className={cn(
                 'min-h-9 cursor-pointer rounded-inner px-3 text-caption font-semibold uppercase tracking-caps',
-                'transition-[background-color,color,box-shadow] duration-200',
+                'transition-[background-color,color,box-shadow] duration-160',
                 selected
                   ? 'segmented-thumb'
                   : 'text-cream-500 hover:bg-ash-800 hover:text-cream-100',

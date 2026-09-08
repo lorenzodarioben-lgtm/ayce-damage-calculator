@@ -86,7 +86,7 @@ export function CategoryTabs({ value, onChange, panelId, foods }: CategoryTabsPr
             onClick={() => onChange(category.id)}
             className={cn(
               'relative min-h-11 cursor-pointer rounded-inner px-1 text-ui font-semibold uppercase',
-              'tracking-caps transition-[background-color,color,box-shadow] duration-200 ease-out-soft',
+              'tracking-caps transition-[background-color,color,box-shadow] duration-160 ease-out-soft',
               'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember-400 sm:text-ui',
               selected ? 'segmented-thumb' : 'text-cream-500 hover:bg-ash-800 hover:text-cream-100',
             )}

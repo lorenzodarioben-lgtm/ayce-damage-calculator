@@ -98,7 +98,7 @@ export function FoodSearch({ value, onChange, resultCount }: FoodSearchProps) {
             type="button"
             onClick={() => onChange('')}
             aria-label="Clear the search"
-            className="absolute right-1.5 top-1/2 flex size-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-inner text-cream-500 transition-colors duration-200 hover:bg-ash-800 hover:text-cream-100 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ember-400"
+            className="absolute right-1.5 top-1/2 flex size-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-inner text-cream-500 transition-colors duration-160 hover:bg-ash-800 hover:text-cream-100 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ember-400"
           >
             <X size={15} aria-hidden="true" />
           </button>

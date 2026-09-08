@@ -22,7 +22,7 @@ export default function NotFound() {
         </p>
         <Link
           href="/"
-          className="mt-8 inline-flex min-h-12 w-fit items-center justify-center rounded-surface bg-ember-500 px-5 text-ui font-bold uppercase tracking-caps text-ash-950 transition-colors duration-200 hover:bg-ember-400"
+          className="mt-8 inline-flex min-h-12 w-fit items-center justify-center rounded-surface bg-ember-500 px-5 text-ui font-bold uppercase tracking-caps text-ash-950 transition-colors duration-160 hover:bg-ember-400"
         >
           Return to the calculator
         </Link>

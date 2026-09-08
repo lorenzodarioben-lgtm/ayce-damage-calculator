@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft, Download, FileSpreadsheet, Lock, Upload } from 'lucide-react';
 import { VaultPasswordDialog } from '@/components/history/VaultPasswordDialog';
 import { RestoreImpactSummary } from '@/components/history/RestoreImpactSummary';
-import { Button } from '@/components/ui/Button';
+import { Button, buttonClasses } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import {
   BACKUP_ERROR_MESSAGES,
@@ -56,9 +56,7 @@ interface PendingReplace {
   readonly impact: RestoreImpact;
 }
 
-const BACK_LINK =
-  '-ml-2 inline-flex min-h-11 items-center gap-1.5 rounded-surface px-2 text-caption font-semibold ' +
-  'uppercase tracking-caps text-cream-500 transition-colors duration-200 hover:bg-ash-850 hover:text-cream-100';
+const BACK_LINK = buttonClasses('ghost', 'sm', '-ml-2');
 
 /** Hands the browser a file built in memory, and never leaks the object URL. */
 function download(contents: string, type: string, filename: string): void {
@@ -471,6 +469,7 @@ export function BackupRestore() {
       />
 
       <ConfirmDialog
+        destructive
         open={pendingReplace !== null}
         title="Replace everything on this device?"
         body={
