@@ -187,7 +187,7 @@ function CustomFoodEditor({
               onChange={(event) => set('name', event.target.value)}
               autoComplete="off"
               placeholder="e.g. Honey soy chicken"
-              className="mt-1.5 h-11 w-full rounded-surface border border-line bg-ash-900 px-3 font-normal text-cream-50 placeholder:text-cream-700"
+              className="mt-1.5 h-11 w-full rounded-surface border border-line-strong bg-ash-900 px-3 font-normal text-cream-50 placeholder:text-cream-700"
             />
           </label>
           <label className="block text-ui font-semibold text-cream-300">
@@ -195,7 +195,7 @@ function CustomFoodEditor({
             <select
               value={draft.category}
               onChange={(event) => set('category', event.target.value as FoodCategory)}
-              className="mt-1.5 h-11 w-full rounded-surface border border-line bg-ash-900 px-3 font-normal text-cream-50"
+              className="mt-1.5 h-11 w-full rounded-surface border border-line-strong bg-ash-900 px-3 font-normal text-cream-50"
             >
               {CATEGORY_META.map((category) => (
                 <option key={category.id} value={category.id}>
@@ -213,7 +213,7 @@ function CustomFoodEditor({
             onChange={(event) => set('shortName', event.target.value)}
             autoComplete="off"
             placeholder="Used where space is tight"
-            className="mt-1.5 h-11 w-full rounded-surface border border-line bg-ash-900 px-3 font-normal text-cream-50 placeholder:text-cream-700"
+            className="mt-1.5 h-11 w-full rounded-surface border border-line-strong bg-ash-900 px-3 font-normal text-cream-50 placeholder:text-cream-700"
           />
         </label>
 
@@ -224,7 +224,7 @@ function CustomFoodEditor({
             value={draft.description}
             onChange={(event) => set('description', event.target.value)}
             placeholder="A quick note to distinguish it on the menu"
-            className="mt-1.5 w-full resize-none rounded-surface border border-line bg-ash-900 px-3 py-2 font-normal text-cream-50 placeholder:text-cream-700"
+            className="mt-1.5 w-full resize-none rounded-surface border border-line-strong bg-ash-900 px-3 py-2 font-normal text-cream-50 placeholder:text-cream-700"
           />
         </label>
 
@@ -272,7 +272,7 @@ function CustomFoodEditor({
               step="0.01"
               value={draft.retailPrice}
               onChange={(event) => set('retailPrice', event.target.value)}
-              className="mt-1.5 h-11 w-full rounded-surface border border-line bg-ash-900 px-3 font-normal text-cream-50"
+              className="mt-1.5 h-11 w-full rounded-surface border border-line-strong bg-ash-900 px-3 font-normal text-cream-50"
             />
           </label>
           <label className="block text-ui font-semibold text-cream-300">
@@ -284,7 +284,7 @@ function CustomFoodEditor({
               step="0.01"
               value={draft.restaurantCost}
               onChange={(event) => set('restaurantCost', event.target.value)}
-              className="mt-1.5 h-11 w-full rounded-surface border border-line bg-ash-900 px-3 font-normal text-cream-50"
+              className="mt-1.5 h-11 w-full rounded-surface border border-line-strong bg-ash-900 px-3 font-normal text-cream-50"
             />
           </label>
         </div>
@@ -306,7 +306,7 @@ function CustomFoodEditor({
             step="1"
             value={draft.gramsPerServing}
             onChange={(event) => set('gramsPerServing', event.target.value)}
-            className="mt-1.5 h-11 w-full rounded-surface border border-line bg-ash-900 px-3 font-normal text-cream-50"
+            className="mt-1.5 h-11 w-full rounded-surface border border-line-strong bg-ash-900 px-3 font-normal text-cream-50"
           />
           <span className="mt-1 block text-caption font-normal leading-snug text-cream-700">
             {perServing
@@ -341,7 +341,7 @@ function CustomFoodEditor({
                   placeholder="Unknown"
                   value={draft[key]}
                   onChange={(event) => set(key, event.target.value)}
-                  className="mt-1 h-10 w-full rounded-surface border border-line bg-ash-900 px-2 text-ui font-normal text-cream-50 placeholder:text-cream-700"
+                  className="mt-1 h-10 w-full rounded-surface border border-line-strong bg-ash-900 px-2 text-ui font-normal text-cream-50 placeholder:text-cream-700"
                 />
               </label>
             ))}
@@ -435,7 +435,7 @@ export function CustomFoodManager({
           {foods.map((food) => (
             <li
               key={food.id}
-              className="flex min-h-12 items-center justify-between gap-3 rounded-surface border border-line bg-ash-900/70 px-3 py-2"
+              className="flex min-h-12 items-center justify-between gap-3 rounded-surface border border-line-strong bg-ash-900/70 px-3 py-2"
             >
               <div className="min-w-0">
                 <p className="truncate text-ui font-bold text-cream-100">{food.name}</p>

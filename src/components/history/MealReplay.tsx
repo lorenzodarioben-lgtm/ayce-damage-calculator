@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useMemo, useState } from 'react';
 import { Pause, Play, RotateCcw } from 'lucide-react';
+import { Figure } from '@/components/ui/Figure';
 import { usePricingProfile } from '@/components/session/PricingContext';
 import { Button } from '@/components/ui/Button';
 import {
@@ -329,15 +330,6 @@ export function MealReplay({ replay, record, headingId }: MealReplayProps) {
         </div>
       </details>
     </section>
-  );
-}
-
-function Figure({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="well px-3 py-2">
-      <dt className="micro-label text-cream-500 truncate">{label}</dt>
-      <dd className="tabular mt-0.5 text-ui font-semibold text-cream-50">{value}</dd>
-    </div>
   );
 }
 

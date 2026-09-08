@@ -1,5 +1,6 @@
 'use client';
 
+import { Figure } from '@/components/ui/Figure';
 import { ResultMetric } from '@/components/results/ResultMetric';
 import { usePricingProfile } from '@/components/session/PricingContext';
 import { perDinerTotals } from '@/lib/calculations';
@@ -419,15 +420,6 @@ function BillRow({
       >
         {value}
       </dd>
-    </div>
-  );
-}
-
-function Figure({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <dt className="micro-label text-cream-500">{label}</dt>
-      <dd className="tabular mt-0.5 text-ui font-semibold text-cream-50">{value}</dd>
     </div>
   );
 }

@@ -49,7 +49,7 @@ export function Hero() {
         <div className="animate-ember-breathe absolute -top-40 left-[4%] h-[34rem] w-[34rem] rounded-full bg-[radial-gradient(circle,var(--color-ember-500)_0%,transparent_66%)] opacity-25 blur-3xl" />
       </div>
 
-      <div className="mx-auto flex min-h-[clamp(30rem,68vh,46rem)] max-w-[1280px] flex-col justify-center px-4 py-16 sm:px-6 sm:py-24">
+      <div className="mx-auto flex min-h-[clamp(30rem,68vh,46rem)] max-w-page flex-col justify-center px-4 py-16 sm:px-6 sm:py-24">
         <div className="flex items-center gap-3">
           <span aria-hidden="true" className="h-4 w-[3px] rounded-full bg-ember-500" />
           <p className="micro-label text-ember-400">AYCE Damage Calculator</p>

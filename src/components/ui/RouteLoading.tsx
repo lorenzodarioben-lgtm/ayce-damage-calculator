@@ -16,7 +16,7 @@ export function RouteLoading({ label, title, description }: RouteLoadingProps) {
 
       <main
         id={MAIN_CONTENT_ID}
-        className="relative z-10 mx-auto flex min-h-[calc(100dvh-14rem)] max-w-[900px] items-center px-4 py-16 sm:px-6"
+        className="relative z-10 mx-auto flex min-h-[calc(100dvh-14rem)] max-w-page items-center px-4 py-16 sm:px-6"
       >
         <div role="status" aria-live="polite" aria-busy="true" className="panel w-full p-6 sm:p-8">
           <p className="micro-label text-cream-500">{label}</p>

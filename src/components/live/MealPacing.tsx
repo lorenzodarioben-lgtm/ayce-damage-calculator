@@ -195,7 +195,7 @@ export function MealPacing({
               max={MAX_MEAL_DURATION_MINUTES}
               value={customValue}
               onChange={(event) => setCustomValue(event.target.value)}
-              className="h-11 w-full rounded-surface border border-line bg-ash-900 px-3 text-ui text-cream-50"
+              className="h-11 w-full rounded-surface border border-line-strong bg-ash-900 px-3 text-ui text-cream-50"
             />
           </div>
           <Button variant="secondary" size="md" onClick={applyCustom}>

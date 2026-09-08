@@ -27,7 +27,7 @@ export function OptionCard({ selected, onSelect, label, detail, glyph, name }: O
         'has-[:focus-visible]:outline-ember-400',
         selected
           ? 'border-ember-500 bg-ash-800 elevate-selected'
-          : 'border-line bg-ash-900 recessed hover:-translate-y-px hover:border-ember-700 hover:bg-ash-850',
+          : 'border-line-strong bg-ash-900 recessed hover:-translate-y-px hover:border-ember-700 hover:bg-ash-850',
       )}
     >
       <input type="radio" name={name} checked={selected} onChange={onSelect} className="sr-only" />

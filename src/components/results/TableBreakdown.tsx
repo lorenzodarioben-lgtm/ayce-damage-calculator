@@ -28,7 +28,7 @@ export function TableBreakdown({
   if (diners.length === 0) return null;
   const hasAdjustments = diners.some((diner) => diner.adjustmentNet !== 0);
   return (
-    <section aria-labelledby="table-breakdown-heading" className="panel overflow-x-auto p-4 sm:p-5">
+    <section aria-labelledby="table-breakdown-heading" className="panel scroll-x p-4 sm:p-5">
       <h2 id="table-breakdown-heading" className="display-type text-title text-cream-100">
         Table breakdown
       </h2>

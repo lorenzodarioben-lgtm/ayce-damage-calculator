@@ -4,6 +4,7 @@ import { useCallback, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Link2, Play, Trash2 } from 'lucide-react';
+import { Figure } from '@/components/ui/Figure';
 import { RecoveryTrend } from '@/components/stats/RecoveryTrend';
 import { ShareBars } from '@/components/stats/ShareBars';
 import { Button, EMPTY_STATE_LINK } from '@/components/ui/Button';
@@ -338,15 +339,6 @@ export function RestaurantDetail({ id }: { id: string }) {
       />
 
       <StatusToast message={status_} />
-    </div>
-  );
-}
-
-function Figure({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="well px-3 py-2">
-      <dt className="micro-label text-cream-500">{label}</dt>
-      <dd className="tabular mt-0.5 text-ui font-semibold text-cream-50">{value}</dd>
     </div>
   );
 }

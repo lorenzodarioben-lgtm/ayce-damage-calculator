@@ -99,7 +99,7 @@ export function RestaurantPresets({
                 type="button"
                 onClick={() => requestApply(preset)}
                 aria-label={`Apply preset ${describe(preset)}`}
-                className="flex min-h-11 cursor-pointer items-center rounded-surface border border-line bg-ash-900 pl-3 pr-9 text-left transition-colors duration-200 hover:border-ember-700 hover:bg-ash-850"
+                className="flex min-h-11 cursor-pointer items-center rounded-surface border border-line-strong bg-ash-900 pl-3 pr-9 text-left transition-colors duration-200 hover:border-ember-700 hover:bg-ash-850"
               >
                 <span className="min-w-0">
                   <span className="block truncate text-ui font-bold text-cream-50">

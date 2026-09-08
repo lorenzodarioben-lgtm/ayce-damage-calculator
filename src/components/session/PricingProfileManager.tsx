@@ -186,7 +186,7 @@ function ProfileEditor({
               onChange={(event) => setName(event.target.value)}
               autoComplete="off"
               placeholder="e.g. Sydney dinner menu"
-              className="h-11 w-full rounded-surface border border-line bg-ash-900 px-3 text-cream-50 placeholder:text-cream-700"
+              className="h-11 w-full rounded-surface border border-line-strong bg-ash-900 px-3 text-cream-50 placeholder:text-cream-700"
             />
           </div>
           <div>
@@ -200,7 +200,7 @@ function ProfileEditor({
               id={currencyId}
               value={currency}
               onChange={(event) => setCurrency(event.target.value as CurrencyCode)}
-              className="h-11 w-full rounded-surface border border-line bg-ash-900 px-3 text-cream-50"
+              className="h-11 w-full rounded-surface border border-line-strong bg-ash-900 px-3 text-cream-50"
             >
               {SUPPORTED_CURRENCIES.map((code) => (
                 <option key={code} value={code}>
@@ -226,7 +226,7 @@ function ProfileEditor({
                 type="number"
                 step="0.1"
                 placeholder="e.g. 10"
-                className="h-10 w-28 rounded-surface border border-line bg-ash-850 px-2 text-ui text-cream-50"
+                className="h-10 w-28 rounded-surface border border-line-strong bg-ash-850 px-2 text-ui text-cream-50"
               />
               <button
                 type="button"
@@ -283,7 +283,7 @@ function ProfileEditor({
                       value={fields?.retail ?? ''}
                       onChange={(event) => updatePrice(food.id, 'retail', event.target.value)}
                       placeholder="Retail"
-                      className="mt-1 h-10 w-full rounded-surface border border-line bg-ash-850 px-2 text-ui text-cream-50 placeholder:text-cream-700 sm:mt-0"
+                      className="mt-1 h-10 w-full rounded-surface border border-line-strong bg-ash-850 px-2 text-ui text-cream-50 placeholder:text-cream-700 sm:mt-0"
                     />
                   </label>
                   <label className="text-caption text-cream-500">
@@ -298,7 +298,7 @@ function ProfileEditor({
                       value={fields?.cost ?? ''}
                       onChange={(event) => updatePrice(food.id, 'cost', event.target.value)}
                       placeholder="Cost"
-                      className="mt-1 h-10 w-full rounded-surface border border-line bg-ash-850 px-2 text-ui text-cream-50 placeholder:text-cream-700 sm:mt-0"
+                      className="mt-1 h-10 w-full rounded-surface border border-line-strong bg-ash-850 px-2 text-ui text-cream-50 placeholder:text-cream-700 sm:mt-0"
                     />
                   </label>
                 </div>
@@ -377,7 +377,7 @@ export function PricingProfileManager({
         {profiles.map((profile) => (
           <li
             key={profile.id}
-            className="flex min-h-12 items-center justify-between gap-3 rounded-surface border border-line bg-ash-900/70 px-3 py-2"
+            className="flex min-h-12 items-center justify-between gap-3 rounded-surface border border-line-strong bg-ash-900/70 px-3 py-2"
           >
             <div className="min-w-0">
               <p className="truncate text-ui font-bold text-cream-100">{profile.name}</p>

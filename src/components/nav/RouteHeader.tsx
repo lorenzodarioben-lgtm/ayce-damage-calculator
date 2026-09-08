@@ -52,7 +52,7 @@ export function RouteHeader({ image, title, children }: RouteHeaderProps) {
       />
       <div aria-hidden="true" className="grill-texture absolute inset-0 -z-10 opacity-35" />
 
-      <div className="mx-auto flex min-h-[clamp(15rem,34vh,22rem)] max-w-[900px] flex-col justify-end px-4 pb-9 pt-16 sm:px-6 sm:pb-11 sm:pt-20">
+      <div className="mx-auto flex min-h-[clamp(15rem,34vh,22rem)] max-w-page flex-col justify-end px-4 pb-9 pt-16 sm:px-6 sm:pb-11 sm:pt-20">
         <h1 className="display-hero text-[clamp(2.75rem,8vw,4.75rem)] text-cream-50 text-over-photo">
           {title}
         </h1>
