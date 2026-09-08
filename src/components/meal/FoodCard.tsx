@@ -24,7 +24,11 @@ export function FoodCard({ food, selected, onSelect }: FoodCardProps) {
       aria-pressed={selected}
       onClick={() => onSelect(food.id)}
       className={cn(
-        'group relative flex h-full cursor-pointer flex-col gap-2 overflow-hidden rounded-surface border p-3 text-left',
+        // A row on a phone and a card above it. Seven cuts as tall two-column
+        // cards was most of a screen of scrolling before the first plate could
+        // be added; as rows they are a list you can thumb down.
+        'group relative flex h-full cursor-pointer items-center gap-3 overflow-hidden rounded-surface border p-3 text-left',
+        'sm:flex-col sm:items-stretch sm:gap-2',
         'transition-[border-color,background-color,transform,box-shadow] duration-160 ease-out-soft',
         // Lifts a pixel under the pointer and settles back under the press, so
         // the card behaves like something on the page rather than a hit area.
@@ -59,21 +63,19 @@ export function FoodCard({ food, selected, onSelect }: FoodCardProps) {
 
       <FoodIllustration
         food={food}
-        className="relative h-24 w-24 shrink-0 elevate-illustration transition-transform duration-160 ease-out-soft group-hover:scale-[1.05] sm:h-28 sm:w-28"
+        className="relative h-16 w-16 shrink-0 elevate-illustration transition-transform duration-160 ease-out-soft group-hover:scale-[1.05] sm:h-28 sm:w-28"
       />
 
-      <span className="display-type relative text-lead leading-tight text-cream-50 sm:text-lead">
-        {food.name}
-      </span>
+      <span className="relative flex min-w-0 flex-1 flex-col gap-0.5 sm:flex-none sm:gap-2">
+        <span className="display-type text-lead leading-tight text-cream-50">{food.name}</span>
 
-      <span className="relative text-ui leading-snug text-cream-500 sm:text-ui">
-        {food.description}
-      </span>
+        <span className="line-clamp-2 text-ui leading-snug text-cream-500 sm:line-clamp-none">
+          {food.description}
+        </span>
 
-      {/* A badge rather than a line of text: it is the one figure worth
-          comparing between two cards, and it should be findable at a glance. */}
-      <span className="relative mt-auto pt-2">
-        <span className="tabular inline-flex items-center rounded-full border border-line-ember bg-ash-950/70 px-2.5 py-1 text-caption font-semibold tracking-caps text-cream-100">
+        {/* The one figure worth comparing between two cuts, so it is findable
+            at a glance rather than read out of a sentence. */}
+        <span className="tabular mt-0.5 text-caption font-semibold text-cream-100 sm:mt-auto sm:pt-2">
           ~{formatUnitPrice(pricing, pricingProfile.money)} retail
         </span>
       </span>

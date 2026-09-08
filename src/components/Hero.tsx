@@ -1,4 +1,5 @@
 import { FOODS } from '@/data/foods';
+import { cn } from '@/lib/cn';
 
 /**
  * The first thing anyone sees, and the only place the app is allowed to be
@@ -18,7 +19,19 @@ const CREDENTIALS = [
   { value: 'On device', label: 'Nothing leaves the browser' },
 ] as const;
 
-export function Hero() {
+interface HeroProps {
+  /**
+   * A meal is already in progress.
+   *
+   * The masthead is worth most of a screen the first time somebody arrives and
+   * worth almost nothing on the fourth load of the same evening, when it is
+   * just something to scroll past to reach the tab. It keeps its heading — the
+   * route has exactly one, and this is it — and gives up its height.
+   */
+  compact?: boolean;
+}
+
+export function Hero({ compact = false }: HeroProps) {
   return (
     <section className="relative isolate overflow-hidden border-b border-line-ember/60">
       {/*
@@ -49,24 +62,44 @@ export function Hero() {
         <div className="animate-ember-breathe absolute -top-40 left-[4%] h-[34rem] w-[34rem] rounded-full bg-[radial-gradient(circle,var(--color-ember-500)_0%,transparent_66%)] opacity-25 blur-3xl" />
       </div>
 
-      <div className="mx-auto flex min-h-[clamp(30rem,68vh,46rem)] max-w-page flex-col justify-center px-4 py-16 sm:px-6 sm:py-24">
-        <div className="flex items-center gap-3">
+      <div
+        className={cn(
+          'mx-auto flex max-w-page flex-col justify-center px-4 sm:px-6',
+          compact ? 'min-h-0 py-5' : 'min-h-[clamp(19rem,52vh,32rem)] py-10 sm:py-16',
+        )}
+      >
+        <div className={cn('flex items-center gap-3', compact && 'hidden')}>
           <span aria-hidden="true" className="h-4 w-[3px] rounded-full bg-ember-500" />
           <p className="micro-label text-cream-100">AYCE Damage Calculator</p>
         </div>
 
-        <h1 className="display-hero mt-6 max-w-[15ch] text-[clamp(3.5rem,11vw,9rem)] text-over-photo">
+        <h1
+          className={cn(
+            'display-hero max-w-[15ch] text-over-photo',
+            compact ? 'text-figure' : 'mt-6 text-[clamp(3.5rem,11vw,9rem)]',
+          )}
+        >
           <span className="text-cream-50">Did you beat</span>
           <br />
           <span className="text-gradient-ember">the buffet?</span>
         </h1>
 
-        <p className="mt-7 max-w-[62ch] reading text-cream-100 text-over-photo sm:text-lead">
+        <p
+          className={cn(
+            'mt-7 max-w-[62ch] reading text-cream-100 text-over-photo sm:text-lead',
+            compact && 'hidden',
+          )}
+        >
           Track the plates. Calculate the damage. Find out whether you got your money&rsquo;s worth
           or funded their next renovation.
         </p>
 
-        <dl className="mt-10 flex flex-wrap gap-x-10 gap-y-5 border-t border-line pt-6">
+        <dl
+          className={cn(
+            'mt-10 flex flex-wrap gap-x-10 gap-y-5 border-t border-line pt-6',
+            compact && 'hidden',
+          )}
+        >
           {CREDENTIALS.map((credential) => (
             <div key={credential.value}>
               <dt className="display-type text-lead text-cream-100">{credential.value}</dt>
