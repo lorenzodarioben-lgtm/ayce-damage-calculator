@@ -74,14 +74,14 @@ export function MenuShare({ pricingProfile, customFoods, restaurant, onStatus }:
       </h3>
 
       {token === null ? (
-        <p className="rounded-surface border border-dashed border-line bg-ash-900/60 px-4 py-3 text-center text-caption leading-relaxed text-cream-700">
+        <p className="rounded-surface border border-dashed border-line bg-ash-900/60 px-4 py-3 text-center text-caption leading-relaxed text-cream-600">
           {!result.ok && result.reason === 'too-large'
             ? 'This menu is too large to fit inside a link. A menu link carries every price and custom food in the address itself, so there is a limit to what it can hold — share fewer foods, or trim their descriptions.'
             : 'There is nothing to share yet. A menu link carries your own price assumptions and custom foods — add one of those, or a restaurant setup, and a link appears here.'}
         </p>
       ) : (
         <>
-          <p className="max-w-[62ch] text-caption leading-relaxed text-cream-700">
+          <p className="max-w-[62ch] text-caption leading-relaxed text-cream-600">
             The link carries the whole menu inside the address. Nothing is uploaded, and no history,
             saved order, diner name or note travels with it.
           </p>
@@ -119,7 +119,7 @@ export function MenuShare({ pricingProfile, customFoods, restaurant, onStatus }:
           {showQr && (
             <div className="mt-3 flex flex-col items-center gap-2">
               <QrCode value={url} label="A scannable link to this menu" />
-              <p className="max-w-[44ch] text-center text-caption leading-relaxed text-cream-700">
+              <p className="max-w-[44ch] text-center text-caption leading-relaxed text-cream-600">
                 Scanning opens the same read-only preview the link does. Copy the link instead if
                 the code will not scan — it always works.
               </p>

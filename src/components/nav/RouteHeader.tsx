@@ -56,7 +56,7 @@ export function RouteHeader({ image, title, children }: RouteHeaderProps) {
         <h1 className="display-hero text-[clamp(2.75rem,8vw,4.75rem)] text-cream-50 text-over-photo">
           {title}
         </h1>
-        <p className="mt-4 max-w-[62ch] reading text-cream-100 text-over-photo sm:">{children}</p>
+        <p className="mt-4 max-w-[62ch] reading text-cream-100 text-over-photo">{children}</p>
       </div>
     </div>
   );

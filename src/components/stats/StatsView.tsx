@@ -35,7 +35,7 @@ export function StatsView() {
 
   if (status === 'loading') {
     return (
-      <p role="status" className="py-16 text-center text-ui text-cream-700">
+      <p role="status" className="py-16 text-center text-ui text-cream-600">
         Reviewing the file…
       </p>
     );
@@ -85,7 +85,7 @@ export function StatsView() {
         ))}
       </section>
       {analytics.sessionCount === 0 ? (
-        <p className="panel border-dashed px-6 py-10 text-center text-ui text-cream-700">
+        <p className="panel border-dashed px-6 py-10 text-center text-ui text-cream-600">
           No filed sessions fall within this period.
         </p>
       ) : (
@@ -164,12 +164,12 @@ export function StatsView() {
                     className="flex items-baseline justify-between gap-3 border-b border-line-soft pb-2 last:border-b-0 last:pb-0"
                   >
                     <span className="flex min-w-0 items-baseline gap-3">
-                      <span className="tabular text-caption text-cream-700">{index + 1}</span>
+                      <span className="tabular text-caption text-cream-600">{index + 1}</span>
                       <span className="truncate text-ui font-semibold text-cream-100">
                         {food.name}
                       </span>
                     </span>
-                    <span className="tabular shrink-0 text-ui text-ember-400">
+                    <span className="tabular shrink-0 text-ui text-cream-100">
                       {formatPlates(food.plates)}
                     </span>
                   </li>
@@ -187,7 +187,7 @@ export function StatsView() {
                 {formatPlates(analytics.mostPlates.value)} at{' '}
                 <Link
                   href={`/history/${analytics.mostPlates.id}`}
-                  className="text-ember-400 underline-offset-4 hover:underline"
+                  className="text-cream-100 underline-offset-4 hover:underline"
                 >
                   {analytics.mostPlates.label}
                 </Link>
@@ -200,7 +200,7 @@ export function StatsView() {
               <h2 id="meal-trends-heading" className="display-type text-title text-cream-100 mb-2">
                 Recent meal trends
               </h2>
-              <p className="mb-4 text-ui text-cream-700">
+              <p className="mb-4 text-ui text-cream-600">
                 Latest {mealTrends.recent.count} filed meal
                 {mealTrends.recent.count === 1 ? '' : 's'}
                 {mealTrends.previous.count > 0
@@ -244,7 +244,7 @@ export function StatsView() {
                   unit="%"
                 />
               </div>
-              <p className="mt-4 text-caption text-cream-700">
+              <p className="mt-4 text-caption text-cream-600">
                 Changes describe recorded behaviour only; more consumption is not inherently better.
                 Recovery and break-even changes are percentage points; the other changes are
                 percentages relative to the previous period.

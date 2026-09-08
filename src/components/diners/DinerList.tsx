@@ -21,7 +21,7 @@ export function DinerList() {
 
   if (!hydrated || status === 'loading') {
     return (
-      <p role="status" className="py-16 text-center text-ui text-cream-700">
+      <p role="status" className="py-16 text-center text-ui text-cream-600">
         Reading the file…
       </p>
     );
@@ -64,7 +64,7 @@ export function DinerList() {
                 <p className="display-type truncate text-title text-cream-50">
                   {summary.diner.displayName}
                 </p>
-                <p className="tabular mt-1 text-caption text-cream-700">
+                <p className="tabular mt-1 text-caption text-cream-600">
                   {summary.visits === 0
                     ? 'No meals filed with them yet'
                     : `${summary.visits} ${summary.visits === 1 ? 'meal' : 'meals'} · last ${formatRecordedAt(summary.latestVisitAt ?? '')}`}
@@ -73,7 +73,7 @@ export function DinerList() {
               {summary.visits > 0 && (
                 <p className="tabular shrink-0 text-ui text-cream-500">
                   {formatPlates(summary.effectivePlates)} ·{' '}
-                  <span className="text-ember-400">
+                  <span className="text-cream-100">
                     {formatMoney(summary.retailValue, summary.money)}
                   </span>
                 </p>
@@ -97,7 +97,7 @@ export function DinerList() {
  */
 function UnsavedNote({ names }: { names: readonly string[] }) {
   return (
-    <p className="panel border-dashed p-4 text-caption leading-relaxed text-cream-700 sm:p-5">
+    <p className="panel border-dashed p-4 text-caption leading-relaxed text-cream-600 sm:p-5">
       {names.length} {names.length === 1 ? 'name appears' : 'names appear'} on a filed roster
       without being saved here: {names.slice(0, 6).join(', ')}
       {names.length > 6 && ', and others'}. Those meals keep their own roster exactly as it was

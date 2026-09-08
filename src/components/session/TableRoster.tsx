@@ -92,7 +92,7 @@ export function TableRoster({
             <UsersRound size={17} aria-hidden="true" />
             Table roster
           </h3>
-          <p className="mt-1 max-w-[62ch] text-caption leading-relaxed text-cream-700">
+          <p className="mt-1 max-w-[62ch] text-caption leading-relaxed text-cream-600">
             Optional. Add people only when you want to attribute plates; otherwise everything stays
             with the Table.
           </p>
@@ -121,7 +121,7 @@ export function TableRoster({
           }}
           maxLength={40}
           placeholder="Add a diner"
-          className="h-11 min-w-0 flex-1 rounded-surface border border-line-strong bg-ash-900 px-3 text-ui text-cream-50 placeholder:text-cream-700"
+          className="h-11 min-w-0 flex-1 rounded-surface border border-line-strong bg-ash-900 px-3 text-ui text-cream-50 placeholder:text-cream-600"
         />
         <Button variant="secondary" size="md" onClick={() => addNamed(false)}>
           <UserPlus size={16} aria-hidden="true" />
@@ -166,7 +166,7 @@ export function TableRoster({
         <ol className="mt-4 space-y-2">
           {diners.map((diner, index) => (
             <li key={diner.id} className="flex items-center gap-2 rounded-surface bg-ash-900 p-2">
-              <span className="w-5 text-center text-caption font-bold text-ember-400">
+              <span className="w-5 text-center text-caption font-bold text-cream-100">
                 {index + 1}
               </span>
               <label className="sr-only" htmlFor={`diner-name-${diner.id}`}>
@@ -196,7 +196,7 @@ export function TableRoster({
                   onAdmissionPriceChange(diner.id, Number.isFinite(value) ? value : undefined);
                 }}
                 placeholder="Default"
-                className="h-9 w-24 rounded-surface border border-line-strong bg-ash-850 px-2 text-right text-ui text-cream-100 placeholder:text-cream-700"
+                className="h-9 w-24 rounded-surface border border-line-strong bg-ash-850 px-2 text-right text-ui text-cream-100 placeholder:text-cream-600"
               />
               <div className="flex shrink-0">
                 <button
@@ -221,7 +221,7 @@ export function TableRoster({
                   type="button"
                   onClick={() => remove(diner.id)}
                   aria-label={`Remove ${diner.displayName} from this table`}
-                  className="flex size-9 cursor-pointer items-center justify-center rounded-surface text-char-500 hover:bg-char-700/25 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-char-500"
+                  className="flex size-9 cursor-pointer items-center justify-center rounded-surface text-char-400 hover:bg-char-700/25 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-char-500"
                 >
                   <Trash2 size={16} aria-hidden="true" />
                 </button>

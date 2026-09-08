@@ -52,7 +52,7 @@ export function Hero() {
       <div className="mx-auto flex min-h-[clamp(30rem,68vh,46rem)] max-w-page flex-col justify-center px-4 py-16 sm:px-6 sm:py-24">
         <div className="flex items-center gap-3">
           <span aria-hidden="true" className="h-4 w-[3px] rounded-full bg-ember-500" />
-          <p className="micro-label text-ember-400">AYCE Damage Calculator</p>
+          <p className="micro-label text-cream-100">AYCE Damage Calculator</p>
         </div>
 
         <h1 className="display-hero mt-6 max-w-[15ch] text-[clamp(3.5rem,11vw,9rem)] text-over-photo">

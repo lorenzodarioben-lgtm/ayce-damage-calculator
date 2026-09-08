@@ -59,7 +59,7 @@ export function Methodology({ open, onClose }: MethodologyProps) {
                   key={size.id}
                   className="rounded-surface border border-line bg-ash-900 px-3 py-2 text-center"
                 >
-                  <span className="block text-caption uppercase tracking-caps text-cream-700">
+                  <span className="block text-caption uppercase tracking-caps text-cream-600">
                     {size.label}
                   </span>
                   <span className="block font-bold text-cream-100">{size.grams} g</span>

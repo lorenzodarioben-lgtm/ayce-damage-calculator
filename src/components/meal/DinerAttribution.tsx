@@ -27,7 +27,7 @@ export function DinerAttribution({ diners, activeDinerId, onChange }: DinerAttri
                 'min-h-10 shrink-0 cursor-pointer rounded-full border px-3 text-ui font-semibold transition-colors',
                 active
                   ? 'border-ember-500 bg-ember-500 text-ash-950'
-                  : 'border-line bg-ash-900 text-cream-300 hover:border-ember-700',
+                  : 'border-line bg-ash-900 text-cream-300 hover:border-line-strong',
               )}
             >
               {target.displayName}

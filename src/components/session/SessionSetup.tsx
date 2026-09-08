@@ -154,7 +154,7 @@ export function SessionSetup({
             value={session.restaurantName}
             onChange={(event) => onRestaurantNameChange(event.target.value)}
             placeholder="Restaurant name (optional)"
-            className="h-12 w-full rounded-surface border border-line-strong bg-ash-900 px-3 text-body text-cream-50 placeholder:text-cream-700"
+            className="h-12 w-full rounded-surface border border-line-strong bg-ash-900 px-3 text-body text-cream-50 placeholder:text-cream-600"
           />
         </div>
 
@@ -188,8 +188,8 @@ export function SessionSetup({
             id={priceHintId}
             className={
               priceError
-                ? 'mt-1.5 text-caption font-medium text-char-500'
-                : 'mt-1.5 text-caption text-cream-700'
+                ? 'mt-1.5 text-caption font-medium text-char-400'
+                : 'mt-1.5 text-caption text-cream-600'
             }
           >
             {priceError ?? `AUD, between $${MIN_PRICE_PER_DINER} and $${MAX_PRICE_PER_DINER}.`}
@@ -221,7 +221,7 @@ export function SessionSetup({
               </option>
             ))}
           </select>
-          <p className="mt-1.5 text-caption text-cream-700">
+          <p className="mt-1.5 text-caption text-cream-600">
             Switching profiles recalculates the whole tab with that menu&rsquo;s assumptions.
           </p>
         </div>
@@ -277,7 +277,7 @@ export function SessionSetup({
                 : `${formatMoney(session.pricePerDiner, pricingProfile.money)} per person × ${session.dinerCount} ${session.dinerCount === 1 ? 'diner' : 'diners'}`}
           </p>
         </div>
-        <p className="tabular display-type text-figure text-ember-400">
+        <p className="tabular display-type text-figure text-cream-100">
           {formatMoney(totalAdmission, pricingProfile.money)}
         </p>
       </div>

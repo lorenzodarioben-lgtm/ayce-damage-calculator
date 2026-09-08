@@ -41,7 +41,7 @@ export function RestaurantList() {
 
   if (!hydrated || status === 'loading') {
     return (
-      <p role="status" className="py-16 text-center text-ui text-cream-700">
+      <p role="status" className="py-16 text-center text-ui text-cream-600">
         Reading the file…
       </p>
     );
@@ -67,7 +67,7 @@ export function RestaurantList() {
   return (
     <div className="space-y-5">
       {restaurants.length > 1 && (
-        <p className="text-ui text-cream-700">
+        <p className="text-ui text-cream-600">
           Select two saved places to compare their explicitly linked local visits.
         </p>
       )}
@@ -85,7 +85,7 @@ export function RestaurantList() {
             />
             <Link
               href={`/restaurants/${summary.profile.id}`}
-              className="panel lift-on-hover flex flex-wrap items-baseline justify-between gap-3 p-4 hover:border-ember-700 hover:bg-ash-800 hover:elevate-raised sm:p-5"
+              className="panel lift-on-hover flex flex-wrap items-baseline justify-between gap-3 p-4 hover:border-line-strong hover:bg-ash-800 hover:elevate-raised sm:p-5"
             >
               <span className="min-w-0">
                 <span className="block truncate text-body font-bold text-cream-50">
@@ -98,12 +98,12 @@ export function RestaurantList() {
                 </span>
               </span>
               <span className="text-right">
-                <span className="tabular block text-ui font-bold text-ember-400">
+                <span className="tabular block text-ui font-bold text-cream-100">
                   {summary.visits === 0
                     ? 'No visits filed'
                     : `${summary.visits} ${summary.visits === 1 ? 'visit' : 'visits'}`}
                 </span>
-                <span className="tabular block text-caption text-cream-700">
+                <span className="tabular block text-caption text-cream-600">
                   {summary.visits === 0
                     ? 'Saved setup only'
                     : `${formatPercent(summary.averageRecoveryPercent)} average · last ${formatRecordedAt(summary.latestVisitAt ?? '')}`}

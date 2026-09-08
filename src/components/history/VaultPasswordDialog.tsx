@@ -83,7 +83,7 @@ export function VaultPasswordDialog({
       </p>
 
       {error && (
-        <p role="alert" className="mt-3 text-ui font-semibold text-char-500">
+        <p role="alert" className="mt-3 text-ui font-semibold text-char-400">
           {error}
         </p>
       )}
@@ -108,7 +108,7 @@ export function VaultPasswordDialog({
             className={FIELD}
           />
           {encrypting && (
-            <p className="mt-1 text-caption text-cream-700">
+            <p className="mt-1 text-caption text-cream-600">
               At least {MIN_VAULT_PASSWORD_LENGTH} characters.
             </p>
           )}
@@ -135,7 +135,7 @@ export function VaultPasswordDialog({
       </div>
 
       {mismatch && (
-        <p role="alert" className="mt-3 text-ui font-semibold text-char-500">
+        <p role="alert" className="mt-3 text-ui font-semibold text-char-400">
           Those two passwords are not the same.
         </p>
       )}

@@ -41,7 +41,7 @@ export function SiteFooter({ children, className }: SiteFooterProps) {
       )}
     >
       <div className="mx-auto flex max-w-page flex-wrap items-center justify-between gap-3">
-        <p className="max-w-[62ch] text-caption leading-relaxed text-cream-700">{children}</p>
+        <p className="max-w-[62ch] text-caption leading-relaxed text-cream-600">{children}</p>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
           <a
             href={REPOSITORY_URL}
@@ -58,7 +58,7 @@ export function SiteFooter({ children, className }: SiteFooterProps) {
           </a>
           <MethodologyTrigger
             label="How we calculate it"
-            className="min-h-11 cursor-pointer px-1 text-caption font-semibold uppercase tracking-caps text-ember-500 underline-offset-4 hover:underline"
+            className="min-h-11 cursor-pointer px-1 text-caption font-semibold uppercase tracking-caps text-cream-100 underline-offset-4 hover:underline"
           />
         </div>
       </div>

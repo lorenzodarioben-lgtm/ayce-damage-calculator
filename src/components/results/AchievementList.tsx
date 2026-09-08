@@ -23,7 +23,7 @@ export function AchievementList({ achievements, headingId }: AchievementListProp
         <h3 id={headingId} className="display-type text-lead text-cream-100">
           Commendations
         </h3>
-        <p className="tabular text-caption text-cream-700">
+        <p className="tabular text-caption text-cream-600">
           {achievements.length} of {ACHIEVEMENTS.length}
         </p>
       </div>
@@ -31,7 +31,7 @@ export function AchievementList({ achievements, headingId }: AchievementListProp
       <ul className="grid gap-2 sm:grid-cols-2">
         {achievements.map((achievement) => (
           <li key={achievement.id} className="flex items-start gap-3 well px-3 py-3">
-            <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full border border-line-ember bg-ash-850 text-ember-400">
+            <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full border border-line-ember bg-ash-850 text-cream-100">
               <Award size={14} aria-hidden="true" />
             </span>
             <div className="min-w-0">

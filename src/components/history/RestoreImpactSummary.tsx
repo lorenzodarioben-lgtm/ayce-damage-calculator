@@ -60,7 +60,7 @@ export function RestoreImpactSummary({ impact }: RestoreImpactSummaryProps) {
       <h3 id="restore-impact-heading" className="display-type text-lead text-cream-100 mb-2">
         Restore impact
       </h3>
-      <p className="mb-2 text-caption leading-relaxed text-cream-700">
+      <p className="mb-2 text-caption leading-relaxed text-cream-600">
         Merging adds only the new records below. Replacing discards the current records shown for
         each collection before writing this backup.
       </p>

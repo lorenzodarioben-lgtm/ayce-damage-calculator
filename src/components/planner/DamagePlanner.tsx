@@ -54,7 +54,7 @@ const CHIP =
   'min-h-11 cursor-pointer rounded-surface border px-3 text-caption font-semibold uppercase ' +
   'tracking-caps transition-colors duration-200';
 
-const ON = 'border-line-ember bg-ash-800 text-ember-400';
+const ON = 'border-line-ember bg-ash-800 text-cream-100';
 const OFF = 'border-line bg-ash-900 text-cream-300 hover:bg-ash-800';
 
 function toggle<T>(values: readonly T[], value: T): readonly T[] {
@@ -271,7 +271,7 @@ export function DamagePlanner() {
                 className="h-12 w-full rounded-surface border border-line-strong bg-ash-900 px-3 text-body text-cream-50"
               />
               {adjustments.length > 0 && (
-                <p className="tabular mt-1.5 text-caption text-cream-700">
+                <p className="tabular mt-1.5 text-caption text-cream-600">
                   Planning against {formatMoney(admission, profile.money)}, which is your open
                   tab&rsquo;s {formatMoney(bill.baseAdmission, profile.money)} admission after{' '}
                   {adjustments.length} {adjustments.length === 1 ? 'adjustment' : 'adjustments'}.
@@ -341,7 +341,7 @@ export function DamagePlanner() {
             </div>
           </div>
 
-          <p className="tabular mt-2 text-caption text-cream-700">
+          <p className="tabular mt-2 text-caption text-cream-600">
             Total admission {formatMoney(admission, profile.money)} · target retail value{' '}
             {formatMoney((admission * clampTargetRecovery(target)) / 100, profile.money)}
           </p>
@@ -580,7 +580,7 @@ function PlanOutcome({
         <Figure label="Food weight" value={formatWeight(result.totals.totalWeightG)} />
       </dl>
 
-      <p className="tabular mt-2 text-caption text-cream-700">
+      <p className="tabular mt-2 text-caption text-cream-600">
         {formatCalories(result.totals.nutrition.calories)} ·{' '}
         {formatGrams(result.totals.nutrition.protein)} protein ·{' '}
         {formatGrams(result.totals.nutrition.fat)} fat ·{' '}

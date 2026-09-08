@@ -27,7 +27,7 @@ export function OptionCard({ selected, onSelect, label, detail, glyph, name }: O
         'has-[:focus-visible]:outline-ember-400',
         selected
           ? 'border-ember-500 bg-ash-800 elevate-selected'
-          : 'border-line-strong bg-ash-900 recessed hover:-translate-y-px hover:border-ember-700 hover:bg-ash-850',
+          : 'border-line-strong bg-ash-900 recessed hover:-translate-y-px hover:border-line-strong hover:bg-ash-850',
       )}
     >
       <input type="radio" name={name} checked={selected} onChange={onSelect} className="sr-only" />
@@ -35,7 +35,7 @@ export function OptionCard({ selected, onSelect, label, detail, glyph, name }: O
       <span
         className={cn(
           'text-ui font-bold uppercase tracking-caps',
-          selected ? 'text-ember-300' : 'text-cream-100',
+          selected ? 'text-cream-100' : 'text-cream-100',
         )}
       >
         {label}

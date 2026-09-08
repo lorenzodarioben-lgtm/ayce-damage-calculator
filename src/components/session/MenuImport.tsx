@@ -133,7 +133,7 @@ export function MenuImport({ foods, onApply, onStatus }: MenuImportProps) {
         <FileSpreadsheet size={13} aria-hidden="true" />
         Import a menu
       </h3>
-      <p className="max-w-[62ch] text-caption leading-relaxed text-cream-700">
+      <p className="max-w-[62ch] text-caption leading-relaxed text-cream-600">
         Bring your restaurant&rsquo;s prices in from a spreadsheet. The file is read on this device,
         shown to you first, and nothing is saved until you say so.
       </p>
@@ -172,7 +172,7 @@ export function MenuImport({ foods, onApply, onStatus }: MenuImportProps) {
       </div>
 
       {stage.kind === 'error' && (
-        <p role="alert" className="mt-3 text-ui font-semibold text-char-500">
+        <p role="alert" className="mt-3 text-ui font-semibold text-char-400">
           {stage.message}
         </p>
       )}
@@ -187,14 +187,14 @@ export function MenuImport({ foods, onApply, onStatus }: MenuImportProps) {
           </p>
 
           {stage.plan.truncated && (
-            <p className="text-caption leading-relaxed text-cream-700">
+            <p className="text-caption leading-relaxed text-cream-600">
               Only the first rows of that file were read. It is longer than a menu is expected to
               be, so the rest was left alone rather than parsed.
             </p>
           )}
 
           {stage.plan.overCapacity && (
-            <p className="text-caption leading-relaxed text-char-500">
+            <p className="text-caption leading-relaxed text-char-400">
               Your menu holds {MAX_CUSTOM_FOODS} items. Importing everything here would go past
               that, so the overflow will not be saved — trim the file if the order matters.
             </p>
@@ -210,7 +210,7 @@ export function MenuImport({ foods, onApply, onStatus }: MenuImportProps) {
                     className="flex flex-wrap items-baseline justify-between gap-2 border-b border-line-soft py-1.5 text-ui last:border-b-0"
                   >
                     <span className="min-w-0 truncate text-cream-100">{food.name}</span>
-                    <span className="text-caption text-cream-700">
+                    <span className="text-caption text-cream-600">
                       {categoryLabel(food.category)} ·{' '}
                       {food.valuation === 'by-serving' ? 'per serving' : 'per kg'}
                     </span>
@@ -223,7 +223,7 @@ export function MenuImport({ foods, onApply, onStatus }: MenuImportProps) {
           {stage.plan.conflicts.length > 0 && (
             <div>
               <h4 className="text-body font-semibold text-cream-200 mb-1">Already on your menu</h4>
-              <p className="mb-2 max-w-[62ch] text-caption leading-relaxed text-cream-700">
+              <p className="mb-2 max-w-[62ch] text-caption leading-relaxed text-cream-600">
                 These names are taken. Nothing is replaced unless you choose it.
               </p>
               <ul className="space-y-2">
@@ -231,7 +231,7 @@ export function MenuImport({ foods, onApply, onStatus }: MenuImportProps) {
                   <li key={conflict.existingId} className="border-b border-line-soft pb-2">
                     <p className="text-ui text-cream-100">
                       {conflict.name}{' '}
-                      <span className="text-caption text-cream-700">(row {conflict.line})</span>
+                      <span className="text-caption text-cream-600">(row {conflict.line})</span>
                     </p>
                     <div
                       role="radiogroup"
@@ -286,7 +286,7 @@ export function MenuImport({ foods, onApply, onStatus }: MenuImportProps) {
                       Row {row.line}
                       {row.name && `, ${row.name}`}
                     </span>{' '}
-                    <span className="text-cream-700">{ROW_PROBLEM_MESSAGES[row.problem]}</span>
+                    <span className="text-cream-600">{ROW_PROBLEM_MESSAGES[row.problem]}</span>
                   </li>
                 ))}
               </ul>

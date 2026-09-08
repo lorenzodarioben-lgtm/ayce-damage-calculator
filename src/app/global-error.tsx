@@ -49,7 +49,7 @@ export default function GlobalError({ error: _error, retry }: GlobalErrorProps) 
             <button
               type="button"
               onClick={() => window.location.reload()}
-              className="inline-flex min-h-14 cursor-pointer items-center justify-center rounded-surface border border-line-ember bg-ash-850 px-6 text-body font-bold uppercase tracking-caps text-ember-400 transition-colors duration-200 hover:bg-ash-800"
+              className="inline-flex min-h-14 cursor-pointer items-center justify-center rounded-surface border border-line-ember bg-ash-850 px-6 text-body font-bold uppercase tracking-caps text-cream-100 transition-colors duration-200 hover:bg-ash-800"
             >
               Reload the page
             </button>
