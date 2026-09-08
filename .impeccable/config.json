@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "gradient-text",
+        "value": "*",
+        "files": [
+          "src/app/globals.css"
+        ],
+        "createdAt": "2026-09-08T11:12:37.050Z",
+        "reason": "DESIGN.md 13.1 sanctions exactly one gradient-text instance (hero word 'the buffet?'); user approved DESIGN.md as authoritative source of truth"
+      }
+    ]
+  }
+}
