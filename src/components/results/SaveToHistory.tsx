@@ -51,7 +51,7 @@ export function SaveToHistory({ session, report, verdict }: SaveToHistoryProps) 
       </div>
 
       <Button
-        variant="secondary"
+        size="lg"
         fullWidth
         onClick={() => void save(note)}
         disabled={state === 'saving' || filed}

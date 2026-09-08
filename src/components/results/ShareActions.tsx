@@ -109,7 +109,7 @@ export function ShareActions({ report, verdict, session, cardModel, onStatus }: 
         Copy share link
       </Button>
 
-      <Button variant="secondary" onClick={handleCopy}>
+      <Button variant="ghost" onClick={handleCopy}>
         <Copy size={16} aria-hidden="true" />
         Copy result
       </Button>
@@ -121,7 +121,7 @@ export function ShareActions({ report, verdict, session, cardModel, onStatus }: 
         </Button>
       )}
 
-      <Button variant="secondary" onClick={handleDownload} disabled={isExporting}>
+      <Button variant="ghost" onClick={handleDownload} disabled={isExporting}>
         <Download size={16} aria-hidden="true" />
         {isExporting ? 'Rendering…' : 'Download card'}
       </Button>

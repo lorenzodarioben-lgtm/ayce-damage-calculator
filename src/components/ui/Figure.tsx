@@ -52,7 +52,7 @@ export function Figure({
       <dd
         className={cn(
           'tabular mt-1 font-semibold',
-          size === 'figure' ? 'display-type text-figure' : 'text-lead',
+          size === 'figure' ? 'text-figure' : 'text-lead',
           TONES[tone],
         )}
       >
