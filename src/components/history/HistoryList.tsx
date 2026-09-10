@@ -186,7 +186,7 @@ export function HistoryList() {
       )}
 
       <details className="panel mb-4 px-4 py-3">
-        <summary className="cursor-pointer text-ui font-semibold text-cream-300">
+        <summary className="flex min-h-11 cursor-pointer items-center text-ui font-semibold text-cream-300">
           Filter history
         </summary>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
