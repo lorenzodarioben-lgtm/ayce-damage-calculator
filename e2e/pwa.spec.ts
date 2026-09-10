@@ -157,4 +157,13 @@ test.describe('Offline page', () => {
     await page.getByRole('link', { name: 'Return to the calculator' }).click();
     await expect(page.getByRole('heading', { name: 'Build the meal' })).toBeVisible();
   });
+
+  test('stays within a 320px viewport', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 720 });
+    await page.goto('/offline');
+
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth),
+    ).toBeLessThanOrEqual(1);
+  });
 });
