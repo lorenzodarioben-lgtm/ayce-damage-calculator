@@ -10,7 +10,7 @@ lines local work up with the pipeline. Older supported versions are not blocked,
 build is checked against.
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 
