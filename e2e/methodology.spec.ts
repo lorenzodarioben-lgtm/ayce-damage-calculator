@@ -118,6 +118,19 @@ test.describe('The uncertainty analysis', () => {
     await expect(dialog.getByText('How firm the number is')).toBeVisible();
   });
 
+  test('opens on its close control and returns to the trigger after Escape', async ({ page }) => {
+    await openCalculator(page);
+    const trigger = page.getByRole('button', { name: 'How we calculate it' }).first();
+
+    await trigger.click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog.getByRole('button', { name: 'Close dialog' })).toBeFocused();
+
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+    await expect(trigger).toBeFocused();
+  });
+
   test('introduces no horizontal overflow at 320px', async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 720 });
     await openCalculator(page);

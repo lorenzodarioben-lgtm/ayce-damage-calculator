@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { SiteFooter } from '@/components/nav/SiteFooter';
 import { SiteHeader } from '@/components/nav/SiteHeader';
 import { MAIN_CONTENT_ID } from '@/components/nav/destinations';
+import { buttonClasses } from '@/components/ui/Button';
 
 export default function NotFound() {
   return (
@@ -20,10 +21,7 @@ export default function NotFound() {
           The address may be incomplete, or the page may have moved. Your in-progress meal is still
           safe on this device.
         </p>
-        <Link
-          href="/"
-          className="mt-8 inline-flex min-h-12 w-fit items-center justify-center rounded-surface bg-ember-500 px-5 text-ui font-bold uppercase tracking-caps text-ash-950 transition-colors duration-160 hover:bg-ember-400"
-        >
+        <Link href="/" className={buttonClasses('primary', 'md', 'mt-8 w-fit')}>
           Return to the calculator
         </Link>
       </main>
