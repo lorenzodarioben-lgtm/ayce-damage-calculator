@@ -21,6 +21,8 @@ const nextConfig: NextConfig = {
           // The app does not benefit from speculative DNS lookups, and it has
           // no third-party hosts to discover through them.
           { key: 'X-DNS-Prefetch-Control', value: 'off' },
+          // No legacy cross-domain policy files are served from this app.
+          { key: 'X-Permitted-Cross-Domain-Policies', value: 'none' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           // The calculator neither embeds third-party pages nor needs its own
           // device-local data to appear inside someone else's frame.
