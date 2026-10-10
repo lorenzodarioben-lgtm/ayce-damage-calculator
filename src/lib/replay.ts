@@ -42,12 +42,7 @@ export interface ReplayPoint {
 }
 
 export type ReplayMomentId =
-  | 'first-plate'
-  | 'break-even'
-  | 'busiest-window'
-  | 'longest-gap'
-  | 'last-plate'
-  | 'completed';
+  'first-plate' | 'break-even' | 'busiest-window' | 'longest-gap' | 'last-plate' | 'completed';
 
 export interface ReplayMoment {
   readonly id: ReplayMomentId;

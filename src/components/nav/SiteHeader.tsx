@@ -36,10 +36,10 @@ const LINK_IDLE =
 const LINK_CURRENT = 'text-cream-100 after:bg-ember-400';
 
 /**
- * Tailwind's own small breakpoint, in pixels. The menu and its toggle are
+ * Tailwind's large breakpoint, in pixels. The menu and its toggle are
  * hidden above it, so the state has to be told what the stylesheet knows.
  */
-const SM_BREAKPOINT = 640;
+const NAV_BREAKPOINT = 1024;
 
 export function SiteHeader({ onBrandClick, brandActionLabel }: SiteHeaderProps) {
   const pathname = usePathname();
@@ -115,7 +115,7 @@ export function SiteHeader({ onBrandClick, brandActionLabel }: SiteHeaderProps) 
   }, [menuOpen]);
 
   /*
-   * Above the small breakpoint the stylesheet hides both the panel and its
+   * Above the navigation breakpoint the stylesheet hides both the panel and its
    * toggle. Left alone, a widened window would strand a locked page with no
    * visible way to unlock it, so the state follows the stylesheet: the menu
    * closes, and the lock is released by the effect above.
@@ -126,7 +126,7 @@ export function SiteHeader({ onBrandClick, brandActionLabel }: SiteHeaderProps) 
     }
 
     function handleResize() {
-      if (window.innerWidth >= SM_BREAKPOINT) {
+      if (window.innerWidth >= NAV_BREAKPOINT) {
         setMenuOpen(false);
       }
     }
@@ -169,7 +169,7 @@ export function SiteHeader({ onBrandClick, brandActionLabel }: SiteHeaderProps) 
 
         {/* Wide screens get the destinations laid out; narrow ones would be
             crowded by them, so they go behind a single control instead. */}
-        <nav aria-label="Primary" className="hidden items-center gap-1 sm:flex">
+        <nav aria-label="Primary" className="hidden items-center gap-1 lg:flex">
           {DESTINATIONS.map((destination) => {
             const current = isCurrentDestination(pathname, destination.href);
             return (
@@ -193,7 +193,7 @@ export function SiteHeader({ onBrandClick, brandActionLabel }: SiteHeaderProps) 
           aria-expanded={menuOpen}
           aria-controls={menuId}
           aria-label={menuOpen ? 'Close the menu' : 'Open the menu'}
-          className="-mr-2 flex size-11 cursor-pointer items-center justify-center rounded-surface text-cream-300 transition-colors duration-160 hover:bg-ash-800 hover:text-cream-50 sm:hidden"
+          className="-mr-2 flex size-11 cursor-pointer items-center justify-center rounded-surface text-cream-300 transition-colors duration-160 hover:bg-ash-800 hover:text-cream-50 lg:hidden"
         >
           {menuOpen ? <X size={20} aria-hidden="true" /> : <Menu size={20} aria-hidden="true" />}
         </button>
@@ -204,7 +204,7 @@ export function SiteHeader({ onBrandClick, brandActionLabel }: SiteHeaderProps) 
           ref={menuRef}
           id={menuId}
           aria-label="Primary"
-          className="border-t border-line-soft bg-ash-900/95 px-4 py-3 elevate-float backdrop-blur-xl sm:hidden"
+          className="border-t border-line-soft bg-ash-900/95 px-4 py-3 elevate-float backdrop-blur-xl lg:hidden"
         >
           <ul className="space-y-1">
             {DESTINATIONS.map((destination) => {

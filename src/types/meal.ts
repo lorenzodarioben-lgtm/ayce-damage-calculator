@@ -4,14 +4,7 @@
  * stew, a dessert and a drink, and none of those is a cut of meat.
  */
 export type FoodCategory =
-  | 'beef'
-  | 'pork'
-  | 'chicken'
-  | 'seafood'
-  | 'sides'
-  | 'hot-food'
-  | 'desserts'
-  | 'drinks';
+  'beef' | 'pork' | 'chicken' | 'seafood' | 'sides' | 'hot-food' | 'desserts' | 'drinks';
 
 export type QualityTier = 'house' | 'standard' | 'premium';
 

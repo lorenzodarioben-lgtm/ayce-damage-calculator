@@ -110,19 +110,17 @@ describe('encodeMenuPayload', () => {
   });
 
   it('refuses a menu too long to be an address', () => {
-    const foods: CustomFood[] = Array.from(
-      { length: 32 },
-      (_unused, index) =>
-        createCustomFood(
-          {
-            name: `Extremely long custom food name number ${index}`,
-            category: 'beef',
-            description: incompressible(140, index + 1),
-            retailPricePerKg: 40,
-            restaurantCostPerKg: 20,
-          },
-          `custom-food-long-${index}`,
-        )!,
+    const foods: CustomFood[] = Array.from({ length: 32 }, (_unused, index) =>
+      createCustomFood(
+        {
+          name: `Extremely long custom food name number ${index}`,
+          category: 'beef',
+          description: incompressible(140, index + 1),
+          retailPricePerKg: 40,
+          restaurantCostPerKg: 20,
+        },
+        `custom-food-long-${index}`,
+      )!,
     );
 
     const result = encodeMenuResult(payload({ customFoods: foods }));
@@ -132,19 +130,17 @@ describe('encodeMenuPayload', () => {
   });
 
   it('fits a repetitive menu that would not have fitted uncompressed', () => {
-    const foods: CustomFood[] = Array.from(
-      { length: 32 },
-      (_unused, index) =>
-        createCustomFood(
-          {
-            name: `Extremely long custom food name number ${index}`,
-            category: 'beef',
-            description: 'x'.repeat(140),
-            retailPricePerKg: 40,
-            restaurantCostPerKg: 20,
-          },
-          `custom-food-long-${index}`,
-        )!,
+    const foods: CustomFood[] = Array.from({ length: 32 }, (_unused, index) =>
+      createCustomFood(
+        {
+          name: `Extremely long custom food name number ${index}`,
+          category: 'beef',
+          description: 'x'.repeat(140),
+          retailPricePerKg: 40,
+          restaurantCostPerKg: 20,
+        },
+        `custom-food-long-${index}`,
+      )!,
     );
 
     const token = encodeMenuPayload(payload({ customFoods: foods }));
@@ -406,8 +402,8 @@ describe('planMenuImport', () => {
   });
 
   it('keeps finding a free name however many collide', () => {
-    const taken = ['Friday KBBQ', 'Friday KBBQ (shared)', 'Friday KBBQ (shared 2)'].map(
-      (name) => createRestaurantProfile({ name, pricePerDiner: 40, dinerCount: 1 }, AT)!,
+    const taken = ['Friday KBBQ', 'Friday KBBQ (shared)', 'Friday KBBQ (shared 2)'].map((name) =>
+      createRestaurantProfile({ name, pricePerDiner: 40, dinerCount: 1 }, AT)!,
     );
     const plan = planMenuImport(
       payload({ restaurant: { name: 'Friday KBBQ', pricePerDiner: 42, dinerCount: 2 } }),

@@ -167,7 +167,10 @@ describe('The two models sit in one meal', () => {
     const items = [line('beef-ribeye', { quantity: 2 }), line(SOUP.id, { quantity: 1 })];
     const totals = calculateSessionTotals(items, DEFAULT_PRICING_PROFILE, catalogue);
 
-    const ribeye = calculateLineItem(items[0]!, FOODS.find((f) => f.id === 'beef-ribeye')!);
+    const ribeye = calculateLineItem(
+      items[0]!,
+      FOODS.find((f) => f.id === 'beef-ribeye')!,
+    );
     expect(totals.totalRetailValue).toBeCloseTo(ribeye.retailValue + 12, 10);
     expect(totals.totalWeightG).toBe(ribeye.weightG + 400);
     expect(totals.totalPlates).toBe(3);

@@ -14,7 +14,7 @@
     "url": "https://github.com/lorenzodarioben-lgtm/ayce-damage-calculator/issues"
   },
   "engines": {
-    "node": ">=20.9.0"
+    "node": ">=22.13.0"
   },
   "scripts": {
     "dev": "next dev",
@@ -28,37 +28,42 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:report": "playwright show-report",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
+    "format": "prettier --write . --ignore-path .gitignore --ignore-path .prettierignore --ignore-path .prettierignore.local",
+    "format:check": "prettier --check . --ignore-path .gitignore --ignore-path .prettierignore --ignore-path .prettierignore.local",
     "verify": "npm run format:check && npm run lint && npm run typecheck && npm run test:run && npm run build"
   },
   "dependencies": {
-    "idb": "8.0.3",
-    "lucide-react": "0.545.0",
-    "next": "16.3.1",
+    "idb": "8.0.4",
+    "lucide-react": "1.55.0",
+    "next": "16.4.0",
     "qrcode-generator": "1.5.0",
-    "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
   },
   "devDependencies": {
-    "@playwright/test": "1.56.1",
+    "@playwright/test": "1.64.0",
     "@tailwindcss/postcss": "4.3.3",
-    "@testing-library/dom": "10.4.1",
-    "@testing-library/jest-dom": "6.9.1",
-    "@testing-library/react": "16.3.0",
-    "@testing-library/user-event": "14.6.1",
-    "@types/node": "22.18.6",
-    "@types/react": "19.2.2",
-    "@types/react-dom": "19.2.1",
-    "@vitejs/plugin-react": "5.0.4",
-    "eslint": "9.38.0",
-    "eslint-config-next": "16.3.1",
+    "@testing-library/dom": "10.4.2",
+    "@testing-library/jest-dom": "7.0.1",
+    "@testing-library/react": "16.3.3",
+    "@testing-library/user-event": "14.6.7",
+    "@types/node": "22.20.5",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.2",
+    "eslint": "9.39.5",
+    "eslint-config-next": "16.4.0",
     "eslint-config-prettier": "10.1.8",
-    "fake-indexeddb": "6.2.2",
-    "jsdom": "27.0.0",
-    "prettier": "3.6.2",
+    "fake-indexeddb": "6.2.5",
+    "jsdom": "29.1.1",
+    "prettier": "3.9.10",
     "tailwindcss": "4.3.3",
-    "typescript": "5.9.3",
-    "vitest": "4.1.10"
+    "typescript": "6.0.3",
+    "vitest": "5.0.3"
+  },
+  "overrides": {
+    "@next/eslint-plugin-next": {
+      "fast-glob": "npm:tinyglobby@0.2.15"
+    }
   }
 }
