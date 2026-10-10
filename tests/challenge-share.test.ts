@@ -124,19 +124,17 @@ describe('encodeChallengePayload', () => {
   });
 
   it('refuses two meals too large to fit in an address', () => {
-    const foods = Array.from(
-      { length: 24 },
-      (_unused, index) =>
-        createCustomFood(
-          {
-            name: `A very long diner-authored food name ${index}`,
-            category: 'beef',
-            description: incompressible(140, index + 1),
-            retailPricePerKg: 40,
-            restaurantCostPerKg: 20,
-          },
-          `custom-food-long-${index}`,
-        )!,
+    const foods = Array.from({ length: 24 }, (_unused, index) =>
+      createCustomFood(
+        {
+          name: `A very long diner-authored food name ${index}`,
+          category: 'beef',
+          description: incompressible(140, index + 1),
+          retailPricePerKg: 40,
+          restaurantCostPerKg: 20,
+        },
+        `custom-food-long-${index}`,
+      )!,
     );
     const heavy = record(
       'heavy',

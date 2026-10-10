@@ -56,11 +56,7 @@ export interface BackupConfiguration {
 }
 
 export type BackupError =
-  | 'too-large'
-  | 'invalid-json'
-  | 'not-a-backup'
-  | 'unsupported-version'
-  | 'nothing-usable';
+  'too-large' | 'invalid-json' | 'not-a-backup' | 'unsupported-version' | 'nothing-usable';
 
 export const BACKUP_ERROR_MESSAGES: Readonly<Record<BackupError, string>> = {
   'too-large': 'That file is too large to be an AYCE backup.',

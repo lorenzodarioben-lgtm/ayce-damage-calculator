@@ -27,10 +27,10 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           # Read from .nvmrc so a contributor's `nvm use` and this job cannot
           # end up on different majors without anyone noticing.
@@ -41,13 +41,13 @@ jobs:
       # ESLint invalidates changed source files itself; keeping this cache keyed
       # to its configuration and dependencies lets unchanged files stay skipped.
       - name: Restore ESLint cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6.1.0
         with:
           path: .eslintcache
           key: eslint-${{ runner.os }}-${{ hashFiles('package-lock.json', 'eslint.config.mjs') }}
 
       - name: Restore Next.js build cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6.1.0
         with:
           path: .next/cache
           key: next-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ hashFiles('src/**', 'public/**', 'next.config.ts') }}
@@ -84,16 +84,16 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: npm
 
       - name: Restore Next.js build cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6.1.0
         with:
           path: .next/cache
           key: next-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ hashFiles('src/**', 'public/**', 'next.config.ts') }}
@@ -110,7 +110,7 @@ jobs:
 
       - name: Cache Playwright browsers
         id: playwright-cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6.1.0
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
@@ -130,7 +130,7 @@ jobs:
 
       - name: Upload Playwright report
         if: ${{ failure() && !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-report
           path: |

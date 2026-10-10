@@ -9,6 +9,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Changed
 
+- The README is shorter and includes screenshots of the calculator, report, live mode and planner.
+
 - **A generated preview card for the app itself.** A posted link used to preview as the 512px app
   icon: square, cropped by most feeds, and silent about what the thing does. It now renders a
   1200x630 card carrying the question the app exists to ask and the three facts that make it worth
@@ -56,6 +58,18 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Fixed
 
+- The planner waits for browser hydration before reading a saved menu and bill, preventing a
+  server/client text mismatch when a meal is already stored.
+- Typechecking keeps Next.js route validation while leaving unused-import checks to ESLint, so
+  generated development types do not break the check after running the dev server.
+
+- The header keeps its navigation behind the menu through tablet widths, preventing links from
+  overlapping the wordmark or making the page scroll sideways.
+- Removing the last item in a custom category resets the meal picker before its children render,
+  keeping the selected tab and its labelled panel together without an extra effect-driven render.
+- The empty-state test uses the same internal navigation component as the app, restoring the
+  format, lint, typecheck, test and build gate.
+
 - **The installed app declares its own language.** The document says `en-AU` and the social
   metadata says `en_AU`, but the manifest said nothing — and an installed app is read by a
   launcher that never loads the page, so it was the one surface with no `lang` to inherit. The
@@ -91,6 +105,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
   a role and the family is resolved from the same custom property the stylesheet reads.
 
 ### Housekeeping
+
+- Updated Next.js, React, the browser and unit-test tooling, and CI actions. ESLint 9 and
+  TypeScript 6 remain the supported pair for the React lint plugins and TypeScript parser.
+- The Next.js lint plugin's directory lookup uses `tinyglobby` in place of `fast-glob`, keeping
+  its synchronous directory-glob API while removing the unpatched `braces` dependency. The
+  override is limited to that plugin and can be removed when its upstream dependency changes.
+- Local editor-detector configuration is no longer published with the repository.
 
 - **DESIGN.md**, the design system of record: sixteen sections derived from the shipped code
   rather than from intentions, stating what is load-bearing and what may not be removed. The

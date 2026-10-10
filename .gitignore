@@ -43,7 +43,3 @@ yarn-error.log*
 !.vscode/extensions.json
 .idea
 .eslintcache
-
-
-# design-detector cache, regenerated on every run
-.impeccable/hook.cache.json

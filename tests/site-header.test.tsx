@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { SiteHeader } from '@/components/nav/SiteHeader';
 
 /** The panel and its toggle are both hidden from this width up. */
-const WIDE_VIEWPORT = 900;
+const WIDE_VIEWPORT = 1024;
 const NARROW_VIEWPORT = 400;
 
 beforeEach(() => {

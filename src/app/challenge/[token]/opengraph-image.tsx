@@ -60,70 +60,68 @@ export default async function Image({ params }: Props) {
   const card = buildChallengeCardModel(token);
 
   return new ImageResponse(
-    (
+    <div
+      style={{
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        backgroundColor: CARD_COLOURS.bg,
+        padding: '64px 72px',
+        // The warm pendant light the rest of the app sits under.
+        backgroundImage:
+          'radial-gradient(1000px 520px at 50% -10%, rgba(169,122,65,0.28), rgba(13,12,10,0) 70%)',
+      }}
+    >
+      <span
+        style={{
+          fontSize: 24,
+          fontWeight: 700,
+          letterSpacing: '0.24em',
+          textTransform: 'uppercase',
+          color: CARD_COLOURS.ember,
+        }}
+      >
+        AYCE Damage Challenge
+      </span>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+        <Side label={card.previousLabel} recovery={card.previousRecovery} />
+        <span
+          style={{
+            fontSize: 44,
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            color: CARD_COLOURS.muted,
+          }}
+        >
+          vs
+        </span>
+        <Side label={card.currentLabel} recovery={card.currentRecovery} accent />
+      </div>
+
       <div
         style={{
-          width: '100%',
-          height: '100%',
           display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          backgroundColor: CARD_COLOURS.bg,
-          padding: '64px 72px',
-          // The warm pendant light the rest of the app sits under.
-          backgroundImage:
-            'radial-gradient(1000px 520px at 50% -10%, rgba(169,122,65,0.28), rgba(13,12,10,0) 70%)',
+          justifyContent: 'center',
+          borderTop: `2px solid ${CARD_COLOURS.line}`,
+          paddingTop: 32,
         }}
       >
         <span
           style={{
-            fontSize: 24,
+            fontSize: 32,
             fontWeight: 700,
-            letterSpacing: '0.24em',
+            letterSpacing: '0.06em',
             textTransform: 'uppercase',
-            color: CARD_COLOURS.ember,
+            color: CARD_COLOURS.muted,
           }}
         >
-          AYCE Damage Challenge
+          {card.shift} of retail recovery
         </span>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
-          <Side label={card.previousLabel} recovery={card.previousRecovery} />
-          <span
-            style={{
-              fontSize: 44,
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              color: CARD_COLOURS.muted,
-            }}
-          >
-            vs
-          </span>
-          <Side label={card.currentLabel} recovery={card.currentRecovery} accent />
-        </div>
-
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            borderTop: `2px solid ${CARD_COLOURS.line}`,
-            paddingTop: 32,
-          }}
-        >
-          <span
-            style={{
-              fontSize: 32,
-              fontWeight: 700,
-              letterSpacing: '0.06em',
-              textTransform: 'uppercase',
-              color: CARD_COLOURS.muted,
-            }}
-          >
-            {card.shift} of retail recovery
-          </span>
-        </div>
       </div>
-    ),
+    </div>,
     { ...size },
   );
 }

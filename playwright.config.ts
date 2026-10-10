@@ -16,7 +16,7 @@ export default defineConfig({
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
   // Omitted entirely off CI so Playwright applies its own core-count default.
-  ...(process.env.CI ? { workers: 1 } : {}),
+  ...(process.env.CI ? { workers: 2 } : {}),
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : [['list']],
 
   use: {

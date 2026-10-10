@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { addPlate, horizontalOverflow, openCalculator, tab } from './helpers';
+import { addPlate, horizontalOverflow, openCalculator, setPricePerDiner, tab } from './helpers';
 
 function proposal(page: Page) {
   return page.getByRole('region', { name: 'The proposed configuration' });
@@ -10,6 +10,22 @@ async function runSimulation(page: Page) {
 }
 
 test.describe('The damage planner', () => {
+  test('loads a saved bill without a hydration error', async ({ page }) => {
+    const errors: string[] = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    await openCalculator(page);
+    await setPricePerDiner(page, 35);
+    await page.getByRole('button', { name: 'Add a diner', exact: true }).click();
+    await addPlate(page, 'Ribeye');
+
+    await page.goto('/plan');
+
+    await expect(page.getByLabel('Admission per diner', { exact: true })).toHaveValue('35');
+    await expect(page.getByLabel('Diners', { exact: true })).toHaveValue('2');
+    await page.waitForLoadState('networkidle');
+    expect(errors).toEqual([]);
+  });
+
   test('is reachable from the primary navigation and states what it is', async ({ page }) => {
     await openCalculator(page);
 

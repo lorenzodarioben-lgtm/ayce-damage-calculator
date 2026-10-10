@@ -229,8 +229,7 @@ async function deriveKey(
 }
 
 export type EncryptResult =
-  | { readonly ok: true; readonly file: string }
-  | { readonly ok: false; readonly error: VaultError };
+  { readonly ok: true; readonly file: string } | { readonly ok: false; readonly error: VaultError };
 
 /**
  * Encrypts an already-validated backup payload.

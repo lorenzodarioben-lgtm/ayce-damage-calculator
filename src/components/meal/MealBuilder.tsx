@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useId, useMemo, useState } from 'react';
+import { useId, useMemo, useState } from 'react';
 import { Flame } from 'lucide-react';
 import { FavoriteQuickAdd, FavoriteToggle } from '@/components/favorites/FavoriteQuickAdd';
 import { CategoryTabs, visibleCategories } from '@/components/meal/CategoryTabs';
@@ -68,13 +68,10 @@ export function MealBuilder({
 
   // Removing the final custom item in a category also removes its tab. Keep the
   // picker on a real tab instead of leaving its labelled panel orphaned.
-  useEffect(() => {
-    if (categories.some((entry) => entry.id === category)) {
-      return;
-    }
+  if (!categories.some((entry) => entry.id === category)) {
     setCategory(categories[0]?.id ?? 'beef');
     setSelectedFoodId(null);
-  }, [categories, category]);
+  }
 
   const trimmedQuery = query.trim();
   const searching = trimmedQuery.length > 0;

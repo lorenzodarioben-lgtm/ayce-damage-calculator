@@ -100,10 +100,7 @@ export interface PlanConstraints {
 }
 
 export type PlanFailure =
-  | 'no-candidates'
-  | 'target-unreachable'
-  | 'exceeds-plate-cap'
-  | 'locked-exceeds-cap';
+  'no-candidates' | 'target-unreachable' | 'exceeds-plate-cap' | 'locked-exceeds-cap';
 
 export const PLAN_FAILURE_MESSAGES: Readonly<Record<PlanFailure, string>> = {
   'no-candidates':

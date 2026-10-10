@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useId, useMemo, useState } from 'react';
+import { useCallback, useId, useMemo, useState, useSyncExternalStore } from 'react';
 import { Calculator, ClipboardCopy, Lock, Unlock } from 'lucide-react';
 import { Figure } from '@/components/ui/Figure';
 import { PricingProfileProvider, usePricingProfile } from '@/components/session/PricingContext';
@@ -57,6 +57,10 @@ const CHIP =
 const ON = 'border-line-ember bg-ash-800 text-cream-100';
 const OFF = 'border-line bg-ash-900 text-cream-300 hover:bg-ash-800';
 
+const subscribeToHydration = () => () => {};
+const clientSnapshot = () => true;
+const serverSnapshot = () => false;
+
 function toggle<T>(values: readonly T[], value: T): readonly T[] {
   return values.includes(value) ? values.filter((entry) => entry !== value) : [...values, value];
 }
@@ -71,6 +75,14 @@ function toggle<T>(values: readonly T[], value: T): readonly T[] {
  * confirmed action that says exactly what it does.
  */
 export function DamagePlanner() {
+  const hydrated = useSyncExternalStore(subscribeToHydration, clientSnapshot, serverSnapshot);
+
+  // Saved menu and bill data are only available in the browser. Keep the
+  // initial client render identical to the server before reading those stores.
+  return hydrated ? <PlannerForm /> : <p role="status">Loading your menu...</p>;
+}
+
+function PlannerForm() {
   const pricingProfiles = usePricingProfiles();
   const customFoods = useCustomFoods();
   const catalogue = useMemo(() => foodCatalogue(customFoods.foods), [customFoods.foods]);

@@ -48,9 +48,7 @@ type Stage =
 
 /** What the password dialog is currently being asked for, if anything. */
 type PasswordPrompt =
-  | { kind: 'none' }
-  | { kind: 'encrypt' }
-  | { kind: 'decrypt'; raw: string; error: string | null };
+  { kind: 'none' } | { kind: 'encrypt' } | { kind: 'decrypt'; raw: string; error: string | null };
 
 interface PendingReplace {
   readonly contents: BackupContents;

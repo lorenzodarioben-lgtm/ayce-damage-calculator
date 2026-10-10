@@ -124,10 +124,7 @@ export interface TableClearedEvent extends MealEventBase {
 }
 
 export type MealLifecycleEventType =
-  | 'meal-started'
-  | 'meal-paused'
-  | 'meal-resumed'
-  | 'meal-completed';
+  'meal-started' | 'meal-paused' | 'meal-resumed' | 'meal-completed';
 
 export interface MealLifecycleEvent extends MealEventBase {
   readonly type: MealLifecycleEventType;

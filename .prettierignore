@@ -6,6 +6,3 @@ test-results
 playwright-report
 blob-report
 .vercel
-
-# design-detector cache, regenerated on every run
-.impeccable/hook.cache.json
